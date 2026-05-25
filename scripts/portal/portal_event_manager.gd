@@ -11,6 +11,7 @@ signal portal_event_completed
 @export var elite_max_hp: float = 80.0
 
 var player: Node2D
+var active_event_elites: Array[Node] = []
 
 func _ready() -> void:
 	if player_path != NodePath():
@@ -50,13 +51,15 @@ func _try_activate_nearest_portal() -> void:
 		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
-	_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance)
-	_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance)
-	portal_event_completed.emit()
+	active_event_elites.clear()
+	_track_event_elite(_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance))
+	_track_event_elite(_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance))
+	if active_event_elites.is_empty():
+		portal_event_completed.emit()
 
-func _spawn_elite(spawn_position: Vector2) -> void:
+func _spawn_elite(spawn_position: Vector2) -> Node:
 	if elite_enemy_scene == null:
-		return
+		return null
 
 	var enemy_instance := elite_enemy_scene.instantiate()
 	if enemy_instance is Node2D:
@@ -69,3 +72,16 @@ func _spawn_elite(spawn_position: Vector2) -> void:
 			enemy_node.set("max_hp", elite_max_hp)
 			enemy_node.set("current_hp", elite_max_hp)
 		add_child(enemy_node)
+		return enemy_node
+	return null
+
+func _track_event_elite(enemy: Node) -> void:
+	if enemy == null:
+		return
+	active_event_elites.append(enemy)
+	enemy.tree_exited.connect(_on_event_elite_exited.bind(enemy))
+
+func _on_event_elite_exited(enemy: Node) -> void:
+	active_event_elites.erase(enemy)
+	if active_event_elites.is_empty():
+		portal_event_completed.emit()
