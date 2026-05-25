@@ -31,17 +31,20 @@ func _on_spawn_timer_timeout() -> void:
 		return
 
 	var enemy_instance := enemy_scene.instantiate()
-	if enemy_instance is Node2D:
-		var enemy_node := enemy_instance as Node2D
-		var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
-		enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
-		if enemy_node.has_method("set"):
-			enemy_node.set("target_path", enemy_node.get_path_to(target))
-		add_child(enemy_node)
+	if not enemy_instance is Node2D:
+		return
+
+	var enemy_node := enemy_instance as Node2D
+	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
+	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
+	add_child(enemy_node)
+
+	if enemy_node.has_method("set_target"):
+		enemy_node.call("set_target", target)
 
 func _count_alive_enemies() -> int:
 	var alive_count := 0
 	for child in get_children():
-		if child is CharacterBody2D and child != spawn_timer:
+		if child is CharacterBody2D:
 			alive_count += 1
 	return alive_count
