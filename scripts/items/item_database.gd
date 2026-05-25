@@ -1,7 +1,5 @@
 extends RefCounted
 
-const ItemData = preload("res://scripts/items/item_data.gd")
-
 static func get_prototype_items() -> Array[ItemData]:
 	return [
 		ItemData.new(
@@ -14,7 +12,7 @@ static func get_prototype_items() -> Array[ItemData]:
 			"glass_scope",
 			"Glass Scope",
 			"Projectiles travel farther and faster.",
-			{"range": 0.2, "projectile_speed": 0.25}
+			{"attack_range": 0.2, "projectile_speed": 0.25}
 		),
 		ItemData.new(
 			"steel_heart",

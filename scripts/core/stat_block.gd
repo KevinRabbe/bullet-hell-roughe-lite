@@ -5,7 +5,7 @@ var max_hp: float = 100.0
 var hp_regen: float = 0.0
 var damage: float = 1.0
 var attack_speed: float = 1.0
-var range: float = 1.0
+var attack_range: float = 1.0
 var projectile_speed: float = 1.0
 var crit_chance: float = 0.0
 var crit_damage: float = 1.5
@@ -38,7 +38,7 @@ func duplicate_values() -> StatBlock:
 	copy.hp_regen = hp_regen
 	copy.damage = damage
 	copy.attack_speed = attack_speed
-	copy.range = range
+	copy.attack_range = attack_range
 	copy.projectile_speed = projectile_speed
 	copy.crit_chance = crit_chance
 	copy.crit_damage = crit_damage
