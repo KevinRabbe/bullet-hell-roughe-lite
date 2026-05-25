@@ -9,6 +9,7 @@ var current_hp: float
 
 func _ready() -> void:
 	current_hp = max_hp
+	add_to_group("enemies")
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
 
