@@ -9,6 +9,7 @@ var owned_items: Array[ItemData] = []
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 
 func _ready() -> void:
+	add_to_group("players")
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
@@ -22,7 +23,7 @@ func _physics_process(_delta: float) -> void:
 func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
 	_update_hp_label()
-	print("Player HP: %.1f / %.1f" % [current_hp, stats.max_hp])
+	print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
 	if current_hp <= 0.0:
 		die()
 
