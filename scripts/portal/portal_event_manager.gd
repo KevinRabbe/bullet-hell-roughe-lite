@@ -1,5 +1,7 @@
 extends Node2D
 
+signal portal_event_completed
+
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
 @export var player_path: NodePath
@@ -50,6 +52,7 @@ func _try_activate_nearest_portal() -> void:
 func _on_portal_activated(portal_position: Vector2) -> void:
 	_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance)
 	_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance)
+	portal_event_completed.emit()
 
 func _spawn_elite(spawn_position: Vector2) -> void:
 	if elite_enemy_scene == null:
