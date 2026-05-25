@@ -5,10 +5,14 @@ extends Node2D
 @export var spawn_interval_seconds: float = 1.5
 @export var spawn_radius: float = 420.0
 @export var max_alive_enemies: int = 20
+@export var wave_duration_seconds: float = 60.0
+@export var min_spawn_interval_seconds: float = 0.7
 
 var target: Node2D
 var rng := RandomNumberGenerator.new()
 var spawn_timer: Timer
+var wave_elapsed_seconds: float = 0.0
+var countdown_print_accumulator: float = 0.0
 
 func _ready() -> void:
 	if target_path != NodePath():
@@ -22,10 +26,31 @@ func _ready() -> void:
 	add_child(spawn_timer)
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 
+func _process(delta: float) -> void:
+	if wave_elapsed_seconds >= wave_duration_seconds:
+		return
+
+	wave_elapsed_seconds += delta
+	countdown_print_accumulator += delta
+	if countdown_print_accumulator >= 1.0:
+		countdown_print_accumulator = 0.0
+		var remaining := ceili(maxf(wave_duration_seconds - wave_elapsed_seconds, 0.0))
+		print("Wave time left: %ds" % remaining)
+
+	var progress := clampf(wave_elapsed_seconds / wave_duration_seconds, 0.0, 1.0)
+	var scaled_interval := lerpf(spawn_interval_seconds, min_spawn_interval_seconds, progress)
+	spawn_timer.wait_time = maxf(scaled_interval, min_spawn_interval_seconds)
+
+	if wave_elapsed_seconds >= wave_duration_seconds:
+		spawn_timer.stop()
+		print("Wave complete.")
+
 func _on_spawn_timer_timeout() -> void:
 	if enemy_scene == null:
 		return
 	if target == null or not is_instance_valid(target):
+		return
+	if wave_elapsed_seconds >= wave_duration_seconds:
 		return
 	if _count_alive_enemies() >= max_alive_enemies:
 		return
