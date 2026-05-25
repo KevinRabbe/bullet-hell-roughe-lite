@@ -48,5 +48,6 @@ func _try_damage_player() -> void:
 	if global_position.distance_to(target.global_position) > contact_range:
 		return
 
+	print("Enemy hit player for %.1f damage." % contact_damage)
 	target.call("take_damage", contact_damage)
 	damage_cooldown_left = damage_interval_seconds

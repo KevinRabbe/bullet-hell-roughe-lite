@@ -6,11 +6,13 @@ extends CharacterBody2D
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
+@onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 
 func _ready() -> void:
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
+	_update_hp_label()
 
 func _physics_process(_delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
@@ -19,6 +21,7 @@ func _physics_process(_delta: float) -> void:
 
 func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
+	_update_hp_label()
 	print("Player HP: %.1f / %.1f" % [current_hp, stats.max_hp])
 	if current_hp <= 0.0:
 		die()
@@ -48,6 +51,7 @@ func _apply_item_effects(item: ItemData) -> void:
 	if item.stat_modifiers.has("max_hp"):
 		current_hp += float(item.stat_modifiers["max_hp"])
 		current_hp = minf(current_hp, stats.max_hp)
+	_update_hp_label()
 
 func _has_stat_property(stat_name: String) -> bool:
 	for property_info in stats.get_property_list():
@@ -77,3 +81,8 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 	if _has_stat_property(stat_name):
 		return float(stats.get(stat_name))
 	return fallback
+
+func _update_hp_label() -> void:
+	if hp_label == null:
+		return
+	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
