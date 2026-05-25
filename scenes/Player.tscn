@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -29,3 +29,11 @@ script = ExtResource("2")
 projectile_scene = ExtResource("3")
 fire_interval_seconds = 0.35
 target_range = 900.0
+
+[node name="DebugHpLabel" type="Label" parent="."]
+offset_left = -64.0
+offset_top = -52.0
+offset_right = 64.0
+offset_bottom = -24.0
+horizontal_alignment = 1
+text = "HP: 100 / 100"

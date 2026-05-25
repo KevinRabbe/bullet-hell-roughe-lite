@@ -51,10 +51,12 @@ func _try_activate_nearest_portal() -> void:
 		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
+	print("Portal activated: elite event started.")
 	active_event_elites.clear()
 	_track_event_elite(_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance))
 	_track_event_elite(_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance))
 	if active_event_elites.is_empty():
+		print("Portal event completed: no active elites.")
 		portal_event_completed.emit()
 
 func _spawn_elite(spawn_position: Vector2) -> Node:
@@ -83,5 +85,7 @@ func _track_event_elite(enemy: Node) -> void:
 
 func _on_event_elite_exited(enemy: Node) -> void:
 	active_event_elites.erase(enemy)
+	print("Portal elite defeated. Remaining elites: %d" % active_event_elites.size())
 	if active_event_elites.is_empty():
+		print("Portal event completed: all elites defeated.")
 		portal_event_completed.emit()
