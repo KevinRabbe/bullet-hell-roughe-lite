@@ -19,6 +19,7 @@ func _physics_process(_delta: float) -> void:
 
 func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
+	print("Player HP: %.1f / %.1f" % [current_hp, stats.max_hp])
 	if current_hp <= 0.0:
 		die()
 
