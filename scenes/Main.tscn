@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/Enemy.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/spawning/enemy_spawner.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/Portal.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/portal/portal_event_manager.gd" id="6"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("2")
@@ -53,3 +55,13 @@ target_path = NodePath("../Player")
 spawn_interval_seconds = 1.2
 spawn_radius = 520.0
 max_alive_enemies = 25
+
+[node name="PortalEventManager" type="Node2D" parent="."]
+script = ExtResource("6")
+portal_scene = ExtResource("5")
+elite_enemy_scene = ExtResource("3")
+player_path = NodePath("../Player")
+first_portal_position = Vector2(240, 0)
+elite_spawn_distance = 180.0
+elite_move_speed = 240.0
+elite_max_hp = 80.0
