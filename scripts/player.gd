@@ -34,6 +34,7 @@ func grant_item(item: ItemData) -> void:
 	owned_items.append(item)
 	_apply_item_effects(item)
 	print("Gained item: %s" % item.name)
+	_print_debug_stats()
 
 func _apply_item_effects(item: ItemData) -> void:
 	for stat_name in item.stat_modifiers.keys():
@@ -55,3 +56,26 @@ func _has_stat_property(stat_name: String) -> bool:
 		if str(property_info.get("name", "")) == stat_name:
 			return true
 	return false
+
+func _print_debug_stats() -> void:
+	var attack_range_value: float = _get_stat_value("attack_range", _get_stat_value("range", 1.0))
+	print(
+		"Stats | HP %.1f/%.1f | DMG %.2f | AS %.2f | MS %.1f | AR %.2f | Portal(Luck %.2f, Freq %.2f, Instability %.2f, Reward %.2f)"
+		% [
+			current_hp,
+			stats.max_hp,
+			stats.damage,
+			stats.attack_speed,
+			stats.movement_speed,
+			attack_range_value,
+			stats.portal_luck,
+			stats.portal_frequency,
+			stats.portal_instability,
+			stats.portal_reward_multiplier
+		]
+	)
+
+func _get_stat_value(stat_name: String, fallback: float) -> float:
+	if _has_stat_property(stat_name):
+		return float(stats.get(stat_name))
+	return fallback
