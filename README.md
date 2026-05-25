@@ -26,4 +26,4 @@ Build the smallest playable version that proves the portal philosophy:
 
 ## First milestone
 
-WASD movement in an empty arena.
+WASD movement in an empty arena with a player foundation and base stat block.
