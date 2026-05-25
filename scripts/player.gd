@@ -1,8 +1,5 @@
 extends CharacterBody2D
 
-const StatBlock = preload("res://scripts/core/stat_block.gd")
-const ItemData = preload("res://scripts/items/item_data.gd")
-
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
 

@@ -1,6 +1,5 @@
 extends Node
 
-const ItemData = preload("res://scripts/items/item_data.gd")
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 
 @export var player_path: NodePath
