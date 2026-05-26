@@ -69,7 +69,6 @@ func _cycle_character() -> void:
 	if selectable_characters.is_empty():
 		return
 	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
-	_apply_selected_character()
 
 func _apply_selected_character() -> void:
 	if selectable_characters.is_empty():
@@ -131,7 +130,7 @@ func _load_selectable_characters() -> void:
 			selectable_characters = normalized
 			selected_character_index = 0
 			_refresh_character_display_names(data_registry)
-			print("Character selection list: %s" % selectable_characters)
+			print("Character selection list: " + str(selectable_characters))
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
