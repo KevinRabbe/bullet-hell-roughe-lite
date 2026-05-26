@@ -9,6 +9,7 @@ var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
+var active_character_id: String = "gunslinger"
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 
@@ -17,6 +18,7 @@ func _ready() -> void:
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
+	_apply_character_rules()
 	_update_hp_label()
 	apply_character_by_id("gunslinger")
 
@@ -106,6 +108,34 @@ func _update_hp_label() -> void:
 func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":
 		return
+	active_character_id = character_id
+	_apply_character_rules()
 	if player_build != null and player_build.has_method("set_active_character"):
-		player_build.call("set_active_character", character_id)
-	print("Selected character: %s" % character_id)
+		player_build.call("set_active_character", active_character_id)
+	print("Selected character: %s" % active_character_id)
+
+func _apply_character_rules() -> void:
+	if active_character_id != "gunslinger":
+		return
+	stats.burn_damage = 0.8
+	stats.poison_damage = 0.8
+	stats.bleed_damage = 0.8
+	stats.frost_power = 0.8
+	if player_build != null:
+		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
+		if weapons_variant is Array:
+			var weapons: Array = weapons_variant
+			if weapons.is_empty():
+				weapons.append("heavy_pistol")
+				player_build.set("equipped_weapon_ids", weapons)
+
+func get_damage_multiplier_for_target(target: Node) -> float:
+	if active_character_id != "gunslinger":
+		return 1.0
+	if target == null:
+		return 1.0
+	var is_elite: bool = bool(target.get("is_elite"))
+	var is_boss: bool = bool(target.get("is_boss"))
+	if is_elite or is_boss:
+		return 1.35
+	return 1.0

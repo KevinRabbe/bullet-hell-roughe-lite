@@ -43,6 +43,8 @@ func _fire_at(target: Node2D) -> void:
 	if projectile_instance is Node2D:
 		var projectile := projectile_instance as Node2D
 		projectile.global_position = owner_player.global_position
+		if projectile.has_method("set_shooter"):
+			projectile.call("set_shooter", owner_player)
 		var direction := target.global_position - owner_player.global_position
 		if projectile.has_method("set_direction"):
 			projectile.call("set_direction", direction)
