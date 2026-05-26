@@ -5,24 +5,34 @@ signal portal_event_completed
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
 @export var player_path: NodePath
+@export var enemy_spawner_path: NodePath
 @export var first_portal_position: Vector2 = Vector2(240.0, 0.0)
 @export var elite_spawn_distance: float = 180.0
 @export var elite_move_speed: float = 240.0
 @export var elite_max_hp: float = 80.0
 
 var player: Node2D
+var enemy_spawner: Node
 var active_event_elites: Array[Node] = []
+var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
+	rng.randomize()
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
-	_spawn_first_portal()
+	if enemy_spawner_path != NodePath():
+		enemy_spawner = get_node_or_null(enemy_spawner_path)
+	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
+		enemy_spawner.connect("wave_completed", _on_wave_completed)
+	_try_spawn_portal_for_wave(1)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		_try_activate_nearest_portal()
 
 func _spawn_first_portal() -> void:
+	if _active_portal_count() >= 1:
+		return
 	if portal_scene == null:
 		return
 	var portal_instance := portal_scene.instantiate()
@@ -32,6 +42,36 @@ func _spawn_first_portal() -> void:
 		if portal.has_signal("activated"):
 			portal.connect("activated", _on_portal_activated)
 		add_child(portal)
+
+func _on_wave_completed(wave_index: int) -> void:
+	_try_spawn_portal_for_wave(wave_index + 1)
+
+func _try_spawn_portal_for_wave(wave_index: int) -> void:
+	if _active_portal_count() >= 1:
+		print("Portal spawn skipped for wave %d: active portal already exists." % wave_index)
+		return
+	var chance := _compute_portal_spawn_chance()
+	var roll := rng.randf()
+	print("Portal spawn roll | wave=%d chance=%.2f roll=%.2f" % [wave_index, chance, roll])
+	if roll <= chance:
+		_spawn_first_portal()
+
+func _compute_portal_spawn_chance() -> float:
+	var base_chance := 0.30
+	var portal_frequency := 1.0
+	if player != null and is_instance_valid(player):
+		var stats_variant := player.get("stats")
+		if stats_variant != null and stats_variant is Object:
+			portal_frequency = float(stats_variant.get("portal_frequency"))
+	var frequency_bonus := (portal_frequency - 1.0) * 0.15
+	return clampf(base_chance + frequency_bonus, 0.25, 0.9)
+
+func _active_portal_count() -> int:
+	var count := 0
+	for portal in get_tree().get_nodes_in_group("portals"):
+		if portal is Node and is_instance_valid(portal):
+			count += 1
+	return count
 
 func _try_activate_nearest_portal() -> void:
 	if player == null or not is_instance_valid(player):
