@@ -1,0 +1,170 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/Enemy.tscn" id="3"]
+[ext_resource type="Script" path="res://scripts/spawning/enemy_spawner.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/portals/Portal.tscn" id="5"]
+[ext_resource type="Script" path="res://scripts/portal/portal_event_manager.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/items/reward_controller.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/game/shop_controller.gd" id="8"]
+[ext_resource type="Script" path="res://scripts/game/boss_manager.gd" id="9"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("2")
+
+[node name="Arena" type="ColorRect" parent="."]
+offset_left = -2000.0
+offset_top = -2000.0
+offset_right = 2000.0
+offset_bottom = 2000.0
+color = Color(0.08, 0.08, 0.09, 1.0)
+
+[node name="MarkerA" type="ColorRect" parent="."]
+offset_left = 300.0
+offset_top = -40.0
+offset_right = 380.0
+offset_bottom = 40.0
+color = Color(0.5, 0.1, 0.1, 1.0)
+
+[node name="MarkerB" type="ColorRect" parent="."]
+offset_left = -380.0
+offset_top = -40.0
+offset_right = -300.0
+offset_bottom = 40.0
+color = Color(0.1, 0.4, 0.1, 1.0)
+
+[node name="MarkerC" type="ColorRect" parent="."]
+offset_left = -40.0
+offset_top = -380.0
+offset_right = 40.0
+offset_bottom = -300.0
+color = Color(0.1, 0.1, 0.5, 1.0)
+
+[node name="MarkerD" type="ColorRect" parent="."]
+offset_left = -40.0
+offset_top = 300.0
+offset_right = 40.0
+offset_bottom = 380.0
+color = Color(0.5, 0.5, 0.1, 1.0)
+
+[node name="Player" parent="." instance=ExtResource("1")]
+position = Vector2(0, 0)
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("4")
+enemy_scene = ExtResource("3")
+target_path = NodePath("../Player")
+spawn_interval_seconds = 1.2
+spawn_radius = 520.0
+max_alive_enemies = 25
+
+[node name="PortalEventManager" type="Node2D" parent="."]
+script = ExtResource("6")
+portal_scene = ExtResource("5")
+elite_enemy_scene = ExtResource("3")
+player_path = NodePath("../Player")
+first_portal_position = Vector2(240, 0)
+elite_spawn_distance = 180.0
+elite_move_speed = 240.0
+elite_max_hp = 80.0
+
+[node name="RewardController" type="Node" parent="."]
+script = ExtResource("7")
+player_path = NodePath("../Player")
+portal_event_manager_path = NodePath("../PortalEventManager")
+
+[node name="WaveIntermission" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="WaveIntermission"]
+offset_left = 356.0
+offset_top = 240.0
+offset_right = 796.0
+offset_bottom = 430.0
+
+[node name="Label" type="Label" parent="WaveIntermission/Panel"]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 416.0
+offset_bottom = 96.0
+autowrap_mode = 2
+text = "Wave complete. Reward/Shop placeholder."
+
+[node name="ContinueButton" type="Button" parent="WaveIntermission/Panel"]
+offset_left = 130.0
+offset_top = 120.0
+offset_right = 310.0
+offset_bottom = 162.0
+text = "Continue"
+
+[node name="ShopUI" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="ShopUI"]
+offset_left = 330.0
+offset_top = 180.0
+offset_right = 820.0
+offset_bottom = 520.0
+
+[node name="Title" type="Label" parent="ShopUI/Panel"]
+offset_left = 30.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 60.0
+text = "Shop Placeholder - Pick one"
+
+[node name="Offer1" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 80.0
+offset_right = 450.0
+offset_bottom = 120.0
+text = "Offer 1"
+
+[node name="Offer2" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 130.0
+offset_right = 450.0
+offset_bottom = 170.0
+text = "Offer 2"
+
+[node name="Offer3" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 180.0
+offset_right = 450.0
+offset_bottom = 220.0
+text = "Offer 3"
+
+[node name="Offer4" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 230.0
+offset_right = 450.0
+offset_bottom = 270.0
+text = "Offer 4"
+
+[node name="RerollButton" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 290.0
+offset_right = 120.0
+offset_bottom = 325.0
+text = "Reroll"
+
+[node name="ContinueButton" type="Button" parent="ShopUI/Panel"]
+offset_left = 160.0
+offset_top = 290.0
+offset_right = 390.0
+offset_bottom = 325.0
+text = "Continue"
+
+[node name="ShopController" type="Node" parent="."]
+script = ExtResource("8")
+enemy_spawner_path = NodePath("../EnemySpawner")
+player_path = NodePath("../Player")
+panel_path = NodePath("../ShopUI/Panel")
+offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
+reroll_button_path = NodePath("../ShopUI/Panel/RerollButton")
+continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
+
+[node name="BossManager" type="Node" parent="."]
+script = ExtResource("9")
+boss_scene = ExtResource("3")
+player_path = NodePath("../Player")
+spawn_after_seconds = 45.0

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "harvester_placeholder"
+display_name = "Harvester Placeholder"
+description = "Data stub weapon for the Harvester family."
+family_id = "harvester"
+cooldown_seconds = 0.5
+damage = 8.0
+projectile_speed = 700.0
+attack_range = 1.0
+projectile_lifetime_seconds = 1.8

@@ -31,6 +31,35 @@ func _grant_random_item(source: String) -> void:
 		return
 	if not player.has_method("grant_item"):
 		return
-	var item: ItemData = ItemDatabase.get_random_item(rng)
-	print("Reward granted [%s]: %s" % [source, item.name])
+	var reward_tier := _roll_reward_tier(source)
+	var item: ItemData = ItemDatabase.get_random_item_for_tier(reward_tier, rng)
+	print("Reward granted [%s] tier %d: %s" % [source, reward_tier, item.name])
 	player.call("grant_item", item)
+
+func _roll_reward_tier(source: String) -> int:
+	if source != "portal_event":
+		return 1
+
+	var portal_luck := _player_portal_stat("portal_luck", 0.0)
+	var portal_risk := _player_portal_stat("portal_instability", 0.0)
+	var tier2_chance := clampf(0.35 + (portal_luck * 0.08) + (portal_risk * 0.03), 0.2, 0.85)
+	var tier3_chance := clampf(0.08 + (portal_luck * 0.05) + (portal_risk * 0.1), 0.02, 0.6)
+	var roll := rng.randf()
+	var tier := 1
+	if roll <= tier3_chance:
+		tier = 3
+	elif roll <= tier2_chance:
+		tier = 2
+	print(
+		"Portal reward roll | luck=%.2f risk=%.2f tier2=%.2f tier3=%.2f roll=%.2f -> tier=%d"
+		% [portal_luck, portal_risk, tier2_chance, tier3_chance, roll, tier]
+	)
+	return tier
+
+func _player_portal_stat(stat_name: String, fallback: float) -> float:
+	if player == null or not is_instance_valid(player):
+		return fallback
+	var stats_variant := player.get("stats")
+	if stats_variant == null or not (stats_variant is Object):
+		return fallback
+	return float(stats_variant.get(stat_name))

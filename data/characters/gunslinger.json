@@ -1,0 +1,7 @@
+{
+  "id": "gunslinger",
+  "display_name": "The Gunslinger",
+  "description": "Elite-hunter marksman with weaker status power.",
+  "starting_weapon_ids": ["heavy_pistol"],
+  "passive_tags": ["bonus_vs_elite", "bonus_vs_boss", "status_weakened"]
+}

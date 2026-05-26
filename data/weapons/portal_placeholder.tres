@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "portal_placeholder"
+display_name = "Portal Placeholder"
+description = "Data stub weapon for the Portal family."
+family_id = "portal"
+cooldown_seconds = 0.6
+damage = 8.0
+projectile_speed = 720.0
+attack_range = 1.1
+projectile_lifetime_seconds = 2.0

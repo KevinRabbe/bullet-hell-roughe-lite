@@ -1,0 +1,7 @@
+{
+  "id": "harvester",
+  "display_name": "The Harvester",
+  "description": "Placeholder: sustain and drain-focused archetype.",
+  "starting_weapon_ids": ["scythe_alpha"],
+  "passive_tags": ["placeholder_passive"]
+}

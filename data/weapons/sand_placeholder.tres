@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "sand_placeholder"
+display_name = "Sand Placeholder"
+description = "Data stub weapon for the Sand family."
+family_id = "sand"
+cooldown_seconds = 0.58
+damage = 8.0
+projectile_speed = 680.0
+attack_range = 1.05
+projectile_lifetime_seconds = 2.1

@@ -39,3 +39,21 @@ static func get_random_item(rng: RandomNumberGenerator) -> ItemData:
 	if items.is_empty():
 		return ItemData.new()
 	return items[rng.randi_range(0, items.size() - 1)]
+
+static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> ItemData:
+	var tier_ids: Array[String]
+	match tier:
+		3:
+			tier_ids = ["steel_heart", "trigger_core"]
+		2:
+			tier_ids = ["glass_scope", "lucky_charm"]
+		_:
+			tier_ids = ["swift_boots", "lucky_charm"]
+
+	var pool: Array[ItemData] = []
+	for item in get_prototype_items():
+		if tier_ids.has(item.id):
+			pool.append(item)
+	if pool.is_empty():
+		return get_random_item(rng)
+	return pool[rng.randi_range(0, pool.size() - 1)]
