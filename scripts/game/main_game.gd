@@ -2,6 +2,8 @@ extends Node2D
 
 @onready var player: CharacterBody2D = $Player
 var waiting_for_restart: bool = false
+var selectable_characters: Array[String] = ["gunslinger", "riftwalker"]
+var selected_character_index: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -11,6 +13,8 @@ func _ready() -> void:
 
 	if player.has_signal("player_died"):
 		player.player_died.connect(_on_player_died)
+	if player.has_method("apply_character_by_id"):
+		player.call("apply_character_by_id", selectable_characters[selected_character_index])
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -30,6 +34,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if key_event.keycode == KEY_Q:
 		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
+		return
+	if key_event.keycode == KEY_C:
+		_cycle_character()
 
 func _on_player_died() -> void:
 	waiting_for_restart = true
@@ -41,3 +48,10 @@ func _toggle_pause() -> void:
 		print("GAME PAUSED")
 	else:
 		print("GAME RESUMED")
+
+func _cycle_character() -> void:
+	if selectable_characters.is_empty():
+		return
+	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
+	if player != null and player.has_method("apply_character_by_id"):
+		player.call("apply_character_by_id", selectable_characters[selected_character_index])

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "rift_pistol"
+display_name = "Rift Pistol"
+description = "Portal-infused sidearm for Riftwalker."
+family_id = "portal"
+cooldown_seconds = 0.4
+damage = 9.0
+projectile_speed = 760.0
+attack_range = 1.1
+projectile_lifetime_seconds = 2.0

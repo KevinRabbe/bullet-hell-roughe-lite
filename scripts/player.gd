@@ -9,6 +9,9 @@ var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
+var active_character_id: String = "gunslinger"
+@onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
+@onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 
 func _ready() -> void:
@@ -16,6 +19,7 @@ func _ready() -> void:
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
+	apply_character_by_id("gunslinger")
 	_update_hp_label()
 
 func _physics_process(_delta: float) -> void:
@@ -100,3 +104,33 @@ func _update_hp_label() -> void:
 	if hp_label == null:
 		return
 	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+
+func apply_character_by_id(character_id: String) -> void:
+	if character_id == "":
+		return
+	active_character_id = character_id
+	stats.max_hp = debug_starting_hp
+	stats.movement_speed = debug_move_speed
+	stats.damage = 1.0
+	stats.attack_speed = 1.0
+	stats.portal_frequency = 1.0
+	stats.portal_luck = 0.0
+	stats.portal_instability = 0.0
+
+	var weapon_path := "res://data/weapons/heavy_pistol.tres"
+	if active_character_id == "riftwalker":
+		stats.portal_frequency = 1.5
+		stats.portal_luck = 0.8
+		stats.portal_instability = 0.4
+		weapon_path = "res://data/weapons/rift_pistol.tres"
+	current_hp = minf(current_hp, stats.max_hp)
+	_update_hp_label()
+
+	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
+		auto_weapon.call("set_weapon_data", load(weapon_path))
+	if player_build != null:
+		player_build.set("active_character_id", active_character_id)
+		player_build.set("equipped_weapon_ids", [weapon_path.get_file().get_basename()])
+	print("Character selected: %s | portal_frequency=%.2f portal_luck=%.2f portal_instability=%.2f" % [
+		active_character_id, stats.portal_frequency, stats.portal_luck, stats.portal_instability
+	])
