@@ -82,6 +82,8 @@ func _fire_at(target: Node2D, execution_shot: bool) -> void:
 			projectile.set("damage_multiplier", total_damage_multiplier)
 			var can_pierce := set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and bool(set_bonus_manager.call("can_pierce_shot"))
 			projectile.set("pierce_count", 1 if can_pierce else 0)
+			if can_pierce:
+				print("Set Bonus 4-piece: pierce shot proc.")
 		var direction := target.global_position - owner_player.global_position
 		if projectile.has_method("set_direction"):
 			projectile.call("set_direction", direction)
