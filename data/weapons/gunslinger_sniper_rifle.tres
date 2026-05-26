@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gunslinger_sniper_rifle"
+display_name = "Sniper Rifle"
+description = "Slow but high-impact long-range shots."
+family_id = "gunslinger"
+cooldown_seconds = 1.0
+damage = 26.0
+projectile_speed = 950.0
+attack_range = 1.4
+projectile_lifetime_seconds = 2.4

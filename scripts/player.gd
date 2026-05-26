@@ -9,7 +9,27 @@ var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
+@onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
+@onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
+
+const GUNSLINGER_WEAPON_IDS: Array[String] = [
+	"heavy_pistol",
+	"gunslinger_smg",
+	"gunslinger_shotgun",
+	"gunslinger_revolver",
+	"gunslinger_assault_rifle",
+	"gunslinger_sniper_rifle"
+]
+
+const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
+	"heavy_pistol": "res://data/weapons/heavy_pistol.tres",
+	"gunslinger_smg": "res://data/weapons/gunslinger_smg.tres",
+	"gunslinger_shotgun": "res://data/weapons/gunslinger_shotgun.tres",
+	"gunslinger_revolver": "res://data/weapons/gunslinger_revolver.tres",
+	"gunslinger_assault_rifle": "res://data/weapons/gunslinger_assault_rifle.tres",
+	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres"
+}
 
 func _ready() -> void:
 	add_to_group("players")
@@ -26,6 +46,18 @@ func _physics_process(_delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * stats.movement_speed
 	move_and_slide()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+
+	var index := _weapon_slot_index_from_key(key_event.keycode)
+	if index == -1:
+		return
+	_equip_gunslinger_weapon(index)
 
 func take_damage(amount: float) -> void:
 	if is_dead:
@@ -100,3 +132,32 @@ func _update_hp_label() -> void:
 	if hp_label == null:
 		return
 	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+
+func _weapon_slot_index_from_key(keycode: int) -> int:
+	match keycode:
+		KEY_1: return 0
+		KEY_2: return 1
+		KEY_3: return 2
+		KEY_4: return 3
+		KEY_5: return 4
+		KEY_6: return 5
+		_: return -1
+
+func _equip_gunslinger_weapon(index: int) -> void:
+	if index < 0 or index >= GUNSLINGER_WEAPON_IDS.size():
+		return
+	var weapon_id := GUNSLINGER_WEAPON_IDS[index]
+	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
+	if weapon_path == "":
+		return
+
+	if weapon_loadout != null and weapon_loadout.has_method("equip_weapon"):
+		var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
+		if not equipped:
+			print("WeaponLoadout full (6/6).")
+		elif weapon_loadout.has_method("get_family_counts"):
+			print("Weapon family counts: %s" % weapon_loadout.call("get_family_counts"))
+
+	var weapon_resource := load(weapon_path)
+	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
+		auto_weapon.call("set_weapon_data", weapon_resource)

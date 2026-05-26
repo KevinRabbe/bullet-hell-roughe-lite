@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gunslinger_shotgun"
+display_name = "Shotgun"
+description = "Heavy close-range blasts."
+family_id = "gunslinger"
+cooldown_seconds = 0.8
+damage = 18.0
+projectile_speed = 620.0
+attack_range = 0.75
+projectile_lifetime_seconds = 0.9
