@@ -40,7 +40,6 @@ func _ready() -> void:
 	current_hp = stats.max_hp
 	_apply_character_rules()
 	_update_hp_label()
-	apply_character_by_id("gunslinger")
 
 func _physics_process(_delta: float) -> void:
 	if is_dead:
@@ -228,13 +227,12 @@ func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 	if not _has_stat_property(stat_id):
+		print("Unknown stat bonus: %s" % stat_id)
 		return
 	var current_value: Variant = stats.get(stat_id)
 	if current_value is float:
 		stats.set(stat_id, float(current_value) + value)
 	elif current_value is int:
 		stats.set(stat_id, int(current_value) + int(value))
-	if stat_id == "max_hp":
-		current_hp = minf(current_hp + value, stats.max_hp)
 	_update_hp_label()
-	_print_debug_stats()
+	print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
