@@ -5,10 +5,10 @@ extends Node
 var weapon_loadout: Node
 var last_reported_bonuses: Dictionary = {}
 var shots_fired_since_execution: int = 0
-var rng := RandomNumberGenerator.new()
+var rng: RandomNumberGenerator
 
 func _ready() -> void:
-	rng.randomize()
+	rng = RunRng.get_rng("set_bonus")
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
 

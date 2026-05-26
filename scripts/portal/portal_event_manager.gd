@@ -14,13 +14,13 @@ signal portal_event_completed
 var player: Node2D
 var enemy_spawner: Node
 var active_event_elites: Array[Node] = []
-var rng := RandomNumberGenerator.new()
+var rng: RandomNumberGenerator
 var flood_timer: Timer
 var flood_original_spawn_interval: float = 1.2
 var flood_original_max_alive: int = 25
 
 func _ready() -> void:
-	rng.randomize()
+	rng = RunRng.get_rng("portal")
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():

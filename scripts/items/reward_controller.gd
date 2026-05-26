@@ -7,10 +7,10 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 
 var player: Node
 var portal_event_manager: Node
-var rng := RandomNumberGenerator.new()
+var rng: RandomNumberGenerator
 
 func _ready() -> void:
-	rng.randomize()
+	rng = RunRng.get_rng("rewards")
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if portal_event_manager_path != NodePath():
