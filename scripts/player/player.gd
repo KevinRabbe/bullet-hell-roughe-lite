@@ -30,8 +30,7 @@ const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
 	"gunslinger_shotgun": "res://data/weapons/gunslinger_shotgun.tres",
 	"gunslinger_revolver": "res://data/weapons/gunslinger_revolver.tres",
 	"gunslinger_assault_rifle": "res://data/weapons/gunslinger_assault_rifle.tres",
-	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres",
-	"rift_pistol": "res://data/weapons/rift_pistol.tres"
+	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres"
 }
 
 func _ready() -> void:
@@ -159,10 +158,7 @@ func _reset_character_stats() -> void:
 	stats.portal_instability = 0.0
 
 func _apply_character_starting_weapon() -> void:
-	var weapon_id := "heavy_pistol"
-	if active_character_id == "riftwalker":
-		weapon_id = "rift_pistol"
-	_debug_add_gunslinger_weapon_by_id(weapon_id)
+	_debug_add_gunslinger_weapon_by_id("heavy_pistol")
 
 func _apply_character_rules() -> void:
 	if active_character_id == "gunslinger":
@@ -170,18 +166,12 @@ func _apply_character_rules() -> void:
 		stats.poison_damage = 0.8
 		stats.bleed_damage = 0.8
 		stats.frost_power = 0.8
-	elif active_character_id == "riftwalker":
-		stats.portal_frequency = 1.5
-		stats.portal_luck = 0.8
-		stats.portal_instability = 0.4
-	else:
-		return
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
 			var weapons: Array = weapons_variant
 			if weapons.is_empty():
-				weapons.append("rift_pistol" if active_character_id == "riftwalker" else "heavy_pistol")
+				weapons.append("heavy_pistol")
 				player_build.set("equipped_weapon_ids", weapons)
 
 func get_damage_multiplier_for_target(target: Node) -> float:
@@ -192,6 +182,7 @@ func get_damage_multiplier_for_target(target: Node) -> float:
 	var is_elite: bool = bool(target.get("is_elite"))
 	var is_boss: bool = bool(target.get("is_boss"))
 	if is_elite or is_boss:
+		print("GUNSLINGER PASSIVE: +35% damage vs elite/boss")
 		return 1.35
 	return 1.0
 
