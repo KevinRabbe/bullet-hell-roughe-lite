@@ -168,3 +168,32 @@ script = ExtResource("9")
 boss_scene = ExtResource("3")
 player_path = NodePath("../Player")
 spawn_after_seconds = 45.0
+
+[node name="CharacterSelect" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="CharacterSelect"]
+offset_left = 346.0
+offset_top = 210.0
+offset_right = 826.0
+offset_bottom = 420.0
+
+[node name="Title" type="Label" parent="CharacterSelect/Panel"]
+offset_left = 28.0
+offset_top = 24.0
+offset_right = 460.0
+offset_bottom = 62.0
+text = "Character Select (Placeholder)"
+
+[node name="CharacterLabel" type="Label" parent="CharacterSelect/Panel"]
+offset_left = 28.0
+offset_top = 78.0
+offset_right = 452.0
+offset_bottom = 128.0
+text = "Selected: gunslinger"
+
+[node name="StartButton" type="Button" parent="CharacterSelect/Panel"]
+offset_left = 150.0
+offset_top = 146.0
+offset_right = 330.0
+offset_bottom = 190.0
+text = "Start Run"
