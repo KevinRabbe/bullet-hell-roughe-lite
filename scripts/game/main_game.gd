@@ -7,7 +7,7 @@ extends Node2D
 @onready var continue_button: Button = $WaveIntermission/Panel/ContinueButton
 var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
-var selectable_characters: Array[String] = ["gunslinger"]
+var selectable_characters: Array[String] = ["gunslinger", "riftwalker"]
 var selected_character_index: int = 0
 
 func _ready() -> void:
@@ -49,7 +49,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
 		return
 
-	if event.is_action_pressed("cycle_character"):
+	if event.is_action_pressed("cycle_character") or key_event.keycode == KEY_C:
 		_cycle_character()
 
 func _on_player_died() -> void:
