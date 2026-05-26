@@ -15,6 +15,9 @@ var player: Node2D
 var enemy_spawner: Node
 var active_event_elites: Array[Node] = []
 var rng := RandomNumberGenerator.new()
+var flood_timer: Timer
+var flood_original_spawn_interval: float = 1.2
+var flood_original_max_alive: int = 25
 
 func _ready() -> void:
 	rng.randomize()
@@ -24,6 +27,10 @@ func _ready() -> void:
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
+	flood_timer = Timer.new()
+	flood_timer.one_shot = true
+	flood_timer.timeout.connect(_on_flood_event_finished)
+	add_child(flood_timer)
 	_try_spawn_portal_for_wave(1)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -91,13 +98,54 @@ func _try_activate_nearest_portal() -> void:
 		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
-	print("Portal activated: elite event started.")
+	var event_id := _pick_portal_event_id()
+	print("Portal activated. Event: %s" % event_id)
+	match event_id:
+		"double_elite":
+			_start_double_elite_event(portal_position)
+		"power_for_hp_loss":
+			_start_power_for_hp_loss_event()
+		"enemy_flood_20s":
+			_start_enemy_flood_event()
+
+func _start_double_elite_event(portal_position: Vector2) -> void:
+	print("Portal event started: Double Elite")
 	active_event_elites.clear()
 	_track_event_elite(_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance))
 	_track_event_elite(_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance))
 	if active_event_elites.is_empty():
 		print("Portal event completed: no active elites.")
 		portal_event_completed.emit()
+
+func _start_power_for_hp_loss_event() -> void:
+	print("Portal event started: Power for Max HP loss")
+	if player != null and is_instance_valid(player):
+		var stats_variant := player.get("stats")
+		if stats_variant != null and stats_variant is Object:
+			stats_variant.set("damage", float(stats_variant.get("damage")) + 0.35)
+			stats_variant.set("max_hp", maxf(float(stats_variant.get("max_hp")) - 20.0, 20.0))
+			player.set("current_hp", minf(float(player.get("current_hp")), float(stats_variant.get("max_hp"))))
+			if player.has_method("_update_hp_label"):
+				player.call("_update_hp_label")
+			print("Power trade applied: +0.35 damage, -20 max HP")
+	print("Portal event completed: Power for Max HP loss")
+	portal_event_completed.emit()
+
+func _start_enemy_flood_event() -> void:
+	print("Portal event started: 20-second enemy flood")
+	if enemy_spawner != null and is_instance_valid(enemy_spawner):
+		flood_original_spawn_interval = float(enemy_spawner.get("spawn_interval_seconds"))
+		flood_original_max_alive = int(enemy_spawner.get("max_alive_enemies"))
+		enemy_spawner.set("spawn_interval_seconds", maxf(flood_original_spawn_interval * 0.45, 0.25))
+		enemy_spawner.set("max_alive_enemies", flood_original_max_alive + 20)
+	flood_timer.start(20.0)
+
+func _on_flood_event_finished() -> void:
+	if enemy_spawner != null and is_instance_valid(enemy_spawner):
+		enemy_spawner.set("spawn_interval_seconds", flood_original_spawn_interval)
+		enemy_spawner.set("max_alive_enemies", flood_original_max_alive)
+	print("Portal event completed: enemy flood survived.")
+	portal_event_completed.emit()
 
 func _spawn_elite(spawn_position: Vector2) -> Node:
 	if elite_enemy_scene == null:
@@ -130,3 +178,7 @@ func _on_event_elite_exited(enemy: Node) -> void:
 	if active_event_elites.is_empty():
 		print("Portal event completed: all elites defeated.")
 		portal_event_completed.emit()
+
+func _pick_portal_event_id() -> String:
+	var events := ["double_elite", "power_for_hp_loss", "enemy_flood_20s"]
+	return events[rng.randi_range(0, events.size() - 1)]
