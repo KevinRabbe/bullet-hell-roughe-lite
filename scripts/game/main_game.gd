@@ -1,7 +1,12 @@
 extends Node2D
 
 @onready var player: CharacterBody2D = $Player
+@onready var enemy_spawner: Node = $EnemySpawner
+@onready var wave_overlay: CanvasLayer = $WaveIntermission
+@onready var wave_label: Label = $WaveIntermission/Panel/Label
+@onready var continue_button: Button = $WaveIntermission/Panel/ContinueButton
 var waiting_for_restart: bool = false
+var waiting_for_wave_continue: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -11,6 +16,12 @@ func _ready() -> void:
 
 	if player.has_signal("player_died"):
 		player.player_died.connect(_on_player_died)
+	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
+		enemy_spawner.connect("wave_completed", _on_wave_completed)
+	if continue_button != null:
+		continue_button.pressed.connect(_on_continue_pressed)
+	if wave_overlay != null:
+		wave_overlay.visible = false
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -22,6 +33,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if waiting_for_restart and key_event.keycode == KEY_R:
 		print("Restarting current scene...")
 		get_tree().reload_current_scene()
+		return
+	if waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
+		_on_continue_pressed()
 		return
 
 	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
@@ -41,3 +55,20 @@ func _toggle_pause() -> void:
 		print("GAME PAUSED")
 	else:
 		print("GAME RESUMED")
+
+func _on_wave_completed(wave_index: int) -> void:
+	waiting_for_wave_continue = true
+	if wave_overlay != null:
+		wave_overlay.visible = true
+	if wave_label != null:
+		wave_label.text = "Wave %d complete. Reward/Shop placeholder.\nPress Continue to start next wave." % wave_index
+	print("Entered end-of-wave state for wave %d." % wave_index)
+
+func _on_continue_pressed() -> void:
+	if not waiting_for_wave_continue:
+		return
+	waiting_for_wave_continue = false
+	if wave_overlay != null:
+		wave_overlay.visible = false
+	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
+		enemy_spawner.call("start_next_wave")
