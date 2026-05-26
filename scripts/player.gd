@@ -10,6 +10,7 @@ var current_hp: float
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
+@onready var player_build: Node = get_node_or_null("PlayerBuild")
 
 func _ready() -> void:
 	add_to_group("players")
@@ -17,6 +18,7 @@ func _ready() -> void:
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
 	_update_hp_label()
+	apply_character_by_id("gunslinger")
 
 func _physics_process(_delta: float) -> void:
 	if is_dead:
@@ -100,3 +102,10 @@ func _update_hp_label() -> void:
 	if hp_label == null:
 		return
 	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+
+func apply_character_by_id(character_id: String) -> void:
+	if character_id == "":
+		return
+	if player_build != null and player_build.has_method("set_active_character"):
+		player_build.call("set_active_character", character_id)
+	print("Selected character: %s" % character_id)
