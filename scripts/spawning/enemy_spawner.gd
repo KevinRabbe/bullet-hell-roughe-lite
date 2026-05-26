@@ -60,12 +60,23 @@ func _on_spawn_timer_timeout() -> void:
 		return
 
 	var enemy_node := enemy_instance as Node2D
+	var variant := _pick_enemy_variant()
+	if enemy_node.has_method("set"):
+		enemy_node.set("enemy_variant", variant)
 	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
 	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
 	add_child(enemy_node)
 
 	if enemy_node.has_method("set_target"):
 		enemy_node.call("set_target", target)
+
+func _pick_enemy_variant() -> String:
+	var roll := rng.randf()
+	if roll < 0.45:
+		return "imp_runner"
+	if roll < 0.8:
+		return "husk_brute"
+	return "spit_fiend"
 
 func _count_alive_enemies() -> int:
 	var alive_count := 0
