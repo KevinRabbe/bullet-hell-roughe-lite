@@ -1,5 +1,7 @@
 extends Node2D
 
+signal wave_completed(wave_index: int)
+
 @export var enemy_scene: PackedScene
 @export var target_path: NodePath
 @export var spawn_interval_seconds: float = 1.5
@@ -13,6 +15,8 @@ var rng := RandomNumberGenerator.new()
 var spawn_timer: Timer
 var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
+var current_wave_index: int = 1
+var completion_emitted: bool = false
 
 func _ready() -> void:
 	if target_path != NodePath():
@@ -44,6 +48,9 @@ func _process(delta: float) -> void:
 	if wave_elapsed_seconds >= wave_duration_seconds:
 		spawn_timer.stop()
 		print("Wave complete.")
+		if not completion_emitted:
+			completion_emitted = true
+			wave_completed.emit(current_wave_index)
 
 func _on_spawn_timer_timeout() -> void:
 	if enemy_scene == null:
@@ -73,3 +80,12 @@ func _count_alive_enemies() -> int:
 		if child is CharacterBody2D:
 			alive_count += 1
 	return alive_count
+
+func start_next_wave() -> void:
+	current_wave_index += 1
+	wave_elapsed_seconds = 0.0
+	countdown_print_accumulator = 0.0
+	completion_emitted = false
+	spawn_timer.wait_time = spawn_interval_seconds
+	spawn_timer.start()
+	print("Wave %d started." % current_wave_index)

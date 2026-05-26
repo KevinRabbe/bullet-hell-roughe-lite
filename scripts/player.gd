@@ -100,3 +100,23 @@ func _update_hp_label() -> void:
 	if hp_label == null:
 		return
 	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+
+func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
+	if weapon_id == "":
+		return
+	if not has_node("WeaponLoadout"):
+		return
+	var loadout := get_node("WeaponLoadout")
+	if loadout.has_method("equip_weapon"):
+		var equipped := bool(loadout.call("equip_weapon", weapon_id))
+		print("Debug equip from shop: %s (%s)" % [weapon_id, equipped])
+
+func _debug_add_stat_bonus(stat_name: String, value: float) -> void:
+	if stat_name == "":
+		return
+	if _has_stat_property(stat_name):
+		stats.set(stat_name, float(stats.get(stat_name)) + value)
+		if stat_name == "max_hp":
+			current_hp = minf(current_hp + value, stats.max_hp)
+		_update_hp_label()
+		print("Debug stat bonus from shop: %s %+0.2f" % [stat_name, value])
