@@ -4,13 +4,17 @@ extends Node
 @export var player_path: NodePath
 @export var panel_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
+@export var reroll_button_path: NodePath
 @export var continue_button_path: NodePath
+@export var reroll_cost: int = 1
 
 var enemy_spawner: Node
 var player: Node
 var panel: Control
 var offer_buttons: Array[Button] = []
+var reroll_button: Button
 var continue_button: Button
+var reroll_count: int = 0
 var offer_pool := [
 	{"type": "weapon", "id": "heavy_pistol", "label": "Heavy Pistol (Weapon)"},
 	{"type": "weapon", "id": "gunslinger_smg", "label": "SMG (Weapon)"},
@@ -28,6 +32,8 @@ func _ready() -> void:
 		player = get_node_or_null(player_path)
 	if panel_path != NodePath():
 		panel = get_node_or_null(panel_path)
+	if reroll_button_path != NodePath():
+		reroll_button = get_node_or_null(reroll_button_path)
 	if continue_button_path != NodePath():
 		continue_button = get_node_or_null(continue_button_path)
 
@@ -38,6 +44,8 @@ func _ready() -> void:
 
 	for index in offer_buttons.size():
 		offer_buttons[index].pressed.connect(_on_offer_pressed.bind(index))
+	if reroll_button != null:
+		reroll_button.pressed.connect(_on_reroll_pressed)
 	if continue_button != null:
 		continue_button.pressed.connect(_on_continue_pressed)
 
@@ -47,8 +55,10 @@ func _ready() -> void:
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
 
 func _on_wave_completed(_wave_index: int) -> void:
+	reroll_count = 0
 	_roll_offers()
 	_refresh_offer_buttons()
+	_update_reroll_button_text()
 	if panel != null:
 		panel.visible = true
 	print("Shop opened with %d offers." % active_offers.size())
@@ -90,6 +100,20 @@ func _on_offer_pressed(index: int) -> void:
 	print("Bought offer: %s" % str(offer.get("label", "Offer")))
 	for button in offer_buttons:
 		button.disabled = true
+
+func _on_reroll_pressed() -> void:
+	reroll_count += 1
+	var total_cost := reroll_cost * reroll_count
+	print("Reroll shop offers. Cost (debug): %d" % total_cost)
+	_roll_offers()
+	_refresh_offer_buttons()
+	_update_reroll_button_text()
+
+func _update_reroll_button_text() -> void:
+	if reroll_button == null:
+		return
+	var next_cost := reroll_cost * (reroll_count + 1)
+	reroll_button.text = "Reroll (Cost: %d)" % next_cost
 
 func _on_continue_pressed() -> void:
 	if panel != null:

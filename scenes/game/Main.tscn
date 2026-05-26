@@ -139,10 +139,17 @@ offset_right = 450.0
 offset_bottom = 270.0
 text = "Offer 4"
 
-[node name="ContinueButton" type="Button" parent="ShopUI/Panel"]
-offset_left = 140.0
+[node name="RerollButton" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
 offset_top = 290.0
-offset_right = 350.0
+offset_right = 120.0
+offset_bottom = 325.0
+text = "Reroll"
+
+[node name="ContinueButton" type="Button" parent="ShopUI/Panel"]
+offset_left = 160.0
+offset_top = 290.0
+offset_right = 390.0
 offset_bottom = 325.0
 text = "Continue"
 
@@ -152,4 +159,5 @@ enemy_spawner_path = NodePath("../EnemySpawner")
 player_path = NodePath("../Player")
 panel_path = NodePath("../ShopUI/Panel")
 offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
+reroll_button_path = NodePath("../ShopUI/Panel/RerollButton")
 continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
