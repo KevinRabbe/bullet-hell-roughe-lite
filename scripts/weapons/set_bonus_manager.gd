@@ -4,8 +4,11 @@ extends Node
 
 var weapon_loadout: Node
 var last_reported_bonuses: Dictionary = {}
+var shots_fired_since_execution: int = 0
+var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
+	rng.randomize()
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
 
@@ -16,6 +19,31 @@ func evaluate_and_debug_print() -> Dictionary:
 		last_reported_bonuses = active_bonuses
 		print("Set bonuses active: %s" % active_bonuses)
 	return active_bonuses
+
+func get_damage_multiplier_bonus() -> float:
+	var gunslinger_count := _get_family_count("gunslinger")
+	if gunslinger_count >= 2:
+		return 0.15
+	return 0.0
+
+func can_pierce_shot() -> bool:
+	var gunslinger_count := _get_family_count("gunslinger")
+	if gunslinger_count < 4:
+		return false
+	return rng.randf() <= 0.3
+
+func should_fire_execution_shot() -> bool:
+	var gunslinger_count := _get_family_count("gunslinger")
+	if gunslinger_count < 6:
+		return false
+	shots_fired_since_execution += 1
+	if shots_fired_since_execution >= 5:
+		shots_fired_since_execution = 0
+		return true
+	return false
+
+func get_execution_damage_multiplier() -> float:
+	return 2.5
 
 func debug_evaluate_from_weapon_ids(weapon_ids: Array[String]) -> Dictionary:
 	var family_counts: Dictionary = {}
@@ -32,6 +60,10 @@ func _read_family_counts() -> Dictionary:
 	if weapon_loadout.has_method("get_family_counts"):
 		return weapon_loadout.call("get_family_counts")
 	return {}
+
+func _get_family_count(family_id: String) -> int:
+	var counts := _read_family_counts()
+	return int(counts.get(family_id, 0))
 
 func _build_active_bonus_state(family_counts: Dictionary) -> Dictionary:
 	var active_bonuses: Dictionary = {}

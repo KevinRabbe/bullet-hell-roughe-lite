@@ -51,3 +51,4 @@ script = ExtResource("5")
 
 [node name="SetBonusManager" type="Node" parent="."]
 script = ExtResource("6")
+weapon_loadout_path = NodePath("../WeaponLoadout")
