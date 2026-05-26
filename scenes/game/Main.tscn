@@ -1,10 +1,10 @@
 [gd_scene load_steps=8 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
-[ext_resource type="PackedScene" path="res://scenes/Enemy.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/Enemy.tscn" id="3"]
 [ext_resource type="Script" path="res://scripts/spawning/enemy_spawner.gd" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/Portal.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/portals/Portal.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/portal/portal_event_manager.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/items/reward_controller.gd" id="7"]
 
