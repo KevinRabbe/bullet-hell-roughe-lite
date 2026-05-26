@@ -1,0 +1,16 @@
+{
+  "id": "imp_runner",
+  "display_name": "Imp Runner",
+  "description": "Fast melee pressure unit for early-wave threat.",
+  "stats": {
+    "max_hp": 20,
+    "move_speed": 160,
+    "contact_damage": 6,
+    "contact_range": 28,
+    "damage_interval_seconds": 0.75
+  },
+  "tags": [
+    "normal_enemy",
+    "melee"
+  ]
+}

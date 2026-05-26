@@ -1,0 +1,14 @@
+{
+  "id": "double_elite_portal",
+  "display_name": "Double Elite Portal",
+  "description": "Spawns two elite enemies when activated.",
+  "event_type": "combat",
+  "danger_tier": 2,
+  "reward_tier": 2,
+  "elite": {
+    "enemy_id": "imp_runner",
+    "count": 2,
+    "hp_multiplier": 4.0,
+    "speed_multiplier": 1.7
+  }
+}

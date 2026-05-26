@@ -1,0 +1,13 @@
+{
+  "id": "heavy_pistol",
+  "display_name": "Heavy Pistol",
+  "family_id": "gunslinger",
+  "description": "Reliable sidearm with high single-shot impact.",
+  "stats": {
+    "cooldown_seconds": 0.45,
+    "damage": 10,
+    "projectile_speed": 700,
+    "attack_range": 1.0,
+    "projectile_lifetime_seconds": 2.0
+  }
+}
