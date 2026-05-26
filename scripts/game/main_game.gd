@@ -23,6 +23,7 @@ func _ready() -> void:
 		start_button.pressed.connect(_on_start_pressed)
 	_load_selectable_characters()
 	_update_character_debug_label()
+	_hide_run_overlays()
 	_set_gameplay_active(false)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -86,6 +87,7 @@ func _on_start_pressed() -> void:
 		return
 	run_started = true
 	_apply_selected_character()
+	_hide_run_overlays()
 	_set_gameplay_active(true)
 	if character_select_layer != null:
 		character_select_layer.visible = false
@@ -96,8 +98,19 @@ func _set_gameplay_active(active: bool) -> void:
 		var node := get_node_or_null(path)
 		if node != null:
 			node.process_mode = mode
+	if not active:
+		_hide_run_overlays()
 	if character_select_layer != null:
 		character_select_layer.visible = not active
+
+func _hide_run_overlays() -> void:
+	_hide_control_if_present("WaveIntermission/Panel")
+	_hide_control_if_present("ShopUI/Panel")
+
+func _hide_control_if_present(path: NodePath) -> void:
+	var node := get_node_or_null(path)
+	if node is Control:
+		(node as Control).visible = false
 
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
