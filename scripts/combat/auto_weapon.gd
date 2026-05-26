@@ -6,9 +6,11 @@ extends Node2D
 
 var owner_player: Node2D
 var cooldown_left: float = 0.0
+var set_bonus_manager: Node
 
 func _ready() -> void:
 	owner_player = get_parent() as Node2D
+	set_bonus_manager = owner_player.get_node_or_null("SetBonusManager")
 
 func _physics_process(delta: float) -> void:
 	cooldown_left -= delta
@@ -18,12 +20,19 @@ func _physics_process(delta: float) -> void:
 		return
 	if owner_player == null or not is_instance_valid(owner_player):
 		return
+	if set_bonus_manager != null and set_bonus_manager.has_method("evaluate_and_debug_print"):
+		set_bonus_manager.call("evaluate_and_debug_print")
 
 	var target := _find_nearest_enemy()
 	if target == null:
 		return
+	var execution_shot := _should_use_execution_shot()
+	if execution_shot:
+		var strongest_target := _find_strongest_enemy()
+		if strongest_target != null:
+			target = strongest_target
 
-	_fire_at(target)
+	_fire_at(target, execution_shot)
 	cooldown_left = fire_interval_seconds
 
 func _find_nearest_enemy() -> Node2D:
@@ -38,12 +47,40 @@ func _find_nearest_enemy() -> Node2D:
 				nearest_enemy = enemy_node
 	return nearest_enemy
 
-func _fire_at(target: Node2D) -> void:
+func _fire_at(target: Node2D, execution_shot: bool) -> void:
 	var projectile_instance := projectile_scene.instantiate()
 	if projectile_instance is Node2D:
 		var projectile := projectile_instance as Node2D
 		projectile.global_position = owner_player.global_position
+		var total_damage_multiplier := 1.0
+		if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
+			total_damage_multiplier += float(set_bonus_manager.call("get_damage_multiplier_bonus"))
+		if execution_shot and set_bonus_manager != null and set_bonus_manager.has_method("get_execution_damage_multiplier"):
+			total_damage_multiplier *= float(set_bonus_manager.call("get_execution_damage_multiplier"))
+			print("Set Bonus 6-piece: fired execution shot.")
+		if projectile.has_method("set"):
+			projectile.set("damage_multiplier", total_damage_multiplier)
+			var can_pierce := set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and bool(set_bonus_manager.call("can_pierce_shot"))
+			projectile.set("pierce_count", 1 if can_pierce else 0)
 		var direction := target.global_position - owner_player.global_position
 		if projectile.has_method("set_direction"):
 			projectile.call("set_direction", direction)
 		get_tree().current_scene.add_child(projectile)
+
+func _should_use_execution_shot() -> bool:
+	if set_bonus_manager == null:
+		return false
+	if not set_bonus_manager.has_method("should_fire_execution_shot"):
+		return false
+	return bool(set_bonus_manager.call("should_fire_execution_shot"))
+
+func _find_strongest_enemy() -> Node2D:
+	var strongest_enemy: Node2D
+	var strongest_hp := -INF
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy is Node2D and is_instance_valid(enemy):
+			var enemy_hp := float(enemy.get("current_hp"))
+			if enemy_hp > strongest_hp:
+				strongest_hp = enemy_hp
+				strongest_enemy = enemy
+	return strongest_enemy

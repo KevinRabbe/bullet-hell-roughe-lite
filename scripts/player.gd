@@ -9,6 +9,7 @@ var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
+@onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 
 func _ready() -> void:
@@ -26,6 +27,15 @@ func _physics_process(_delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * stats.movement_speed
 	move_and_slide()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey):
+		return
+	var key_event := event as InputEventKey
+	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode == KEY_H:
+		_debug_add_gunslinger_weapon()
 
 func take_damage(amount: float) -> void:
 	if is_dead:
@@ -100,3 +110,13 @@ func _update_hp_label() -> void:
 	if hp_label == null:
 		return
 	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+
+func _debug_add_gunslinger_weapon() -> void:
+	if weapon_loadout == null or not weapon_loadout.has_method("equip_weapon"):
+		return
+	var equipped: bool = bool(weapon_loadout.call("equip_weapon", "heavy_pistol"))
+	if not equipped:
+		print("DEBUG set bonus stack: loadout full.")
+		return
+	if weapon_loadout.has_method("get_family_counts"):
+		print("DEBUG set bonus stack counts: %s" % weapon_loadout.call("get_family_counts"))
