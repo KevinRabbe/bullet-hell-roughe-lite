@@ -8,7 +8,7 @@ var selected_character_index: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	RunRng.new_run()
+	_new_run_seed()
 	if player == null:
 		push_error("Main scene is missing a Player node.")
 		return
@@ -26,7 +26,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 	if waiting_for_restart and key_event.keycode == KEY_R:
 		print("Restarting current scene...")
-		RunRng.new_run()
+		_new_run_seed()
 		get_tree().reload_current_scene()
 		return
 	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
@@ -62,3 +62,8 @@ func _apply_selected_character() -> void:
 		return
 	if player != null and player.has_method("apply_character_by_id"):
 		player.call("apply_character_by_id", selectable_characters[selected_character_index])
+
+func _new_run_seed() -> void:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("new_run"):
+		run_rng.call("new_run")

@@ -22,7 +22,7 @@ func _ready() -> void:
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
 
-	rng = RunRng.get_rng("spawner")
+	rng = _resolve_rng("spawner")
 	spawn_timer = Timer.new()
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.one_shot = false
@@ -100,3 +100,13 @@ func start_next_wave() -> void:
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.start()
 	print("Wave %d started." % current_wave_index)
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

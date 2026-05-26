@@ -27,7 +27,7 @@ var offer_pool := [
 var active_offers: Array = []
 
 func _ready() -> void:
-	rng = RunRng.get_rng("shop")
+	rng = _resolve_rng("shop")
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
 	if player_path != NodePath():
@@ -120,3 +120,13 @@ func _on_continue_pressed() -> void:
 		panel.visible = false
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

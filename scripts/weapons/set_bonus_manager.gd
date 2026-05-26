@@ -8,7 +8,7 @@ var shots_fired_since_execution: int = 0
 var rng: RandomNumberGenerator
 
 func _ready() -> void:
-	rng = RunRng.get_rng("set_bonus")
+	rng = _resolve_rng("set_bonus")
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
 
@@ -83,3 +83,13 @@ func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	if "_" in weapon_id:
 		return weapon_id.split("_", false, 1)[0]
 	return weapon_id
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

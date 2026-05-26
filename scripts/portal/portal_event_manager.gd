@@ -20,7 +20,7 @@ var flood_original_spawn_interval: float = 1.2
 var flood_original_max_alive: int = 25
 
 func _ready() -> void:
-	rng = RunRng.get_rng("portal")
+	rng = _resolve_rng("portal")
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():
@@ -190,3 +190,13 @@ func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:
 		return "horned_bruiser"
 	return "rift_caller"
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

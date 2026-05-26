@@ -10,7 +10,7 @@ var portal_event_manager: Node
 var rng: RandomNumberGenerator
 
 func _ready() -> void:
-	rng = RunRng.get_rng("rewards")
+	rng = _resolve_rng("rewards")
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if portal_event_manager_path != NodePath():
@@ -63,3 +63,13 @@ func _player_portal_stat(stat_name: String, fallback: float) -> float:
 	if stats_variant == null or not (stats_variant is Object):
 		return fallback
 	return float(stats_variant.get(stat_name))
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback
