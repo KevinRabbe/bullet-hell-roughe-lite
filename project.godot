@@ -45,3 +45,7 @@ debug_grant_item={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"physical_keycode":71,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null)]
 }
+cycle_character={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":67,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null)]
+}
