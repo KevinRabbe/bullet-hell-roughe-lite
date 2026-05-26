@@ -162,6 +162,10 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			enemy_node.set("max_hp", elite_max_hp)
 			enemy_node.set("current_hp", elite_max_hp)
 			enemy_node.set("is_elite", true)
+			var elite_role := _pick_elite_role()
+			enemy_node.set("elite_role", elite_role)
+			print("Spawned elite variant: %s" % elite_role)
+			enemy_node.set("is_elite", true)
 		add_child(enemy_node)
 		return enemy_node
 	return null
@@ -182,3 +186,8 @@ func _on_event_elite_exited(enemy: Node) -> void:
 func _pick_portal_event_id() -> String:
 	var events := ["double_elite", "power_for_hp_loss", "enemy_flood_20s"]
 	return events[rng.randi_range(0, events.size() - 1)]
+
+func _pick_elite_role() -> String:
+	if rng.randf() < 0.5:
+		return "horned_bruiser"
+	return "rift_caller"
