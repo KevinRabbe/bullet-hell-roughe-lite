@@ -46,6 +46,10 @@ func set_weapon_data(new_weapon_data: WeaponData) -> void:
 func _apply_weapon_data() -> void:
 	if weapon_data == null:
 		return
+	if weapon_data.projectile_scene_path != "":
+		var projectile_resource: Resource = load(weapon_data.projectile_scene_path)
+		if projectile_resource is PackedScene:
+			projectile_scene = projectile_resource as PackedScene
 	fire_interval_seconds = weapon_data.cooldown_seconds
 	target_range = 900.0 * weapon_data.attack_range
 
