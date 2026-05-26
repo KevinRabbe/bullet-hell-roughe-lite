@@ -3,9 +3,12 @@ extends CharacterBody2D
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
 
+signal player_died
+
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var owned_items: Array[ItemData] = []
+var is_dead: bool = false
 @onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 
 func _ready() -> void:
@@ -16,11 +19,17 @@ func _ready() -> void:
 	_update_hp_label()
 
 func _physics_process(_delta: float) -> void:
+	if is_dead:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		return
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * stats.movement_speed
 	move_and_slide()
 
 func take_damage(amount: float) -> void:
+	if is_dead:
+		return
 	current_hp = maxf(current_hp - amount, 0.0)
 	_update_hp_label()
 	print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
@@ -28,7 +37,11 @@ func take_damage(amount: float) -> void:
 		die()
 
 func die() -> void:
-	print("Player died - placeholder")
+	if is_dead:
+		return
+	is_dead = true
+	print("PLAYER DIED. Press R to restart.")
+	player_died.emit()
 
 func grant_item(item: ItemData) -> void:
 	if item == null:
