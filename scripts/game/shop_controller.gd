@@ -7,6 +7,7 @@ extends Node
 @export var reroll_button_path: NodePath
 @export var continue_button_path: NodePath
 @export var reroll_cost: int = 1
+@export var enabled: bool = false
 
 var enemy_spawner: Node
 var player: Node
@@ -57,6 +58,8 @@ func _ready() -> void:
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
 
 func _on_wave_completed(_wave_index: int) -> void:
+	if not enabled:
+		return
 	reroll_count = 0
 	_roll_offers()
 	_refresh_offer_buttons()

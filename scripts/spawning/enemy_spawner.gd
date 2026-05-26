@@ -7,7 +7,7 @@ signal wave_completed(wave_index: int)
 @export var spawn_interval_seconds: float = 1.5
 @export var spawn_radius: float = 420.0
 @export var max_alive_enemies: int = 20
-@export var wave_duration_seconds: float = 60.0
+@export var wave_duration_seconds: float = 90.0
 @export var min_spawn_interval_seconds: float = 0.7
 
 var target: Node2D

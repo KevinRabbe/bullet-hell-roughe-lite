@@ -2,10 +2,13 @@ extends Node2D
 
 @onready var player: CharacterBody2D = $Player
 @onready var enemy_spawner: Node = $EnemySpawner
+@onready var wave_panel: Control = $WaveIntermission/Panel
+@onready var wave_continue_button: Button = $WaveIntermission/Panel/ContinueButton
 @onready var character_select_layer: CanvasLayer = $CharacterSelect
 @onready var character_label: Label = $CharacterSelect/Panel/CharacterLabel
 @onready var start_button: Button = $CharacterSelect/Panel/StartButton
 var waiting_for_restart: bool = false
+var waiting_for_wave_continue: bool = false
 var selectable_characters: Array[String] = ["gunslinger"]
 var character_display_names: Dictionary = {"gunslinger": "The Gunslinger"}
 var selected_character_index: int = 0
@@ -20,8 +23,12 @@ func _ready() -> void:
 
 	if player.has_signal("player_died"):
 		player.player_died.connect(_on_player_died)
+	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
+		enemy_spawner.connect("wave_completed", _on_wave_completed)
 	if start_button != null:
 		start_button.pressed.connect(_on_start_pressed)
+	if wave_continue_button != null:
+		wave_continue_button.pressed.connect(_on_wave_continue_pressed)
 	_load_selectable_characters()
 	_update_character_debug_label()
 	_hide_run_overlays()
@@ -45,6 +52,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		print("Restarting current scene...")
 		_new_run_seed()
 		get_tree().reload_current_scene()
+		return
+	if waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
+		_on_wave_continue_pressed()
 		return
 	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
 		_toggle_pause()
@@ -149,3 +159,27 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 			if character_variant is Dictionary:
 				display_name = str(character_variant.get("display_name", default_name))
 		character_display_names[character_id] = display_name
+
+func _on_wave_completed(wave_index: int) -> void:
+	waiting_for_wave_continue = true
+	if wave_panel != null:
+		wave_panel.visible = true
+	_set_combat_active(false)
+	print("Wave %d complete. Press Continue to start next wave." % wave_index)
+
+func _on_wave_continue_pressed() -> void:
+	if not waiting_for_wave_continue:
+		return
+	waiting_for_wave_continue = false
+	if wave_panel != null:
+		wave_panel.visible = false
+	_set_combat_active(true)
+	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
+		enemy_spawner.call("start_next_wave")
+
+func _set_combat_active(active: bool) -> void:
+	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	for path in ["Player", "PortalEventManager", "RewardController", "BossManager"]:
+		var node := get_node_or_null(path)
+		if node != null:
+			node.process_mode = mode
