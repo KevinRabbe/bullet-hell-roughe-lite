@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/player/player_build.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/player/weapon_loadout.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/weapons/set_bonus_manager.gd" id="6"]
+[ext_resource type="Resource" path="res://data/weapons/heavy_pistol.tres" id="7"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
@@ -30,6 +31,7 @@ zoom = Vector2(0.8, 0.8)
 [node name="AutoWeapon" type="Node2D" parent="."]
 script = ExtResource("2")
 projectile_scene = ExtResource("3")
+weapon_data = ExtResource("7")
 fire_interval_seconds = 0.35
 target_range = 900.0
 

@@ -1,6 +1,7 @@
 extends Node2D
 
 @export var projectile_scene: PackedScene
+@export var weapon_data: WeaponData
 @export var fire_interval_seconds: float = 0.45
 @export var target_range: float = 900.0
 
@@ -9,6 +10,7 @@ var cooldown_left: float = 0.0
 
 func _ready() -> void:
 	owner_player = get_parent() as Node2D
+	_apply_weapon_data()
 
 func _physics_process(delta: float) -> void:
 	cooldown_left -= delta
@@ -25,6 +27,12 @@ func _physics_process(delta: float) -> void:
 
 	_fire_at(target)
 	cooldown_left = fire_interval_seconds
+
+func _apply_weapon_data() -> void:
+	if weapon_data == null:
+		return
+	fire_interval_seconds = weapon_data.cooldown_seconds
+	target_range = 900.0 * weapon_data.attack_range
 
 func _find_nearest_enemy() -> Node2D:
 	var nearest_enemy: Node2D
@@ -45,6 +53,10 @@ func _fire_at(target: Node2D) -> void:
 		projectile.global_position = owner_player.global_position
 		if projectile.has_method("set_shooter"):
 			projectile.call("set_shooter", owner_player)
+		if projectile.has_method("set") and weapon_data != null:
+			projectile.set("damage", weapon_data.damage)
+			projectile.set("speed", weapon_data.projectile_speed)
+			projectile.set("lifetime_seconds", weapon_data.projectile_lifetime_seconds)
 		var direction := target.global_position - owner_player.global_position
 		if projectile.has_method("set_direction"):
 			projectile.call("set_direction", direction)
