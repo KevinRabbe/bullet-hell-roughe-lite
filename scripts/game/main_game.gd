@@ -7,6 +7,7 @@ extends Node2D
 @onready var start_button: Button = $CharacterSelect/Panel/StartButton
 var waiting_for_restart: bool = false
 var selectable_characters: Array[String] = ["gunslinger"]
+var character_display_names: Dictionary = {"gunslinger": "The Gunslinger"}
 var selected_character_index: int = 0
 var run_started: bool = false
 
@@ -68,7 +69,6 @@ func _cycle_character() -> void:
 	if selectable_characters.is_empty():
 		return
 	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
-	_apply_selected_character()
 
 func _apply_selected_character() -> void:
 	if selectable_characters.is_empty():
@@ -129,8 +129,23 @@ func _load_selectable_characters() -> void:
 		if not normalized.is_empty():
 			selectable_characters = normalized
 			selected_character_index = 0
+			_refresh_character_display_names(data_registry)
+			print("Character selection list: " + str(selectable_characters))
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
 		return
-	character_label.text = "Selected: %s (C to cycle, Enter to start)" % selectable_characters[selected_character_index]
+	var selected_id := selectable_characters[selected_character_index]
+	var display_name := str(character_display_names.get(selected_id, selected_id))
+	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
+
+func _refresh_character_display_names(data_registry: Node) -> void:
+	character_display_names.clear()
+	for character_id in selectable_characters:
+		var default_name := str(character_id)
+		var display_name := default_name
+		if data_registry.has_method("get_character"):
+			var character_variant: Variant = data_registry.call("get_character", character_id)
+			if character_variant is Dictionary:
+				display_name = str(character_variant.get("display_name", default_name))
+		character_display_names[character_id] = display_name
