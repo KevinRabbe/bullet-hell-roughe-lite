@@ -1,0 +1,7 @@
+{
+  "id": "demon_lord",
+  "display_name": "The Demon Lord",
+  "description": "Placeholder: high-risk hellfire scaling archetype.",
+  "starting_weapon_ids": ["hellfire_orb"],
+  "passive_tags": ["placeholder_passive"]
+}
