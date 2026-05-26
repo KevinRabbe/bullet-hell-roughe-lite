@@ -165,7 +165,6 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			var elite_role := _pick_elite_role()
 			enemy_node.set("elite_role", elite_role)
 			print("Spawned elite variant: %s" % elite_role)
-			enemy_node.set("is_elite", true)
 		add_child(enemy_node)
 		return enemy_node
 	return null
