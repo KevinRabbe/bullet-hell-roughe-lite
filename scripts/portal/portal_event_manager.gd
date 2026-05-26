@@ -12,8 +12,10 @@ signal portal_event_completed
 
 var player: Node2D
 var active_event_elites: Array[Node] = []
+var rng := RandomNumberGenerator.new()
 
 func _ready() -> void:
+	rng.randomize()
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	_spawn_first_portal()
@@ -73,6 +75,9 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			enemy_node.set("move_speed", elite_move_speed)
 			enemy_node.set("max_hp", elite_max_hp)
 			enemy_node.set("current_hp", elite_max_hp)
+			var elite_role := _pick_elite_role()
+			enemy_node.set("elite_role", elite_role)
+			print("Spawned elite variant: %s" % elite_role)
 		add_child(enemy_node)
 		return enemy_node
 	return null
@@ -89,3 +94,8 @@ func _on_event_elite_exited(enemy: Node) -> void:
 	if active_event_elites.is_empty():
 		print("Portal event completed: all elites defeated.")
 		portal_event_completed.emit()
+
+func _pick_elite_role() -> String:
+	if rng.randf() < 0.5:
+		return "horned_bruiser"
+	return "rift_caller"
