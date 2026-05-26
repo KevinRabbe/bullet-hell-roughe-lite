@@ -73,6 +73,7 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			enemy_node.set("move_speed", elite_move_speed)
 			enemy_node.set("max_hp", elite_max_hp)
 			enemy_node.set("current_hp", elite_max_hp)
+			enemy_node.set("is_elite", true)
 		add_child(enemy_node)
 		return enemy_node
 	return null

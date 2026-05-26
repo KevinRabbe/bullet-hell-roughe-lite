@@ -6,6 +6,7 @@ extends Area2D
 
 var direction: Vector2 = Vector2.RIGHT
 var life_left: float = 0.0
+var shooter: Node
 
 func _ready() -> void:
 	life_left = lifetime_seconds
@@ -22,7 +23,13 @@ func set_direction(new_direction: Vector2) -> void:
 		direction = new_direction.normalized()
 		rotation = direction.angle()
 
+func set_shooter(new_shooter: Node) -> void:
+	shooter = new_shooter
+
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
-		body.call("take_damage", damage)
+		var final_damage := damage
+		if shooter != null and shooter.has_method("get_damage_multiplier_for_target"):
+			final_damage *= float(shooter.call("get_damage_multiplier_for_target", body))
+		body.call("take_damage", final_damage)
 		queue_free()

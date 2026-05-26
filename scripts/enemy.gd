@@ -6,6 +6,8 @@ extends CharacterBody2D
 @export var contact_damage: float = 6.0
 @export var contact_range: float = 55.0
 @export var damage_interval_seconds: float = 0.75
+@export var is_elite: bool = false
+@export var is_boss: bool = false
 
 var target: Node2D
 var current_hp: float
