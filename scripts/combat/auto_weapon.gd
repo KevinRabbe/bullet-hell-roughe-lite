@@ -28,6 +28,12 @@ func _physics_process(delta: float) -> void:
 	_fire_at(target)
 	cooldown_left = fire_interval_seconds
 
+func set_weapon_data(new_weapon_data: WeaponData) -> void:
+	if new_weapon_data == null:
+		return
+	weapon_data = new_weapon_data
+	_apply_weapon_data()
+	print("AutoWeapon switched to: %s" % weapon_data.display_name)
 func _apply_weapon_data() -> void:
 	if weapon_data == null:
 		return
@@ -53,7 +59,7 @@ func _fire_at(target: Node2D) -> void:
 		projectile.global_position = owner_player.global_position
 		if projectile.has_method("set_shooter"):
 			projectile.call("set_shooter", owner_player)
-		if projectile.has_method("set") and weapon_data != null:
+		if weapon_data != null:
 			projectile.set("damage", weapon_data.damage)
 			projectile.set("speed", weapon_data.projectile_speed)
 			projectile.set("lifetime_seconds", weapon_data.projectile_lifetime_seconds)
