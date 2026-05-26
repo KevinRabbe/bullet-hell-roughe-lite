@@ -30,7 +30,8 @@ const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
 	"gunslinger_shotgun": "res://data/weapons/gunslinger_shotgun.tres",
 	"gunslinger_revolver": "res://data/weapons/gunslinger_revolver.tres",
 	"gunslinger_assault_rifle": "res://data/weapons/gunslinger_assault_rifle.tres",
-	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres"
+	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres",
+	"rift_pistol": "res://data/weapons/rift_pistol.tres"
 }
 
 func _ready() -> void:
@@ -147,18 +148,23 @@ func apply_character_by_id(character_id: String) -> void:
 	print("Selected character: %s" % active_character_id)
 
 func _apply_character_rules() -> void:
-	if active_character_id != "gunslinger":
+	if active_character_id == "gunslinger":
+		stats.burn_damage = 0.8
+		stats.poison_damage = 0.8
+		stats.bleed_damage = 0.8
+		stats.frost_power = 0.8
+	elif active_character_id == "riftwalker":
+		stats.portal_frequency = 1.5
+		stats.portal_luck = 0.8
+		stats.portal_instability = 0.4
+	else:
 		return
-	stats.burn_damage = 0.8
-	stats.poison_damage = 0.8
-	stats.bleed_damage = 0.8
-	stats.frost_power = 0.8
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
 			var weapons: Array = weapons_variant
 			if weapons.is_empty():
-				weapons.append("heavy_pistol")
+				weapons.append("rift_pistol" if active_character_id == "riftwalker" else "heavy_pistol")
 				player_build.set("equipped_weapon_ids", weapons)
 
 func get_damage_multiplier_for_target(target: Node) -> float:
@@ -200,3 +206,27 @@ func _equip_gunslinger_weapon(index: int) -> void:
 	var weapon_resource := load(weapon_path)
 	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
 		auto_weapon.call("set_weapon_data", weapon_resource)
+
+func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
+	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
+	if weapon_path == "":
+		return
+	if weapon_loadout != null and weapon_loadout.has_method("equip_weapon"):
+		weapon_loadout.call("equip_weapon", weapon_id)
+	var weapon_resource := load(weapon_path)
+	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
+		auto_weapon.call("set_weapon_data", weapon_resource)
+	print("DEBUG weapon granted: %s" % weapon_id)
+
+func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
+	if not _has_stat_property(stat_id):
+		return
+	var current_value: Variant = stats.get(stat_id)
+	if current_value is float:
+		stats.set(stat_id, float(current_value) + value)
+	elif current_value is int:
+		stats.set(stat_id, int(current_value) + int(value))
+	if stat_id == "max_hp":
+		current_hp = minf(current_hp + value, stats.max_hp)
+	_update_hp_label()
+	_print_debug_stats()
