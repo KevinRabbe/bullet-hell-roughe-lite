@@ -6,12 +6,15 @@ extends CharacterBody2D
 @export var contact_damage: float = 6.0
 @export var contact_range: float = 55.0
 @export var damage_interval_seconds: float = 0.75
+@export var enemy_preset: String = "normal"
+@export var is_boss: bool = false
 
 var target: Node2D
 var current_hp: float
 var damage_cooldown_left: float = 0.0
 
 func _ready() -> void:
+	_apply_enemy_preset()
 	current_hp = max_hp
 	add_to_group("enemies")
 	if target_path != NodePath():
@@ -64,3 +67,16 @@ func _try_damage_player() -> void:
 	print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
 	target.call("take_damage", contact_damage)
 	damage_cooldown_left = damage_interval_seconds
+
+func _apply_enemy_preset() -> void:
+	match enemy_preset:
+		"gate_beast":
+			is_boss = true
+			move_speed = 150.0
+			max_hp = 320.0
+			contact_damage = 22.0
+			contact_range = 70.0
+			damage_interval_seconds = 0.7
+			var visual := get_node_or_null("Visual")
+			if visual != null and visual is ColorRect:
+				visual.color = Color(0.65, 0.08, 0.08, 1.0)
