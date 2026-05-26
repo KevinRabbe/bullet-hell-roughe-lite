@@ -13,3 +13,4 @@ damage = 4.0
 projectile_speed = 720.0
 attack_range = 0.9
 projectile_lifetime_seconds = 1.4
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
