@@ -1,10 +1,10 @@
 class_name ItemData
-extends RefCounted
+extends Resource
 
-var id: String
-var name: String
-var description: String
-var stat_modifiers: Dictionary
+@export var id: String = ""
+@export var name: String = ""
+@export_multiline var description: String = ""
+@export var stat_modifiers: Dictionary = {}
 
 func _init(
 	new_id: String = "",
