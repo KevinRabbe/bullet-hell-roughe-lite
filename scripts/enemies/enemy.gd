@@ -8,6 +8,7 @@ extends CharacterBody2D
 @export var damage_interval_seconds: float = 0.75
 @export var is_elite: bool = false
 @export var is_boss: bool = false
+@export var elite_role: String = ""
 @export_enum("imp_runner", "husk_brute", "spit_fiend") var enemy_variant: String = "imp_runner"
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2

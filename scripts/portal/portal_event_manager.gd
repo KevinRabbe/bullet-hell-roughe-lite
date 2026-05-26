@@ -14,13 +14,13 @@ signal portal_event_completed
 var player: Node2D
 var enemy_spawner: Node
 var active_event_elites: Array[Node] = []
-var rng := RandomNumberGenerator.new()
+var rng: RandomNumberGenerator
 var flood_timer: Timer
 var flood_original_spawn_interval: float = 1.2
 var flood_original_max_alive: int = 25
 
 func _ready() -> void:
-	rng.randomize()
+	rng = _resolve_rng("portal")
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():
@@ -67,7 +67,7 @@ func _compute_portal_spawn_chance() -> float:
 	var base_chance := 0.30
 	var portal_frequency := 1.0
 	if player != null and is_instance_valid(player):
-		var stats_variant := player.get("stats")
+		var stats_variant: Variant = player.get("stats")
 		if stats_variant != null and stats_variant is Object:
 			portal_frequency = float(stats_variant.get("portal_frequency"))
 	var frequency_bonus := (portal_frequency - 1.0) * 0.15
@@ -120,7 +120,7 @@ func _start_double_elite_event(portal_position: Vector2) -> void:
 func _start_power_for_hp_loss_event() -> void:
 	print("Portal event started: Power for Max HP loss")
 	if player != null and is_instance_valid(player):
-		var stats_variant := player.get("stats")
+		var stats_variant: Variant = player.get("stats")
 		if stats_variant != null and stats_variant is Object:
 			stats_variant.set("damage", float(stats_variant.get("damage")) + 0.35)
 			stats_variant.set("max_hp", maxf(float(stats_variant.get("max_hp")) - 20.0, 20.0))
@@ -165,7 +165,6 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			var elite_role := _pick_elite_role()
 			enemy_node.set("elite_role", elite_role)
 			print("Spawned elite variant: %s" % elite_role)
-			enemy_node.set("is_elite", true)
 		add_child(enemy_node)
 		return enemy_node
 	return null
@@ -191,3 +190,13 @@ func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:
 		return "horned_bruiser"
 	return "rift_caller"
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

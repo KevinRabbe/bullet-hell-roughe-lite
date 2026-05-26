@@ -15,6 +15,7 @@ var offer_buttons: Array[Button] = []
 var reroll_button: Button
 var continue_button: Button
 var reroll_count: int = 0
+var rng: RandomNumberGenerator
 var offer_pool := [
 	{"type": "weapon", "id": "heavy_pistol", "label": "Heavy Pistol (Weapon)"},
 	{"type": "weapon", "id": "gunslinger_smg", "label": "SMG (Weapon)"},
@@ -26,6 +27,7 @@ var offer_pool := [
 var active_offers: Array = []
 
 func _ready() -> void:
+	rng = _resolve_rng("shop")
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
 	if player_path != NodePath():
@@ -66,8 +68,6 @@ func _on_wave_completed(_wave_index: int) -> void:
 func _roll_offers() -> void:
 	active_offers.clear()
 	var pool_copy: Array = offer_pool.duplicate(true)
-	var rng := RandomNumberGenerator.new()
-	rng.randomize()
 	for _idx in 4:
 		if pool_copy.is_empty():
 			break
@@ -120,3 +120,13 @@ func _on_continue_pressed() -> void:
 		panel.visible = false
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback

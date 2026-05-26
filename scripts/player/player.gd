@@ -142,10 +142,27 @@ func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":
 		return
 	active_character_id = character_id
+	_reset_character_stats()
 	_apply_character_rules()
+	_apply_character_starting_weapon()
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
 	print("Selected character: %s" % active_character_id)
+
+func _reset_character_stats() -> void:
+	stats.burn_damage = 1.0
+	stats.poison_damage = 1.0
+	stats.bleed_damage = 1.0
+	stats.frost_power = 1.0
+	stats.portal_frequency = 1.0
+	stats.portal_luck = 0.0
+	stats.portal_instability = 0.0
+
+func _apply_character_starting_weapon() -> void:
+	var weapon_id := "heavy_pistol"
+	if active_character_id == "riftwalker":
+		weapon_id = "rift_pistol"
+	_debug_add_gunslinger_weapon_by_id(weapon_id)
 
 func _apply_character_rules() -> void:
 	if active_character_id == "gunslinger":
