@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/Portal.tscn" id="5"]
 [ext_resource type="Script" path="res://scripts/portal/portal_event_manager.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/items/reward_controller.gd" id="7"]
+[ext_resource type="Script" path="res://scripts/game/shop_controller.gd" id="8"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("2")
@@ -71,3 +72,61 @@ elite_max_hp = 80.0
 script = ExtResource("7")
 player_path = NodePath("../Player")
 portal_event_manager_path = NodePath("../PortalEventManager")
+
+[node name="ShopUI" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="ShopUI"]
+offset_left = 330.0
+offset_top = 180.0
+offset_right = 820.0
+offset_bottom = 520.0
+
+[node name="Title" type="Label" parent="ShopUI/Panel"]
+offset_left = 30.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 60.0
+text = "Shop Placeholder - Pick one"
+
+[node name="Offer1" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 80.0
+offset_right = 450.0
+offset_bottom = 120.0
+text = "Offer 1"
+
+[node name="Offer2" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 130.0
+offset_right = 450.0
+offset_bottom = 170.0
+text = "Offer 2"
+
+[node name="Offer3" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 180.0
+offset_right = 450.0
+offset_bottom = 220.0
+text = "Offer 3"
+
+[node name="Offer4" type="Button" parent="ShopUI/Panel"]
+offset_left = 40.0
+offset_top = 230.0
+offset_right = 450.0
+offset_bottom = 270.0
+text = "Offer 4"
+
+[node name="ContinueButton" type="Button" parent="ShopUI/Panel"]
+offset_left = 140.0
+offset_top = 290.0
+offset_right = 350.0
+offset_bottom = 325.0
+text = "Continue"
+
+[node name="ShopController" type="Node" parent="."]
+script = ExtResource("8")
+enemy_spawner_path = NodePath("../EnemySpawner")
+player_path = NodePath("../Player")
+panel_path = NodePath("../ShopUI/Panel")
+offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
+continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
