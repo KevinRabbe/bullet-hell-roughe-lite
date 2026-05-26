@@ -59,7 +59,7 @@ func _roll_reward_tier(source: String) -> int:
 func _player_portal_stat(stat_name: String, fallback: float) -> float:
 	if player == null or not is_instance_valid(player):
 		return fallback
-	var stats_variant := player.get("stats")
+	var stats_variant: Variant = player.get("stats")
 	if stats_variant == null or not (stats_variant is Object):
 		return fallback
 	return float(stats_variant.get(stat_name))

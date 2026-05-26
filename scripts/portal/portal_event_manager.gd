@@ -67,7 +67,7 @@ func _compute_portal_spawn_chance() -> float:
 	var base_chance := 0.30
 	var portal_frequency := 1.0
 	if player != null and is_instance_valid(player):
-		var stats_variant := player.get("stats")
+		var stats_variant: Variant = player.get("stats")
 		if stats_variant != null and stats_variant is Object:
 			portal_frequency = float(stats_variant.get("portal_frequency"))
 	var frequency_bonus := (portal_frequency - 1.0) * 0.15
@@ -120,7 +120,7 @@ func _start_double_elite_event(portal_position: Vector2) -> void:
 func _start_power_for_hp_loss_event() -> void:
 	print("Portal event started: Power for Max HP loss")
 	if player != null and is_instance_valid(player):
-		var stats_variant := player.get("stats")
+		var stats_variant: Variant = player.get("stats")
 		if stats_variant != null and stats_variant is Object:
 			stats_variant.set("damage", float(stats_variant.get("damage")) + 0.35)
 			stats_variant.set("max_hp", maxf(float(stats_variant.get("max_hp")) - 20.0, 20.0))

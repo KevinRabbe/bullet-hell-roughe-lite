@@ -45,7 +45,7 @@ func _load_json_dictionary(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
 	var json_text := FileAccess.get_file_as_string(path)
-	var parsed := JSON.parse_string(json_text)
+	var parsed: Variant = JSON.parse_string(json_text)
 	if parsed is Dictionary:
 		return parsed
 	return {}
