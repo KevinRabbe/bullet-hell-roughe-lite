@@ -8,7 +8,7 @@ signal continue_requested
 @export var offer_button_paths: Array[NodePath] = []
 @export var reroll_button_path: NodePath
 @export var continue_button_path: NodePath
-@export var reroll_cost: int = 1
+@export var reroll_cost: int = 2
 @export var enabled: bool = false
 
 var enemy_spawner: Node
@@ -21,12 +21,12 @@ var continue_button: Button
 var reroll_count: int = 0
 var rng: RandomNumberGenerator
 var offer_pool := [
-	{"type": "weapon", "id": "heavy_pistol", "label": "Heavy Pistol (Weapon)"},
-	{"type": "weapon", "id": "gunslinger_smg", "label": "SMG (Weapon)"},
-	{"type": "stat", "id": "damage", "value": 0.2, "label": "+20% Damage"},
-	{"type": "stat", "id": "attack_speed", "value": 0.2, "label": "+20% Attack Speed"},
-	{"type": "stat", "id": "movement_speed", "value": 25.0, "label": "+25 Move Speed"},
-	{"type": "stat", "id": "max_hp", "value": 20.0, "label": "+20 Max HP"}
+	{"type": "weapon", "id": "heavy_pistol", "label": "Heavy Pistol (Weapon)", "price": 5},
+	{"type": "weapon", "id": "gunslinger_smg", "label": "SMG (Weapon)", "price": 5},
+	{"type": "stat", "id": "damage", "value": 0.2, "label": "+20% Damage", "price": 3},
+	{"type": "stat", "id": "attack_speed", "value": 0.2, "label": "+20% Attack Speed", "price": 3},
+	{"type": "stat", "id": "movement_speed", "value": 25.0, "label": "+25 Move Speed", "price": 3},
+	{"type": "stat", "id": "max_hp", "value": 20.0, "label": "+20 Max HP", "price": 3}
 ]
 var active_offers: Array = []
 
@@ -89,7 +89,9 @@ func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
 		var button := offer_buttons[index]
 		if index < active_offers.size():
-			button.text = str(active_offers[index].get("label", "Offer"))
+			var offer := active_offers[index]
+			var price := int(offer.get("price", 0))
+			button.text = "%s (%dG)" % [str(offer.get("label", "Offer")), price]
 			button.disabled = false
 		else:
 			button.text = "N/A"
@@ -101,20 +103,29 @@ func _on_offer_pressed(index: int) -> void:
 	if player == null or not is_instance_valid(player):
 		return
 	var offer: Dictionary = active_offers[index]
+	var offer_price := int(offer.get("price", 0))
+	if player.has_method("spend_gold"):
+		var paid: bool = bool(player.call("spend_gold", offer_price))
+		if not paid:
+			return
 	if str(offer.get("type", "")) == "weapon":
 		if player.has_method("_debug_add_gunslinger_weapon_by_id"):
 			player.call("_debug_add_gunslinger_weapon_by_id", str(offer.get("id", "")))
 	elif str(offer.get("type", "")) == "stat":
 		if player.has_method("_debug_add_stat_bonus"):
 			player.call("_debug_add_stat_bonus", str(offer.get("id", "")), float(offer.get("value", 0.0)))
-	print("Bought offer: %s" % str(offer.get("label", "Offer")))
-	for button in offer_buttons:
-		button.disabled = true
+	print("Bought offer: %s for %d gold" % [str(offer.get("label", "Offer")), offer_price])
+	active_offers.remove_at(index)
+	_refresh_offer_buttons()
 
 func _on_reroll_pressed() -> void:
+	var total_cost := _current_reroll_cost()
+	if player != null and is_instance_valid(player) and player.has_method("spend_gold"):
+		var paid: bool = bool(player.call("spend_gold", total_cost))
+		if not paid:
+			return
 	reroll_count += 1
-	var total_cost := reroll_cost * reroll_count
-	print("Reroll shop offers. Cost (debug): %d" % total_cost)
+	print("Reroll shop offers. Cost: %d" % total_cost)
 	_roll_offers()
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
@@ -122,8 +133,11 @@ func _on_reroll_pressed() -> void:
 func _update_reroll_button_text() -> void:
 	if reroll_button == null:
 		return
-	var next_cost := reroll_cost * (reroll_count + 1)
+	var next_cost := _current_reroll_cost()
 	reroll_button.text = "Reroll (Cost: %d)" % next_cost
+
+func _current_reroll_cost() -> int:
+	return reroll_cost + reroll_count
 
 func _on_continue_pressed() -> void:
 	if panel != null:
