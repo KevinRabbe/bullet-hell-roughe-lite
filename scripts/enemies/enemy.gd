@@ -62,9 +62,12 @@ func _grant_kill_rewards() -> void:
 	if players.is_empty():
 		return
 	var reward_gold := 10 if is_boss else 1
+	var reward_xp := 15 if is_boss else 1
 	var player_node := players[0]
 	if player_node != null and player_node.has_method("add_gold"):
 		player_node.call("add_gold", reward_gold)
+	if player_node != null and player_node.has_method("add_xp"):
+		player_node.call("add_xp", reward_xp)
 
 func _find_player_if_needed() -> void:
 	if target != null and is_instance_valid(target):
