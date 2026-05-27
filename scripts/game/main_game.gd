@@ -25,13 +25,22 @@ var selected_character_index: int = 0
 var run_started: bool = false
 var levelup_rng: RandomNumberGenerator
 var active_level_up_choices: Array[Dictionary] = []
-var level_up_stat_pool: Array[Dictionary] = [
-	{"id": "damage", "value": 0.05, "label": "Damage +5%"},
-	{"id": "attack_speed", "value": 0.05, "label": "Attack Speed +5%"},
-	{"id": "max_hp", "value": 10.0, "label": "Max HP +10"},
-	{"id": "movement_speed", "value": 10.0, "label": "Move Speed +10"},
-	{"id": "armor", "value": 1.0, "label": "Armor +1"}
-]
+var level_up_stat_ids: Array[String] = ["damage", "attack_speed", "max_hp", "movement_speed", "armor"]
+var rarity_weights: Dictionary = {"Common": 0.65, "Rare": 0.25, "Epic": 0.08, "Legendary": 0.02}
+var rarity_values_by_stat: Dictionary = {
+	"damage": {"Common": 0.05, "Rare": 0.12, "Epic": 0.22, "Legendary": 0.40},
+	"attack_speed": {"Common": 0.05, "Rare": 0.10, "Epic": 0.18, "Legendary": 0.30},
+	"max_hp": {"Common": 10.0, "Rare": 25.0, "Epic": 45.0, "Legendary": 75.0},
+	"movement_speed": {"Common": 10.0, "Rare": 25.0, "Epic": 40.0, "Legendary": 65.0},
+	"armor": {"Common": 1.0, "Rare": 3.0, "Epic": 5.0, "Legendary": 9.0}
+}
+var stat_display_names: Dictionary = {
+	"damage": "Damage",
+	"attack_speed": "Attack Speed",
+	"max_hp": "Max HP",
+	"movement_speed": "Move Speed",
+	"armor": "Armor"
+}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -275,9 +284,9 @@ func _open_level_up_screen() -> void:
 func _roll_level_up_choices() -> void:
 	active_level_up_choices.clear()
 	for _slot in 4:
-		var index := levelup_rng.randi_range(0, level_up_stat_pool.size() - 1)
-		var picked: Dictionary = level_up_stat_pool[index].duplicate(true)
-		active_level_up_choices.append(picked)
+		var stat_index := levelup_rng.randi_range(0, level_up_stat_ids.size() - 1)
+		var stat_id := level_up_stat_ids[stat_index]
+		active_level_up_choices.append(_build_level_up_choice(stat_id))
 	_refresh_levelup_buttons()
 
 func _refresh_levelup_buttons() -> void:
@@ -310,6 +319,36 @@ func _on_level_up_choice_pressed(index: int) -> void:
 		_open_level_up_screen()
 		return
 	_set_combat_active(true)
+
+func _build_level_up_choice(stat_id: String) -> Dictionary:
+	var rarity := _roll_rarity_name()
+	var value := _get_rarity_value(stat_id, rarity)
+	var display_name := str(stat_display_names.get(stat_id, stat_id))
+	var formatted_value := "%+.0f" % value
+	if stat_id == "damage" or stat_id == "attack_speed":
+		formatted_value = "%+.0f%%" % (value * 100.0)
+	return {
+		"id": stat_id,
+		"value": value,
+		"rarity": rarity,
+		"label": "[%s] %s %s" % [rarity, display_name, formatted_value]
+	}
+
+func _roll_rarity_name() -> String:
+	var roll := levelup_rng.randf()
+	var threshold := 0.0
+	for rarity_name in ["Common", "Rare", "Epic", "Legendary"]:
+		threshold += float(rarity_weights.get(rarity_name, 0.0))
+		if roll <= threshold:
+			return rarity_name
+	return "Common"
+
+func _get_rarity_value(stat_id: String, rarity_name: String) -> float:
+	var stat_entry_variant: Variant = rarity_values_by_stat.get(stat_id, {})
+	if stat_entry_variant is Dictionary:
+		var stat_entry: Dictionary = stat_entry_variant
+		return float(stat_entry.get(rarity_name, 0.0))
+	return 0.0
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
