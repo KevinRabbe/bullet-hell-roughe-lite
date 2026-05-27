@@ -4,10 +4,15 @@ extends CharacterBody2D
 @export var debug_move_speed: float = 300.0
 
 signal player_died
+signal level_up_pending_changed
 
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
 var current_gold: int = 0
+var current_xp: int = 0
+var current_level: int = 1
+var xp_to_next_level: int = 10
+var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
@@ -142,7 +147,7 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 func _update_hp_label() -> void:
 	if hp_label == null:
 		return
-	hp_label.text = "HP: %.1f / %.1f | Gold: %d" % [current_hp, stats.max_hp, current_gold]
+	hp_label.text = "HP: %.1f / %.1f | Gold: %d | Lv %d XP %d/%d" % [current_hp, stats.max_hp, current_gold, current_level, current_xp, xp_to_next_level]
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
@@ -160,6 +165,30 @@ func spend_gold(amount: int) -> bool:
 	current_gold -= amount
 	_update_hp_label()
 	print("GOLD -%d | Total: %d" % [amount, current_gold])
+	return true
+
+func add_xp(amount: int) -> void:
+	if amount <= 0:
+		return
+	current_xp += amount
+	print("XP +%d | Progress: %d/%d" % [amount, current_xp, xp_to_next_level])
+	while current_xp >= xp_to_next_level:
+		current_xp -= xp_to_next_level
+		current_level += 1
+		pending_level_ups += 1
+		xp_to_next_level += 5
+		print("LEVEL UP! Reached level %d. Pending choices: %d" % [current_level, pending_level_ups])
+		level_up_pending_changed.emit()
+	_update_hp_label()
+
+func has_pending_level_up() -> bool:
+	return pending_level_ups > 0
+
+func consume_pending_level_up() -> bool:
+	if pending_level_ups <= 0:
+		return false
+	pending_level_ups -= 1
+	level_up_pending_changed.emit()
 	return true
 
 func apply_character_by_id(character_id: String) -> void:
