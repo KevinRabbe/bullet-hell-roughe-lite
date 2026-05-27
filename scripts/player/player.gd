@@ -71,6 +71,13 @@ func take_damage(amount: float) -> void:
 	if current_hp <= 0.0:
 		die()
 
+func heal_to_full() -> void:
+	if is_dead:
+		return
+	current_hp = stats.max_hp
+	_update_hp_label()
+	print("PLAYER HEALED TO FULL | HP: %.1f / %.1f" % [current_hp, stats.max_hp])
+
 func die() -> void:
 	if is_dead:
 		return
