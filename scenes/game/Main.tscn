@@ -159,9 +159,11 @@ script = ExtResource("8")
 enemy_spawner_path = NodePath("../EnemySpawner")
 player_path = NodePath("../Player")
 panel_path = NodePath("../ShopUI/Panel")
+title_label_path = NodePath("../ShopUI/Panel/Title")
 offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
 reroll_button_path = NodePath("../ShopUI/Panel/RerollButton")
 continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
+enabled = true
 
 [node name="BossManager" type="Node" parent="."]
 script = ExtResource("9")
