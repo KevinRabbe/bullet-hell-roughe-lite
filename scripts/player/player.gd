@@ -191,6 +191,20 @@ func consume_pending_level_up() -> bool:
 	level_up_pending_changed.emit()
 	return true
 
+func apply_level_up_bonus(stat_id: String, value: float) -> void:
+	if stat_id == "max_hp":
+		stats.max_hp += value
+		current_hp += value
+		current_hp = minf(current_hp, stats.max_hp)
+	elif _has_stat_property(stat_id):
+		var current_value: Variant = stats.get(stat_id)
+		if current_value is float:
+			stats.set(stat_id, float(current_value) + value)
+		elif current_value is int:
+			stats.set(stat_id, int(current_value) + int(value))
+	_update_hp_label()
+	print("LEVEL-UP BONUS: %s %+0.2f" % [stat_id, value])
+
 func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":
 		return

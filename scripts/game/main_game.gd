@@ -8,12 +8,30 @@ extends Node2D
 @onready var character_label: Label = $CharacterSelect/Panel/CharacterLabel
 @onready var start_button: Button = $CharacterSelect/Panel/StartButton
 @onready var shop_controller: Node = $ShopController
+@onready var level_up_panel: Control = $LevelUpUI/Panel
+@onready var level_up_title: Label = $LevelUpUI/Panel/Title
+@onready var level_up_choice_buttons: Array[Button] = [
+	$LevelUpUI/Panel/Choice1,
+	$LevelUpUI/Panel/Choice2,
+	$LevelUpUI/Panel/Choice3,
+	$LevelUpUI/Panel/Choice4
+]
 var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
+var waiting_for_level_up_choice: bool = false
 var selectable_characters: Array[String] = ["gunslinger"]
 var character_display_names: Dictionary = {"gunslinger": "The Gunslinger"}
 var selected_character_index: int = 0
 var run_started: bool = false
+var levelup_rng: RandomNumberGenerator
+var active_level_up_choices: Array[Dictionary] = []
+var level_up_stat_pool: Array[Dictionary] = [
+	{"id": "damage", "value": 0.05, "label": "Damage +5%"},
+	{"id": "attack_speed", "value": 0.05, "label": "Attack Speed +5%"},
+	{"id": "max_hp", "value": 10.0, "label": "Max HP +10"},
+	{"id": "movement_speed", "value": 10.0, "label": "Move Speed +10"},
+	{"id": "armor", "value": 1.0, "label": "Armor +1"}
+]
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -24,6 +42,8 @@ func _ready() -> void:
 
 	if player.has_signal("player_died"):
 		player.player_died.connect(_on_player_died)
+	if player.has_signal("level_up_pending_changed"):
+		player.level_up_pending_changed.connect(_on_level_up_pending_changed)
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
 	if start_button != null:
@@ -32,6 +52,9 @@ func _ready() -> void:
 		wave_continue_button.pressed.connect(_on_wave_continue_pressed)
 	if shop_controller != null and shop_controller.has_signal("continue_requested"):
 		shop_controller.connect("continue_requested", _on_wave_continue_pressed)
+	for index in level_up_choice_buttons.size():
+		level_up_choice_buttons[index].pressed.connect(_on_level_up_choice_pressed.bind(index))
+	levelup_rng = _resolve_rng("levelup")
 	_load_selectable_characters()
 	_update_character_debug_label()
 	_hide_run_overlays()
@@ -59,6 +82,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
 		_on_wave_continue_pressed()
 		return
+	if waiting_for_level_up_choice:
+		return
 	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
 		_toggle_pause()
 		return
@@ -70,6 +95,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_player_died() -> void:
 	waiting_for_restart = true
 	waiting_for_wave_continue = false
+	waiting_for_level_up_choice = false
 	_set_combat_active(false)
 	_hide_run_overlays()
 
@@ -122,6 +148,7 @@ func _set_gameplay_active(active: bool) -> void:
 func _hide_run_overlays() -> void:
 	_hide_control_if_present("WaveIntermission/Panel")
 	_hide_control_if_present("ShopUI/Panel")
+	_hide_control_if_present("LevelUpUI/Panel")
 
 func _hide_control_if_present(path: NodePath) -> void:
 	var node := get_node_or_null(path)
@@ -187,6 +214,7 @@ func _on_wave_continue_pressed() -> void:
 	_set_combat_active(true)
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
+	_try_open_levelup_screen()
 
 func _set_combat_active(active: bool) -> void:
 	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
@@ -221,3 +249,74 @@ func _is_shop_enabled() -> bool:
 	if shop_controller == null:
 		return false
 	return bool(shop_controller.get("enabled"))
+
+func _on_level_up_pending_changed() -> void:
+	_try_open_levelup_screen()
+
+func _try_open_levelup_screen() -> void:
+	if not run_started or waiting_for_restart or waiting_for_wave_continue or waiting_for_level_up_choice:
+		return
+	if player == null or not player.has_method("has_pending_level_up"):
+		return
+	if not bool(player.call("has_pending_level_up")):
+		return
+	_open_level_up_screen()
+
+func _open_level_up_screen() -> void:
+	waiting_for_level_up_choice = true
+	_set_combat_active(false)
+	_roll_level_up_choices()
+	if level_up_title != null:
+		level_up_title.text = "Level Up! Pick 1 of 4"
+	if level_up_panel != null:
+		level_up_panel.visible = true
+	print("Level-up choices shown.")
+
+func _roll_level_up_choices() -> void:
+	active_level_up_choices.clear()
+	for _slot in 4:
+		var index := levelup_rng.randi_range(0, level_up_stat_pool.size() - 1)
+		var picked: Dictionary = level_up_stat_pool[index].duplicate(true)
+		active_level_up_choices.append(picked)
+	_refresh_levelup_buttons()
+
+func _refresh_levelup_buttons() -> void:
+	for index in level_up_choice_buttons.size():
+		var button := level_up_choice_buttons[index]
+		if index < active_level_up_choices.size():
+			var choice := active_level_up_choices[index]
+			button.text = str(choice.get("label", "Upgrade"))
+			button.disabled = false
+		else:
+			button.text = "N/A"
+			button.disabled = true
+
+func _on_level_up_choice_pressed(index: int) -> void:
+	if not waiting_for_level_up_choice:
+		return
+	if index < 0 or index >= active_level_up_choices.size():
+		return
+	if player == null:
+		return
+	var choice := active_level_up_choices[index]
+	if player.has_method("apply_level_up_bonus"):
+		player.call("apply_level_up_bonus", str(choice.get("id", "")), float(choice.get("value", 0.0)))
+	if player.has_method("consume_pending_level_up"):
+		player.call("consume_pending_level_up")
+	waiting_for_level_up_choice = false
+	if level_up_panel != null:
+		level_up_panel.visible = false
+	if player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
+		_open_level_up_screen()
+		return
+	_set_combat_active(true)
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback
