@@ -1,4 +1,5 @@
 extends Node
+signal continue_requested
 
 @export var enemy_spawner_path: NodePath
 @export var player_path: NodePath
@@ -127,8 +128,7 @@ func _update_reroll_button_text() -> void:
 func _on_continue_pressed() -> void:
 	if panel != null:
 		panel.visible = false
-	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
-		enemy_spawner.call("start_next_wave")
+	continue_requested.emit()
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")

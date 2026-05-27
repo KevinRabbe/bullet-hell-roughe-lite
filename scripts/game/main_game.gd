@@ -7,6 +7,7 @@ extends Node2D
 @onready var character_select_layer: CanvasLayer = $CharacterSelect
 @onready var character_label: Label = $CharacterSelect/Panel/CharacterLabel
 @onready var start_button: Button = $CharacterSelect/Panel/StartButton
+@onready var shop_controller: Node = $ShopController
 var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
 var selectable_characters: Array[String] = ["gunslinger"]
@@ -29,6 +30,8 @@ func _ready() -> void:
 		start_button.pressed.connect(_on_start_pressed)
 	if wave_continue_button != null:
 		wave_continue_button.pressed.connect(_on_wave_continue_pressed)
+	if shop_controller != null and shop_controller.has_signal("continue_requested"):
+		shop_controller.connect("continue_requested", _on_wave_continue_pressed)
 	_load_selectable_characters()
 	_update_character_debug_label()
 	_hide_run_overlays()
@@ -162,7 +165,11 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 
 func _on_wave_completed(wave_index: int) -> void:
 	waiting_for_wave_continue = true
-	if wave_panel != null:
+	if _is_shop_enabled():
+		_hide_control_if_present("WaveIntermission/Panel")
+	else:
+		_hide_control_if_present("ShopUI/Panel")
+	if wave_panel != null and not _is_shop_enabled():
 		wave_panel.visible = true
 	_set_combat_active(false)
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
@@ -171,15 +178,27 @@ func _on_wave_continue_pressed() -> void:
 	if not waiting_for_wave_continue:
 		return
 	waiting_for_wave_continue = false
-	if wave_panel != null:
-		wave_panel.visible = false
+	_hide_run_overlays()
 	_set_combat_active(true)
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
 
 func _set_combat_active(active: bool) -> void:
 	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	for path in ["Player", "PortalEventManager", "RewardController", "BossManager"]:
+	for path in ["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"]:
 		var node := get_node_or_null(path)
 		if node != null:
 			node.process_mode = mode
+	_set_group_process_mode("enemies", mode)
+	_set_group_process_mode("projectiles", mode)
+
+func _set_group_process_mode(group_name: StringName, mode: int) -> void:
+	var nodes := get_tree().get_nodes_in_group(group_name)
+	for group_node in nodes:
+		if group_node is Node:
+			(group_node as Node).process_mode = mode
+
+func _is_shop_enabled() -> bool:
+	if shop_controller == null:
+		return false
+	return bool(shop_controller.get("enabled"))
