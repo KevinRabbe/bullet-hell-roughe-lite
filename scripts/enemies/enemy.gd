@@ -18,7 +18,7 @@ var target: Node2D
 var current_hp: float
 var damage_cooldown_left: float = 0.0
 var ranged_cooldown_left: float = 0.0
-@onready var visual: ColorRect = get_node_or_null("Visual")
+@onready var visual: CanvasItem = get_node_or_null("Visual")
 
 func _ready() -> void:
 	_apply_variant_stats()
@@ -107,14 +107,14 @@ func _apply_variant_stats() -> void:
 			contact_damage = 5.0
 			damage_interval_seconds = 0.65
 			if visual != null:
-				visual.color = Color(1.0, 0.35, 0.35, 1.0)
+				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		"husk_brute":
 			move_speed = 95.0
 			max_hp = 40.0
 			contact_damage = 10.0
 			damage_interval_seconds = 1.0
 			if visual != null:
-				visual.color = Color(0.75, 0.45, 0.2, 1.0)
+				visual.modulate = Color(0.75, 0.45, 0.2, 1.0)
 		"spit_fiend":
 			move_speed = 120.0
 			max_hp = 24.0
@@ -124,4 +124,4 @@ func _apply_variant_stats() -> void:
 			ranged_interval_seconds = 1.1
 			ranged_attack_range = 230.0
 			if visual != null:
-				visual.color = Color(0.6, 0.9, 0.35, 1.0)
+				visual.modulate = Color(0.6, 0.9, 0.35, 1.0)
