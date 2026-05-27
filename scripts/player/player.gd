@@ -7,6 +7,7 @@ signal player_died
 
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
+var current_gold: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
@@ -141,7 +142,25 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 func _update_hp_label() -> void:
 	if hp_label == null:
 		return
-	hp_label.text = "HP: %.1f / %.1f" % [current_hp, stats.max_hp]
+	hp_label.text = "HP: %.1f / %.1f | Gold: %d" % [current_hp, stats.max_hp, current_gold]
+
+func add_gold(amount: int) -> void:
+	if amount <= 0:
+		return
+	current_gold += amount
+	_update_hp_label()
+	print("GOLD +%d | Total: %d" % [amount, current_gold])
+
+func spend_gold(amount: int) -> bool:
+	if amount <= 0:
+		return true
+	if current_gold < amount:
+		print("Not enough gold. Need %d, have %d." % [amount, current_gold])
+		return false
+	current_gold -= amount
+	_update_hp_label()
+	print("GOLD -%d | Total: %d" % [amount, current_gold])
+	return true
 
 func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":

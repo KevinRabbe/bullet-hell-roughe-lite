@@ -54,7 +54,17 @@ func _physics_process(delta: float) -> void:
 func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
 	if current_hp <= 0.0:
+		_grant_kill_rewards()
 		queue_free()
+
+func _grant_kill_rewards() -> void:
+	var players := get_tree().get_nodes_in_group("players")
+	if players.is_empty():
+		return
+	var reward_gold := 10 if is_boss else 1
+	var player_node := players[0]
+	if player_node != null and player_node.has_method("add_gold"):
+		player_node.call("add_gold", reward_gold)
 
 func _find_player_if_needed() -> void:
 	if target != null and is_instance_valid(target):
