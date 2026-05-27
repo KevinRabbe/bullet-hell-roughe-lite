@@ -165,6 +165,49 @@ reroll_button_path = NodePath("../ShopUI/Panel/RerollButton")
 continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
 enabled = true
 
+[node name="LevelUpUI" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="LevelUpUI"]
+offset_left = 330.0
+offset_top = 170.0
+offset_right = 820.0
+offset_bottom = 520.0
+
+[node name="Title" type="Label" parent="LevelUpUI/Panel"]
+offset_left = 30.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 60.0
+text = "Level Up! Pick 1 of 4"
+
+[node name="Choice1" type="Button" parent="LevelUpUI/Panel"]
+offset_left = 40.0
+offset_top = 80.0
+offset_right = 450.0
+offset_bottom = 120.0
+text = "Choice 1"
+
+[node name="Choice2" type="Button" parent="LevelUpUI/Panel"]
+offset_left = 40.0
+offset_top = 130.0
+offset_right = 450.0
+offset_bottom = 170.0
+text = "Choice 2"
+
+[node name="Choice3" type="Button" parent="LevelUpUI/Panel"]
+offset_left = 40.0
+offset_top = 180.0
+offset_right = 450.0
+offset_bottom = 220.0
+text = "Choice 3"
+
+[node name="Choice4" type="Button" parent="LevelUpUI/Panel"]
+offset_left = 40.0
+offset_top = 230.0
+offset_right = 450.0
+offset_bottom = 270.0
+text = "Choice 4"
+
 [node name="BossManager" type="Node" parent="."]
 script = ExtResource("9")
 boss_scene = ExtResource("3")
