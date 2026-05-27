@@ -69,6 +69,9 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_player_died() -> void:
 	waiting_for_restart = true
+	waiting_for_wave_continue = false
+	_set_combat_active(false)
+	_hide_run_overlays()
 
 func _toggle_pause() -> void:
 	var should_pause := not get_tree().paused
@@ -165,13 +168,14 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 
 func _on_wave_completed(wave_index: int) -> void:
 	waiting_for_wave_continue = true
+	_set_combat_active(false)
+	_clear_combat_entities()
 	if _is_shop_enabled():
 		_hide_control_if_present("WaveIntermission/Panel")
 	else:
 		_hide_control_if_present("ShopUI/Panel")
 	if wave_panel != null and not _is_shop_enabled():
 		wave_panel.visible = true
-	_set_combat_active(false)
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
 func _on_wave_continue_pressed() -> void:
@@ -197,6 +201,16 @@ func _set_group_process_mode(group_name: StringName, mode: int) -> void:
 	for group_node in nodes:
 		if group_node is Node:
 			(group_node as Node).process_mode = mode
+
+func _clear_combat_entities() -> void:
+	_clear_group_nodes("enemies")
+	_clear_group_nodes("projectiles")
+
+func _clear_group_nodes(group_name: StringName) -> void:
+	var nodes := get_tree().get_nodes_in_group(group_name)
+	for group_node in nodes:
+		if group_node is Node:
+			(group_node as Node).queue_free()
 
 func _is_shop_enabled() -> bool:
 	if shop_controller == null:
