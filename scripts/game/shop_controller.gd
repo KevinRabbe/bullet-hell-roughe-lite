@@ -77,13 +77,15 @@ func _on_wave_completed(_wave_index: int) -> void:
 
 func _roll_offers() -> void:
 	active_offers.clear()
-	var pool_copy: Array = offer_pool.duplicate(true)
-	for _idx in 4:
-		if pool_copy.is_empty():
-			break
-		var pick_index := rng.randi_range(0, pool_copy.size() - 1)
-		active_offers.append(pool_copy[pick_index])
-		pool_copy.remove_at(pick_index)
+	var weapon_pool := _filter_offer_pool_by_type("weapon")
+	for _slot in 2:
+		var weapon_offer := _pick_random_offer(weapon_pool)
+		if not weapon_offer.is_empty():
+			active_offers.append(weapon_offer)
+	for _slot in 2:
+		var random_offer := _pick_random_offer(offer_pool)
+		if not random_offer.is_empty():
+			active_offers.append(random_offer)
 
 func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
@@ -138,6 +140,24 @@ func _update_reroll_button_text() -> void:
 
 func _current_reroll_cost() -> int:
 	return reroll_cost + reroll_count
+
+func _filter_offer_pool_by_type(offer_type: String) -> Array:
+	var filtered: Array = []
+	for offer_variant in offer_pool:
+		if offer_variant is Dictionary:
+			var offer: Dictionary = offer_variant
+			if str(offer.get("type", "")) == offer_type:
+				filtered.append(offer)
+	return filtered
+
+func _pick_random_offer(pool: Array) -> Dictionary:
+	if pool.is_empty():
+		return {}
+	var index := rng.randi_range(0, pool.size() - 1)
+	var selected: Variant = pool[index]
+	if selected is Dictionary:
+		return (selected as Dictionary).duplicate(true)
+	return {}
 
 func _on_continue_pressed() -> void:
 	if panel != null:
