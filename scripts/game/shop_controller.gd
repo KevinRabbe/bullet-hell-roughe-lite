@@ -1,8 +1,10 @@
 extends Node
+signal continue_requested
 
 @export var enemy_spawner_path: NodePath
 @export var player_path: NodePath
 @export var panel_path: NodePath
+@export var title_label_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
 @export var reroll_button_path: NodePath
 @export var continue_button_path: NodePath
@@ -12,6 +14,7 @@ extends Node
 var enemy_spawner: Node
 var player: Node
 var panel: Control
+var title_label: Label
 var offer_buttons: Array[Button] = []
 var reroll_button: Button
 var continue_button: Button
@@ -35,6 +38,8 @@ func _ready() -> void:
 		player = get_node_or_null(player_path)
 	if panel_path != NodePath():
 		panel = get_node_or_null(panel_path)
+	if title_label_path != NodePath():
+		title_label = get_node_or_null(title_label_path)
 	if reroll_button_path != NodePath():
 		reroll_button = get_node_or_null(reroll_button_path)
 	if continue_button_path != NodePath():
@@ -64,6 +69,8 @@ func _on_wave_completed(_wave_index: int) -> void:
 	_roll_offers()
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
+	if title_label != null:
+		title_label.text = "Shop Placeholder - Pick one"
 	if panel != null:
 		panel.visible = true
 	print("Shop opened with %d offers." % active_offers.size())
@@ -121,8 +128,7 @@ func _update_reroll_button_text() -> void:
 func _on_continue_pressed() -> void:
 	if panel != null:
 		panel.visible = false
-	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
-		enemy_spawner.call("start_next_wave")
+	continue_requested.emit()
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
