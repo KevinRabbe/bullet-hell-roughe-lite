@@ -183,6 +183,7 @@ func _on_wave_continue_pressed() -> void:
 		return
 	waiting_for_wave_continue = false
 	_hide_run_overlays()
+	_heal_player_to_full()
 	_set_combat_active(true)
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
@@ -211,6 +212,10 @@ func _clear_group_nodes(group_name: StringName) -> void:
 	for group_node in nodes:
 		if group_node is Node:
 			(group_node as Node).queue_free()
+
+func _heal_player_to_full() -> void:
+	if player != null and player.has_method("heal_to_full"):
+		player.call("heal_to_full")
 
 func _is_shop_enabled() -> bool:
 	if shop_controller == null:
