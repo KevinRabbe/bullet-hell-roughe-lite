@@ -219,11 +219,19 @@ func _on_wave_continue_pressed() -> void:
 		return
 	waiting_for_wave_continue = false
 	_hide_run_overlays()
+	_finish_intermission_or_open_levelup()
+
+func _finish_intermission_or_open_levelup() -> void:
+	if player != null and player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
+		_open_level_up_screen()
+	else:
+		_start_next_wave_after_intermission()
+
+func _start_next_wave_after_intermission() -> void:
 	_heal_player_to_full()
 	_set_combat_active(true)
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
-	_try_open_levelup_screen()
 
 func _set_combat_active(active: bool) -> void:
 	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
@@ -260,16 +268,7 @@ func _is_shop_enabled() -> bool:
 	return bool(shop_controller.get("enabled"))
 
 func _on_level_up_pending_changed() -> void:
-	_try_open_levelup_screen()
-
-func _try_open_levelup_screen() -> void:
-	if not run_started or waiting_for_restart or waiting_for_wave_continue or waiting_for_level_up_choice:
-		return
-	if player == null or not player.has_method("has_pending_level_up"):
-		return
-	if not bool(player.call("has_pending_level_up")):
-		return
-	_open_level_up_screen()
+	print("Level-up pending. Will show after wave.")
 
 func _open_level_up_screen() -> void:
 	waiting_for_level_up_choice = true
@@ -318,7 +317,7 @@ func _on_level_up_choice_pressed(index: int) -> void:
 	if player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
 		_open_level_up_screen()
 		return
-	_set_combat_active(true)
+	_start_next_wave_after_intermission()
 
 func _build_level_up_choice(stat_id: String) -> Dictionary:
 	var rarity := _roll_rarity_name()
