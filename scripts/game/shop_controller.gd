@@ -20,7 +20,7 @@ var reroll_button: Button
 var continue_button: Button
 var reroll_count: int = 0
 var rng: RandomNumberGenerator
-var offer_pool := [
+var offer_pool: Array[Dictionary] = [
 	{"type": "weapon", "id": "heavy_pistol", "label": "Heavy Pistol (Weapon)", "price": 5},
 	{"type": "weapon", "id": "gunslinger_smg", "label": "SMG (Weapon)", "price": 5},
 	{"type": "stat", "id": "damage", "value": 0.2, "label": "+20% Damage", "price": 3},
@@ -28,7 +28,7 @@ var offer_pool := [
 	{"type": "stat", "id": "movement_speed", "value": 25.0, "label": "+25 Move Speed", "price": 3},
 	{"type": "stat", "id": "max_hp", "value": 20.0, "label": "+20 Max HP", "price": 3}
 ]
-var active_offers: Array = []
+var active_offers: Array[Dictionary] = []
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
@@ -91,7 +91,7 @@ func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
 		var button := offer_buttons[index]
 		if index < active_offers.size():
-			var offer := active_offers[index]
+			var offer: Dictionary = active_offers[index]
 			var price := int(offer.get("price", 0))
 			button.text = "%s (%dG)" % [str(offer.get("label", "Offer")), price]
 			button.disabled = false
