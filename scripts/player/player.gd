@@ -268,31 +268,32 @@ func _equip_gunslinger_weapon(index: int) -> void:
 	if index < 0 or index >= GUNSLINGER_WEAPON_IDS.size():
 		return
 	var weapon_id := GUNSLINGER_WEAPON_IDS[index]
+	grant_weapon(weapon_id)
+
+func grant_weapon(weapon_id: String) -> bool:
+	if weapon_id == "":
+		return false
+	if weapon_loadout == null or not weapon_loadout.has_method("equip_weapon"):
+		push_error("WeaponLoadout not found on Player.")
+		return false
+
+	var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
+	if not equipped:
+		print("Weapon loadout full or weapon rejected: %s" % weapon_id)
+		return false
+
 	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
-	if weapon_path == "":
-		return
+	if weapon_path != "":
+		var weapon_resource := load(weapon_path)
+		if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
+			auto_weapon.call("set_weapon_data", weapon_resource)
 
-	if weapon_loadout != null and weapon_loadout.has_method("equip_weapon"):
-		var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
-		if not equipped:
-			print("WeaponLoadout full (6/6).")
-		elif weapon_loadout.has_method("get_family_counts"):
-			print("Weapon family counts: %s" % weapon_loadout.call("get_family_counts"))
+	print("Weapon granted: %s" % weapon_id)
+	return true
 
-	var weapon_resource := load(weapon_path)
-	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
-		auto_weapon.call("set_weapon_data", weapon_resource)
-
+# TODO: remove after all callers use grant_weapon directly.
 func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
-	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
-	if weapon_path == "":
-		return
-	if weapon_loadout != null and weapon_loadout.has_method("equip_weapon"):
-		weapon_loadout.call("equip_weapon", weapon_id)
-	var weapon_resource := load(weapon_path)
-	if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
-		auto_weapon.call("set_weapon_data", weapon_resource)
-	print("DEBUG weapon granted: %s" % weapon_id)
+	grant_weapon(weapon_id)
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 	if not _has_stat_property(stat_id):

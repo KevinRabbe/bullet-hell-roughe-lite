@@ -106,16 +106,27 @@ func _on_offer_pressed(index: int) -> void:
 		return
 	var offer: Dictionary = active_offers[index]
 	var offer_price := int(offer.get("price", 0))
+	var offer_type := str(offer.get("type", ""))
+	var offer_id := str(offer.get("id", ""))
+	
+	if offer_type == "weapon":
+		var loadout: Node = player.get_node_or_null("WeaponLoadout") if player.has_method("get_node_or_null") else null
+		if loadout != null and loadout.has_method("has_space") and not bool(loadout.call("has_space")):
+			print("Cannot buy weapon. Weapon loadout is full.")
+			return
+
 	if player.has_method("spend_gold"):
 		var paid: bool = bool(player.call("spend_gold", offer_price))
 		if not paid:
 			return
-	if str(offer.get("type", "")) == "weapon":
-		if player.has_method("_debug_add_gunslinger_weapon_by_id"):
-			player.call("_debug_add_gunslinger_weapon_by_id", str(offer.get("id", "")))
-	elif str(offer.get("type", "")) == "stat":
+
+	if offer_type == "weapon":
+		if player.has_method("grant_weapon"):
+			player.call("grant_weapon", offer_id)
+	elif offer_type == "stat":
 		if player.has_method("_debug_add_stat_bonus"):
-			player.call("_debug_add_stat_bonus", str(offer.get("id", "")), float(offer.get("value", 0.0)))
+			player.call("_debug_add_stat_bonus", offer_id, float(offer.get("value", 0.0)))
+
 	print("Bought offer: %s for %d gold" % [str(offer.get("label", "Offer")), offer_price])
 	active_offers.remove_at(index)
 	_refresh_offer_buttons()
