@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "gunslinger_sniper_rifle"
-display_name = "Sniper Rifle"
+display_name = "Skullpiercer Sniper"
 description = "Slow but high-impact long-range shots."
 family_id = "gunslinger"
 cooldown_seconds = 1.0
@@ -14,3 +14,17 @@ projectile_speed = 950.0
 attack_range = 1.4
 projectile_lifetime_seconds = 2.4
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "gunslinger"
+tags = Array[String](["gun", "bullet", "precision", "sniper"])
+stat_scaling = {
+"attack_speed": 0.4,
+"crit_chance": 1.4,
+"crit_damage": 1.6,
+"damage": 1.2,
+"knockback": 0.7,
+"on_hit": 0.2,
+"pierce": 1.2,
+"projectile_count": 0.0,
+"range": 1.5,
+"ranged_damage": 1.5
+}

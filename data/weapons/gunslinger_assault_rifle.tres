@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "gunslinger_assault_rifle"
-display_name = "Assault Rifle"
+display_name = "Rift Rifle"
 description = "Stable mid-range sustained fire."
 family_id = "gunslinger"
 cooldown_seconds = 0.2
@@ -14,3 +14,17 @@ projectile_speed = 780.0
 attack_range = 1.1
 projectile_lifetime_seconds = 1.8
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "gunslinger"
+tags = Array[String](["gun", "bullet", "rifle", "rift"])
+stat_scaling = {
+"attack_speed": 1.0,
+"crit_chance": 0.8,
+"crit_damage": 0.8,
+"damage": 1.0,
+"knockback": 0.3,
+"on_hit": 0.8,
+"pierce": 1.3,
+"projectile_count": 0.2,
+"range": 0.8,
+"ranged_damage": 1.2
+}

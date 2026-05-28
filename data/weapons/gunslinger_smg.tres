@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "gunslinger_smg"
-display_name = "SMG"
+display_name = "Demon SMG"
 description = "Fast fire with lighter hits."
 family_id = "gunslinger"
 cooldown_seconds = 0.12
@@ -14,3 +14,17 @@ projectile_speed = 720.0
 attack_range = 0.9
 projectile_lifetime_seconds = 1.4
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "gunslinger"
+tags = Array[String](["gun", "bullet", "rapid", "demon"])
+stat_scaling = {
+"attack_speed": 1.5,
+"crit_chance": 0.5,
+"crit_damage": 0.5,
+"damage": 0.6,
+"knockback": 0.1,
+"on_hit": 2.0,
+"pierce": 0.2,
+"projectile_count": 0.0,
+"range": 0.3,
+"ranged_damage": 0.9
+}

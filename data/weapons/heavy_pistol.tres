@@ -14,3 +14,17 @@ projectile_speed = 700.0
 attack_range = 1.0
 projectile_lifetime_seconds = 2.0
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "gunslinger"
+tags = Array[String](["gun", "bullet", "precision"])
+stat_scaling = {
+"attack_speed": 1.0,
+"crit_chance": 0.4,
+"crit_damage": 0.4,
+"damage": 1.0,
+"knockback": 0.2,
+"on_hit": 0.5,
+"pierce": 0.0,
+"projectile_count": 0.0,
+"range": 0.5,
+"ranged_damage": 1.0
+}
