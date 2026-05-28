@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 id = "gunslinger_shotgun"
-display_name = "Shotgun"
+display_name = "Infernal Shotgun"
 description = "Heavy close-range blasts."
 family_id = "gunslinger"
 cooldown_seconds = 0.8
@@ -14,3 +14,17 @@ projectile_speed = 620.0
 attack_range = 0.75
 projectile_lifetime_seconds = 0.9
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "gunslinger"
+tags = Array[String](["gun", "bullet", "spread", "hell"])
+stat_scaling = {
+"attack_speed": 0.6,
+"crit_chance": 0.7,
+"crit_damage": 0.8,
+"damage": 1.2,
+"knockback": 1.4,
+"on_hit": 0.8,
+"pierce": 0.0,
+"projectile_count": 1.8,
+"range": 0.2,
+"ranged_damage": 0.9
+}
