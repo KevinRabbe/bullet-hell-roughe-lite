@@ -15,6 +15,7 @@ attack_range = 0.75
 projectile_lifetime_seconds = 0.9
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "gunslinger"
+price = 6
 tags = Array[String](["gun", "bullet", "spread", "hell"])
 stat_scaling = {
 "attack_speed": 0.6,
