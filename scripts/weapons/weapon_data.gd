@@ -8,6 +8,7 @@ extends Resource
 
 @export var family: String = ""
 @export var tags: Array[String] = []
+@export_enum("common", "rare", "epic", "legendary") var rarity: String = "common"
 
 @export var damage_type: String = ""
 @export var base_damage: float = 10.0
@@ -31,4 +32,3 @@ extends Resource
 @export var attack_range: float = 1.0
 @export var projectile_lifetime_seconds: float = 2.0
 @export var projectile_scene_path: String = ""
-
