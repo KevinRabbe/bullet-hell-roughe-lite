@@ -8,9 +8,26 @@ extends Node2D
 var owner_player: Node2D
 var cooldown_left: float = 0.0
 var set_bonus_manager: Node
+var weapon_loadout: Node
+var current_rarity: String = "common"
+
+const RARITY_DAMAGE_MULTIPLIER: Dictionary = {
+	"common": 1.0,
+	"rare": 1.15,
+	"epic": 1.35,
+	"legendary": 1.6
+}
+const RARITY_SPEED_MULTIPLIER: Dictionary = {
+	"common": 1.0,
+	"rare": 1.05,
+	"epic": 1.12,
+	"legendary": 1.2
+}
 
 func _ready() -> void:
 	owner_player = get_parent() as Node2D
+	if owner_player != null:
+		weapon_loadout = owner_player.get_node_or_null("WeaponLoadout")
 	_apply_weapon_data()
 	set_bonus_manager = owner_player.get_node_or_null("SetBonusManager")
 
@@ -41,16 +58,19 @@ func set_weapon_data(new_weapon_data: WeaponData) -> void:
 	if new_weapon_data == null:
 		return
 	weapon_data = new_weapon_data
+	current_rarity = _resolve_weapon_rarity()
 	_apply_weapon_data()
-	print("AutoWeapon switched to: %s" % weapon_data.display_name)
+	print("AutoWeapon switched to: %s (%s)" % [weapon_data.display_name, current_rarity])
 func _apply_weapon_data() -> void:
 	if weapon_data == null:
 		return
+	current_rarity = _resolve_weapon_rarity()
 	if weapon_data.projectile_scene_path != "":
 		var projectile_resource: Resource = load(weapon_data.projectile_scene_path)
 		if projectile_resource is PackedScene:
 			projectile_scene = projectile_resource as PackedScene
-	fire_interval_seconds = weapon_data.cooldown_seconds
+	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(current_rarity, 1.0))
+	fire_interval_seconds = weapon_data.cooldown_seconds / rarity_speed_multiplier
 	target_range = 900.0 * weapon_data.attack_range
 
 func _find_nearest_enemy() -> Node2D:
@@ -73,8 +93,10 @@ func _fire_at(target: Node2D, execution_shot: bool) -> void:
 		if projectile.has_method("set_shooter"):
 			projectile.call("set_shooter", owner_player)
 		if weapon_data != null:
-			projectile.set("damage", weapon_data.damage)
-			projectile.set("speed", weapon_data.projectile_speed)
+			var rarity_damage_multiplier := float(RARITY_DAMAGE_MULTIPLIER.get(current_rarity, 1.0))
+			var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(current_rarity, 1.0))
+			projectile.set("damage", weapon_data.damage * rarity_damage_multiplier)
+			projectile.set("speed", weapon_data.projectile_speed * rarity_speed_multiplier)
 			projectile.set("lifetime_seconds", weapon_data.projectile_lifetime_seconds)
 		var total_damage_multiplier := 1.0
 		if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
@@ -92,6 +114,13 @@ func _fire_at(target: Node2D, execution_shot: bool) -> void:
 		if projectile.has_method("set_direction"):
 			projectile.call("set_direction", direction)
 		get_tree().current_scene.add_child(projectile)
+
+func _resolve_weapon_rarity() -> String:
+	if weapon_data == null:
+		return "common"
+	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_rarity"):
+		return str(weapon_loadout.call("get_weapon_rarity", weapon_data.id))
+	return "common"
 
 func _should_use_execution_shot() -> bool:
 	if set_bonus_manager == null:
