@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "spit_fiend"
+display_name = "Spit Fiend"
+description = "Ranged pressure enemy with short retreat behavior."
+archetype = "ranged_harasser"
+tags = Array[String](["fiend", "ranged"])
+max_hp = 24.0
+move_speed = 120.0
+contact_damage = 3.0
+contact_range = 55.0
+damage_interval_seconds = 1.2
+ranged_damage = 4.0
+ranged_interval_seconds = 1.1
+ranged_attack_range = 230.0
+is_elite = false
+is_boss = false
+threat_tier = 2
+reward_gold = 1
+reward_xp = 1

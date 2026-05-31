@@ -1,6 +1,11 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const ENEMY_RESOURCE_PATHS: Array[String] = [
+	"res://data/enemies/imp_runner.tres",
+	"res://data/enemies/husk_brute.tres",
+	"res://data/enemies/spit_fiend.tres",
+]
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -23,6 +28,17 @@ func _ready() -> void:
 func _register_defaults() -> void:
 	_load_character_json_data("res://data/characters")
 	_register_by_id(items, ItemDatabase.get_prototype_items())
+	_register_by_id(enemies, _load_enemy_resources())
+
+func _load_enemy_resources() -> Array:
+	var loaded: Array = []
+	for resource_path in ENEMY_RESOURCE_PATHS:
+		if not ResourceLoader.exists(resource_path):
+			continue
+		var enemy_resource := load(resource_path)
+		if enemy_resource != null:
+			loaded.append(enemy_resource)
+	return loaded
 
 func _load_character_json_data(directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
