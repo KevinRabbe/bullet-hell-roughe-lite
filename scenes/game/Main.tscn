@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
@@ -12,6 +12,8 @@
 [ext_resource type="Script" path="res://scripts/ui/equipped_weapon_hud.gd" id="10"]
 [ext_resource type="Script" path="res://scripts/ui/run_hud_controller.gd" id="11"]
 [ext_resource type="Script" path="res://scripts/ui/shop_tooltip_panel.gd" id="12"]
+[ext_resource type="Script" path="res://scripts/ui/orbit_weapon_hud.gd" id="13"]
+[ext_resource type="Script" path="res://scripts/ui/shop_phase_view.gd" id="14"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("2")
@@ -101,6 +103,15 @@ offset_bottom = 162.0
 text = "Continue"
 
 [node name="ShopUI" type="CanvasLayer" parent="."]
+script = ExtResource("14")
+shop_controller_path = NodePath("../ShopController")
+player_path = NodePath("../Player")
+weapon_loadout_path = NodePath("../Player/WeaponLoadout")
+shop_panel_path = NodePath("Panel")
+title_label_path = NodePath("Panel/Title")
+offer_button_paths = [NodePath("Panel/Offer1"), NodePath("Panel/Offer2"), NodePath("Panel/Offer3"), NodePath("Panel/Offer4")]
+reroll_button_path = NodePath("Panel/RerollButton")
+continue_button_path = NodePath("Panel/ContinueButton")
 
 [node name="Panel" type="Panel" parent="ShopUI"]
 offset_left = 330.0
@@ -292,6 +303,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 script = ExtResource("11")
 player_path = NodePath("../../Player")
 enemy_spawner_path = NodePath("../../EnemySpawner")
@@ -320,14 +332,19 @@ text = "State: Combat"
 
 [node name="WaveProgress" type="ProgressBar" parent="RunHUD/Control"]
 layout_mode = 1
-offset_left = 16.0
-offset_top = 64.0
-offset_right = 420.0
-offset_bottom = 82.0
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 16.0
+offset_right = 200.0
+offset_bottom = 34.0
+grow_horizontal = 2
 max_value = 100.0
 value = 0.0
 
 [node name="EquippedWeaponHUD" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="Control" type="Control" parent="EquippedWeaponHUD"]
 layout_mode = 3
@@ -338,8 +355,10 @@ anchor_bottom = 1.0
 offset_top = -100.0
 grow_horizontal = 2
 grow_vertical = 0
+mouse_filter = 2
 script = ExtResource("10")
 weapon_loadout_path = NodePath("../../Player/WeaponLoadout")
+shop_panel_path = NodePath("../../ShopUI/Panel")
 
 [node name="SlotsContainer" type="HBoxContainer" parent="EquippedWeaponHUD/Control"]
 layout_mode = 1
@@ -356,3 +375,10 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 10
 alignment = 1
+
+[node name="WeaponOrbitHUD" type="Node2D" parent="."]
+script = ExtResource("13")
+player_path = NodePath("../Player")
+weapon_loadout_path = NodePath("../Player/WeaponLoadout")
+orbit_radius = 86.0
+icon_scale = 0.118

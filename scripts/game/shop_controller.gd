@@ -92,6 +92,7 @@ func _make_weapon_offer(weapon_id: String) -> Dictionary:
 	var price: int = 5
 	var family: String = ""
 	var tags: Array[String] = []
+	var rarity_name: String = "common"
 	if data.id != "":
 		resolved_id = data.id
 	if data.display_name != "":
@@ -100,13 +101,15 @@ func _make_weapon_offer(weapon_id: String) -> Dictionary:
 		price = data.price
 	family = data.family
 	tags = data.tags.duplicate()
+	rarity_name = data.rarity
 	return {
 		"type": "weapon",
 		"id": resolved_id,
 		"label": display_name,
 		"price": price,
 		"family": family,
-		"tags": tags
+		"tags": tags,
+		"rarity": rarity_name
 	}
 
 func _build_item_offer_pool() -> void:
@@ -140,6 +143,22 @@ func _on_wave_completed(wave_index: int) -> void:
 	if panel != null:
 		panel.visible = true
 	print("Shop opened with %d offers." % active_offers.size())
+
+func get_active_offers() -> Array[Dictionary]:
+	var copied: Array[Dictionary] = []
+	for offer in active_offers:
+		if offer is Dictionary:
+			copied.append((offer as Dictionary).duplicate(true))
+	return copied
+
+func get_current_reroll_cost() -> int:
+	return _current_reroll_cost()
+
+func is_shop_open() -> bool:
+	return panel != null and panel.visible
+
+func get_current_wave_index() -> int:
+	return _current_wave_index
 
 func _roll_offers() -> void:
 	active_offers.clear()
@@ -189,9 +208,14 @@ func _on_offer_pressed(index: int) -> void:
 
 	if offer_type == "weapon":
 		var loadout: Node = player.get_node_or_null("WeaponLoadout")
-		if loadout != null and loadout.has_method("has_space") and not bool(loadout.call("has_space")):
-			print("Cannot buy weapon. Weapon loadout is full.")
-			return
+		if loadout != null:
+			if loadout.has_method("can_grant_weapon"):
+				if not bool(loadout.call("can_grant_weapon", offer_id)):
+					print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
+					return
+			elif loadout.has_method("has_space") and not bool(loadout.call("has_space")):
+				print("Cannot buy weapon. Weapon loadout is full.")
+				return
 
 	if player.has_method("spend_gold"):
 		var paid: bool = bool(player.call("spend_gold", offer_price))

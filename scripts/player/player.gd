@@ -18,7 +18,6 @@ var is_dead: bool = false
 var active_character_id: String = "gunslinger"
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
-@onready var hp_label: Label = get_node_or_null("DebugHpLabel")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 
 const GUNSLINGER_WEAPON_IDS: Array[String] = [
@@ -145,9 +144,7 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 	return fallback
 
 func _update_hp_label() -> void:
-	if hp_label == null:
-		return
-	hp_label.text = "HP: %.1f / %.1f | Gold: %d | Lv %d XP %d/%d" % [current_hp, stats.max_hp, current_gold, current_level, current_xp, xp_to_next_level]
+	pass
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
@@ -322,3 +319,23 @@ func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 		stats.set(stat_id, int(current_value) + int(value))
 	_update_hp_label()
 	print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
+
+func get_ui_snapshot() -> Dictionary:
+	return {
+		"hp": float(current_hp),
+		"max_hp": float(stats.max_hp),
+		"gold": int(current_gold),
+		"level": int(current_level),
+		"xp": int(current_xp),
+		"xp_to_next": int(xp_to_next_level),
+		"damage": float(stats.damage),
+		"attack_speed": float(stats.attack_speed),
+		"move_speed": float(stats.movement_speed),
+		"attack_range": float(stats.attack_range),
+		"armor": float(stats.armor),
+		"crit": float(stats.crit_chance),
+		"portal_luck": float(stats.portal_luck),
+		"portal_frequency": float(stats.portal_frequency),
+		"portal_instability": float(stats.portal_instability),
+		"items": owned_items.duplicate()
+	}

@@ -1,5 +1,12 @@
 extends Node2D
 
+@export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
+@export var debug_quick_shop_mode: bool = true
+@export var debug_wave_duration_seconds: float = 3.0
+@export var debug_starting_gold: int = 50
+@export var debug_combat_wave_duration_seconds: float = 20.0
+@export var debug_combat_starting_gold: int = 10
+
 @onready var player: CharacterBody2D = $Player
 @onready var enemy_spawner: Node = $EnemySpawner
 @onready var wave_panel: Control = $WaveIntermission/Panel
@@ -44,6 +51,7 @@ var stat_display_names: Dictionary = {
 }
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
+var default_wave_duration_seconds: float = 30.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -69,6 +77,9 @@ func _ready() -> void:
 	if level_up_reroll_button != null:
 		level_up_reroll_button.pressed.connect(_on_level_up_reroll_pressed)
 	levelup_rng = _resolve_rng("levelup")
+	if enemy_spawner != null:
+		default_wave_duration_seconds = float(enemy_spawner.get("wave_duration_seconds"))
+		_apply_debug_wave_duration()
 	_load_selectable_characters()
 	_update_character_debug_label()
 	_hide_run_overlays()
@@ -79,6 +90,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key_event := event as InputEventKey
 	if not key_event.pressed or key_event.echo:
+		return
+	if key_event.keycode == KEY_PLUS or key_event.keycode == KEY_KP_ADD:
+		_cycle_debug_run_preset()
 		return
 	if not run_started:
 		if event.is_action_pressed("cycle_character") or key_event.keycode == KEY_C:
@@ -143,17 +157,85 @@ func _on_start_pressed() -> void:
 		return
 	run_started = true
 	_apply_selected_character()
+	_apply_debug_quick_shop_preset()
 	_hide_run_overlays()
 	_set_gameplay_active(true)
 	if character_select_layer != null:
 		character_select_layer.visible = false
 
+func _apply_debug_quick_shop_preset() -> void:
+	var preset := _get_effective_debug_preset()
+	var starting_gold := 0
+	match preset:
+		"shop_test":
+			starting_gold = debug_starting_gold
+		"combat_test":
+			starting_gold = debug_combat_starting_gold
+		_:
+			starting_gold = 0
+	if player != null and starting_gold > 0 and player.has_method("add_gold"):
+		player.call("add_gold", starting_gold)
+	_apply_debug_wave_duration()
+	print("DEBUG PRESET APPLIED: %s | Gold: %d | Wave Duration: %.1fs" % [preset, starting_gold, _get_debug_wave_duration_for_preset(preset)])
+
+func _apply_debug_wave_duration() -> void:
+	if enemy_spawner == null:
+		return
+	var preset := _get_effective_debug_preset()
+	if preset == "normal":
+		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
+	else:
+		enemy_spawner.set("wave_duration_seconds", _get_debug_wave_duration_for_preset(preset))
+
+func _cycle_debug_run_preset() -> void:
+	var modes: Array[String] = ["normal", "shop_test", "combat_test"]
+	var current_index := modes.find(debug_run_preset)
+	if current_index == -1:
+		current_index = 0
+	debug_run_preset = modes[(current_index + 1) % modes.size()]
+	debug_quick_shop_mode = debug_run_preset != "normal"
+	_apply_debug_wave_duration()
+	print("DEBUG PRESET: %s | Wave Duration %.1fs | Start Gold %d on run start" % [debug_run_preset, _get_current_wave_duration(), _get_current_starting_gold_for_preset()])
+
+func get_debug_preset_label() -> String:
+	return "DebugPreset: %s" % _get_effective_debug_preset()
+
+func _get_effective_debug_preset() -> String:
+	if not debug_quick_shop_mode:
+		return "normal"
+	if debug_run_preset == "normal":
+		return "shop_test"
+	return debug_run_preset
+
+func _get_debug_wave_duration_for_preset(preset: String) -> float:
+	match preset:
+		"shop_test":
+			return maxf(debug_wave_duration_seconds, 1.0)
+		"combat_test":
+			return maxf(debug_combat_wave_duration_seconds, 1.0)
+		_:
+			return default_wave_duration_seconds
+
+func _get_current_starting_gold_for_preset() -> int:
+	match _get_effective_debug_preset():
+		"shop_test":
+			return debug_starting_gold
+		"combat_test":
+			return debug_combat_starting_gold
+		_:
+			return 0
+
+func _get_current_wave_duration() -> float:
+	if enemy_spawner != null:
+		return float(enemy_spawner.get("wave_duration_seconds"))
+	return default_wave_duration_seconds
+
 func _set_gameplay_active(active: bool) -> void:
-	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	for path in ["Player", "EnemySpawner", "PortalEventManager", "RewardController", "ShopController", "BossManager"]:
-		var node := get_node_or_null(path)
-		if node != null:
-			node.process_mode = mode
+	_set_combat_active(active)
+	var shop_mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	var shop_node := get_node_or_null("ShopController")
+	if shop_node != null:
+		shop_node.process_mode = shop_mode
 	if not active:
 		_hide_run_overlays()
 	if character_select_layer != null:
@@ -208,23 +290,30 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 		character_display_names[character_id] = display_name
 
 func _on_wave_completed(wave_index: int) -> void:
+	_enter_intermission_phase(wave_index)
+
+func _on_wave_continue_pressed() -> void:
+	if not waiting_for_wave_continue:
+		return
+	_exit_intermission_phase()
+	_finish_intermission_or_open_levelup()
+
+func _enter_intermission_phase(wave_index: int) -> void:
 	waiting_for_wave_continue = true
 	_set_combat_active(false)
 	_clear_combat_entities()
 	if _is_shop_enabled():
 		_hide_control_if_present("WaveIntermission/Panel")
+		_hide_control_if_present("LevelUpUI/Panel")
 	else:
-		_hide_control_if_present("ShopUI/Panel")
-	if wave_panel != null and not _is_shop_enabled():
+		_hide_run_overlays()
+	if not _is_shop_enabled() and wave_panel != null:
 		wave_panel.visible = true
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
-func _on_wave_continue_pressed() -> void:
-	if not waiting_for_wave_continue:
-		return
+func _exit_intermission_phase() -> void:
 	waiting_for_wave_continue = false
 	_hide_run_overlays()
-	_finish_intermission_or_open_levelup()
 
 func _finish_intermission_or_open_levelup() -> void:
 	if player != null and player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
@@ -239,7 +328,7 @@ func _start_next_wave_after_intermission() -> void:
 		enemy_spawner.call("start_next_wave")
 
 func _set_combat_active(active: bool) -> void:
-	var mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 	for path in ["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"]:
 		var node := get_node_or_null(path)
 		if node != null:
@@ -247,7 +336,7 @@ func _set_combat_active(active: bool) -> void:
 	_set_group_process_mode("enemies", mode)
 	_set_group_process_mode("projectiles", mode)
 
-func _set_group_process_mode(group_name: StringName, mode: int) -> void:
+func _set_group_process_mode(group_name: StringName, mode: Node.ProcessMode) -> void:
 	var nodes := get_tree().get_nodes_in_group(group_name)
 	for group_node in nodes:
 		if group_node is Node:

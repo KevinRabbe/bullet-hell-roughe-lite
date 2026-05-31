@@ -1,16 +1,23 @@
 extends Control
 
 @export var weapon_loadout_path: NodePath
+@export var shop_panel_path: NodePath
 var weapon_loadout: Node
+var shop_panel: Control
 
 @onready var slots_container: HBoxContainer = $SlotsContainer
 var slot_name_labels: Array[Label] = []
 var slot_rarity_labels: Array[Label] = []
 var slot_icons: Array[TextureRect] = []
+var slot_panels: Array[PanelContainer] = []
+var slot_merge_buttons: Array[Button] = []
+var selected_slot_index: int = -1
 
 func _ready() -> void:
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
+	if shop_panel_path != NodePath():
+		shop_panel = get_node_or_null(shop_panel_path)
 	
 	if weapon_loadout == null:
 		var player := get_tree().get_first_node_in_group("players")
@@ -24,13 +31,16 @@ func _ready() -> void:
 	# Defer initial update to ensure player is fully initialized
 	call_deferred("_update_hud")
 
+func _process(_delta: float) -> void:
+	_update_merge_controls()
+
 func _setup_slots() -> void:
 	for child in slots_container.get_children():
 		child.queue_free()
 	
 	for i in range(6):
 		var panel := PanelContainer.new()
-		panel.custom_minimum_size = Vector2(130, 82)
+		panel.custom_minimum_size = Vector2(130, 106)
 		var box := VBoxContainer.new()
 		box.alignment = BoxContainer.ALIGNMENT_CENTER
 		box.add_theme_constant_override("separation", 2)
@@ -45,16 +55,26 @@ func _setup_slots() -> void:
 		var rarity_label := Label.new()
 		rarity_label.text = "-"
 		rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		var merge_button := Button.new()
+		merge_button.text = "Merge"
+		merge_button.custom_minimum_size = Vector2(64, 22)
+		merge_button.pressed.connect(_on_merge_pressed.bind(i))
+		merge_button.visible = false
 		box.add_child(icon)
 		box.add_child(name_label)
 		box.add_child(rarity_label)
+		box.add_child(merge_button)
 		panel.add_child(box)
+		panel.gui_input.connect(_on_slot_gui_input.bind(i))
 		slots_container.add_child(panel)
+		slot_panels.append(panel)
 		slot_icons.append(icon)
 		slot_name_labels.append(name_label)
 		slot_rarity_labels.append(rarity_label)
+		slot_merge_buttons.append(merge_button)
 
 func _on_loadout_changed() -> void:
+	selected_slot_index = mini(selected_slot_index, _get_equipped_entries().size() - 1)
 	_update_hud()
 
 func _update_hud() -> void:
@@ -78,6 +98,74 @@ func _update_hud() -> void:
 			slot_rarity_labels[i].text = "-"
 			slot_rarity_labels[i].modulate = Color(0.7, 0.7, 0.7, 1.0)
 			slot_icons[i].texture = null
+	if selected_slot_index >= equipped_entries.size():
+		selected_slot_index = -1
+	_update_slot_selection_visuals()
+	_update_merge_controls()
+
+func _on_slot_gui_input(event: InputEvent, index: int) -> void:
+	if not (event is InputEventMouseButton):
+		return
+	var mouse_event := event as InputEventMouseButton
+	if mouse_event.button_index != MOUSE_BUTTON_LEFT or not mouse_event.pressed:
+		return
+	if index >= _get_equipped_entries().size():
+		selected_slot_index = -1
+	else:
+		selected_slot_index = index
+	_update_slot_selection_visuals()
+	_update_merge_controls()
+
+func _on_merge_pressed(index: int) -> void:
+	if not _is_shop_open():
+		return
+	if index != selected_slot_index:
+		print("Select this slot first, then press Merge.")
+		return
+	if weapon_loadout == null or not weapon_loadout.has_method("try_merge_slot"):
+		return
+	var result_variant: Variant = weapon_loadout.call("try_merge_slot", index)
+	if not (result_variant is Dictionary):
+		return
+	var result: Dictionary = result_variant
+	var success := bool(result.get("success", false))
+	var message := str(result.get("message", ""))
+	if message != "":
+		print(message)
+	if success:
+		selected_slot_index = -1
+	_update_hud()
+
+func _update_slot_selection_visuals() -> void:
+	for i in range(slot_panels.size()):
+		var panel := slot_panels[i]
+		if panel == null:
+			continue
+		if i == selected_slot_index:
+			panel.self_modulate = Color(0.78, 0.9, 1.0, 1.0)
+		else:
+			panel.self_modulate = Color(1.0, 1.0, 1.0, 1.0)
+
+func _update_merge_controls() -> void:
+	var equipped_entries: Array[Dictionary] = _get_equipped_entries()
+	var shop_open := _is_shop_open()
+	for i in range(slot_merge_buttons.size()):
+		var merge_button := slot_merge_buttons[i]
+		if merge_button == null:
+			continue
+		var has_entry := i < equipped_entries.size()
+		merge_button.visible = shop_open and has_entry
+		if not merge_button.visible:
+			merge_button.disabled = true
+			continue
+		var is_selected := i == selected_slot_index
+		var can_merge := false
+		if is_selected and weapon_loadout != null and weapon_loadout.has_method("can_merge_slot"):
+			can_merge = bool(weapon_loadout.call("can_merge_slot", i))
+		merge_button.disabled = not (is_selected and can_merge)
+
+func _is_shop_open() -> bool:
+	return shop_panel != null and shop_panel.visible
 
 func _get_equipped_entries() -> Array[Dictionary]:
 	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_entries"):

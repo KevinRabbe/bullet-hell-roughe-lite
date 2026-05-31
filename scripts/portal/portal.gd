@@ -2,7 +2,7 @@ extends Area2D
 
 signal activated(portal_position: Vector2)
 
-@export var activation_radius: float = 90.0
+@export var activation_radius: float = 108.0
 
 var is_active: bool = true
 

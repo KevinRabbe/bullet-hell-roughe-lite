@@ -1,4 +1,5 @@
 extends CharacterBody2D
+const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
 
 @export var move_speed: float = 140.0
 @export var max_hp: float = 20.0
@@ -19,6 +20,19 @@ var current_hp: float
 var damage_cooldown_left: float = 0.0
 var ranged_cooldown_left: float = 0.0
 @onready var visual: CanvasItem = get_node_or_null("Visual")
+@onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
+
+const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/dust_imp.png")
+const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/hellhound.png")
+const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/rift_cultist.png")
+const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_skull_fireball.png")
+const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_rift_shard.png")
+const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyProjectile.tscn")
+const ENEMY_DATA_PATHS: Dictionary = {
+	"imp_runner": "res://data/enemies/imp_runner.tres",
+	"husk_brute": "res://data/enemies/husk_brute.tres",
+	"spit_fiend": "res://data/enemies/spit_fiend.tres"
+}
 
 func _ready() -> void:
 	_apply_variant_stats()
@@ -108,33 +122,93 @@ func _try_ranged_damage_player() -> void:
 	var distance_to_player := global_position.distance_to(target.global_position)
 	if distance_to_player > ranged_attack_range:
 		return
-	print("SPIT FIEND HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, ranged_damage])
-	target.call("take_damage", ranged_damage)
+	var projectile_speed := 360.0
+	var projectile_lifetime := 2.0
+	if elite_role == "rift_caller":
+		projectile_speed = 300.0
+		projectile_lifetime = 2.3
+	else:
+		projectile_speed = 390.0
+		projectile_lifetime = 1.9
+	var projectile := ProjectileSpawnUtil.spawn_projectile(
+		ENEMY_PROJECTILE_SCENE,
+		get_tree().current_scene,
+		global_position,
+		target.global_position - global_position,
+		ranged_damage,
+		projectile_speed,
+		projectile_lifetime,
+		PI
+	)
+	if projectile != null:
+		var projectile_visual := projectile.get_node_or_null("Visual")
+		if projectile_visual is Sprite2D:
+			var projectile_sprite := projectile_visual as Sprite2D
+			if elite_role == "rift_caller":
+				projectile_sprite.texture = RIFT_SHARD_TEXTURE
+			else:
+				projectile_sprite.texture = SKULL_FIREBALL_TEXTURE
+			projectile_sprite.rotation = (target.global_position - global_position).angle() + PI
+	print("SPIT FIEND SHOT PROJECTILE | distance %.1f | damage %.1f" % [distance_to_player, ranged_damage])
 	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:
+	var data := _load_enemy_data(enemy_variant)
+	var has_data := data != null
+	if has_data:
+		_apply_enemy_data(data)
 	match enemy_variant:
 		"imp_runner":
-			move_speed = 190.0
-			max_hp = 16.0
-			contact_damage = 5.0
-			damage_interval_seconds = 0.65
+			if not has_data:
+				move_speed = 190.0
+				max_hp = 16.0
+				contact_damage = 5.0
+				damage_interval_seconds = 0.65
 			if visual != null:
 				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			if visual_sprite != null:
+				visual_sprite.texture = IMP_RUNNER_TEXTURE
+				visual_sprite.scale = Vector2(0.085, 0.085)
 		"husk_brute":
-			move_speed = 95.0
-			max_hp = 40.0
-			contact_damage = 10.0
-			damage_interval_seconds = 1.0
+			if not has_data:
+				move_speed = 95.0
+				max_hp = 40.0
+				contact_damage = 10.0
+				damage_interval_seconds = 1.0
 			if visual != null:
-				visual.modulate = Color(0.75, 0.45, 0.2, 1.0)
+				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			if visual_sprite != null:
+				visual_sprite.texture = HUSK_BRUTE_TEXTURE
+				visual_sprite.scale = Vector2(0.1, 0.1)
 		"spit_fiend":
-			move_speed = 120.0
-			max_hp = 24.0
-			contact_damage = 3.0
-			damage_interval_seconds = 1.2
-			ranged_damage = 4.0
-			ranged_interval_seconds = 1.1
-			ranged_attack_range = 230.0
+			if not has_data:
+				move_speed = 120.0
+				max_hp = 24.0
+				contact_damage = 3.0
+				damage_interval_seconds = 1.2
+				ranged_damage = 4.0
+				ranged_interval_seconds = 1.1
+				ranged_attack_range = 230.0
 			if visual != null:
-				visual.modulate = Color(0.6, 0.9, 0.35, 1.0)
+				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			if visual_sprite != null:
+				visual_sprite.texture = SPIT_FIEND_TEXTURE
+				visual_sprite.scale = Vector2(0.09, 0.09)
+
+func _load_enemy_data(variant_id: String) -> EnemyData:
+	var resource_path := str(ENEMY_DATA_PATHS.get(variant_id, ""))
+	if resource_path == "" or not ResourceLoader.exists(resource_path):
+		return null
+	return load(resource_path) as EnemyData
+
+func _apply_enemy_data(data: EnemyData) -> void:
+	max_hp = data.max_hp
+	move_speed = data.move_speed
+	contact_damage = data.contact_damage
+	contact_range = data.contact_range
+	damage_interval_seconds = data.damage_interval_seconds
+	ranged_damage = data.ranged_damage
+	ranged_interval_seconds = data.ranged_interval_seconds
+	ranged_attack_range = data.ranged_attack_range
+	is_elite = data.is_elite
+	is_boss = data.is_boss

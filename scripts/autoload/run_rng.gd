@@ -8,8 +8,8 @@ var stream_rngs: Dictionary = {}
 func _ready() -> void:
 	new_run()
 
-func set_seed(seed: int) -> void:
-	run_seed = seed
+func set_seed(new_seed: int) -> void:
+	run_seed = new_seed
 	stream_rngs.clear()
 	print("RUN SEED: %d" % run_seed)
 

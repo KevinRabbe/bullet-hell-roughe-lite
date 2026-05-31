@@ -43,21 +43,30 @@ func _process(_delta: float) -> void:
 func _update_hud() -> void:
 	if player == null or enemy_spawner == null:
 		return
+	var player_snapshot := _get_player_snapshot()
 	if stats_label != null:
-		var hp := float(player.get("current_hp"))
-		var gold := int(player.get("current_gold"))
-		var level := int(player.get("current_level"))
-		var xp := int(player.get("current_xp"))
-		var xp_to_next := int(player.get("xp_to_next_level"))
+		var hp := float(player_snapshot.get("hp", 0.0))
+		var gold := int(player_snapshot.get("gold", 0))
+		var level := int(player_snapshot.get("level", 1))
+		var xp := int(player_snapshot.get("xp", 0))
+		var xp_to_next := int(player_snapshot.get("xp_to_next", 1))
 		var wave := int(enemy_spawner.get("current_wave_index"))
 		stats_label.text = "Wave %d  HP %.0f  Gold %d  Lv %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
-		state_label.text = "State: %s" % _get_run_state()
+		state_label.text = "State: %s  |  %s" % [_get_run_state(), _get_debug_preset_label()]
 	if wave_progress_bar != null:
 		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 		var ratio := clampf(elapsed / duration, 0.0, 1.0)
 		wave_progress_bar.value = ratio * 100.0
+		wave_progress_bar.visible = not _is_shop_open()
+
+func _get_player_snapshot() -> Dictionary:
+	if player != null and player.has_method("get_ui_snapshot"):
+		var snapshot_variant: Variant = player.call("get_ui_snapshot")
+		if snapshot_variant is Dictionary:
+			return snapshot_variant
+	return {}
 
 func _get_run_state() -> String:
 	if level_up_panel != null and level_up_panel.visible:
@@ -67,3 +76,12 @@ func _get_run_state() -> String:
 	if wave_intermission_panel != null and wave_intermission_panel.visible:
 		return "Intermission"
 	return "Combat"
+
+func _is_shop_open() -> bool:
+	return shop_panel != null and shop_panel.visible
+
+func _get_debug_preset_label() -> String:
+	var main_game := get_tree().current_scene
+	if main_game != null and main_game.has_method("get_debug_preset_label"):
+		return str(main_game.call("get_debug_preset_label"))
+	return "DebugPreset: normal"

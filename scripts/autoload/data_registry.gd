@@ -6,6 +6,8 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 	"res://data/enemies/husk_brute.tres",
 	"res://data/enemies/spit_fiend.tres",
 ]
+const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
+const ITEM_RESOURCE_DIR: String = "res://data/items"
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -27,8 +29,12 @@ func _ready() -> void:
 
 func _register_defaults() -> void:
 	_load_character_json_data("res://data/characters")
-	_register_by_id(items, ItemDatabase.get_prototype_items())
+	_register_by_id(weapons, _load_resource_directory(WEAPON_RESOURCE_DIR))
+	_register_by_id(items, _load_resource_directory(ITEM_RESOURCE_DIR))
+	if items.is_empty():
+		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
+	_validate_registry_entries()
 
 func _load_enemy_resources() -> Array:
 	var loaded: Array = []
@@ -76,6 +82,49 @@ func _register_by_id(target: Dictionary, entries: Array) -> void:
 		if entry_id == "":
 			continue
 		target[entry_id] = entry
+
+func _load_resource_directory(directory_path: String) -> Array:
+	var loaded: Array = []
+	var directory := DirAccess.open(directory_path)
+	if directory == null:
+		return loaded
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while file_name != "":
+		if not directory.current_is_dir() and file_name.ends_with(".tres"):
+			var full_path := "%s/%s" % [directory_path, file_name]
+			if ResourceLoader.exists(full_path):
+				var resource := load(full_path)
+				if resource != null:
+					loaded.append(resource)
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	return loaded
+
+func _validate_registry_entries() -> void:
+	for weapon_id in weapons.keys():
+		var weapon: Variant = weapons[weapon_id]
+		if weapon == null:
+			push_warning("Weapon entry '%s' is null." % str(weapon_id))
+			continue
+		if str(weapon.get("display_name")) == "":
+			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+		if int(weapon.get("price")) <= 0:
+			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+	for item_id in items.keys():
+		var item: Variant = items[item_id]
+		if item == null:
+			push_warning("Item entry '%s' is null." % str(item_id))
+			continue
+		if str(item.get("name")) == "":
+			push_warning("Item '%s' is missing name." % str(item_id))
+	for enemy_id in enemies.keys():
+		var enemy: Variant = enemies[enemy_id]
+		if enemy == null:
+			push_warning("Enemy entry '%s' is null." % str(enemy_id))
+			continue
+		if float(enemy.get("max_hp")) <= 0.0:
+			push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
 
 func get_character(id: String):
 	return characters.get(id)

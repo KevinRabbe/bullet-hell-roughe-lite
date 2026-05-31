@@ -14,6 +14,7 @@ extends Resource
 @export var base_damage: float = 10.0
 @export var cooldown: float = 0.6
 @export var attack_speed: float = 1.0
+@warning_ignore("shadowed_global_identifier")
 @export var range: float = 1.0
 @export var projectile_speed: float = 700.0
 @export var pierce: int = 0
@@ -32,3 +33,9 @@ extends Resource
 @export var attack_range: float = 1.0
 @export var projectile_lifetime_seconds: float = 2.0
 @export var projectile_scene_path: String = ""
+
+# Visual/orbit calibration fields (Stage 11 stabilization)
+@export var orbit_radius_multiplier: float = 1.0
+@export var orbit_scale_multiplier: float = 1.0
+@export var aim_forward_sign: float = 1.0
+@export var projectile_rotation_offset: float = 0.0

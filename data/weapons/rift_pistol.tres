@@ -13,3 +13,4 @@ damage = 9.0
 projectile_speed = 760.0
 attack_range = 1.1
 projectile_lifetime_seconds = 2.0
+price = 6
