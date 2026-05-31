@@ -1,38 +1,22 @@
 extends RefCounted
 
+const ITEM_RESOURCE_PATHS: Array[String] = [
+	"res://data/items/swift_boots.tres",
+	"res://data/items/glass_scope.tres",
+	"res://data/items/steel_heart.tres",
+	"res://data/items/trigger_core.tres",
+	"res://data/items/lucky_charm.tres",
+]
+
 static func get_prototype_items() -> Array[ItemData]:
-	return [
-		ItemData.new(
-			"swift_boots",
-			"Swift Boots",
-			"Move faster.",
-			{"movement_speed": 35.0}
-		),
-		ItemData.new(
-			"glass_scope",
-			"Glass Scope",
-			"Projectiles travel farther and faster.",
-			{"attack_range": 0.2, "projectile_speed": 0.25}
-		),
-		ItemData.new(
-			"steel_heart",
-			"Steel Heart",
-			"Gain max HP and armor.",
-			{"max_hp": 25.0, "armor": 2.0}
-		),
-		ItemData.new(
-			"trigger_core",
-			"Trigger Core",
-			"Fire faster and hit harder.",
-			{"attack_speed": 0.2, "damage": 0.2}
-		),
-		ItemData.new(
-			"lucky_charm",
-			"Lucky Charm",
-			"Improve luck and dodge chance.",
-			{"luck": 1.0, "dodge": 0.05}
-		)
-	]
+	var items: Array[ItemData] = []
+	for resource_path in ITEM_RESOURCE_PATHS:
+		if not ResourceLoader.exists(resource_path):
+			continue
+		var item_resource := load(resource_path)
+		if item_resource is ItemData:
+			items.append(item_resource as ItemData)
+	return items
 
 static func get_random_item(rng: RandomNumberGenerator) -> ItemData:
 	var items := get_prototype_items()

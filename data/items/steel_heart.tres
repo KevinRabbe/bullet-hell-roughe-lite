@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "steel_heart"
+name = "Steel Heart"
+description = "Gain max HP and armor."
+category = "defense"
+rarity = "rare"
+tags = Array[String](["survivability"])
+price = 3
+stack_limit = 1
+stat_modifiers = {
+"armor": 2.0,
+"max_hp": 25.0
+}
