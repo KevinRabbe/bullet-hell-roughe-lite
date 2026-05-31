@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://scripts/player/weapon_loadout.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/weapons/set_bonus_manager.gd" id="6"]
 [ext_resource type="Resource" path="res://data/weapons/heavy_pistol.tres" id="7"]
-[ext_resource type="Texture2D" path="res://assets/sprites/placeholders/player_demon_idle.png" id="8"]
+[ext_resource type="Texture2D" path="res://assets/sprites/characters/gunslinger/gunslinger_idle.png" id="8"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
