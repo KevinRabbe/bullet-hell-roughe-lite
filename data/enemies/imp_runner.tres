@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "imp_runner"
+display_name = "Imp Runner"
+description = "Fast melee chaser."
+archetype = "melee_chaser"
+tags = Array[String](["demon", "runner"])
+max_hp = 16.0
+move_speed = 190.0
+contact_damage = 5.0
+contact_range = 55.0
+damage_interval_seconds = 0.65
+ranged_damage = 0.0
+ranged_interval_seconds = 0.0
+ranged_attack_range = 0.0
+is_elite = false
+is_boss = false
+threat_tier = 1
+reward_gold = 1
+reward_xp = 1
