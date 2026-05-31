@@ -10,6 +10,7 @@ extends Node2D
 @onready var shop_controller: Node = $ShopController
 @onready var level_up_panel: Control = $LevelUpUI/Panel
 @onready var level_up_title: Label = $LevelUpUI/Panel/Title
+@onready var level_up_reroll_button: Button = $LevelUpUI/Panel/RerollButton
 @onready var level_up_choice_buttons: Array[Button] = [
 	$LevelUpUI/Panel/Choice1,
 	$LevelUpUI/Panel/Choice2,
@@ -41,6 +42,8 @@ var stat_display_names: Dictionary = {
 	"movement_speed": "Move Speed",
 	"armor": "Armor"
 }
+var level_up_reroll_count: int = 0
+var level_up_base_reroll_cost: int = 2
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -63,6 +66,8 @@ func _ready() -> void:
 		shop_controller.connect("continue_requested", _on_wave_continue_pressed)
 	for index in level_up_choice_buttons.size():
 		level_up_choice_buttons[index].pressed.connect(_on_level_up_choice_pressed.bind(index))
+	if level_up_reroll_button != null:
+		level_up_reroll_button.pressed.connect(_on_level_up_reroll_pressed)
 	levelup_rng = _resolve_rng("levelup")
 	_load_selectable_characters()
 	_update_character_debug_label()
@@ -272,10 +277,12 @@ func _on_level_up_pending_changed() -> void:
 
 func _open_level_up_screen() -> void:
 	waiting_for_level_up_choice = true
+	level_up_reroll_count = 0
 	_set_combat_active(false)
 	_roll_level_up_choices()
 	if level_up_title != null:
 		level_up_title.text = "Level Up! Pick 1 of 4"
+	_update_level_up_reroll_button()
 	if level_up_panel != null:
 		level_up_panel.visible = true
 	print("Level-up choices shown.")
@@ -318,6 +325,29 @@ func _on_level_up_choice_pressed(index: int) -> void:
 		_open_level_up_screen()
 		return
 	_start_next_wave_after_intermission()
+
+func _on_level_up_reroll_pressed() -> void:
+	if not waiting_for_level_up_choice:
+		return
+	if player == null or not player.has_method("spend_gold"):
+		return
+	var reroll_cost := _current_level_up_reroll_cost()
+	var paid: bool = bool(player.call("spend_gold", reroll_cost))
+	if not paid:
+		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
+		return
+	level_up_reroll_count += 1
+	_roll_level_up_choices()
+	_update_level_up_reroll_button()
+	print("Level-up choices rerolled for %d gold." % reroll_cost)
+
+func _current_level_up_reroll_cost() -> int:
+	return level_up_base_reroll_cost + level_up_reroll_count
+
+func _update_level_up_reroll_button() -> void:
+	if level_up_reroll_button == null:
+		return
+	level_up_reroll_button.text = "Reroll (%dG)" % _current_level_up_reroll_cost()
 
 func _build_level_up_choice(stat_id: String) -> Dictionary:
 	var rarity := _roll_rarity_name()

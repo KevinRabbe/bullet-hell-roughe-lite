@@ -209,6 +209,13 @@ offset_right = 450.0
 offset_bottom = 270.0
 text = "Choice 4"
 
+[node name="RerollButton" type="Button" parent="LevelUpUI/Panel"]
+offset_left = 40.0
+offset_top = 290.0
+offset_right = 210.0
+offset_bottom = 330.0
+text = "Reroll (2G)"
+
 [node name="BossManager" type="Node" parent="."]
 script = ExtResource("9")
 boss_scene = ExtResource("3")
