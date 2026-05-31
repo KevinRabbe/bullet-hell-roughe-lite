@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/game/boss_manager.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/ui/equipped_weapon_hud.gd" id="10"]
 [ext_resource type="Script" path="res://scripts/ui/run_hud_controller.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/ui/shop_tooltip_panel.gd" id="12"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("2")
@@ -156,6 +157,28 @@ offset_right = 390.0
 offset_bottom = 325.0
 text = "Continue"
 
+[node name="TooltipPanel" type="Panel" parent="ShopUI"]
+visible = false
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 320.0
+offset_bottom = 140.0
+
+[node name="TooltipTitle" type="Label" parent="ShopUI/TooltipPanel"]
+offset_left = 12.0
+offset_top = 10.0
+offset_right = 300.0
+offset_bottom = 34.0
+text = "Offer"
+
+[node name="TooltipBody" type="Label" parent="ShopUI/TooltipPanel"]
+offset_left = 12.0
+offset_top = 36.0
+offset_right = 308.0
+offset_bottom = 130.0
+autowrap_mode = 2
+text = "Tooltip"
+
 [node name="ShopController" type="Node" parent="."]
 script = ExtResource("8")
 enemy_spawner_path = NodePath("../EnemySpawner")
@@ -166,6 +189,14 @@ offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Pa
 reroll_button_path = NodePath("../ShopUI/Panel/RerollButton")
 continue_button_path = NodePath("../ShopUI/Panel/ContinueButton")
 enabled = true
+
+[node name="ShopTooltipController" type="Node" parent="."]
+script = ExtResource("12")
+shop_controller_path = NodePath("../ShopController")
+offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
+tooltip_panel_path = NodePath("../ShopUI/TooltipPanel")
+tooltip_title_path = NodePath("../ShopUI/TooltipPanel/TooltipTitle")
+tooltip_body_path = NodePath("../ShopUI/TooltipPanel/TooltipBody")
 
 [node name="LevelUpUI" type="CanvasLayer" parent="."]
 
