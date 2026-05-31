@@ -300,6 +300,7 @@ shop_panel_path = NodePath("../../ShopUI/Panel")
 level_up_panel_path = NodePath("../../LevelUpUI/Panel")
 stats_label_path = NodePath("StatsLabel")
 state_label_path = NodePath("StateLabel")
+wave_progress_bar_path = NodePath("WaveProgress")
 
 [node name="StatsLabel" type="Label" parent="RunHUD/Control"]
 layout_mode = 1
@@ -316,6 +317,15 @@ offset_top = 36.0
 offset_right = 240.0
 offset_bottom = 60.0
 text = "State: Combat"
+
+[node name="WaveProgress" type="ProgressBar" parent="RunHUD/Control"]
+layout_mode = 1
+offset_left = 16.0
+offset_top = 64.0
+offset_right = 420.0
+offset_bottom = 82.0
+max_value = 100.0
+value = 0.0
 
 [node name="EquippedWeaponHUD" type="CanvasLayer" parent="."]
 

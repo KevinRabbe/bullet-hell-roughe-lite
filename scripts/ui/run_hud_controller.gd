@@ -7,6 +7,7 @@ extends Control
 @export var level_up_panel_path: NodePath
 @export var stats_label_path: NodePath
 @export var state_label_path: NodePath
+@export var wave_progress_bar_path: NodePath
 
 var player: Node
 var enemy_spawner: Node
@@ -15,6 +16,7 @@ var shop_panel: Control
 var level_up_panel: Control
 var stats_label: Label
 var state_label: Label
+var wave_progress_bar: ProgressBar
 
 func _ready() -> void:
 	if player_path != NodePath():
@@ -31,6 +33,8 @@ func _ready() -> void:
 		stats_label = get_node_or_null(stats_label_path)
 	if state_label_path != NodePath():
 		state_label = get_node_or_null(state_label_path)
+	if wave_progress_bar_path != NodePath():
+		wave_progress_bar = get_node_or_null(wave_progress_bar_path)
 	_update_hud()
 
 func _process(_delta: float) -> void:
@@ -49,6 +53,11 @@ func _update_hud() -> void:
 		stats_label.text = "Wave %d  HP %.0f  Gold %d  Lv %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
 		state_label.text = "State: %s" % _get_run_state()
+	if wave_progress_bar != null:
+		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
+		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
+		var ratio := clampf(elapsed / duration, 0.0, 1.0)
+		wave_progress_bar.value = ratio * 100.0
 
 func _get_run_state() -> String:
 	if level_up_panel != null and level_up_panel.visible:
