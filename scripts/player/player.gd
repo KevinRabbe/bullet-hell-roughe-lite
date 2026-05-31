@@ -277,10 +277,23 @@ func grant_weapon(weapon_id: String) -> bool:
 		push_error("WeaponLoadout not found on Player.")
 		return false
 
-	var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
-	if not equipped:
+	var grant_result_variant: Variant
+	if weapon_loadout.has_method("grant_or_combine_weapon"):
+		grant_result_variant = weapon_loadout.call("grant_or_combine_weapon", weapon_id)
+	else:
+		var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
+		grant_result_variant = {"success": equipped, "combined": false, "rarity": "common"}
+
+	if not (grant_result_variant is Dictionary):
+		print("Weapon grant failed: invalid loadout result for %s" % weapon_id)
+		return false
+	var grant_result: Dictionary = grant_result_variant
+	var success := bool(grant_result.get("success", false))
+	if not success:
 		print("Weapon loadout full or weapon rejected: %s" % weapon_id)
 		return false
+	var combined := bool(grant_result.get("combined", false))
+	var granted_rarity := str(grant_result.get("rarity", "common"))
 
 	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
 	if weapon_path != "":
@@ -288,7 +301,10 @@ func grant_weapon(weapon_id: String) -> bool:
 		if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
 			auto_weapon.call("set_weapon_data", weapon_resource)
 
-	print("Weapon granted: %s" % weapon_id)
+	if combined:
+		print("Weapon combined: %s -> %s" % [weapon_id, granted_rarity])
+	else:
+		print("Weapon granted: %s (%s)" % [weapon_id, granted_rarity])
 	return true
 
 # TODO: remove after all callers use grant_weapon directly.
