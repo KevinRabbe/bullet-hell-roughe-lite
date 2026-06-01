@@ -27,6 +27,22 @@ const RARITY_SPEED_MULTIPLIER: Dictionary = {
 	"epic": 1.12,
 	"legendary": 1.2
 }
+const WEAPON_PROJECTILE_TEXTURE_PATHS: Dictionary = {
+	"scrap_pistol": "res://assets/sprites/projectiles/harvester/harvester_projectile_03.png",
+	"bone_knife": "res://assets/sprites/projectiles/harvester/harvester_projectile_02.png",
+	"heart_collector": "res://assets/sprites/projectiles/harvester/harvester_projectile_01.png",
+	"rusted_smg": "res://assets/sprites/projectiles/harvester/harvester_projectile_06.png",
+	"grave_rifle": "res://assets/sprites/projectiles/harvester/harvester_projectile_05.png",
+	"butcher_tool": "res://assets/sprites/projectiles/harvester/harvester_projectile_04.png"
+}
+const WEAPON_PROJECTILE_SCALE: Dictionary = {
+	"scrap_pistol": Vector2(0.06, 0.06),
+	"bone_knife": Vector2(0.055, 0.055),
+	"heart_collector": Vector2(0.07, 0.07),
+	"rusted_smg": Vector2(0.055, 0.055),
+	"grave_rifle": Vector2(0.062, 0.062),
+	"butcher_tool": Vector2(0.065, 0.065)
+}
 
 func _ready() -> void:
 	owner_player = get_parent() as Node2D
@@ -153,6 +169,7 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 	)
 	if projectile == null:
 		return
+	_apply_projectile_visual(projectile, entry_data.id)
 	if projectile.has_method("set_shooter"):
 		projectile.call("set_shooter", owner_player)
 	var total_damage_multiplier := 1.0
@@ -167,6 +184,25 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		projectile.set("pierce_count", 1 if can_pierce else 0)
 		if can_pierce:
 			print("Set Bonus 4-piece: pierce shot proc.")
+
+func _apply_projectile_visual(projectile: Node, weapon_id: String) -> void:
+	if weapon_id == "":
+		return
+	var texture_path := str(WEAPON_PROJECTILE_TEXTURE_PATHS.get(weapon_id, ""))
+	if texture_path == "":
+		return
+	if not ResourceLoader.exists(texture_path):
+		return
+	var visual := projectile.get_node_or_null("Visual")
+	if not (visual is Sprite2D):
+		return
+	var projectile_sprite := visual as Sprite2D
+	var texture_resource := load(texture_path)
+	if texture_resource is Texture2D:
+		projectile_sprite.texture = texture_resource
+	var desired_scale_variant: Variant = WEAPON_PROJECTILE_SCALE.get(weapon_id, Vector2(0.055, 0.055))
+	if desired_scale_variant is Vector2:
+		projectile_sprite.scale = desired_scale_variant
 
 func _get_slot_muzzle_position(slot_index: int) -> Vector2:
 	var fire_direction := _get_slot_fire_direction(slot_index, _get_slot_aim_direction(slot_index))
