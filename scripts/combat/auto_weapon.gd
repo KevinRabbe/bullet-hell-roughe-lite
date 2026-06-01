@@ -43,6 +43,14 @@ const WEAPON_PROJECTILE_SCALE: Dictionary = {
 	"grave_rifle": Vector2(0.062, 0.062),
 	"butcher_tool": Vector2(0.065, 0.065)
 }
+const WEAPON_PROJECTILE_TRAIL_COLORS: Dictionary = {
+	"scrap_pistol": Color(1.0, 0.45, 0.65, 0.9),
+	"bone_knife": Color(0.95, 0.35, 0.55, 0.9),
+	"heart_collector": Color(1.0, 0.25, 0.45, 0.9),
+	"rusted_smg": Color(1.0, 0.5, 0.72, 0.9),
+	"grave_rifle": Color(0.9, 0.4, 0.95, 0.9),
+	"butcher_tool": Color(1.0, 0.3, 0.38, 0.9)
+}
 
 func _ready() -> void:
 	owner_player = get_parent() as Node2D
@@ -203,6 +211,9 @@ func _apply_projectile_visual(projectile: Node, weapon_id: String) -> void:
 	var desired_scale_variant: Variant = WEAPON_PROJECTILE_SCALE.get(weapon_id, Vector2(0.055, 0.055))
 	if desired_scale_variant is Vector2:
 		projectile_sprite.scale = desired_scale_variant
+	var trail_color_variant: Variant = WEAPON_PROJECTILE_TRAIL_COLORS.get(weapon_id, Color(1.0, 0.35, 0.55, 0.9))
+	if trail_color_variant is Color:
+		projectile.set("trail_color", trail_color_variant)
 
 func _get_slot_muzzle_position(slot_index: int) -> Vector2:
 	var fire_direction := _get_slot_fire_direction(slot_index, _get_slot_aim_direction(slot_index))
