@@ -22,12 +22,14 @@ var ranged_cooldown_left: float = 0.0
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
-const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/dust_imp.png")
-const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/hellhound.png")
-const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/rift_cultist.png")
-const SKELETON_RIFLEMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/skeleton_rifleman.png")
-const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_skull_fireball.png")
-const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_rift_shard.png")
+const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_brute.png")
+const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/final_boss_shadow_assassin.png")
+const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/hell_lantern_mage.png")
+const SKELETON_RIFLEMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/skeleton_marshal.png")
+const ARCHMAGE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_archmage.png")
+const MARKSMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_marksman.png")
+const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/skull_fireball.png")
+const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/hell_arcane_shot.png")
 const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyProjectile.tscn")
 const ENEMY_DATA_PATHS: Dictionary = {
 	"imp_runner": "res://data/enemies/imp_runner.tres",
@@ -207,7 +209,10 @@ func _apply_variant_stats() -> void:
 			if visual != null:
 				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
 			if visual_sprite != null:
-				visual_sprite.texture = SPIT_FIEND_TEXTURE
+				if elite_role == "rift_caller":
+					visual_sprite.texture = ARCHMAGE_TEXTURE
+				else:
+					visual_sprite.texture = SPIT_FIEND_TEXTURE
 				visual_sprite.scale = Vector2(0.09, 0.09)
 		"skeleton_rifleman":
 			if not has_data:
@@ -221,7 +226,10 @@ func _apply_variant_stats() -> void:
 			if visual != null:
 				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
 			if visual_sprite != null:
-				visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
+				if elite_role == "marksman":
+					visual_sprite.texture = MARKSMAN_TEXTURE
+				else:
+					visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
 				visual_sprite.scale = Vector2(0.09, 0.09)
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
