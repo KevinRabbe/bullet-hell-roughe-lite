@@ -16,19 +16,11 @@ var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
+var active_character_weapon_ids: Array[String] = ["heavy_pistol"]
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
-
-const GUNSLINGER_WEAPON_IDS: Array[String] = [
-	"heavy_pistol",
-	"gunslinger_smg",
-	"gunslinger_shotgun",
-	"gunslinger_revolver",
-	"gunslinger_assault_rifle",
-	"gunslinger_sniper_rifle"
-]
 
 const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
 	"heavy_pistol": "res://data/weapons/heavy_pistol.tres",
@@ -244,6 +236,7 @@ func _apply_character_starting_weapon() -> void:
 	_debug_add_gunslinger_weapon_by_id("heavy_pistol")
 
 func _apply_character_rules() -> void:
+	active_character_weapon_ids = _resolve_character_weapon_ids()
 	if active_character_id == "gunslinger":
 		stats.burn_damage = 0.8
 		stats.poison_damage = 0.8
@@ -310,10 +303,29 @@ func _weapon_slot_index_from_key(keycode: int) -> int:
 		_: return -1
 
 func _equip_gunslinger_weapon(index: int) -> void:
-	if index < 0 or index >= GUNSLINGER_WEAPON_IDS.size():
+	if index < 0 or index >= active_character_weapon_ids.size():
 		return
-	var weapon_id := GUNSLINGER_WEAPON_IDS[index]
+	var weapon_id := active_character_weapon_ids[index]
+	if weapon_id == "":
+		return
 	grant_weapon(weapon_id)
+
+func _resolve_character_weapon_ids() -> Array[String]:
+	var resolved_ids: Array[String] = []
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.has_method("get_character"):
+		var character_variant: Variant = data_registry.call("get_character", active_character_id)
+		if character_variant is Dictionary:
+			var character_data: Dictionary = character_variant
+			var starter_variant: Variant = character_data.get("starting_weapon_ids", [])
+			if starter_variant is Array:
+				for weapon_entry in starter_variant:
+					var weapon_id := str(weapon_entry)
+					if weapon_id != "":
+						resolved_ids.append(weapon_id)
+	if resolved_ids.is_empty():
+		resolved_ids.append("heavy_pistol")
+	return resolved_ids
 
 func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool:
 	if weapon_id == "":
