@@ -38,18 +38,51 @@ var card_lock_buttons: Array[Button] = []
 var card_panels: Array[Panel] = []
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
+var _was_panel_visible: bool = false
+var _pending_full_refresh: bool = false
+var _gold_poll_timer: float = 0.0
+const GOLD_POLL_INTERVAL_SECONDS: float = 0.2
 
 func _ready() -> void:
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
+	_connect_refresh_triggers()
 	_refresh_all()
 
 func _process(_delta: float) -> void:
 	if panel == null:
 		return
-	if panel.visible:
+	if panel.visible != _was_panel_visible:
+		_was_panel_visible = panel.visible
+		if panel.visible:
+			_queue_full_refresh()
+	if not panel.visible:
+		return
+	if _pending_full_refresh:
+		_pending_full_refresh = false
 		_refresh_all()
+		return
+	_gold_poll_timer += _delta
+	if _gold_poll_timer >= GOLD_POLL_INTERVAL_SECONDS:
+		_gold_poll_timer = 0.0
+		_refresh_top_bar()
+
+func _connect_refresh_triggers() -> void:
+	for button in offer_buttons:
+		if button != null and not button.pressed.is_connected(_on_ui_action_pressed):
+			button.pressed.connect(_on_ui_action_pressed)
+	if reroll_button != null and not reroll_button.pressed.is_connected(_on_ui_action_pressed):
+		reroll_button.pressed.connect(_on_ui_action_pressed)
+	if continue_button != null and not continue_button.pressed.is_connected(_on_ui_action_pressed):
+		continue_button.pressed.connect(_on_ui_action_pressed)
+
+func _on_ui_action_pressed() -> void:
+	_queue_full_refresh()
+
+func _queue_full_refresh() -> void:
+	_pending_full_refresh = true
+	_gold_poll_timer = 0.0
 
 func _resolve_references() -> void:
 	shop_controller = get_node_or_null(shop_controller_path)
@@ -409,6 +442,7 @@ func _refresh_weapon_slots() -> void:
 func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
 	_update_merge_button_state()
+	_queue_full_refresh()
 
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
@@ -421,7 +455,7 @@ func _on_merge_selected_pressed() -> void:
 		print(str(result.get("message", "")))
 		if bool(result.get("success", false)):
 			selected_weapon_slot = -1
-	_refresh_all()
+	_queue_full_refresh()
 
 func _update_merge_button_state() -> void:
 	if merge_selected_button == null:
