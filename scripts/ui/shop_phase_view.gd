@@ -302,27 +302,35 @@ func _refresh_offer_cards() -> void:
 		var type_label := card_type_labels[i]
 		var desc := card_desc_labels[i]
 		var button := offer_buttons[i] if i < offer_buttons.size() else null
+		var lock_button := card_lock_buttons[i] if i < card_lock_buttons.size() else null
 		if i >= offers.size():
 			title.text = "N/A"
 			type_label.text = "-"
 			desc.text = ""
+			if lock_button != null:
+				lock_button.text = "Lock (soon)"
 			if button != null:
 				button.text = "N/A"
 				button.disabled = true
 			continue
 		var offer := offers[i]
 		var offer_type := str(offer.get("type", ""))
+		var rolled_rarity := str(offer.get("rolled_rarity", offer.get("rarity", "common")))
 		_apply_card_border(i, offer_type)
-		title.text = str(offer.get("label", "Offer"))
+		title.text = "[%s] %s" % [rolled_rarity.capitalize(), str(offer.get("label", "Offer"))]
 		type_label.text = offer_type.capitalize()
 		var price := int(offer.get("price", 0))
 		if offer_type == "sold_out":
 			type_label.text = "Sold Out"
 			desc.text = "[color=gray]Already purchased.[/color]"
+			if lock_button != null:
+				lock_button.text = "Sold Out"
 			if button != null:
 				button.text = "Sold Out"
 				button.disabled = true
 			continue
+		if lock_button != null:
+			lock_button.text = "Lock (soon)"
 		desc.text = _build_offer_description(offer)
 		if button != null:
 			button.disabled = false
@@ -339,7 +347,7 @@ func _build_offer_description(offer: Dictionary) -> String:
 		var weapon_data := _load_weapon_data(weapon_id)
 		if weapon_data == null:
 			return "Weapon"
-		var rarity_text := str(offer.get("rarity", weapon_data.rarity)).capitalize()
+		var rarity_text := str(offer.get("rolled_rarity", offer.get("rarity", weapon_data.rarity))).capitalize()
 		var desc_text := weapon_data.description
 		if desc_text == "":
 			desc_text = "No description."
@@ -358,7 +366,8 @@ func _build_offer_description(offer: Dictionary) -> String:
 		var item_desc := item_data.description
 		if item_desc == "":
 			item_desc = "No description."
-		return "[color=#b5ff9a]Rarity: %s[/color]\n%s" % [str(item_data.rarity).capitalize(), item_desc]
+		var item_rarity := str(offer.get("rolled_rarity", item_data.rarity)).capitalize()
+		return "[color=#b5ff9a]Rarity: %s[/color]\n%s" % [item_rarity, item_desc]
 	return ""
 
 func _refresh_stats_panel() -> void:
@@ -485,10 +494,11 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 	if loadout == null:
 		return false
 	var weapon_id := str(offer.get("id", ""))
+	var rolled_rarity := str(offer.get("rolled_rarity", offer.get("rarity", "common")))
 	if weapon_id == "":
 		return false
 	if loadout.has_method("can_grant_weapon"):
-		return bool(loadout.call("can_grant_weapon", weapon_id))
+		return bool(loadout.call("can_grant_weapon", weapon_id, rolled_rarity))
 	if loadout.has_method("has_space"):
 		return bool(loadout.call("has_space"))
 	return true
