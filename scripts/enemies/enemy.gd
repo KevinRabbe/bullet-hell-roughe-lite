@@ -77,7 +77,9 @@ func _physics_process(delta: float) -> void:
 
 func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
+	_spawn_enemy_hit_flash()
 	if current_hp <= 0.0:
+		_spawn_death_puff()
 		_grant_kill_rewards()
 		queue_free()
 
@@ -239,3 +241,30 @@ func _apply_enemy_data(data: EnemyData) -> void:
 	ranged_attack_range = data.ranged_attack_range
 	is_elite = data.is_elite
 	is_boss = data.is_boss
+
+func _spawn_enemy_hit_flash() -> void:
+	if visual == null:
+		return
+	visual.modulate = Color(1.35, 1.35, 1.35, 1.0)
+	var tween := create_tween()
+	tween.tween_property(visual, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.12)
+
+func _spawn_death_puff() -> void:
+	if get_tree() == null or get_tree().current_scene == null:
+		return
+	var puff := Sprite2D.new()
+	puff.global_position = global_position
+	puff.z_index = z_index + 1
+	if visual_sprite != null and visual_sprite.texture != null:
+		puff.texture = visual_sprite.texture
+		puff.scale = visual_sprite.scale * 0.85
+	else:
+		puff.self_modulate = Color(1.0, 0.45, 0.35, 0.9)
+	get_tree().current_scene.add_child(puff)
+	var tween := create_tween()
+	tween.tween_property(puff, "scale", puff.scale * 1.35, 0.18)
+	tween.parallel().tween_property(puff, "modulate", Color(1.0, 0.45, 0.35, 0.0), 0.18)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(puff):
+			puff.queue_free()
+	)
