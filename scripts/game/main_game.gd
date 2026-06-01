@@ -18,6 +18,12 @@ extends Node2D
 @onready var level_up_panel: Control = $LevelUpUI/Panel
 @onready var level_up_title: Label = $LevelUpUI/Panel/Title
 @onready var level_up_reroll_button: Button = $LevelUpUI/Panel/RerollButton
+@onready var run_end_layer: CanvasLayer = $RunEndUI
+@onready var run_end_panel: Control = $RunEndUI/Panel
+@onready var run_end_title: Label = $RunEndUI/Panel/Title
+@onready var run_end_summary: Label = $RunEndUI/Panel/Summary
+@onready var run_end_restart_button: Button = $RunEndUI/Panel/RestartButton
+@onready var run_end_main_menu_button: Button = $RunEndUI/Panel/MainMenuButton
 @onready var level_up_choice_buttons: Array[Button] = [
 	$LevelUpUI/Panel/Choice1,
 	$LevelUpUI/Panel/Choice2,
@@ -52,6 +58,7 @@ var stat_display_names: Dictionary = {
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
+var run_victory: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -66,6 +73,9 @@ func _ready() -> void:
 		player.level_up_pending_changed.connect(_on_level_up_pending_changed)
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
+	var boss_manager := get_node_or_null("BossManager")
+	if boss_manager != null and boss_manager.has_signal("boss_defeated"):
+		boss_manager.connect("boss_defeated", _on_boss_defeated)
 	if start_button != null:
 		start_button.pressed.connect(_on_start_pressed)
 	if wave_continue_button != null:
@@ -76,6 +86,10 @@ func _ready() -> void:
 		level_up_choice_buttons[index].pressed.connect(_on_level_up_choice_pressed.bind(index))
 	if level_up_reroll_button != null:
 		level_up_reroll_button.pressed.connect(_on_level_up_reroll_pressed)
+	if run_end_restart_button != null:
+		run_end_restart_button.pressed.connect(_on_run_end_restart_pressed)
+	if run_end_main_menu_button != null:
+		run_end_main_menu_button.pressed.connect(_on_run_end_main_menu_pressed)
 	levelup_rng = _resolve_rng("levelup")
 	if enemy_spawner != null:
 		default_wave_duration_seconds = float(enemy_spawner.get("wave_duration_seconds"))
@@ -122,10 +136,12 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_player_died() -> void:
 	waiting_for_restart = true
+	run_victory = false
 	waiting_for_wave_continue = false
 	waiting_for_level_up_choice = false
 	_set_combat_active(false)
 	_hide_run_overlays()
+	_show_run_end(false)
 
 func _toggle_pause() -> void:
 	var should_pause := not get_tree().paused
@@ -245,11 +261,15 @@ func _hide_run_overlays() -> void:
 	_hide_control_if_present("WaveIntermission/Panel")
 	_hide_control_if_present("ShopUI/Panel")
 	_hide_control_if_present("LevelUpUI/Panel")
+	_hide_control_if_present("RunEndUI")
+	_hide_control_if_present("RunEndUI/Panel")
 
 func _hide_control_if_present(path: NodePath) -> void:
 	var node := get_node_or_null(path)
 	if node is Control:
 		(node as Control).visible = false
+	if node is CanvasLayer:
+		(node as CanvasLayer).visible = false
 
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
@@ -363,6 +383,49 @@ func _is_shop_enabled() -> bool:
 
 func _on_level_up_pending_changed() -> void:
 	print("Level-up pending. Will show after wave.")
+
+func _on_boss_defeated() -> void:
+	if run_victory:
+		return
+	run_victory = true
+	waiting_for_restart = true
+	waiting_for_wave_continue = false
+	waiting_for_level_up_choice = false
+	_set_combat_active(false)
+	_hide_run_overlays()
+	_show_run_end(true)
+
+func _show_run_end(victory: bool) -> void:
+	if run_end_layer != null:
+		run_end_layer.visible = true
+	if run_end_panel != null:
+		run_end_panel.visible = true
+	if run_end_title != null:
+		run_end_title.text = "Victory!" if victory else "Game Over"
+	if run_end_summary != null:
+		var wave := 1
+		if enemy_spawner != null:
+			wave = int(enemy_spawner.get("current_wave_index"))
+		var snapshot := _get_player_snapshot()
+		var gold := int(snapshot.get("gold", 0))
+		var level := int(snapshot.get("level", 1))
+		var hp := float(snapshot.get("hp", 0.0))
+		run_end_summary.text = "Reached Wave %d\nLevel %d  Gold %d  HP %.0f\nPress R or Restart to play again." % [wave, level, gold, hp]
+
+func _on_run_end_restart_pressed() -> void:
+	_new_run_seed()
+	get_tree().reload_current_scene()
+
+func _on_run_end_main_menu_pressed() -> void:
+	_new_run_seed()
+	get_tree().reload_current_scene()
+
+func _get_player_snapshot() -> Dictionary:
+	if player != null and player.has_method("get_ui_snapshot"):
+		var snapshot_variant: Variant = player.call("get_ui_snapshot")
+		if snapshot_variant is Dictionary:
+			return snapshot_variant
+	return {}
 
 func _open_level_up_screen() -> void:
 	waiting_for_level_up_choice = true
