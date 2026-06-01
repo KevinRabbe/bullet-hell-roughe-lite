@@ -14,6 +14,7 @@ const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helpe
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2
 @export var ranged_attack_range: float = 210.0
+@export var verbose_combat_logs: bool = false
 
 var target: Node2D
 var current_hp: float
@@ -120,7 +121,8 @@ func _try_damage_player() -> void:
 	if distance_to_player > contact_range:
 		return
 
-	print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
+	if verbose_combat_logs:
+		print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
 	target.call("take_damage", contact_damage)
 	damage_cooldown_left = damage_interval_seconds
 
@@ -166,7 +168,8 @@ func _try_ranged_damage_player() -> void:
 			else:
 				projectile_sprite.texture = SKULL_FIREBALL_TEXTURE
 			projectile_sprite.rotation = (target.global_position - global_position).angle() + PI
-	print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
+	if verbose_combat_logs:
+		print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
 	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:

@@ -11,6 +11,7 @@ signal wave_completed(wave_index: int)
 @export var min_spawn_interval_seconds: float = 0.7
 @export var elite_wave_start: int = 5
 @export var elite_spawn_chance: float = 0.14
+@export var verbose_wave_logs: bool = false
 
 var target: Node2D
 var rng: RandomNumberGenerator
@@ -47,7 +48,8 @@ func _process(delta: float) -> void:
 	if countdown_print_accumulator >= 1.0:
 		countdown_print_accumulator = 0.0
 		var remaining := ceili(maxf(wave_duration_seconds - wave_elapsed_seconds, 0.0))
-		print("Wave time left: %ds" % remaining)
+		if verbose_wave_logs:
+			print("Wave time left: %ds" % remaining)
 
 	var progress := clampf(wave_elapsed_seconds / wave_duration_seconds, 0.0, 1.0)
 	var scaled_interval := lerpf(spawn_interval_seconds, min_spawn_interval_seconds, progress)

@@ -9,6 +9,7 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 ]
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
+const PLACEHOLDER_WEAPON_HINTS: Array[String] = ["placeholder"]
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -110,7 +111,7 @@ func _validate_registry_entries() -> void:
 			continue
 		if str(weapon.get("display_name")) == "":
 			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
-		if int(weapon.get("price")) <= 0:
+		if int(weapon.get("price")) <= 0 and not _is_placeholder_weapon_warning(weapon_id, weapon):
 			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
 	for item_id in items.keys():
 		var item: Variant = items[item_id]
@@ -126,6 +127,19 @@ func _validate_registry_entries() -> void:
 			continue
 		if float(enemy.get("max_hp")) <= 0.0:
 			push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+
+func _is_placeholder_weapon_warning(weapon_id: Variant, weapon: Variant) -> bool:
+	var id_text := str(weapon_id).to_lower()
+	for hint in PLACEHOLDER_WEAPON_HINTS:
+		if id_text.contains(hint):
+			return true
+	if weapon != null:
+		var tags_variant: Variant = weapon.get("tags")
+		if tags_variant is Array:
+			for tag in tags_variant:
+				if str(tag).to_lower() == "placeholder":
+					return true
+	return false
 
 func get_character(id: String):
 	return characters.get(id)

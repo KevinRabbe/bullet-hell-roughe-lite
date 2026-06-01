@@ -153,7 +153,7 @@ func _on_wave_completed(wave_index: int) -> void:
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
 	if title_label != null:
-		title_label.text = "Shop â€” Pick one"
+		title_label.text = "Shop — Pick one"
 	if panel != null:
 		panel.visible = true
 	print("Shop opened with %d offers." % active_offers.size())
