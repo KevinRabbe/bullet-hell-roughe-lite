@@ -30,6 +30,12 @@ const WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
 	{"max_wave": 9, "weights": {"common": 60.0, "rare": 32.0, "epic": 8.0}},
 	{"max_wave": 9999, "weights": {"common": 45.0, "rare": 38.0, "epic": 15.0, "legendary": 2.0}},
 ]
+const WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
+	"common": 1,
+	"rare": 2,
+	"epic": 4,
+	"legendary": 8,
+}
 
 var enemy_spawner: Node
 var player: Node
@@ -286,8 +292,11 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
 		if str(offer.get("type", "")) == "weapon":
 			var rolled_rarity := _roll_weapon_rarity_for_wave(_current_wave_index)
+			var base_price := int(offer.get("base_price", int(offer.get("price", 0))))
+			var scaled_price := _scaled_weapon_price(base_price, rolled_rarity)
 			offer["rolled_rarity"] = rolled_rarity
-			offer["price"] = int(offer.get("base_price", int(offer.get("price", 0))))
+			offer["final_price"] = scaled_price
+			offer["price"] = scaled_price
 		return offer
 	return {}
 
@@ -325,6 +334,11 @@ func _rarity_weights_for_wave(wave_index: int) -> Dictionary:
 			if resolved is Dictionary:
 				return resolved
 	return {"common": 100.0}
+
+func _scaled_weapon_price(base_price: int, rolled_rarity: String) -> int:
+	var safe_base := maxi(base_price, 1)
+	var multiplier := int(WEAPON_RARITY_PRICE_MULTIPLIER.get(rolled_rarity, 1))
+	return safe_base * multiplier
 
 func _on_continue_pressed() -> void:
 	if panel != null:
