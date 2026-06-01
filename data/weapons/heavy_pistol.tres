@@ -8,7 +8,7 @@ script = ExtResource("1")
 icon = ExtResource("2")
 id = "heavy_pistol"
 display_name = "Heavy Pistol"
-description = "Reliable sidearm with high single-shot impact."
+description = "Balanced sidearm with steady damage, range, and cadence."
 family_id = "gunslinger"
 cooldown_seconds = 0.45
 damage = 10.0
@@ -21,13 +21,13 @@ price = 5
 tags = Array[String](["gun", "bullet", "precision"])
 stat_scaling = {
 "attack_speed": 1.0,
-"crit_chance": 0.4,
-"crit_damage": 0.4,
+"crit_chance": 0.75,
+"crit_damage": 0.8,
 "damage": 1.0,
-"knockback": 0.2,
+"knockback": 0.35,
 "on_hit": 0.5,
 "pierce": 0.0,
 "projectile_count": 0.0,
-"range": 0.5,
+"range": 0.75,
 "ranged_damage": 1.0
 }
