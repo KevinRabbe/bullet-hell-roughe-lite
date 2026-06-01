@@ -1,4 +1,5 @@
 extends Node
+signal boss_defeated
 
 @export var boss_scene: PackedScene
 @export var player_path: NodePath
@@ -53,3 +54,4 @@ func _spawn_gate_beast() -> void:
 
 func _on_gate_beast_defeated() -> void:
 	print("Boss defeated: Gate Beast")
+	boss_defeated.emit()
