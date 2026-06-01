@@ -19,6 +19,7 @@ func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 	life_left -= delta
 	if life_left <= 0.0:
+		_spawn_impact_effect()
 		queue_free()
 
 func set_direction(new_direction: Vector2) -> void:
@@ -30,4 +31,25 @@ func set_direction(new_direction: Vector2) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body != null and body.is_in_group("players") and body.has_method("take_damage"):
 		body.call("take_damage", damage)
+		_spawn_impact_effect()
 		queue_free()
+
+func _spawn_impact_effect() -> void:
+	if get_tree() == null or get_tree().current_scene == null:
+		return
+	var impact := Sprite2D.new()
+	impact.global_position = global_position
+	impact.z_index = z_index + 1
+	if visual != null and visual.texture != null:
+		impact.texture = visual.texture
+		impact.scale = visual.scale * 0.62
+	else:
+		impact.self_modulate = Color(1.0, 0.6, 0.4, 0.9)
+	get_tree().current_scene.add_child(impact)
+	var tween := create_tween()
+	tween.tween_property(impact, "scale", impact.scale * 1.25, 0.1)
+	tween.parallel().tween_property(impact, "modulate", Color(1.0, 0.6, 0.4, 0.0), 0.1)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(impact):
+			impact.queue_free()
+	)
