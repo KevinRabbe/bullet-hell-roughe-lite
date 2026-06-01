@@ -19,6 +19,7 @@ var active_character_id: String = "gunslinger"
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
+@onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 const GUNSLINGER_WEAPON_IDS: Array[String] = [
 	"heavy_pistol",
@@ -36,6 +37,11 @@ const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
 	"gunslinger_revolver": "res://data/weapons/gunslinger_revolver.tres",
 	"gunslinger_assault_rifle": "res://data/weapons/gunslinger_assault_rifle.tres",
 	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres"
+}
+
+const CHARACTER_VISUAL_TEXTURES: Dictionary = {
+	"gunslinger": "res://assets/sprites/characters/gunslinger/gunslinger_idle.png",
+	"harvester": "res://assets/sprites/characters/harvester/harvester_idle.png"
 }
 
 func _ready() -> void:
@@ -223,6 +229,18 @@ func _reset_character_stats() -> void:
 	stats.portal_instability = 0.0
 
 func _apply_character_starting_weapon() -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.has_method("get_character"):
+		var character_variant: Variant = data_registry.call("get_character", active_character_id)
+		if character_variant is Dictionary:
+			var character_data: Dictionary = character_variant
+			var starter_variant: Variant = character_data.get("starting_weapon_ids", [])
+			if starter_variant is Array:
+				for weapon_entry in starter_variant:
+					var starter_id := str(weapon_entry)
+					if starter_id != "":
+						grant_weapon(starter_id)
+						return
 	_debug_add_gunslinger_weapon_by_id("heavy_pistol")
 
 func _apply_character_rules() -> void:
@@ -231,13 +249,43 @@ func _apply_character_rules() -> void:
 		stats.poison_damage = 0.8
 		stats.bleed_damage = 0.8
 		stats.frost_power = 0.8
+	elif active_character_id == "harvester":
+		stats.damage *= 0.85
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
 			var weapons: Array = weapons_variant
-			if weapons.is_empty():
+			weapons.clear()
+			var starter_weapon_id := _resolve_character_starter_weapon_id()
+			if starter_weapon_id != "":
+				weapons.append(starter_weapon_id)
+			else:
 				weapons.append("heavy_pistol")
-				player_build.set("equipped_weapon_ids", weapons)
+			player_build.set("equipped_weapon_ids", weapons)
+	_apply_character_visual()
+
+func _resolve_character_starter_weapon_id() -> String:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.has_method("get_character"):
+		var character_variant: Variant = data_registry.call("get_character", active_character_id)
+		if character_variant is Dictionary:
+			var character_data: Dictionary = character_variant
+			var starter_variant: Variant = character_data.get("starting_weapon_ids", [])
+			if starter_variant is Array and (starter_variant as Array).size() > 0:
+				return str((starter_variant as Array)[0])
+	return ""
+
+func _apply_character_visual() -> void:
+	if visual_sprite == null:
+		return
+	var texture_path := str(CHARACTER_VISUAL_TEXTURES.get(active_character_id, ""))
+	if texture_path == "":
+		return
+	if not ResourceLoader.exists(texture_path):
+		return
+	var texture_resource := load(texture_path)
+	if texture_resource is Texture2D:
+		visual_sprite.texture = texture_resource
 
 func get_damage_multiplier_for_target(target: Node) -> float:
 	if active_character_id != "gunslinger":
@@ -293,6 +341,8 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 	var granted_rarity := str(grant_result.get("rarity", "common"))
 
 	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
+	if weapon_path == "":
+		weapon_path = "res://data/weapons/%s.tres" % weapon_id
 	if weapon_path != "":
 		var weapon_resource := load(weapon_path)
 		if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):

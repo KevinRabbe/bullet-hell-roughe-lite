@@ -1,7 +1,7 @@
 {
   "id": "harvester",
   "display_name": "The Harvester",
-  "description": "Placeholder: sustain and drain-focused archetype.",
-  "starting_weapon_ids": ["scythe_alpha"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Kill-scaling fighter with a weak start and strong late snowball.",
+  "starting_weapon_ids": ["scrap_pistol"],
+  "passive_tags": ["efficient_harvest", "weak_start"]
 }

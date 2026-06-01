@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/rusted_smg.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "rusted_smg"
+display_name = "Rusted SMG"
+description = "High rate Harvester weapon that ramps over time."
+family_id = "harvester"
+cooldown_seconds = 0.14
+damage = 3.0
+projectile_speed = 760.0
+attack_range = 0.9
+projectile_lifetime_seconds = 1.8
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 5
+tags = Array[String](["harvester", "rapid"])
+stat_scaling = {
+"attack_speed": 1.2,
+"damage": 0.6,
+"range": 0.3
+}

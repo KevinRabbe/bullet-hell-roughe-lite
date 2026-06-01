@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/butcher_tool.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "butcher_tool"
+display_name = "Butcher Tool"
+description = "Heavy Harvester finisher with high burst."
+family_id = "harvester"
+cooldown_seconds = 0.85
+damage = 16.0
+projectile_speed = 680.0
+attack_range = 0.95
+projectile_lifetime_seconds = 1.9
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 7
+tags = Array[String](["harvester", "burst"])
+stat_scaling = {
+"damage": 1.2,
+"attack_speed": 0.3,
+"range": 0.2
+}

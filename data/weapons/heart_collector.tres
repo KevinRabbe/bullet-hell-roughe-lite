@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/heart_collector.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "heart_collector"
+display_name = "Heart Collector"
+description = "Siphons vitality while scaling with kills."
+family_id = "harvester"
+cooldown_seconds = 0.7
+damage = 9.0
+projectile_speed = 620.0
+attack_range = 1.0
+projectile_lifetime_seconds = 2.1
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 5
+tags = Array[String](["harvester", "vitality"])
+stat_scaling = {
+"damage": 0.9,
+"max_hp": 0.4,
+"range": 0.5
+}
