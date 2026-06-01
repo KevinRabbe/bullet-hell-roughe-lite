@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "iron_spike_rounds"
+name = "Iron Spike Rounds"
+description = "Prototype pierce rounds with stronger penetration feel."
+category = "offense"
+rarity = "rare"
+tags = Array[String](["pierce", "projectile"])
+price = 4
+stack_limit = 1
+stat_modifiers = {
+"attack_range": 0.12,
+"damage": 0.08,
+"projectile_speed": 0.2
+}

@@ -137,11 +137,15 @@ func _build_item_offer_pool() -> void:
 		var item_name := item_id.replace("_", " ").capitalize()
 		if str(item.name) != "":
 			item_name = str(item.name)
+		var item_price := DEFAULT_ITEM_PRICE
+		if int(item.price) > 0:
+			item_price = int(item.price)
 		_item_offer_pool.append({
 			"type": "item",
 			"id": item_id,
 			"label": item_name,
-			"price": DEFAULT_ITEM_PRICE
+			"price": item_price,
+			"rarity": str(item.rarity)
 		})
 
 func _on_wave_completed(wave_index: int) -> void:

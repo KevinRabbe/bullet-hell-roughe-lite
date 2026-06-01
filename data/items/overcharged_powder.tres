@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "overcharged_powder"
+name = "Overcharged Powder"
+description = "Projectiles fly faster and farther."
+category = "offense"
+rarity = "common"
+tags = Array[String](["projectile"])
+price = 3
+stack_limit = 1
+stat_modifiers = {
+"attack_range": 0.1,
+"projectile_speed": 0.3
+}

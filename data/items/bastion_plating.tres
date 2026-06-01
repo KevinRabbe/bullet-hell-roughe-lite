@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "bastion_plating"
+name = "Bastion Plating"
+description = "Heavy armor and extra HP for frontline builds."
+category = "defense"
+rarity = "rare"
+tags = Array[String](["tank"])
+price = 4
+stack_limit = 1
+stat_modifiers = {
+"armor": 3.0,
+"max_hp": 30.0
+}

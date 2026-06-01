@@ -6,6 +6,15 @@ const ITEM_RESOURCE_PATHS: Array[String] = [
 	"res://data/items/steel_heart.tres",
 	"res://data/items/trigger_core.tres",
 	"res://data/items/lucky_charm.tres",
+	"res://data/items/blood_emblem.tres",
+	"res://data/items/rapid_chamber.tres",
+	"res://data/items/deadeye_lens.tres",
+	"res://data/items/long_barrel.tres",
+	"res://data/items/overcharged_powder.tres",
+	"res://data/items/iron_spike_rounds.tres",
+	"res://data/items/gale_sash.tres",
+	"res://data/items/bastion_plating.tres",
+	"res://data/items/cursed_idol.tres",
 ]
 
 static func get_prototype_items() -> Array[ItemData]:
@@ -25,18 +34,18 @@ static func get_random_item(rng: RandomNumberGenerator) -> ItemData:
 	return items[rng.randi_range(0, items.size() - 1)]
 
 static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> ItemData:
-	var tier_ids: Array[String]
+	var allowed_rarities: Array[String] = ["common"]
 	match tier:
 		3:
-			tier_ids = ["steel_heart", "trigger_core"]
+			allowed_rarities = ["rare", "epic", "legendary"]
 		2:
-			tier_ids = ["glass_scope", "lucky_charm"]
+			allowed_rarities = ["common", "rare"]
 		_:
-			tier_ids = ["swift_boots", "lucky_charm"]
+			allowed_rarities = ["common"]
 
 	var pool: Array[ItemData] = []
 	for item in get_prototype_items():
-		if tier_ids.has(item.id):
+		if allowed_rarities.has(item.rarity):
 			pool.append(item)
 	if pool.is_empty():
 		return get_random_item(rng)
