@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "hellfire_idol"
+name = "Hellfire Idol"
+description = "An unstable idol that boosts crit and burn output."
+category = "offense"
+rarity = "epic"
+tags = Array[String](["crit", "burn"])
+price = 5
+stack_limit = 1
+stat_modifiers = {
+"burn_damage": 0.35,
+"crit_chance": 0.08,
+"corruption": 0.05
+}

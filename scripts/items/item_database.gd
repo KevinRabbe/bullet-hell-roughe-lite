@@ -6,6 +6,15 @@ const ITEM_RESOURCE_PATHS: Array[String] = [
 	"res://data/items/steel_heart.tres",
 	"res://data/items/trigger_core.tres",
 	"res://data/items/lucky_charm.tres",
+	"res://data/items/demon_powder.tres",
+	"res://data/items/rapid_loader.tres",
+	"res://data/items/blood_talisman.tres",
+	"res://data/items/rune_prism.tres",
+	"res://data/items/void_rounds.tres",
+	"res://data/items/harvest_emblem.tres",
+	"res://data/items/obsidian_mail.tres",
+	"res://data/items/rift_compass.tres",
+	"res://data/items/hellfire_idol.tres",
 ]
 
 static func get_prototype_items() -> Array[ItemData]:
@@ -28,11 +37,11 @@ static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> I
 	var tier_ids: Array[String]
 	match tier:
 		3:
-			tier_ids = ["steel_heart", "trigger_core"]
+			tier_ids = ["steel_heart", "trigger_core", "obsidian_mail", "hellfire_idol"]
 		2:
-			tier_ids = ["glass_scope", "lucky_charm"]
+			tier_ids = ["glass_scope", "lucky_charm", "rune_prism", "void_rounds", "harvest_emblem", "rift_compass"]
 		_:
-			tier_ids = ["swift_boots", "lucky_charm"]
+			tier_ids = ["swift_boots", "lucky_charm", "demon_powder", "rapid_loader", "blood_talisman"]
 
 	var pool: Array[ItemData] = []
 	for item in get_prototype_items():

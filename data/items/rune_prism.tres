@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "rune_prism"
+name = "Rune Prism"
+description = "Amplifies projectile speed and precision at mid range."
+category = "offense"
+rarity = "rare"
+tags = Array[String](["projectile"])
+price = 4
+stack_limit = 1
+stat_modifiers = {
+"projectile_speed": 0.18,
+"attack_range": 0.1
+}

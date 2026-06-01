@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "obsidian_mail"
+name = "Obsidian Mail"
+description = "Heavy infernal plating for high durability."
+category = "defense"
+rarity = "epic"
+tags = Array[String](["armor", "hp"])
+price = 5
+stack_limit = 1
+stat_modifiers = {
+"armor": 4.0,
+"max_hp": 30.0,
+"movement_speed": -15.0
+}

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "harvest_emblem"
+name = "Harvest Emblem"
+description = "Blessed sigil that increases gold and XP gain."
+category = "utility"
+rarity = "rare"
+tags = Array[String](["economy"])
+price = 4
+stack_limit = 1
+stat_modifiers = {
+"coin_gain": 0.2,
+"xp_gain": 0.15
+}

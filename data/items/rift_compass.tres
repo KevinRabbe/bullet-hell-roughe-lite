@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "rift_compass"
+name = "Rift Compass"
+description = "Warped compass that sharpens portal outcomes."
+category = "utility"
+rarity = "rare"
+tags = Array[String](["portal"])
+price = 4
+stack_limit = 1
+stat_modifiers = {
+"portal_luck": 0.2,
+"portal_reward_multiplier": 0.1
+}
