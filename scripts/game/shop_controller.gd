@@ -42,6 +42,13 @@ const WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
 	"epic": 4,
 	"legendary": 8,
 }
+const CHARACTER_FAMILY_BY_ID: Dictionary = {
+	"gunslinger": "gunslinger",
+	"harvester": "harvester",
+	"demon_lord": "hellfire",
+	"riftwalker": "portal"
+}
+const CHARACTER_FAMILY_OFFER_WEIGHT_BONUS: float = 0.20
 
 var enemy_spawner: Node
 var player: Node
@@ -292,7 +299,7 @@ func _current_reroll_cost() -> int:
 func _pick_random_offer(pool: Array) -> Dictionary:
 	if pool.is_empty():
 		return {}
-	var index := rng.randi_range(0, pool.size() - 1)
+	var index := _pick_weighted_offer_index(pool)
 	var selected: Variant = pool[index]
 	if selected is Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
@@ -305,6 +312,43 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 			offer["price"] = scaled_price
 		return offer
 	return {}
+
+func _pick_weighted_offer_index(pool: Array) -> int:
+	if pool.is_empty():
+		return 0
+	var active_family := _get_active_character_family()
+	var total_weight := 0.0
+	var weighted_values: Array[float] = []
+	for candidate in pool:
+		var weight := 1.0
+		if candidate is Dictionary:
+			var offer := candidate as Dictionary
+			if str(offer.get("type", "")) == "weapon":
+				var offer_family := str(offer.get("family", ""))
+				if active_family != "" and offer_family == active_family:
+					weight += CHARACTER_FAMILY_OFFER_WEIGHT_BONUS
+		weighted_values.append(weight)
+		total_weight += weight
+	if total_weight <= 0.0:
+		return rng.randi_range(0, pool.size() - 1)
+	var roll := rng.randf_range(0.0, total_weight)
+	var threshold := 0.0
+	for i in range(weighted_values.size()):
+		threshold += weighted_values[i]
+		if roll <= threshold:
+			return i
+	return weighted_values.size() - 1
+
+func _get_active_character_family() -> String:
+	if player == null or not is_instance_valid(player):
+		return ""
+	var character_id := str(player.get("active_character_id"))
+	if character_id == "":
+		return ""
+	var mapped_family := str(CHARACTER_FAMILY_BY_ID.get(character_id, ""))
+	if mapped_family != "":
+		return mapped_family
+	return character_id
 
 func _find_item_data(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():
