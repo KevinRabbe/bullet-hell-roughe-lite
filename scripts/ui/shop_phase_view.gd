@@ -485,10 +485,11 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 	if loadout == null:
 		return false
 	var weapon_id := str(offer.get("id", ""))
+	var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 	if weapon_id == "":
 		return false
 	if loadout.has_method("can_grant_weapon"):
-		return bool(loadout.call("can_grant_weapon", weapon_id))
+		return bool(loadout.call("can_grant_weapon", weapon_id, rolled_rarity))
 	if loadout.has_method("has_space"):
 		return bool(loadout.call("has_space"))
 	return true
@@ -496,10 +497,11 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 func _get_weapon_offer_block_reason(offer: Dictionary) -> String:
 	var default_message := "Need empty slot or valid same-rarity merge."
 	var weapon_id := str(offer.get("id", ""))
+	var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 	if weapon_id == "":
 		return default_message
 	if shop_view_model != null:
-		var reason := str(shop_view_model.get_weapon_offer_block_reason(weapon_id))
+		var reason := str(shop_view_model.get_weapon_offer_block_reason(weapon_id, rolled_rarity))
 		if reason != "":
 			return reason
 	return default_message
