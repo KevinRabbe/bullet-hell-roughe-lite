@@ -36,6 +36,18 @@ const WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
 	"epic": 4,
 	"legendary": 8,
 }
+const ITEM_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
+	{"max_wave": 2, "weights": {"common": 92.0, "rare": 8.0}},
+	{"max_wave": 5, "weights": {"common": 75.0, "rare": 22.0, "epic": 3.0}},
+	{"max_wave": 9, "weights": {"common": 52.0, "rare": 36.0, "epic": 11.0, "legendary": 1.0}},
+	{"max_wave": 9999, "weights": {"common": 38.0, "rare": 38.0, "epic": 20.0, "legendary": 4.0}},
+]
+const ITEM_RARITY_PRICE_MULTIPLIER: Dictionary = {
+	"common": 1,
+	"rare": 2,
+	"epic": 3,
+	"legendary": 5,
+}
 
 var enemy_spawner: Node
 var player: Node
@@ -137,11 +149,16 @@ func _build_item_offer_pool() -> void:
 		var item_name := item_id.replace("_", " ").capitalize()
 		if str(item.name) != "":
 			item_name = str(item.name)
+		var item_price := DEFAULT_ITEM_PRICE
+		if int(item.price) > 0:
+			item_price = int(item.price)
 		_item_offer_pool.append({
 			"type": "item",
 			"id": item_id,
 			"label": item_name,
-			"price": DEFAULT_ITEM_PRICE
+			"price": item_price,
+			"base_price": item_price,
+			"rarity": str(item.rarity)
 		})
 
 func _on_wave_completed(wave_index: int) -> void:
@@ -203,7 +220,7 @@ func _refresh_offer_buttons() -> void:
 				button.disabled = true
 			else:
 				var rarity_badge := ""
-				if offer_type == "weapon":
+				if offer_type == "weapon" or offer_type == "item":
 					rarity_badge = "[%s] " % str(offer.get("rolled_rarity", "common")).capitalize()
 				button.text = "%s%s (%dG)" % [rarity_badge, str(offer.get("label", "Offer")), price]
 				button.disabled = false
@@ -290,15 +307,43 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 	var selected: Variant = pool[index]
 	if selected is Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
-		if str(offer.get("type", "")) == "weapon":
+		var offer_type := str(offer.get("type", ""))
+		if offer_type == "weapon":
 			var rolled_rarity := _roll_weapon_rarity_for_wave(_current_wave_index)
 			var base_price := int(offer.get("base_price", int(offer.get("price", 0))))
 			var scaled_price := _scaled_weapon_price(base_price, rolled_rarity)
 			offer["rolled_rarity"] = rolled_rarity
 			offer["final_price"] = scaled_price
 			offer["price"] = scaled_price
+		elif offer_type == "item":
+			var rolled_item_rarity := _roll_item_rarity_for_wave(_current_wave_index)
+			var rarity_offer := _pick_item_offer_for_rarity(rolled_item_rarity)
+			if rarity_offer.is_empty():
+				rarity_offer = offer
+			offer = rarity_offer
+			var item_base_price := int(offer.get("base_price", int(offer.get("price", DEFAULT_ITEM_PRICE))))
+			var scaled_item_price := _scaled_item_price(item_base_price, rolled_item_rarity)
+			offer["rolled_rarity"] = rolled_item_rarity
+			offer["final_price"] = scaled_item_price
+			offer["price"] = scaled_item_price
 		return offer
 	return {}
+
+func _pick_item_offer_for_rarity(rarity_name: String) -> Dictionary:
+	var matching: Array[Dictionary] = []
+	for item_offer_variant in _item_offer_pool:
+		if not (item_offer_variant is Dictionary):
+			continue
+		var item_offer: Dictionary = item_offer_variant
+		if str(item_offer.get("rarity", "common")) == rarity_name:
+			matching.append(item_offer)
+	if matching.is_empty():
+		for fallback_variant in _item_offer_pool:
+			if fallback_variant is Dictionary:
+				matching.append(fallback_variant)
+	if matching.is_empty():
+		return {}
+	return matching[rng.randi_range(0, matching.size() - 1)].duplicate(true)
 
 func _find_item_data(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():
@@ -335,9 +380,40 @@ func _rarity_weights_for_wave(wave_index: int) -> Dictionary:
 				return resolved
 	return {"common": 100.0}
 
+func _roll_item_rarity_for_wave(wave_index: int) -> String:
+	var weights := _item_rarity_weights_for_wave(wave_index)
+	var total_weight := 0.0
+	for rarity_name in RARITY_ORDER:
+		total_weight += float(weights.get(rarity_name, 0.0))
+	if total_weight <= 0.0:
+		return "common"
+	var roll := rng.randf_range(0.0, total_weight)
+	var threshold := 0.0
+	for rarity_name in RARITY_ORDER:
+		threshold += float(weights.get(rarity_name, 0.0))
+		if roll <= threshold:
+			return rarity_name
+	return "common"
+
+func _item_rarity_weights_for_wave(wave_index: int) -> Dictionary:
+	for band_variant in ITEM_RARITY_WEIGHTS_BY_WAVE:
+		if not (band_variant is Dictionary):
+			continue
+		var band: Dictionary = band_variant
+		if wave_index <= int(band.get("max_wave", 9999)):
+			var resolved: Variant = band.get("weights", {})
+			if resolved is Dictionary:
+				return resolved
+	return {"common": 100.0}
+
 func _scaled_weapon_price(base_price: int, rolled_rarity: String) -> int:
 	var safe_base := maxi(base_price, 1)
 	var multiplier := int(WEAPON_RARITY_PRICE_MULTIPLIER.get(rolled_rarity, 1))
+	return safe_base * multiplier
+
+func _scaled_item_price(base_price: int, rolled_rarity: String) -> int:
+	var safe_base := maxi(base_price, 1)
+	var multiplier := int(ITEM_RARITY_PRICE_MULTIPLIER.get(rolled_rarity, 1))
 	return safe_base * multiplier
 
 func _on_continue_pressed() -> void:
