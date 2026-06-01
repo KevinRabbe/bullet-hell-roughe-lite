@@ -56,7 +56,10 @@ func _update_hud() -> void:
 		state_label.text = "State: %s  |  %s" % [_get_run_state(), _get_debug_preset_label()]
 	if wave_progress_bar != null:
 		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
-		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
+		var duration_value: Variant = enemy_spawner.get("current_wave_duration_seconds")
+		if duration_value == null:
+			duration_value = enemy_spawner.get("wave_duration_seconds")
+		var duration := maxf(float(duration_value), 0.01)
 		var ratio := clampf(elapsed / duration, 0.0, 1.0)
 		wave_progress_bar.value = ratio * 100.0
 		wave_progress_bar.visible = not _is_shop_open()

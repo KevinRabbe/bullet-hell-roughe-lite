@@ -183,9 +183,14 @@ func _apply_debug_wave_duration() -> void:
 		return
 	var preset := _get_effective_debug_preset()
 	if preset == "normal":
+		enemy_spawner.set("use_wave_duration_curve", true)
 		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
+		if enemy_spawner.has_method("refresh_wave_duration_for_current_wave"):
+			enemy_spawner.call("refresh_wave_duration_for_current_wave")
 	else:
+		enemy_spawner.set("use_wave_duration_curve", false)
 		enemy_spawner.set("wave_duration_seconds", _get_debug_wave_duration_for_preset(preset))
+		enemy_spawner.set("current_wave_duration_seconds", float(enemy_spawner.get("wave_duration_seconds")))
 
 func _cycle_debug_run_preset() -> void:
 	var modes: Array[String] = ["normal", "shop_test", "combat_test"]

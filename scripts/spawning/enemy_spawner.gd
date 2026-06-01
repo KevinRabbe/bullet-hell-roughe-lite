@@ -8,6 +8,7 @@ signal wave_completed(wave_index: int)
 @export var spawn_radius: float = 420.0
 @export var max_alive_enemies: int = 20
 @export var wave_duration_seconds: float = 30.0
+@export var use_wave_duration_curve: bool = true
 @export var min_spawn_interval_seconds: float = 0.7
 @export var elite_wave_start: int = 5
 @export var elite_spawn_chance: float = 0.14
@@ -19,6 +20,7 @@ var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
 var completion_emitted: bool = false
+var current_wave_duration_seconds: float = 30.0
 const WAVE_VARIANT_POOLS: Dictionary = {
 	1: ["imp_runner"],
 	2: ["imp_runner", "husk_brute"],
@@ -31,6 +33,7 @@ func _ready() -> void:
 		target = get_node_or_null(target_path)
 
 	rng = _resolve_rng("spawner")
+	current_wave_duration_seconds = _resolve_wave_duration_for_current_wave()
 	spawn_timer = Timer.new()
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.one_shot = false
@@ -39,21 +42,21 @@ func _ready() -> void:
 	spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 
 func _process(delta: float) -> void:
-	if wave_elapsed_seconds >= wave_duration_seconds:
+	if wave_elapsed_seconds >= current_wave_duration_seconds:
 		return
 
 	wave_elapsed_seconds += delta
 	countdown_print_accumulator += delta
 	if countdown_print_accumulator >= 1.0:
 		countdown_print_accumulator = 0.0
-		var remaining := ceili(maxf(wave_duration_seconds - wave_elapsed_seconds, 0.0))
+		var remaining := ceili(maxf(current_wave_duration_seconds - wave_elapsed_seconds, 0.0))
 		print("Wave time left: %ds" % remaining)
 
-	var progress := clampf(wave_elapsed_seconds / wave_duration_seconds, 0.0, 1.0)
+	var progress := clampf(wave_elapsed_seconds / current_wave_duration_seconds, 0.0, 1.0)
 	var scaled_interval := lerpf(spawn_interval_seconds, min_spawn_interval_seconds, progress)
 	spawn_timer.wait_time = maxf(scaled_interval, min_spawn_interval_seconds)
 
-	if wave_elapsed_seconds >= wave_duration_seconds:
+	if wave_elapsed_seconds >= current_wave_duration_seconds:
 		spawn_timer.stop()
 		print("Wave complete.")
 		if not completion_emitted:
@@ -65,7 +68,7 @@ func _on_spawn_timer_timeout() -> void:
 		return
 	if target == null or not is_instance_valid(target):
 		return
-	if wave_elapsed_seconds >= wave_duration_seconds:
+	if wave_elapsed_seconds >= current_wave_duration_seconds:
 		return
 	if _count_alive_enemies() >= max_alive_enemies:
 		return
@@ -128,12 +131,30 @@ func _count_alive_enemies() -> int:
 
 func start_next_wave() -> void:
 	current_wave_index += 1
+	refresh_wave_duration_for_current_wave()
 	wave_elapsed_seconds = 0.0
 	countdown_print_accumulator = 0.0
 	completion_emitted = false
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.start()
-	print("Wave %d started." % current_wave_index)
+	print("Wave %d started. Duration %.1fs" % [current_wave_index, current_wave_duration_seconds])
+
+func refresh_wave_duration_for_current_wave() -> void:
+	current_wave_duration_seconds = _resolve_wave_duration_for_current_wave()
+
+func _resolve_wave_duration_for_current_wave() -> float:
+	if not use_wave_duration_curve:
+		return maxf(wave_duration_seconds, 1.0)
+	var wave := current_wave_index
+	if wave <= 2:
+		return 20.0
+	if wave <= 4:
+		return 25.0
+	if wave <= 7:
+		return 30.0
+	if wave <= 10:
+		return 35.0
+	return 40.0
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
