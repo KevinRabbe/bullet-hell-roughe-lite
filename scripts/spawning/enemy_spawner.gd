@@ -19,6 +19,7 @@ var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
 var completion_emitted: bool = false
+var elite_spawned_this_wave: bool = false
 const WAVE_VARIANT_POOLS: Dictionary = {
 	1: ["imp_runner"],
 	2: ["imp_runner", "husk_brute"],
@@ -76,6 +77,8 @@ func _on_spawn_timer_timeout() -> void:
 
 	var enemy_node := enemy_instance as Node2D
 	var variant := _pick_enemy_variant()
+	if _is_elite_wave() and not elite_spawned_this_wave:
+		variant = "husk_brute"
 	if enemy_node.has_method("set"):
 		enemy_node.set("enemy_variant", variant)
 	_apply_wave_enemy_overrides(enemy_node, variant)
@@ -106,8 +109,16 @@ func _apply_wave_enemy_overrides(enemy_node: Node2D, variant: String) -> void:
 		return
 	if variant != "husk_brute":
 		return
+	if _is_elite_wave() and not elite_spawned_this_wave:
+		_make_elite_wave_tank(enemy_node)
+		elite_spawned_this_wave = true
+		print("Elite wave spawn: wave %d forced elite tank." % current_wave_index)
+		return
 	if rng.randf() > elite_spawn_chance:
 		return
+	_make_elite_wave_tank(enemy_node)
+
+func _make_elite_wave_tank(enemy_node: Node2D) -> void:
 	if enemy_node.has_method("set"):
 		enemy_node.set("is_elite", true)
 		enemy_node.set("elite_role", "wave_tank")
@@ -128,12 +139,16 @@ func _count_alive_enemies() -> int:
 
 func start_next_wave() -> void:
 	current_wave_index += 1
+	elite_spawned_this_wave = false
 	wave_elapsed_seconds = 0.0
 	countdown_print_accumulator = 0.0
 	completion_emitted = false
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.start()
 	print("Wave %d started." % current_wave_index)
+
+func _is_elite_wave() -> bool:
+	return current_wave_index >= elite_wave_start and (current_wave_index % 5 == 0)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
