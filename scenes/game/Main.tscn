@@ -263,6 +263,9 @@ text = "Reroll (2G)"
 script = ExtResource("9")
 boss_scene = ExtResource("3")
 player_path = NodePath("../Player")
+enemy_spawner_path = NodePath("../EnemySpawner")
+spawn_on_wave = true
+boss_wave_index = 10
 spawn_after_seconds = 45.0
 
 [node name="CharacterSelect" type="CanvasLayer" parent="."]

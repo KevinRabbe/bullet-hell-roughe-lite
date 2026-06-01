@@ -2,22 +2,35 @@ extends Node
 
 @export var boss_scene: PackedScene
 @export var player_path: NodePath
+@export var enemy_spawner_path: NodePath
 @export var spawn_after_seconds: float = 45.0
 @export var debug_spawn_key: Key = KEY_B
+@export var boss_wave_index: int = 10
+@export var spawn_on_wave: bool = true
+@export var grant_bonus_on_defeat: bool = true
+@export var boss_kill_gold_bonus: int = 20
+@export var boss_kill_xp_bonus: int = 30
 
 var player: Node2D
+var enemy_spawner: Node
 var boss_spawned: bool = false
 var elapsed_seconds: float = 0.0
+var boss_defeated_this_run: bool = false
 
 func _ready() -> void:
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
+	if enemy_spawner_path != NodePath():
+		enemy_spawner = get_node_or_null(enemy_spawner_path)
 
 func _process(delta: float) -> void:
-	if boss_spawned:
+	if boss_spawned or boss_defeated_this_run:
+		return
+	if spawn_on_wave and _is_wave_boss_due():
+		_spawn_gate_beast()
 		return
 	elapsed_seconds += delta
-	if elapsed_seconds >= spawn_after_seconds:
+	if not spawn_on_wave and elapsed_seconds >= spawn_after_seconds:
 		_spawn_gate_beast()
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -52,4 +65,20 @@ func _spawn_gate_beast() -> void:
 		boss.tree_exited.connect(_on_gate_beast_defeated)
 
 func _on_gate_beast_defeated() -> void:
+	boss_spawned = false
+	boss_defeated_this_run = true
+	if grant_bonus_on_defeat and player != null:
+		if boss_kill_gold_bonus > 0 and player.has_method("add_gold"):
+			player.call("add_gold", boss_kill_gold_bonus)
+		if boss_kill_xp_bonus > 0 and player.has_method("add_xp"):
+			player.call("add_xp", boss_kill_xp_bonus)
 	print("Boss defeated: Gate Beast")
+
+func _is_wave_boss_due() -> bool:
+	if enemy_spawner == null:
+		return false
+	var wave_index := int(enemy_spawner.get("current_wave_index"))
+	if wave_index < boss_wave_index:
+		return false
+	var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
+	return elapsed <= 0.8
