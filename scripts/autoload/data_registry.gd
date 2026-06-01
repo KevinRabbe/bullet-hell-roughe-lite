@@ -5,6 +5,7 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 	"res://data/enemies/imp_runner.tres",
 	"res://data/enemies/husk_brute.tres",
 	"res://data/enemies/spit_fiend.tres",
+	"res://data/enemies/skeleton_rifleman.tres",
 ]
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
