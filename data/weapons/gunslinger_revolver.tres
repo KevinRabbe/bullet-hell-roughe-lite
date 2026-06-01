@@ -8,26 +8,26 @@ script = ExtResource("1")
 icon = ExtResource("2")
 id = "gunslinger_revolver"
 display_name = "Hellfire Revolver"
-description = "Accurate hand cannon with strong crit-style punch."
+description = "Slow, high-impact hand cannon that scales hard with crit."
 family_id = "gunslinger"
-cooldown_seconds = 0.55
-damage = 13.0
-projectile_speed = 760.0
-attack_range = 1.05
+cooldown_seconds = 0.62
+damage = 15.0
+projectile_speed = 740.0
+attack_range = 1.08
 projectile_lifetime_seconds = 1.9
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "gunslinger"
 price = 6
 tags = Array[String](["gun", "bullet", "precision", "hell"])
 stat_scaling = {
-"attack_speed": 0.6,
-"crit_chance": 1.3,
-"crit_damage": 1.5,
-"damage": 1.2,
+"attack_speed": 0.45,
+"crit_chance": 1.6,
+"crit_damage": 1.8,
+"damage": 1.35,
 "knockback": 0.5,
 "on_hit": 0.4,
 "pierce": 0.0,
 "projectile_count": 0.0,
-"range": 0.6,
+"range": 0.7,
 "ranged_damage": 1.2
 }
