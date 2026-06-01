@@ -16,6 +16,8 @@ var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
+var total_kills: int = 0
+var total_boss_kills: int = 0
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -178,6 +180,11 @@ func add_xp(amount: int) -> void:
 		level_up_pending_changed.emit()
 	_update_hp_label()
 
+func register_enemy_kill(is_boss_kill: bool = false) -> void:
+	total_kills += 1
+	if is_boss_kill:
+		total_boss_kills += 1
+
 func has_pending_level_up() -> bool:
 	return pending_level_ups > 0
 
@@ -337,5 +344,7 @@ func get_ui_snapshot() -> Dictionary:
 		"portal_luck": float(stats.portal_luck),
 		"portal_frequency": float(stats.portal_frequency),
 		"portal_instability": float(stats.portal_instability),
-		"items": owned_items.duplicate()
+		"items": owned_items.duplicate(),
+		"kills": int(total_kills),
+		"boss_kills": int(total_boss_kills)
 	}

@@ -92,6 +92,8 @@ func _grant_kill_rewards() -> void:
 	var reward_gold := 10 if is_boss else 1
 	var reward_xp := 15 if is_boss else 1
 	var player_node := players[0]
+	if player_node != null and player_node.has_method("register_enemy_kill"):
+		player_node.call("register_enemy_kill", is_boss)
 	if player_node != null and player_node.has_method("add_gold"):
 		player_node.call("add_gold", reward_gold)
 	if player_node != null and player_node.has_method("add_xp"):

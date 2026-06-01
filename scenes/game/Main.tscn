@@ -259,6 +259,45 @@ offset_right = 210.0
 offset_bottom = 330.0
 text = "Reroll (2G)"
 
+[node name="RunEndUI" type="CanvasLayer" parent="."]
+
+[node name="Panel" type="Panel" parent="RunEndUI"]
+visible = false
+offset_left = 346.0
+offset_top = 210.0
+offset_right = 826.0
+offset_bottom = 460.0
+
+[node name="Title" type="Label" parent="RunEndUI/Panel"]
+offset_left = 28.0
+offset_top = 20.0
+offset_right = 452.0
+offset_bottom = 68.0
+theme_override_font_sizes/font_size = 36
+text = "Game Over"
+
+[node name="Summary" type="Label" parent="RunEndUI/Panel"]
+offset_left = 28.0
+offset_top = 76.0
+offset_right = 452.0
+offset_bottom = 168.0
+autowrap_mode = 2
+text = "Wave Reached: 1"
+
+[node name="RestartButton" type="Button" parent="RunEndUI/Panel"]
+offset_left = 52.0
+offset_top = 188.0
+offset_right = 214.0
+offset_bottom = 232.0
+text = "Restart"
+
+[node name="MainMenuButton" type="Button" parent="RunEndUI/Panel"]
+offset_left = 266.0
+offset_top = 188.0
+offset_right = 428.0
+offset_bottom = 232.0
+text = "Main Menu"
+
 [node name="BossManager" type="Node" parent="."]
 script = ExtResource("9")
 boss_scene = ExtResource("3")
