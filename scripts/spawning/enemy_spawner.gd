@@ -9,6 +9,8 @@ signal wave_completed(wave_index: int)
 @export var max_alive_enemies: int = 20
 @export var wave_duration_seconds: float = 30.0
 @export var min_spawn_interval_seconds: float = 0.7
+@export var elite_wave_start: int = 5
+@export var elite_spawn_chance: float = 0.14
 
 var target: Node2D
 var rng: RandomNumberGenerator
@@ -17,6 +19,12 @@ var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
 var completion_emitted: bool = false
+const WAVE_VARIANT_POOLS: Dictionary = {
+	1: ["imp_runner"],
+	2: ["imp_runner", "husk_brute"],
+	3: ["imp_runner", "husk_brute", "spit_fiend"],
+	4: ["imp_runner", "husk_brute", "spit_fiend", "skeleton_rifleman"],
+}
 
 func _ready() -> void:
 	if target_path != NodePath():
@@ -70,6 +78,7 @@ func _on_spawn_timer_timeout() -> void:
 	var variant := _pick_enemy_variant()
 	if enemy_node.has_method("set"):
 		enemy_node.set("enemy_variant", variant)
+	_apply_wave_enemy_overrides(enemy_node, variant)
 	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
 	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
 	add_child(enemy_node)
@@ -78,12 +87,37 @@ func _on_spawn_timer_timeout() -> void:
 		enemy_node.call("set_target", target)
 
 func _pick_enemy_variant() -> String:
-	var roll := rng.randf()
-	if roll < 0.45:
+	var pool := _variant_pool_for_wave(current_wave_index)
+	if pool.is_empty():
 		return "imp_runner"
-	if roll < 0.8:
-		return "husk_brute"
-	return "spit_fiend"
+	return str(pool[rng.randi_range(0, pool.size() - 1)])
+
+func _variant_pool_for_wave(wave_index: int) -> Array[String]:
+	var effective_wave := mini(wave_index, 4)
+	var result: Array[String] = []
+	var configured: Variant = WAVE_VARIANT_POOLS.get(effective_wave, [])
+	if configured is Array:
+		for item in configured:
+			result.append(str(item))
+	return result
+
+func _apply_wave_enemy_overrides(enemy_node: Node2D, variant: String) -> void:
+	if current_wave_index < elite_wave_start:
+		return
+	if variant != "husk_brute":
+		return
+	if rng.randf() > elite_spawn_chance:
+		return
+	if enemy_node.has_method("set"):
+		enemy_node.set("is_elite", true)
+		enemy_node.set("elite_role", "wave_tank")
+		var base_hp := float(enemy_node.get("max_hp"))
+		var base_damage := float(enemy_node.get("contact_damage"))
+		var base_speed := float(enemy_node.get("move_speed"))
+		enemy_node.set("max_hp", base_hp * 2.0)
+		enemy_node.set("current_hp", base_hp * 2.0)
+		enemy_node.set("contact_damage", base_damage * 1.35)
+		enemy_node.set("move_speed", base_speed * 0.88)
 
 func _count_alive_enemies() -> int:
 	var alive_count := 0
