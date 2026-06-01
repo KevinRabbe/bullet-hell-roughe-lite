@@ -23,6 +23,13 @@ const SHOP_WEAPON_IDS: Array[String] = [
 ]
 
 const DEFAULT_ITEM_PRICE: int = 3
+const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
+const WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
+	{"max_wave": 2, "weights": {"common": 95.0, "rare": 5.0}},
+	{"max_wave": 5, "weights": {"common": 80.0, "rare": 18.0, "epic": 2.0}},
+	{"max_wave": 9, "weights": {"common": 60.0, "rare": 32.0, "epic": 8.0}},
+	{"max_wave": 9999, "weights": {"common": 45.0, "rare": 38.0, "epic": 15.0, "legendary": 2.0}},
+]
 
 var enemy_spawner: Node
 var player: Node
@@ -109,7 +116,8 @@ func _make_weapon_offer(weapon_id: String) -> Dictionary:
 		"price": price,
 		"family": family,
 		"tags": tags,
-		"rarity": rarity_name
+		"rarity": rarity_name,
+		"base_price": price
 	}
 
 func _build_item_offer_pool() -> void:
@@ -188,7 +196,10 @@ func _refresh_offer_buttons() -> void:
 				button.text = "Sold Out"
 				button.disabled = true
 			else:
-				button.text = "%s (%dG)" % [str(offer.get("label", "Offer")), price]
+				var rarity_badge := ""
+				if offer_type == "weapon":
+					rarity_badge = "[%s] " % str(offer.get("rolled_rarity", "common")).capitalize()
+				button.text = "%s%s (%dG)" % [rarity_badge, str(offer.get("label", "Offer")), price]
 				button.disabled = false
 		else:
 			button.text = "N/A"
@@ -208,9 +219,10 @@ func _on_offer_pressed(index: int) -> void:
 
 	if offer_type == "weapon":
 		var loadout: Node = player.get_node_or_null("WeaponLoadout")
+		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 		if loadout != null:
 			if loadout.has_method("can_grant_weapon"):
-				if not bool(loadout.call("can_grant_weapon", offer_id)):
+				if not bool(loadout.call("can_grant_weapon", offer_id, rolled_rarity)):
 					print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
 					return
 			elif loadout.has_method("has_space") and not bool(loadout.call("has_space")):
@@ -223,8 +235,9 @@ func _on_offer_pressed(index: int) -> void:
 			return
 
 	if offer_type == "weapon":
+		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 		if player.has_method("grant_weapon"):
-			var granted: bool = bool(player.call("grant_weapon", offer_id))
+			var granted: bool = bool(player.call("grant_weapon", offer_id, rolled_rarity))
 			if not granted:
 				if player.has_method("add_gold"):
 					player.call("add_gold", offer_price)
@@ -270,7 +283,12 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 	var index := rng.randi_range(0, pool.size() - 1)
 	var selected: Variant = pool[index]
 	if selected is Dictionary:
-		return (selected as Dictionary).duplicate(true)
+		var offer := (selected as Dictionary).duplicate(true)
+		if str(offer.get("type", "")) == "weapon":
+			var rolled_rarity := _roll_weapon_rarity_for_wave(_current_wave_index)
+			offer["rolled_rarity"] = rolled_rarity
+			offer["price"] = int(offer.get("base_price", int(offer.get("price", 0))))
+		return offer
 	return {}
 
 func _find_item_data(item_id: String) -> ItemData:
@@ -281,6 +299,32 @@ func _find_item_data(item_id: String) -> ItemData:
 
 func _sold_out_offer() -> Dictionary:
 	return {"type": "sold_out", "id": "", "label": "Sold Out", "price": 0}
+
+func _roll_weapon_rarity_for_wave(wave_index: int) -> String:
+	var weights := _rarity_weights_for_wave(wave_index)
+	var total_weight := 0.0
+	for rarity_name in RARITY_ORDER:
+		total_weight += float(weights.get(rarity_name, 0.0))
+	if total_weight <= 0.0:
+		return "common"
+	var roll := rng.randf_range(0.0, total_weight)
+	var threshold := 0.0
+	for rarity_name in RARITY_ORDER:
+		threshold += float(weights.get(rarity_name, 0.0))
+		if roll <= threshold:
+			return rarity_name
+	return "common"
+
+func _rarity_weights_for_wave(wave_index: int) -> Dictionary:
+	for band_variant in WEAPON_RARITY_WEIGHTS_BY_WAVE:
+		if not (band_variant is Dictionary):
+			continue
+		var band: Dictionary = band_variant
+		if wave_index <= int(band.get("max_wave", 9999)):
+			var resolved: Variant = band.get("weights", {})
+			if resolved is Dictionary:
+				return resolved
+	return {"common": 100.0}
 
 func _on_continue_pressed() -> void:
 	if panel != null:
