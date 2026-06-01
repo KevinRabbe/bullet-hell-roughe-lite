@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "skeleton_rifleman"
+display_name = "Skeleton Rifleman"
+description = "Ranged marksman that keeps distance and fires fast shards."
+archetype = "ranged_marksman"
+tags = Array[String](["skeleton", "ranged", "rifleman"])
+max_hp = 28.0
+move_speed = 130.0
+contact_damage = 2.0
+contact_range = 50.0
+damage_interval_seconds = 1.25
+ranged_damage = 6.0
+ranged_interval_seconds = 1.35
+ranged_attack_range = 290.0
+is_elite = false
+is_boss = false
+threat_tier = 2
+reward_gold = 1
+reward_xp = 1

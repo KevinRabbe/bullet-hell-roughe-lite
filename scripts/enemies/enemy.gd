@@ -10,7 +10,7 @@ const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helpe
 @export var is_elite: bool = false
 @export var is_boss: bool = false
 @export var elite_role: String = ""
-@export_enum("imp_runner", "husk_brute", "spit_fiend") var enemy_variant: String = "imp_runner"
+@export_enum("imp_runner", "husk_brute", "spit_fiend", "skeleton_rifleman") var enemy_variant: String = "imp_runner"
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2
 @export var ranged_attack_range: float = 210.0
@@ -25,13 +25,15 @@ var ranged_cooldown_left: float = 0.0
 const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/dust_imp.png")
 const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/hellhound.png")
 const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/rift_cultist.png")
+const SKELETON_RIFLEMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/skeleton_rifleman.png")
 const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_skull_fireball.png")
 const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemy_rift_shard.png")
 const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyProjectile.tscn")
 const ENEMY_DATA_PATHS: Dictionary = {
 	"imp_runner": "res://data/enemies/imp_runner.tres",
 	"husk_brute": "res://data/enemies/husk_brute.tres",
-	"spit_fiend": "res://data/enemies/spit_fiend.tres"
+	"spit_fiend": "res://data/enemies/spit_fiend.tres",
+	"skeleton_rifleman": "res://data/enemies/skeleton_rifleman.tres"
 }
 
 func _ready() -> void:
@@ -61,6 +63,14 @@ func _physics_process(delta: float) -> void:
 		var distance_to_player := global_position.distance_to(target.global_position)
 		if distance_to_player <= ranged_attack_range:
 			velocity *= 0.25
+	elif enemy_variant == "skeleton_rifleman":
+		var skeleton_distance := global_position.distance_to(target.global_position)
+		var keep_distance_min := ranged_attack_range * 0.58
+		var keep_distance_max := ranged_attack_range * 0.92
+		if skeleton_distance < keep_distance_min:
+			velocity = -direction * move_speed
+		elif skeleton_distance <= keep_distance_max:
+			velocity = Vector2.ZERO
 	move_and_slide()
 	_try_damage_player()
 	_try_ranged_damage_player()
@@ -111,7 +121,7 @@ func _try_damage_player() -> void:
 	damage_cooldown_left = damage_interval_seconds
 
 func _try_ranged_damage_player() -> void:
-	if enemy_variant != "spit_fiend":
+	if enemy_variant != "spit_fiend" and enemy_variant != "skeleton_rifleman":
 		return
 	if ranged_cooldown_left > 0.0:
 		return
@@ -124,7 +134,10 @@ func _try_ranged_damage_player() -> void:
 		return
 	var projectile_speed := 360.0
 	var projectile_lifetime := 2.0
-	if elite_role == "rift_caller":
+	if enemy_variant == "skeleton_rifleman":
+		projectile_speed = 560.0
+		projectile_lifetime = 1.7
+	elif elite_role == "rift_caller":
 		projectile_speed = 300.0
 		projectile_lifetime = 2.3
 	else:
@@ -144,12 +157,12 @@ func _try_ranged_damage_player() -> void:
 		var projectile_visual := projectile.get_node_or_null("Visual")
 		if projectile_visual is Sprite2D:
 			var projectile_sprite := projectile_visual as Sprite2D
-			if elite_role == "rift_caller":
+			if enemy_variant == "skeleton_rifleman" or elite_role == "rift_caller":
 				projectile_sprite.texture = RIFT_SHARD_TEXTURE
 			else:
 				projectile_sprite.texture = SKULL_FIREBALL_TEXTURE
 			projectile_sprite.rotation = (target.global_position - global_position).angle() + PI
-	print("SPIT FIEND SHOT PROJECTILE | distance %.1f | damage %.1f" % [distance_to_player, ranged_damage])
+	print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
 	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:
@@ -193,6 +206,20 @@ func _apply_variant_stats() -> void:
 				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
 			if visual_sprite != null:
 				visual_sprite.texture = SPIT_FIEND_TEXTURE
+				visual_sprite.scale = Vector2(0.09, 0.09)
+		"skeleton_rifleman":
+			if not has_data:
+				move_speed = 130.0
+				max_hp = 28.0
+				contact_damage = 2.0
+				damage_interval_seconds = 1.25
+				ranged_damage = 6.0
+				ranged_interval_seconds = 1.35
+				ranged_attack_range = 290.0
+			if visual != null:
+				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+			if visual_sprite != null:
+				visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
 				visual_sprite.scale = Vector2(0.09, 0.09)
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
