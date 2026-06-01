@@ -20,6 +20,12 @@ const SHOP_WEAPON_IDS: Array[String] = [
 	"gunslinger_revolver",
 	"gunslinger_assault_rifle",
 	"gunslinger_sniper_rifle",
+	"scrap_pistol",
+	"bone_knife",
+	"heart_collector",
+	"rusted_smg",
+	"grave_rifle",
+	"butcher_tool",
 ]
 
 const DEFAULT_ITEM_PRICE: int = 3
