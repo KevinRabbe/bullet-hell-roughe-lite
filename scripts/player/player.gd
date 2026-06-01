@@ -267,7 +267,7 @@ func _equip_gunslinger_weapon(index: int) -> void:
 	var weapon_id := GUNSLINGER_WEAPON_IDS[index]
 	grant_weapon(weapon_id)
 
-func grant_weapon(weapon_id: String) -> bool:
+func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool:
 	if weapon_id == "":
 		return false
 	if weapon_loadout == null or not weapon_loadout.has_method("equip_weapon"):
@@ -276,10 +276,10 @@ func grant_weapon(weapon_id: String) -> bool:
 
 	var grant_result_variant: Variant
 	if weapon_loadout.has_method("grant_or_combine_weapon"):
-		grant_result_variant = weapon_loadout.call("grant_or_combine_weapon", weapon_id)
+		grant_result_variant = weapon_loadout.call("grant_or_combine_weapon", weapon_id, incoming_rarity)
 	else:
 		var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
-		grant_result_variant = {"success": equipped, "combined": false, "rarity": "common"}
+		grant_result_variant = {"success": equipped, "combined": false, "rarity": incoming_rarity}
 
 	if not (grant_result_variant is Dictionary):
 		print("Weapon grant failed: invalid loadout result for %s" % weapon_id)

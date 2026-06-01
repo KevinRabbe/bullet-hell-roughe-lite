@@ -15,21 +15,21 @@ func _ready() -> void:
 func has_space() -> bool:
 	return equipped_weapons.size() < MAX_WEAPON_SLOTS
 
-func can_grant_weapon(weapon_id: String) -> bool:
+func can_grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool:
 	if weapon_id == "":
 		return false
 	if has_space():
 		return true
-	return _find_upgrade_target_for_incoming(weapon_id, "common") != -1
+	return _find_upgrade_target_for_incoming(weapon_id, incoming_rarity) != -1
 
-func get_grant_block_reason(weapon_id: String) -> String:
+func get_grant_block_reason(weapon_id: String, incoming_rarity: String = "common") -> String:
 	if weapon_id == "":
 		return "Missing weapon id."
 	if has_space():
 		return ""
-	if _find_upgrade_target_for_incoming(weapon_id, "common") != -1:
+	if _find_upgrade_target_for_incoming(weapon_id, incoming_rarity) != -1:
 		return ""
-	return "Need matching %s (Common) to auto-combine." % _pretty_weapon_name(weapon_id)
+	return "Need matching %s (%s) to auto-combine." % [_pretty_weapon_name(weapon_id), incoming_rarity.capitalize()]
 
 func can_merge_slot(slot_index: int) -> bool:
 	var result := _evaluate_slot_merge(slot_index)
@@ -93,16 +93,18 @@ func equip_weapon(weapon_id: String) -> bool:
 	loadout_changed.emit()
 	return true
 
-func grant_or_combine_weapon(weapon_id: String) -> Dictionary:
+func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "common") -> Dictionary:
 	if weapon_id == "":
 		return {"success": false, "combined": false, "rarity": ""}
+	if RARITY_ORDER.find(incoming_rarity) == -1:
+		incoming_rarity = "common"
 	if has_space():
-		equipped_weapons.append({"id": weapon_id, "rarity": "common"})
+		equipped_weapons.append({"id": weapon_id, "rarity": incoming_rarity})
 		_sync_legacy_ids()
 		loadout_changed.emit()
-		return {"success": true, "combined": false, "rarity": "common"}
+		return {"success": true, "combined": false, "rarity": incoming_rarity}
 
-	var target_index := _find_upgrade_target_for_incoming(weapon_id, "common")
+	var target_index := _find_upgrade_target_for_incoming(weapon_id, incoming_rarity)
 	if target_index == -1:
 		return {"success": false, "combined": false, "rarity": ""}
 	var current_entry: Dictionary = equipped_weapons[target_index]
