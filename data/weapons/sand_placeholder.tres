@@ -14,3 +14,4 @@ projectile_speed = 680.0
 attack_range = 1.05
 projectile_lifetime_seconds = 2.1
 price = 6
+shop_enabled = false

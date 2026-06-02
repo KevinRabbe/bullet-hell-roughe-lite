@@ -24,14 +24,14 @@ func get_snapshot() -> Dictionary:
 		"is_shop_open": _is_shop_open()
 	}
 
-func get_weapon_offer_block_reason(weapon_id: String) -> String:
+func get_weapon_offer_block_reason(weapon_id: String, incoming_rarity: String = "common") -> String:
 	if player == null:
 		return "Need empty slot or valid same-rarity merge."
 	var loadout: Node = player.get_node_or_null("WeaponLoadout")
 	if loadout == null:
 		return "Need empty slot or valid same-rarity merge."
 	if loadout.has_method("get_grant_block_reason"):
-		var reason := str(loadout.call("get_grant_block_reason", weapon_id))
+		var reason := str(loadout.call("get_grant_block_reason", weapon_id, incoming_rarity))
 		if reason != "":
 			return reason
 	return "Need empty slot or valid same-rarity merge."

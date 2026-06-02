@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/heavy_pistol.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "devils_contract"
+display_name = "Devil's Contract"
+description = "Binding sidearm that marks prey for long fights and thrives in attrition."
+family_id = "devil"
+cooldown_seconds = 0.56
+damage = 8.0
+projectile_speed = 700.0
+attack_range = 1.0
+projectile_lifetime_seconds = 1.9
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "devil"
+price = 6
+tags = Array[String](["devil", "debt", "pact"])

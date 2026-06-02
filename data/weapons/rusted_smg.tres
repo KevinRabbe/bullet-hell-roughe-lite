@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/demon_smg.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "rusted_smg"
+display_name = "Rusted SMG"
+description = "Shaky scrap sprayer that ramps faster the longer it keeps harvesting."
+family_id = "harvester"
+cooldown_seconds = 0.14
+damage = 3.5
+projectile_speed = 720.0
+attack_range = 0.88
+projectile_lifetime_seconds = 1.4
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 5
+tags = Array[String](["harvest", "rapid", "scaling"])
+kill_milestone_base_kills = 14
+kill_milestone_stat_id = "attack_speed"
+kill_milestone_amount = 0.05

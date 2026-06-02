@@ -12,16 +12,6 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 @export var reroll_cost: int = 2
 @export var enabled: bool = false
 
-# Weapon IDs available in the shop pool. Prices/names read from WeaponData.
-const SHOP_WEAPON_IDS: Array[String] = [
-	"heavy_pistol",
-	"gunslinger_smg",
-	"gunslinger_shotgun",
-	"gunslinger_revolver",
-	"gunslinger_assault_rifle",
-	"gunslinger_sniper_rifle",
-]
-
 const DEFAULT_ITEM_PRICE: int = 3
 const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
 const WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
@@ -87,7 +77,33 @@ func _ready() -> void:
 
 func _build_weapon_offer_pool() -> void:
 	_weapon_offer_pool.clear()
-	for weapon_id in SHOP_WEAPON_IDS:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.get("weapons") is Dictionary:
+		var weapon_map: Dictionary = data_registry.get("weapons")
+		var weapon_ids: Array[String] = []
+		for weapon_id_variant in weapon_map.keys():
+			weapon_ids.append(str(weapon_id_variant))
+		weapon_ids.sort()
+		for weapon_id in weapon_ids:
+			var offer := _make_weapon_offer(weapon_id)
+			if not offer.is_empty():
+				_weapon_offer_pool.append(offer)
+	if not _weapon_offer_pool.is_empty():
+		return
+	var directory := DirAccess.open("res://data/weapons")
+	if directory == null:
+		return
+	var file_names: Array[String] = []
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while file_name != "":
+		if not directory.current_is_dir() and file_name.ends_with(".tres"):
+			file_names.append(file_name)
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	file_names.sort()
+	for sorted_file_name in file_names:
+		var weapon_id := sorted_file_name.trim_suffix(".tres")
 		var offer := _make_weapon_offer(weapon_id)
 		if not offer.is_empty():
 			_weapon_offer_pool.append(offer)
@@ -98,6 +114,8 @@ func _make_weapon_offer(weapon_id: String) -> Dictionary:
 	if ResourceLoader.exists(resource_path):
 		data = load(resource_path) as WeaponData
 	if data == null:
+		return {}
+	if not data.shop_enabled:
 		return {}
 
 	var resolved_id := weapon_id
