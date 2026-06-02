@@ -343,6 +343,21 @@ func get_portal_event_bias(event_id: String) -> float:
 	var portal_event_biases: Dictionary = portal_event_biases_variant
 	return maxf(float(portal_event_biases.get(event_id, 1.0)), 0.0)
 
+func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> int:
+	if status_id == "":
+		return 0
+	var count := 0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy):
+			continue
+		if max_distance > 0.0 and enemy is Node2D:
+			var enemy_node := enemy as Node2D
+			if global_position.distance_to(enemy_node.global_position) > max_distance:
+				continue
+		if enemy.has_method("get_status_stack_count") and int(enemy.call("get_status_stack_count", status_id)) > 0:
+			count += 1
+	return count
+
 func get_damage_stat_multiplier() -> float:
 	return stats.damage
 
@@ -635,5 +650,46 @@ func get_ui_snapshot() -> Dictionary:
 		"portal_luck": float(stats.portal_luck),
 		"portal_frequency": float(stats.portal_frequency),
 		"portal_instability": float(stats.portal_instability),
-		"items": owned_items.duplicate()
+		"items": owned_items.duplicate(),
+		"weapon_entries": get_weapon_ui_entries()
 	}
+
+func get_weapon_ui_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	if weapon_loadout == null or not weapon_loadout.has_method("get_weapon_entries"):
+		return entries
+	var raw_entries_variant: Variant = weapon_loadout.call("get_weapon_entries")
+	if not (raw_entries_variant is Array):
+		return entries
+	var raw_entries: Array = raw_entries_variant
+	for entry_variant in raw_entries:
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = (entry_variant as Dictionary).duplicate(true)
+		var weapon_id := str(entry.get("id", ""))
+		var weapon_resource := _load_weapon_resource(weapon_id)
+		if weapon_resource == null:
+			entries.append(entry)
+			continue
+		var family_id := _resolve_weapon_family_id(weapon_resource)
+		var required_kills := _get_effective_kill_requirement(weapon_resource, family_id)
+		var kill_count := int(entry.get("kill_count", 0))
+		var milestones_earned := int(entry.get("milestones_earned", 0))
+		var progress_in_stage := kill_count - (required_kills * milestones_earned)
+		if required_kills > 0:
+			progress_in_stage = maxi(progress_in_stage, 0)
+		entry["display_name"] = weapon_resource.display_name
+		entry["kill_requirement"] = required_kills
+		entry["kill_progress"] = progress_in_stage
+		entry["milestone_stat_id"] = weapon_resource.kill_milestone_stat_id
+		entry["milestone_amount"] = weapon_resource.kill_milestone_amount
+		entries.append(entry)
+	return entries
+
+func _get_effective_kill_requirement(weapon_resource: WeaponData, family_id: String) -> int:
+	if weapon_resource == null or weapon_resource.kill_milestone_base_kills <= 0:
+		return 0
+	return maxi(
+		int(round(float(weapon_resource.kill_milestone_base_kills) * get_family_kill_requirement_multiplier(family_id))),
+		1
+	)

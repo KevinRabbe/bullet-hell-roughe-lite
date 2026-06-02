@@ -391,11 +391,18 @@ func _refresh_weapon_slots() -> void:
 			var data := _load_weapon_data(weapon_id)
 			icon_button.icon = data.icon if data != null else null
 			icon_button.disabled = false
+			var base_label := ""
 			if data != null and data.display_name != "":
 				var short_name := data.display_name.substr(0, mini(3, data.display_name.length()))
-				slot_label.text = "%s %s" % [short_name, rarity.capitalize().substr(0, 1)]
+				base_label = "%s %s" % [short_name, rarity.capitalize().substr(0, 1)]
 			else:
-				slot_label.text = "%s %s" % [weapon_id.substr(0, mini(3, weapon_id.length())), rarity.capitalize().substr(0, 1)]
+				base_label = "%s %s" % [weapon_id.substr(0, mini(3, weapon_id.length())), rarity.capitalize().substr(0, 1)]
+			var kill_requirement := int(entry.get("kill_requirement", 0))
+			var kill_progress := int(entry.get("kill_progress", 0))
+			if kill_requirement > 0:
+				slot_label.text = "%s\n%d/%d" % [base_label, kill_progress, kill_requirement]
+			else:
+				slot_label.text = base_label
 		else:
 			icon_button.icon = null
 			icon_button.disabled = true

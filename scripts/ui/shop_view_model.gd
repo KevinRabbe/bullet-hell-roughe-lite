@@ -19,7 +19,7 @@ func get_snapshot() -> Dictionary:
 		"offers": _get_offers(),
 		"items_text": _get_items_text(player_snapshot),
 		"weapon_count": _get_weapon_count(),
-		"weapon_entries": _get_weapon_entries(),
+		"weapon_entries": _get_weapon_entries(player_snapshot),
 		"stats_text": _get_stats_text(player_snapshot),
 		"is_shop_open": _is_shop_open()
 	}
@@ -87,7 +87,15 @@ func _get_weapon_count() -> int:
 			count += 1
 	return count
 
-func _get_weapon_entries() -> Array[Dictionary]:
+func _get_weapon_entries(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
+	var snapshot_entries_variant: Variant = player_snapshot.get("weapon_entries", [])
+	if snapshot_entries_variant is Array:
+		var snapshot_entries: Array[Dictionary] = []
+		for entry_variant in snapshot_entries_variant:
+			if entry_variant is Dictionary:
+				snapshot_entries.append((entry_variant as Dictionary).duplicate(true))
+		if not snapshot_entries.is_empty():
+			return snapshot_entries
 	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_entries"):
 		var entries_variant: Variant = weapon_loadout.call("get_weapon_entries")
 		if entries_variant is Array:

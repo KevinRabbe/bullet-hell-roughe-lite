@@ -54,6 +54,14 @@ func _on_body_entered(body: Node) -> void:
 				final_damage *= weapon_data.bonus_damage_vs_status_multiplier
 				if weapon_data.bonus_damage_vs_status_max_hp_fraction > 0.0:
 					final_damage += _get_body_max_hp(body) * weapon_data.bonus_damage_vs_status_max_hp_fraction * float(stacks)
+		if weapon_data != null and weapon_data.bonus_damage_per_enemy_with_status_id != "" and weapon_data.bonus_damage_per_enemy_with_status_amount > 0.0:
+			var empowered_enemy_count := 0
+			if shooter != null and shooter.has_method("count_enemies_with_status"):
+				empowered_enemy_count = int(shooter.call("count_enemies_with_status", weapon_data.bonus_damage_per_enemy_with_status_id))
+			if weapon_data.bonus_damage_per_enemy_with_status_max_enemies > 0:
+				empowered_enemy_count = mini(empowered_enemy_count, weapon_data.bonus_damage_per_enemy_with_status_max_enemies)
+			if empowered_enemy_count > 0:
+				final_damage *= 1.0 + (weapon_data.bonus_damage_per_enemy_with_status_amount * float(empowered_enemy_count))
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
 		if pierce_count > 0:
 			pierce_count -= 1
