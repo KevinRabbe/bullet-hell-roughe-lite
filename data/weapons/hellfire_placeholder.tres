@@ -1,16 +1,19 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/demon_lord/weapon_2_hellfire_orb.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "hellfire_placeholder"
 display_name = "Hellfire Placeholder"
 description = "Data stub weapon for the Hellfire family."
+icon = ExtResource("2")
 family_id = "hellfire"
 cooldown_seconds = 0.55
 damage = 9.0
 projectile_speed = 690.0
 attack_range = 1.0
 projectile_lifetime_seconds = 1.8
+projectile_scene_path = "res://scenes/weapons/projectiles/HellfireProjectile.tscn"
 price = 6

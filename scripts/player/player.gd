@@ -17,6 +17,7 @@ var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
 var _logged_resource_warnings: Dictionary = {}
+@onready var visual: Sprite2D = get_node_or_null("Visual") as Sprite2D
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -35,6 +36,7 @@ func _ready() -> void:
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
 	current_hp = stats.max_hp
+	_apply_character_visual(_get_character_data(active_character_id))
 	_apply_character_rules()
 	_update_hp_label()
 
@@ -198,9 +200,11 @@ func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":
 		return
 	active_character_id = character_id
+	var character_data := _get_character_data(active_character_id)
 	_reset_character_stats()
+	_apply_character_visual(character_data)
 	_apply_character_rules()
-	_apply_character_starting_weapon()
+	_apply_character_starting_weapon(character_data)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
 	print("Selected character: %s" % active_character_id)
@@ -214,8 +218,9 @@ func _reset_character_stats() -> void:
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
 
-func _apply_character_starting_weapon() -> void:
-	_debug_add_gunslinger_weapon_by_id("heavy_pistol")
+func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
+	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
+	grant_weapon(starting_weapon_id)
 
 func _apply_character_rules() -> void:
 	if active_character_id == "gunslinger":
@@ -230,6 +235,49 @@ func _apply_character_rules() -> void:
 			if weapons.is_empty():
 				weapons.append("heavy_pistol")
 				player_build.set("equipped_weapon_ids", weapons)
+
+func _apply_character_visual(character_data: Dictionary) -> void:
+	if visual == null:
+		return
+	var visual_path := str(character_data.get("visual_path", ""))
+	if visual_path == "":
+		return
+	if not ResourceLoader.exists(visual_path):
+		_log_resource_warning_once("missing_character_visual:%s" % active_character_id, "Missing character visual: %s" % visual_path)
+		return
+	var texture := load(visual_path)
+	if texture is Texture2D:
+		visual.texture = texture as Texture2D
+	else:
+		_log_resource_warning_once("invalid_character_visual:%s" % active_character_id, "Invalid character visual type: %s" % visual_path)
+
+func _get_character_data(character_id: String) -> Dictionary:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null or not data_registry.has_method("get_character"):
+		return {}
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if character_variant is Dictionary:
+		return character_variant as Dictionary
+	return {}
+
+func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
+	var candidate_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
+	if candidate_ids_variant is Array:
+		var candidate_ids: Array = candidate_ids_variant
+		for candidate_variant in candidate_ids:
+			var candidate_id := str(candidate_variant)
+			if candidate_id == "":
+				continue
+			if _weapon_resource_exists(candidate_id):
+				return candidate_id
+			_log_resource_warning_once("missing_start_weapon:%s" % candidate_id, "Missing starter weapon resource for %s." % candidate_id)
+	return "heavy_pistol"
+
+func _weapon_resource_exists(weapon_id: String) -> bool:
+	if weapon_id == "":
+		return false
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	return ResourceLoader.exists(resource_path)
 
 func get_damage_multiplier_for_target(target: Node) -> float:
 	if active_character_id != "gunslinger":

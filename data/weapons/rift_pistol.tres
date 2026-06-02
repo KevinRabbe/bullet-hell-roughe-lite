@@ -1,16 +1,19 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/riftwalker/weapon_1_void_revolver.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "rift_pistol"
 display_name = "Rift Pistol"
 description = "Portal-infused sidearm for Riftwalker."
+icon = ExtResource("2")
 family_id = "portal"
 cooldown_seconds = 0.4
 damage = 9.0
 projectile_speed = 760.0
 attack_range = 1.1
 projectile_lifetime_seconds = 2.0
+projectile_scene_path = "res://scenes/weapons/projectiles/RiftProjectile.tscn"
 price = 6

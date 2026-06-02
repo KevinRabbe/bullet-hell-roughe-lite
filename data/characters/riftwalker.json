@@ -3,5 +3,6 @@
   "display_name": "The Riftwalker",
   "description": "Placeholder: portal-stat specialist archetype.",
   "starting_weapon_ids": ["rift_pistol"],
+  "visual_path": "res://assets/sprites/characters/riftwalker/character_c_riftwalker.png",
   "passive_tags": ["placeholder_passive"]
 }

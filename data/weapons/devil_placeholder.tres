@@ -1,16 +1,19 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/devil/devil_runeblade.png" id="2"]
 
 [resource]
 script = ExtResource("1")
 id = "devil_placeholder"
 display_name = "Devil Placeholder"
 description = "Data stub weapon for the Devil family."
+icon = ExtResource("2")
 family_id = "devil"
 cooldown_seconds = 0.52
 damage = 9.0
 projectile_speed = 710.0
 attack_range = 1.0
 projectile_lifetime_seconds = 1.9
+projectile_scene_path = "res://scenes/weapons/projectiles/DevilProjectile.tscn"
 price = 6
