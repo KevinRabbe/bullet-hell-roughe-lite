@@ -52,6 +52,8 @@ func _on_body_entered(body: Node) -> void:
 				stacks = int(body.call("get_status_stack_count", weapon_data.bonus_damage_vs_status_id))
 			if stacks > 0:
 				final_damage *= weapon_data.bonus_damage_vs_status_multiplier
+				if weapon_data.bonus_damage_vs_status_max_hp_fraction > 0.0:
+					final_damage += _get_body_max_hp(body) * weapon_data.bonus_damage_vs_status_max_hp_fraction * float(stacks)
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
 		if pierce_count > 0:
 			pierce_count -= 1
@@ -65,3 +67,8 @@ func _load_weapon_data() -> WeaponData:
 	if not ResourceLoader.exists(resource_path):
 		return null
 	return load(resource_path) as WeaponData
+
+func _get_body_max_hp(body: Node) -> float:
+	if body == null:
+		return 0.0
+	return maxf(float(body.get("max_hp")), 0.0)

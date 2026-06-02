@@ -35,6 +35,7 @@ extends Resource
 @export var on_hit_status_max_stacks: int = 1
 @export var bonus_damage_vs_status_id: String = ""
 @export var bonus_damage_vs_status_multiplier: float = 1.0
+@export var bonus_damage_vs_status_max_hp_fraction: float = 0.0
 
 # Existing fields preserved to avoid breaking gameplay
 @export var family_id: String = ""

@@ -23,4 +23,5 @@ price = 7
 tags = Array[String](["devil", "collector", "ranged", "debt"])
 bonus_damage_vs_status_id = "devils_debt"
 bonus_damage_vs_status_multiplier = 1.5
+bonus_damage_vs_status_max_hp_fraction = 0.01
 orbit_scale_multiplier = 0.92
