@@ -16,8 +16,13 @@
     "portal_instability": 0.15
   },
   "portal_event_biases": {
-    "double_elite": 1.2,
-    "enemy_flood_20s": 1.35
+    "double_elite": 1.25,
+    "power_for_hp_loss": 1.2,
+    "enemy_flood_20s": 0.9
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.04,
+    "3": 0.06
   },
   "passive_tags": ["rift_sense", "unstable_path"]
 }

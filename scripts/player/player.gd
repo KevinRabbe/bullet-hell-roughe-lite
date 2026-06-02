@@ -345,6 +345,13 @@ func get_portal_event_bias(event_id: String) -> float:
 	var portal_event_biases: Dictionary = portal_event_biases_variant
 	return maxf(float(portal_event_biases.get(event_id, 1.0)), 0.0)
 
+func get_portal_reward_tier_bias(tier: int) -> float:
+	var portal_reward_tier_biases_variant: Variant = active_character_data.get("portal_reward_tier_biases", {})
+	if not (portal_reward_tier_biases_variant is Dictionary):
+		return 0.0
+	var portal_reward_tier_biases: Dictionary = portal_reward_tier_biases_variant
+	return float(portal_reward_tier_biases.get(str(tier), 0.0))
+
 func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> int:
 	if status_id == "":
 		return 0
