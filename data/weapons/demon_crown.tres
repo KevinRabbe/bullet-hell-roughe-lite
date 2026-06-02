@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/skullpiercer_sniper.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/demon_lord/weapon_3_demonic_crown.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/demon_lord/projectile_3_crown_orb.png" id="3"]
 
 [resource]
 script = ExtResource("1")
 icon = ExtResource("2")
+projectile_texture = ExtResource("3")
 id = "demon_crown"
 display_name = "Demon Crown"
 description = "Heavy royal blast meant to cap the Hellfire set with slower, high-impact shots."
@@ -24,3 +26,7 @@ on_hit_status_duration = 3.8
 on_hit_status_tick_interval = 0.75
 on_hit_status_flat_damage = 2.8
 on_hit_status_max_stacks = 5
+bonus_damage_vs_status_id = "hellfire_burn"
+bonus_damage_vs_status_multiplier = 1.35
+orbit_radius_multiplier = 1.05
+orbit_scale_multiplier = 1.12

@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/demon_smg.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/demon_lord/weapon_4_hell_sphere.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/demon_lord/projectile_5_flame_orbit.png" id="3"]
 
 [resource]
 script = ExtResource("1")
 icon = ExtResource("2")
+projectile_texture = ExtResource("3")
 id = "flame_halo"
 display_name = "Flame Halo"
 description = "Rapid orbiting hellfire bolts that reward attack speed and sustained burning."
@@ -24,3 +26,5 @@ on_hit_status_duration = 2.5
 on_hit_status_tick_interval = 0.6
 on_hit_status_flat_damage = 0.8
 on_hit_status_max_stacks = 6
+orbit_radius_multiplier = 0.88
+orbit_scale_multiplier = 1.18
