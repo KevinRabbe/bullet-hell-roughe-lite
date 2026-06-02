@@ -42,8 +42,9 @@ func _roll_reward_tier(source: String) -> int:
 
 	var portal_luck := _player_portal_stat("portal_luck", 0.0)
 	var portal_risk := _player_portal_stat("portal_instability", 0.0)
-	var tier2_chance := clampf(0.35 + (portal_luck * 0.08) + (portal_risk * 0.03), 0.2, 0.85)
-	var tier3_chance := clampf(0.08 + (portal_luck * 0.05) + (portal_risk * 0.1), 0.02, 0.6)
+	var reward_multiplier := maxf(_player_portal_stat("portal_reward_multiplier", 1.0), 0.25)
+	var tier2_chance := clampf((0.35 + (portal_luck * 0.08) + (portal_risk * 0.03)) * reward_multiplier, 0.2, 0.9)
+	var tier3_chance := clampf((0.08 + (portal_luck * 0.05) + (portal_risk * 0.1)) * reward_multiplier, 0.02, 0.7)
 	var roll := rng.randf()
 	var tier := 1
 	if roll <= tier3_chance:

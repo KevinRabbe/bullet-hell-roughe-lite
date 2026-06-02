@@ -8,7 +8,8 @@
   "preferred_weapon_family": "portal",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
-    "portal_frequency": 1.25
+    "portal_frequency": 1.25,
+    "portal_reward_multiplier": 1.2
   },
   "stat_bonuses": {
     "portal_luck": 0.1,

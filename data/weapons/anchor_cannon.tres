@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/infernal_shotgun.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/riftwalker/weapon_6_rift_staff.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/riftwalker/projectile_3_rift_sigil_orb.png" id="3"]
 
 [resource]
 script = ExtResource("1")
 icon = ExtResource("2")
+projectile_texture = ExtResource("3")
 id = "anchor_cannon"
 display_name = "Anchor Cannon"
 description = "Heavy portal artillery that locks in high-damage shots at the edge of the arena."
@@ -19,3 +21,5 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "portal"
 price = 8
 tags = Array[String](["portal", "anchor", "heavy", "artillery"])
+orbit_radius_multiplier = 1.12
+orbit_scale_multiplier = 1.02

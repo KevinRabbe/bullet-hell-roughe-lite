@@ -183,8 +183,24 @@ func _on_event_elite_exited(enemy: Node) -> void:
 		portal_event_completed.emit()
 
 func _pick_portal_event_id() -> String:
-	var events := ["double_elite", "power_for_hp_loss", "enemy_flood_20s"]
-	return events[rng.randi_range(0, events.size() - 1)]
+	var portal_instability := 0.0
+	if player != null and is_instance_valid(player):
+		var stats_variant: Variant = player.get("stats")
+		if stats_variant != null and stats_variant is Object:
+			portal_instability = float(stats_variant.get("portal_instability"))
+
+	var weighted_events: Array[String] = []
+	_append_weighted_event(weighted_events, "double_elite", 1.0 + (portal_instability * 1.2))
+	_append_weighted_event(weighted_events, "power_for_hp_loss", 1.0)
+	_append_weighted_event(weighted_events, "enemy_flood_20s", 1.0 + (portal_instability * 1.5))
+	if weighted_events.is_empty():
+		return "double_elite"
+	return weighted_events[rng.randi_range(0, weighted_events.size() - 1)]
+
+func _append_weighted_event(weighted_events: Array[String], event_id: String, weight: float) -> void:
+	var repeat_count := maxi(int(round(maxf(weight, 0.0) * 10.0)), 1)
+	for _index in range(repeat_count):
+		weighted_events.append(event_id)
 
 func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:
