@@ -3,5 +3,6 @@
   "display_name": "The Sand Lord",
   "description": "Placeholder: control and erosion archetype.",
   "starting_weapon_ids": ["sand_burst"],
-  "passive_tags": ["placeholder_passive"]
+  "passive_tags": ["placeholder_passive"],
+  "preferred_weapon_families": ["sand"]
 }

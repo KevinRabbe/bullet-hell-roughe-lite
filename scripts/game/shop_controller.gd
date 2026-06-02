@@ -12,16 +12,6 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 @export var reroll_cost: int = 2
 @export var enabled: bool = false
 
-# Weapon IDs available in the shop pool. Prices/names read from WeaponData.
-const SHOP_WEAPON_IDS: Array[String] = [
-	"heavy_pistol",
-	"gunslinger_smg",
-	"gunslinger_shotgun",
-	"gunslinger_revolver",
-	"gunslinger_assault_rifle",
-	"gunslinger_sniper_rifle",
-]
-
 const DEFAULT_ITEM_PRICE: int = 3
 const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
 const WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
@@ -47,12 +37,14 @@ var continue_button: Button
 var reroll_count: int = 0
 var rng: RandomNumberGenerator
 var _current_wave_index: int = 1
+var data_registry: Node
 var _weapon_offer_pool: Array[Dictionary] = []
 var _item_offer_pool: Array[Dictionary] = []
 var active_offers: Array[Dictionary] = []
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
+	data_registry = get_node_or_null("/root/DataRegistry")
 	_build_weapon_offer_pool()
 	_build_item_offer_pool()
 	if enemy_spawner_path != NodePath():
@@ -87,27 +79,28 @@ func _ready() -> void:
 
 func _build_weapon_offer_pool() -> void:
 	_weapon_offer_pool.clear()
-	for weapon_id in SHOP_WEAPON_IDS:
-		var offer := _make_weapon_offer(weapon_id)
-		if not offer.is_empty():
-			_weapon_offer_pool.append(offer)
+	if data_registry == null or not data_registry.has_method("get_all_weapons"):
+		return
+	var weapons_variant: Variant = data_registry.call("get_all_weapons")
+	if not (weapons_variant is Array):
+		return
+	for weapon_variant in weapons_variant:
+		if weapon_variant is WeaponData:
+			var offer := _make_weapon_offer_from_data(weapon_variant)
+			if not offer.is_empty():
+				_weapon_offer_pool.append(offer)
 
-func _make_weapon_offer(weapon_id: String) -> Dictionary:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	var data: WeaponData
-	if ResourceLoader.exists(resource_path):
-		data = load(resource_path) as WeaponData
-	if data == null:
+func _make_weapon_offer_from_data(data: WeaponData) -> Dictionary:
+	if data == null or not data.shop_enabled:
 		return {}
-
-	var resolved_id := weapon_id
-	var display_name: String = weapon_id.replace("_", " ").capitalize()
+	var resolved_id := data.id
+	var display_name: String = data.id.replace("_", " ").capitalize()
 	var price: int = 5
 	var family: String = ""
 	var tags: Array[String] = []
 	var rarity_name: String = "common"
-	if data.id != "":
-		resolved_id = data.id
+	if resolved_id == "":
+		return {}
 	if data.display_name != "":
 		display_name = data.display_name
 	if data.price > 0:
@@ -181,14 +174,14 @@ func _roll_offers() -> void:
 		combined_pool.append(item_offer)
 	if _current_wave_index <= 2:
 		for _slot in 2:
-			var guaranteed_weapon_offer := _pick_random_offer(_weapon_offer_pool)
+			var guaranteed_weapon_offer := _pick_random_offer(_weapon_offer_pool, true)
 			active_offers.append(guaranteed_weapon_offer if not guaranteed_weapon_offer.is_empty() else _sold_out_offer())
 		for _slot in 2:
-			var random_offer := _pick_random_offer(combined_pool)
+			var random_offer := _pick_random_offer(combined_pool, true)
 			active_offers.append(random_offer if not random_offer.is_empty() else _sold_out_offer())
 	else:
 		for _slot in 4:
-			var random_offer := _pick_random_offer(combined_pool)
+			var random_offer := _pick_random_offer(combined_pool, true)
 			active_offers.append(random_offer if not random_offer.is_empty() else _sold_out_offer())
 
 func _refresh_offer_buttons() -> void:
@@ -283,11 +276,10 @@ func _update_reroll_button_text() -> void:
 func _current_reroll_cost() -> int:
 	return reroll_cost + reroll_count
 
-func _pick_random_offer(pool: Array) -> Dictionary:
+func _pick_random_offer(pool: Array, apply_family_bias: bool) -> Dictionary:
 	if pool.is_empty():
 		return {}
-	var index := rng.randi_range(0, pool.size() - 1)
-	var selected: Variant = pool[index]
+	var selected: Variant = _pick_weighted_offer(pool, apply_family_bias)
 	if selected is Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
 		if str(offer.get("type", "")) == "weapon":
@@ -299,6 +291,72 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 			offer["price"] = scaled_price
 		return offer
 	return {}
+
+func _pick_weighted_offer(pool: Array, apply_family_bias: bool) -> Variant:
+	var total_weight := 0.0
+	var weights: Array[float] = []
+	for offer_variant in pool:
+		var weight := _offer_weight(offer_variant, apply_family_bias)
+		weights.append(weight)
+		total_weight += weight
+	if total_weight <= 0.0:
+		return pool[0]
+	var roll := rng.randf_range(0.0, total_weight)
+	var threshold := 0.0
+	for index in pool.size():
+		threshold += weights[index]
+		if roll <= threshold:
+			return pool[index]
+	return pool[pool.size() - 1]
+
+func _offer_weight(offer_variant: Variant, apply_family_bias: bool) -> float:
+	if not (offer_variant is Dictionary):
+		return 0.0
+	var offer: Dictionary = offer_variant
+	var weight := 1.0
+	if apply_family_bias and str(offer.get("type", "")) == "weapon":
+		var family := _offer_family_id(offer)
+		if family != "" and _get_preferred_weapon_families().has(family):
+			weight += _get_family_bias_bonus()
+	return weight
+
+func _offer_family_id(offer: Dictionary) -> String:
+	var family := str(offer.get("family", ""))
+	if family != "":
+		return family
+	return str(offer.get("family_id", ""))
+
+func _get_preferred_weapon_families() -> Array[String]:
+	if player == null or data_registry == null or not data_registry.has_method("get_character"):
+		return []
+	var character_id := str(player.get("active_character_id"))
+	if character_id == "":
+		return []
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if not (character_variant is Dictionary):
+		return []
+	var preferred_variant: Variant = character_variant.get("preferred_weapon_families", [])
+	var preferred_families: Array[String] = []
+	if preferred_variant is Array:
+		for family_variant in preferred_variant:
+			var family := str(family_variant)
+			if family != "":
+				preferred_families.append(family)
+	return preferred_families
+
+func _get_family_bias_bonus() -> float:
+	var config_bonus := 0.2
+	if data_registry != null and data_registry.has_method("get_shop_config"):
+		var config_variant: Variant = data_registry.call("get_shop_config")
+		if config_variant is Dictionary:
+			config_bonus = float(config_variant.get("family_bias_bonus", config_bonus))
+	if player != null:
+		var character_id := str(player.get("active_character_id"))
+		if character_id != "" and data_registry != null and data_registry.has_method("get_character"):
+			var character_variant: Variant = data_registry.call("get_character", character_id)
+			if character_variant is Dictionary and character_variant.has("family_bias_bonus"):
+				return float(character_variant.get("family_bias_bonus", config_bonus))
+	return config_bonus
 
 func _find_item_data(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():

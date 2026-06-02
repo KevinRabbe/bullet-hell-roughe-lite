@@ -9,6 +9,7 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 ]
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
+const SHOP_CONFIG_PATH: String = "res://data/shop/shop_config.json"
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -16,6 +17,7 @@ var items: Dictionary = {}
 var enemies: Dictionary = {}
 var portal_events: Dictionary = {}
 var set_bonuses: Dictionary = {}
+var shop_config: Dictionary = {}
 
 func _ready() -> void:
 	_register_defaults()
@@ -35,6 +37,7 @@ func _register_defaults() -> void:
 	if items.is_empty():
 		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
+	shop_config = _load_json_dictionary(SHOP_CONFIG_PATH)
 	_validate_registry_entries()
 
 func _load_enemy_resources() -> Array:
@@ -151,3 +154,9 @@ func get_portal_event(id: String):
 
 func get_set_bonus(id: String):
 	return set_bonuses.get(id)
+
+func get_all_weapons() -> Array:
+	return weapons.values()
+
+func get_shop_config() -> Dictionary:
+	return shop_config.duplicate(true)

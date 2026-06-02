@@ -25,6 +25,7 @@ extends Resource
 @export var stat_scaling: Dictionary = {}
 
 @export var special_effect_id: String = ""
+@export var shop_enabled: bool = false
 
 # Existing fields preserved to avoid breaking gameplay
 @export var family_id: String = ""

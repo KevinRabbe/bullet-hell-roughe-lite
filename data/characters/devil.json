@@ -3,5 +3,6 @@
   "display_name": "The Devil",
   "description": "Placeholder: cursed-power trading archetype.",
   "starting_weapon_ids": ["devil_fang"],
-  "passive_tags": ["placeholder_passive"]
+  "passive_tags": ["placeholder_passive"],
+  "preferred_weapon_families": ["devil"]
 }
