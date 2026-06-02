@@ -1,7 +1,14 @@
 {
   "id": "devil",
   "display_name": "The Devil",
-  "description": "Placeholder: cursed-power trading archetype.",
-  "starting_weapon_ids": ["devil_fang"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Endurance-focused pact bearer with high survivability and very low direct damage.",
+  "starting_weapon_ids": ["devil_placeholder"],
+  "stat_multipliers": {
+    "damage": 0.6
+  },
+  "stat_bonuses": {
+    "max_hp": 40.0,
+    "armor": 4.0
+  },
+  "passive_tags": ["unbreakable_pact", "low_direct_damage"]
 }

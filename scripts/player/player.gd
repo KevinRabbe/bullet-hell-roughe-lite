@@ -16,6 +16,7 @@ var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
+var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
@@ -32,10 +33,9 @@ const GUNSLINGER_WEAPON_IDS: Array[String] = [
 
 func _ready() -> void:
 	add_to_group("players")
-	stats.max_hp = debug_starting_hp
-	stats.movement_speed = debug_move_speed
-	current_hp = stats.max_hp
-	_apply_character_rules()
+	_reset_character_stats()
+	active_character_data = _get_character_data(active_character_id)
+	_apply_character_rules(active_character_data)
 	_update_hp_label()
 
 func _physics_process(_delta: float) -> void:
@@ -198,14 +198,19 @@ func apply_character_by_id(character_id: String) -> void:
 	if character_id == "":
 		return
 	active_character_id = character_id
+	active_character_data = _get_character_data(active_character_id)
 	_reset_character_stats()
-	_apply_character_rules()
-	_apply_character_starting_weapon()
+	_apply_character_rules(active_character_data)
+	_apply_character_starting_weapon(active_character_data)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
 	print("Selected character: %s" % active_character_id)
 
 func _reset_character_stats() -> void:
+	stats = StatBlock.new()
+	stats.max_hp = debug_starting_hp
+	stats.movement_speed = debug_move_speed
+	current_hp = stats.max_hp
 	stats.burn_damage = 1.0
 	stats.poison_damage = 1.0
 	stats.bleed_damage = 1.0
@@ -214,34 +219,56 @@ func _reset_character_stats() -> void:
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
 
-func _apply_character_starting_weapon() -> void:
-	_debug_add_gunslinger_weapon_by_id("heavy_pistol")
+func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
+	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
+	_debug_add_gunslinger_weapon_by_id(starting_weapon_id)
 
-func _apply_character_rules() -> void:
-	if active_character_id == "gunslinger":
-		stats.burn_damage = 0.8
-		stats.poison_damage = 0.8
-		stats.bleed_damage = 0.8
-		stats.frost_power = 0.8
+func _apply_character_rules(character_data: Dictionary = {}) -> void:
+	_apply_stat_multipliers(character_data.get("stat_multipliers", {}))
+	_apply_stat_bonuses(character_data.get("stat_bonuses", {}))
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
 			var weapons: Array = weapons_variant
 			if weapons.is_empty():
-				weapons.append("heavy_pistol")
+				weapons.append(_resolve_starting_weapon_id(character_data))
 				player_build.set("equipped_weapon_ids", weapons)
 
 func get_damage_multiplier_for_target(target: Node) -> float:
-	if active_character_id != "gunslinger":
-		return 1.0
 	if target == null:
 		return 1.0
-	var is_elite: bool = bool(target.get("is_elite"))
-	var is_boss: bool = bool(target.get("is_boss"))
-	if is_elite or is_boss:
-		print("GUNSLINGER PASSIVE: +35% damage vs elite/boss")
-		return 1.35
+	var damage_rules_variant: Variant = active_character_data.get("damage_rules", [])
+	if damage_rules_variant is Array:
+		var damage_rules: Array = damage_rules_variant
+		for damage_rule_variant in damage_rules:
+			if not (damage_rule_variant is Dictionary):
+				continue
+			var damage_rule: Dictionary = damage_rule_variant
+			if _target_matches_damage_rule(target, damage_rule):
+				var debug_label := str(damage_rule.get("debug_label", ""))
+				if debug_label != "":
+					print(debug_label)
+				return float(damage_rule.get("multiplier", 1.0))
 	return 1.0
+
+func get_family_kill_requirement_multiplier(family_id: String) -> float:
+	var family_multipliers_variant: Variant = active_character_data.get("family_kill_requirement_multipliers", {})
+	if not (family_multipliers_variant is Dictionary):
+		return 1.0
+	var family_multipliers: Dictionary = family_multipliers_variant
+	return float(family_multipliers.get(family_id, 1.0))
+
+func get_damage_stat_multiplier() -> float:
+	return stats.damage
+
+func get_attack_speed_multiplier() -> float:
+	return stats.attack_speed
+
+func get_attack_range_multiplier() -> float:
+	return stats.attack_range
+
+func get_projectile_speed_multiplier() -> float:
+	return stats.projectile_speed
 
 func _weapon_slot_index_from_key(keycode: int) -> int:
 	match keycode:
@@ -297,6 +324,78 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 # TODO: remove after all callers use grant_weapon directly.
 func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
 	grant_weapon(weapon_id)
+
+func _get_character_data(character_id: String) -> Dictionary:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null or not data_registry.has_method("get_character"):
+		return {}
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if character_variant is Dictionary:
+		return character_variant as Dictionary
+	return {}
+
+func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
+	var starting_weapon_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
+	if starting_weapon_ids_variant is Array:
+		var starting_weapon_ids: Array = starting_weapon_ids_variant
+		for starting_weapon_variant in starting_weapon_ids:
+			var starting_weapon_id := str(starting_weapon_variant)
+			if starting_weapon_id == "":
+				continue
+			if _weapon_resource_exists(starting_weapon_id):
+				return starting_weapon_id
+			_log_resource_warning_once("missing_starting_weapon:%s" % starting_weapon_id, "Missing starting weapon resource: %s" % starting_weapon_id)
+	return "heavy_pistol"
+
+func _weapon_resource_exists(weapon_id: String) -> bool:
+	return ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id)
+
+func _apply_stat_multipliers(stat_multipliers_variant: Variant) -> void:
+	if not (stat_multipliers_variant is Dictionary):
+		return
+	var stat_multipliers: Dictionary = stat_multipliers_variant
+	for stat_name in stat_multipliers.keys():
+		if not _has_stat_property(str(stat_name)):
+			continue
+		var current_value: Variant = stats.get(str(stat_name))
+		var multiplier := float(stat_multipliers[stat_name])
+		if current_value is float:
+			stats.set(str(stat_name), float(current_value) * multiplier)
+		elif current_value is int:
+			stats.set(str(stat_name), int(round(float(current_value) * multiplier)))
+
+func _apply_stat_bonuses(stat_bonuses_variant: Variant) -> void:
+	if not (stat_bonuses_variant is Dictionary):
+		return
+	var stat_bonuses: Dictionary = stat_bonuses_variant
+	for stat_name in stat_bonuses.keys():
+		if not _has_stat_property(str(stat_name)):
+			continue
+		var current_value: Variant = stats.get(str(stat_name))
+		var bonus := float(stat_bonuses[stat_name])
+		if current_value is float:
+			stats.set(str(stat_name), float(current_value) + bonus)
+		elif current_value is int:
+			stats.set(str(stat_name), int(current_value) + int(round(bonus)))
+
+func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
+	var targets_variant: Variant = damage_rule.get("targets", [])
+	if not (targets_variant is Array):
+		return false
+	var targets: Array = targets_variant
+	for target_key_variant in targets:
+		var target_key := str(target_key_variant)
+		match target_key:
+			"elite":
+				if bool(target.get("is_elite")):
+					return true
+			"boss":
+				if bool(target.get("is_boss")):
+					return true
+			"strongest":
+				if bool(target.get("is_priority_target")):
+					return true
+	return false
 
 func _load_weapon_resource(weapon_id: String) -> WeaponData:
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id

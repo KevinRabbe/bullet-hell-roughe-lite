@@ -1,7 +1,14 @@
 {
   "id": "riftwalker",
   "display_name": "The Riftwalker",
-  "description": "Placeholder: portal-stat specialist archetype.",
+  "description": "Portal-risk specialist with more frequent, luckier, and more dangerous rifts.",
   "starting_weapon_ids": ["rift_pistol"],
-  "passive_tags": ["placeholder_passive"]
+  "stat_multipliers": {
+    "portal_frequency": 1.25
+  },
+  "stat_bonuses": {
+    "portal_luck": 0.1,
+    "portal_instability": 0.15
+  },
+  "passive_tags": ["rift_sense", "unstable_path"]
 }

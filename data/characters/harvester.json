@@ -1,7 +1,13 @@
 {
   "id": "harvester",
   "display_name": "The Harvester",
-  "description": "Placeholder: sustain and drain-focused archetype.",
-  "starting_weapon_ids": ["scythe_alpha"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
+  "starting_weapon_ids": ["harvester_placeholder"],
+  "stat_multipliers": {
+    "damage": 0.85
+  },
+  "family_kill_requirement_multipliers": {
+    "harvester": 0.8
+  },
+  "passive_tags": ["efficient_harvest", "weak_start"]
 }

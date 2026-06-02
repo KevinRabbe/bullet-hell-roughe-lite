@@ -116,9 +116,8 @@ func _apply_weapon_data() -> void:
 		var projectile_resource: Resource = load(weapon_data.projectile_scene_path)
 		if projectile_resource is PackedScene:
 			projectile_scene = projectile_resource as PackedScene
-	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(current_rarity, 1.0))
-	fire_interval_seconds = weapon_data.cooldown_seconds / rarity_speed_multiplier
-	target_range = 900.0 * weapon_data.attack_range
+	fire_interval_seconds = _get_effective_cooldown(weapon_data, current_rarity)
+	target_range = _get_weapon_range(weapon_data)
 
 func _find_nearest_enemy(search_range: float) -> Node2D:
 	return _find_nearest_enemy_for_origin(owner_player.global_position, search_range)
@@ -146,8 +145,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		get_tree().current_scene,
 		spawn_position,
 		aim_direction,
-		_get_weapon_damage(entry_data) * rarity_damage_multiplier,
-		_get_weapon_projectile_speed(entry_data) * rarity_speed_multiplier,
+		_get_weapon_damage(entry_data) * rarity_damage_multiplier * _get_player_damage_multiplier(),
+		_get_weapon_projectile_speed(entry_data) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
 		_get_weapon_lifetime(entry_data),
 		projectile_rotation_offset
 	)
@@ -232,7 +231,7 @@ func _get_weapon_range(entry_data: WeaponData) -> float:
 		range_multiplier = entry_data.range
 	if range_multiplier <= 0.0:
 		range_multiplier = 1.0
-	return 900.0 * range_multiplier
+	return 900.0 * range_multiplier * _get_player_attack_range_multiplier()
 
 func _get_effective_cooldown(entry_data: WeaponData, rarity: String) -> float:
 	var base_cooldown := entry_data.cooldown_seconds
@@ -241,7 +240,8 @@ func _get_effective_cooldown(entry_data: WeaponData, rarity: String) -> float:
 	if base_cooldown <= 0.0:
 		base_cooldown = 0.6
 	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(rarity, 1.0))
-	return base_cooldown / rarity_speed_multiplier
+	var player_attack_speed_multiplier := maxf(_get_player_attack_speed_multiplier(), 0.01)
+	return base_cooldown / (rarity_speed_multiplier * player_attack_speed_multiplier)
 
 func _tick_slot_cooldowns(delta: float) -> void:
 	for index in range(slot_cooldowns.size()):
@@ -302,3 +302,23 @@ func _find_strongest_enemy() -> Node2D:
 				strongest_hp = enemy_hp
 				strongest_enemy = enemy
 	return strongest_enemy
+
+func _get_player_damage_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_damage_stat_multiplier"):
+		return maxf(float(owner_player.call("get_damage_stat_multiplier")), 0.0)
+	return 1.0
+
+func _get_player_attack_speed_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_attack_speed_multiplier"):
+		return maxf(float(owner_player.call("get_attack_speed_multiplier")), 0.01)
+	return 1.0
+
+func _get_player_attack_range_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_attack_range_multiplier"):
+		return maxf(float(owner_player.call("get_attack_range_multiplier")), 0.01)
+	return 1.0
+
+func _get_player_projectile_speed_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_projectile_speed_multiplier"):
+		return maxf(float(owner_player.call("get_projectile_speed_multiplier")), 0.01)
+	return 1.0
