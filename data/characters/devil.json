@@ -3,6 +3,8 @@
   "display_name": "The Devil",
   "description": "Endurance-focused pact bearer with high survivability and very low direct damage.",
   "starting_weapon_ids": ["devils_contract"],
+  "preferred_weapon_family": "devil",
+  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "damage": 0.6
   },

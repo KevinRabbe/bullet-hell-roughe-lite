@@ -3,6 +3,8 @@
   "display_name": "The Harvester",
   "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
   "starting_weapon_ids": ["scrap_pistol"],
+  "preferred_weapon_family": "harvester",
+  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "damage": 0.85
   },

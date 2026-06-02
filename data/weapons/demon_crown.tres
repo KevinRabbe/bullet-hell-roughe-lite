@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/skullpiercer_sniper.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "demon_crown"
+display_name = "Demon Crown"
+description = "Heavy royal blast meant to cap the Hellfire set with slower, high-impact shots."
+family_id = "hellfire"
+cooldown_seconds = 1.05
+damage = 24.0
+projectile_speed = 700.0
+attack_range = 1.1
+projectile_lifetime_seconds = 2.0
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "hellfire"
+price = 8
+tags = Array[String](["hellfire", "royal", "heavy", "burn"])

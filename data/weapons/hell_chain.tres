@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/rift_rifle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "hell_chain"
+display_name = "Hell Chain"
+description = "Stable hellfire focus built for longer-range burn setup and chaining pressure."
+family_id = "hellfire"
+cooldown_seconds = 0.34
+damage = 7.0
+projectile_speed = 760.0
+attack_range = 1.18
+projectile_lifetime_seconds = 2.0
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "hellfire"
+price = 7
+tags = Array[String](["hellfire", "chain", "burn", "ranged"])

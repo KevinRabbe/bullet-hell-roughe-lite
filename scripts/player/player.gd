@@ -300,6 +300,12 @@ func get_family_kill_requirement_multiplier(family_id: String) -> float:
 	var family_multipliers: Dictionary = family_multipliers_variant
 	return float(family_multipliers.get(family_id, 1.0))
 
+func get_preferred_weapon_family_id() -> String:
+	return str(active_character_data.get("preferred_weapon_family", ""))
+
+func get_shop_weapon_family_bias() -> float:
+	return maxf(float(active_character_data.get("shop_weapon_family_bias", 0.0)), 0.0)
+
 func get_damage_stat_multiplier() -> float:
 	return stats.damage
 

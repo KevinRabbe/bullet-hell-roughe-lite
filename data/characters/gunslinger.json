@@ -3,6 +3,8 @@
   "display_name": "The Gunslinger",
   "description": "Elite-hunter marksman with weaker status power.",
   "starting_weapon_ids": ["heavy_pistol"],
+  "preferred_weapon_family": "gunslinger",
+  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "burn_damage": 0.8,
     "poison_damage": 0.8,

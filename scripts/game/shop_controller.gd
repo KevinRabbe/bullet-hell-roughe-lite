@@ -304,8 +304,35 @@ func _current_reroll_cost() -> int:
 func _pick_random_offer(pool: Array) -> Dictionary:
 	if pool.is_empty():
 		return {}
-	var index := rng.randi_range(0, pool.size() - 1)
-	var selected: Variant = pool[index]
+	var preferred_family := _get_preferred_weapon_family()
+	var preferred_family_bias := _get_preferred_weapon_family_bias()
+	var total_weight := 0.0
+	var weighted_entries: Array[Dictionary] = []
+	for selected_variant in pool:
+		if not (selected_variant is Dictionary):
+			continue
+		var source_offer: Dictionary = selected_variant
+		var weight := 1.0
+		if str(source_offer.get("type", "")) == "weapon" and preferred_family != "":
+			var family_id := str(source_offer.get("family", ""))
+			if family_id == preferred_family:
+				weight += preferred_family_bias
+		total_weight += weight
+		weighted_entries.append({
+			"offer": source_offer,
+			"cumulative_weight": total_weight
+		})
+	if weighted_entries.is_empty():
+		return {}
+	var roll := rng.randf_range(0.0, total_weight)
+	var selected: Variant = weighted_entries.back().get("offer", {})
+	for weighted_entry_variant in weighted_entries:
+		if not (weighted_entry_variant is Dictionary):
+			continue
+		var weighted_entry: Dictionary = weighted_entry_variant
+		if roll <= float(weighted_entry.get("cumulative_weight", total_weight)):
+			selected = weighted_entry.get("offer", {})
+			break
 	if selected is Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
 		if str(offer.get("type", "")) == "weapon":
@@ -317,6 +344,16 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 			offer["price"] = scaled_price
 		return offer
 	return {}
+
+func _get_preferred_weapon_family() -> String:
+	if player != null and player.has_method("get_preferred_weapon_family_id"):
+		return str(player.call("get_preferred_weapon_family_id"))
+	return ""
+
+func _get_preferred_weapon_family_bias() -> float:
+	if player != null and player.has_method("get_shop_weapon_family_bias"):
+		return maxf(float(player.call("get_shop_weapon_family_bias")), 0.0)
+	return 0.0
 
 func _find_item_data(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():

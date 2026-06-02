@@ -3,6 +3,8 @@
   "display_name": "The Demon Lord",
   "description": "Hellfire destruction archetype with stronger burn output and no sustain fallback.",
   "starting_weapon_ids": ["hellfire_scepter"],
+  "preferred_weapon_family": "hellfire",
+  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "burn_damage": 1.35,
     "hp_regen": 0.0

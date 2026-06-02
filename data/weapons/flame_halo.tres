@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/demon_smg.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "flame_halo"
+display_name = "Flame Halo"
+description = "Rapid orbiting hellfire bolts that reward attack speed and sustained burning."
+family_id = "hellfire"
+cooldown_seconds = 0.18
+damage = 4.0
+projectile_speed = 640.0
+attack_range = 0.9
+projectile_lifetime_seconds = 1.6
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "hellfire"
+price = 6
+tags = Array[String](["hellfire", "orbit", "rapid", "burn"])

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/infernal_shotgun.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "infernal_breath"
+display_name = "Infernal Breath"
+description = "Short-range burst of hellfire that trades range for heavy close-up pressure."
+family_id = "hellfire"
+cooldown_seconds = 0.95
+damage = 20.0
+projectile_speed = 560.0
+attack_range = 0.72
+projectile_lifetime_seconds = 1.2
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "hellfire"
+price = 7
+tags = Array[String](["hellfire", "close_range", "burst", "burn"])
