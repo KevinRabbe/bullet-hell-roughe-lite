@@ -17,6 +17,14 @@
   "status_power_multipliers": {
     "devils_debt": 1.35
   },
+  "status_propagation_rules": {
+    "devils_debt": {
+      "radius": 105.0,
+      "chance": 0.35,
+      "duration_scale": 0.85,
+      "max_targets": 2
+    }
+  },
   "passive_status_rules": [
     {
       "trigger": "on_enemy_hit",

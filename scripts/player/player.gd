@@ -529,6 +529,13 @@ func _apply_status_rule_to_enemy(enemy: Node, rule: Dictionary) -> void:
 		"max_hp_fraction": float(rule.get("max_hp_fraction", 0.0)),
 		"max_stacks": int(rule.get("max_stacks", 1))
 	}
+	var propagation_rule := get_status_propagation_rule(status_id)
+	if not propagation_rule.is_empty():
+		status_payload["spread_radius"] = float(propagation_rule.get("radius", 0.0))
+		status_payload["spread_chance"] = float(propagation_rule.get("chance", 0.0))
+		status_payload["spread_duration_scale"] = float(propagation_rule.get("duration_scale", 1.0))
+		status_payload["spread_max_targets"] = int(propagation_rule.get("max_targets", 1))
+		status_payload["allow_spread"] = true
 	var status_power_multiplier := get_status_power_multiplier(status_id)
 	enemy.call("apply_status_payload", status_payload, self, "", -1, status_power_multiplier)
 
