@@ -3,5 +3,20 @@
   "display_name": "The Gunslinger",
   "description": "Elite-hunter marksman with weaker status power.",
   "starting_weapon_ids": ["heavy_pistol"],
-  "passive_tags": ["bonus_vs_elite", "bonus_vs_boss", "status_weakened"]
+  "passive_tags": ["bonus_vs_elite", "bonus_vs_boss", "status_weakened"],
+  "passive_rules": [
+    {
+      "type": "damage_multiplier_vs_tags",
+      "target_tags": ["elite", "boss"],
+      "multiplier": 1.35,
+      "debug_label": "GUNSLINGER PASSIVE: +35% damage vs elite/boss"
+    }
+  ],
+  "downside_rules": [
+    {
+      "type": "stat_multiplier",
+      "stats": ["burn_damage", "poison_damage", "bleed_damage", "frost_power"],
+      "multiplier": 0.8
+    }
+  ]
 }

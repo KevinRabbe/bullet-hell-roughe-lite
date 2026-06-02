@@ -3,5 +3,7 @@
   "display_name": "The Riftwalker",
   "description": "Placeholder: portal-stat specialist archetype.",
   "starting_weapon_ids": ["rift_pistol"],
-  "passive_tags": ["placeholder_passive"]
+  "passive_tags": ["placeholder_passive"],
+  "passive_rules": [],
+  "downside_rules": []
 }

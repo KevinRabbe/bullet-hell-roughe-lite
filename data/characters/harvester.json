@@ -3,5 +3,7 @@
   "display_name": "The Harvester",
   "description": "Placeholder: sustain and drain-focused archetype.",
   "starting_weapon_ids": ["scythe_alpha"],
-  "passive_tags": ["placeholder_passive"]
+  "passive_tags": ["placeholder_passive"],
+  "passive_rules": [],
+  "downside_rules": []
 }

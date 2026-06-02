@@ -27,8 +27,8 @@ extends Node2D
 var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
 var waiting_for_level_up_choice: bool = false
-var selectable_characters: Array[String] = ["gunslinger"]
-var character_display_names: Dictionary = {"gunslinger": "The Gunslinger"}
+var selectable_characters: Array[String] = []
+var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
 var run_started: bool = false
 var levelup_rng: RandomNumberGenerator
