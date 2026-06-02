@@ -11,6 +11,7 @@ var life_left: float = 0.0
 var shooter: Node
 var source_weapon_id: String = ""
 var source_slot_index: int = -1
+@onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
 	life_left = lifetime_seconds
@@ -33,6 +34,11 @@ func set_shooter(new_shooter: Node) -> void:
 func set_source_context(weapon_id: String, slot_index: int) -> void:
 	source_weapon_id = weapon_id
 	source_slot_index = slot_index
+
+func set_visual_texture(texture: Texture2D) -> void:
+	if visual == null or texture == null:
+		return
+	visual.texture = texture
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):

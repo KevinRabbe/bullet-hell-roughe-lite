@@ -2,6 +2,8 @@
   "id": "devil",
   "display_name": "The Devil",
   "description": "Endurance-focused pact bearer with high survivability and very low direct damage.",
+  "visual_path": "res://assets/sprites/characters/devil/devil_character.png",
+  "visual_scale": 0.12,
   "starting_weapon_ids": ["devils_contract"],
   "preferred_weapon_family": "devil",
   "shop_weapon_family_bias": 0.2,

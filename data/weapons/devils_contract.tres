@@ -1,11 +1,13 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/heavy_pistol.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/devil/devil_dagger.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/devil/devil_projectile_orb.png" id="3"]
 
 [resource]
 script = ExtResource("1")
 icon = ExtResource("2")
+projectile_texture = ExtResource("3")
 id = "devils_contract"
 display_name = "Devil's Contract"
 description = "Binding sidearm that marks prey for long fights and thrives in attrition."

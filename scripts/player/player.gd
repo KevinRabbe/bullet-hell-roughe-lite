@@ -21,6 +21,7 @@ var _logged_resource_warnings: Dictionary = {}
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
+@onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 const GUNSLINGER_WEAPON_IDS: Array[String] = [
 	"heavy_pistol",
@@ -36,6 +37,7 @@ func _ready() -> void:
 	_reset_character_stats()
 	active_character_data = _get_character_data(active_character_id)
 	_apply_character_rules(active_character_data)
+	_apply_character_visual(active_character_data)
 	_update_hp_label()
 
 func _physics_process(_delta: float) -> void:
@@ -243,6 +245,7 @@ func apply_character_by_id(character_id: String) -> void:
 	active_character_data = _get_character_data(active_character_id)
 	_reset_character_stats()
 	_apply_character_rules(active_character_data)
+	_apply_character_visual(active_character_data)
 	_apply_character_starting_weapon(active_character_data)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
@@ -408,6 +411,18 @@ func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
 				return starting_weapon_id
 			_log_resource_warning_once("missing_starting_weapon:%s" % starting_weapon_id, "Missing starting weapon resource: %s" % starting_weapon_id)
 	return "heavy_pistol"
+
+func _apply_character_visual(character_data: Dictionary) -> void:
+	if visual_sprite == null:
+		return
+	var visual_path := str(character_data.get("visual_path", ""))
+	if visual_path == "" or not ResourceLoader.exists(visual_path):
+		return
+	var texture_resource := load(visual_path)
+	if texture_resource is Texture2D:
+		visual_sprite.texture = texture_resource as Texture2D
+	var scale_value := float(character_data.get("visual_scale", 0.12))
+	visual_sprite.scale = Vector2.ONE * scale_value
 
 func _weapon_resource_exists(weapon_id: String) -> bool:
 	return ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id)

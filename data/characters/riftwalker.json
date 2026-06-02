@@ -2,6 +2,8 @@
   "id": "riftwalker",
   "display_name": "The Riftwalker",
   "description": "Portal-risk specialist with more frequent, luckier, and more dangerous rifts.",
+  "visual_path": "res://assets/sprites/characters/riftwalker/character_c_riftwalker.png",
+  "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_pistol"],
   "preferred_weapon_family": "portal",
   "shop_weapon_family_bias": 0.2,

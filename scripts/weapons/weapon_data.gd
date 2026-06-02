@@ -5,6 +5,7 @@ extends Resource
 @export var display_name: String = ""
 @export_multiline var description: String = ""
 @export var icon: Texture2D
+@export var projectile_texture: Texture2D
 
 @export var family: String = ""
 @export var tags: Array[String] = []

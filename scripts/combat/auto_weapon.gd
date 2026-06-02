@@ -152,6 +152,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 	)
 	if projectile == null:
 		return
+	if entry_data.projectile_texture != null and projectile.has_method("set_visual_texture"):
+		projectile.call("set_visual_texture", entry_data.projectile_texture)
 	if projectile.has_method("set_shooter"):
 		projectile.call("set_shooter", owner_player)
 	if projectile.has_method("set_source_context"):
