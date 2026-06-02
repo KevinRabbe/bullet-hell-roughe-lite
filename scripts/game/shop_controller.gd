@@ -353,10 +353,45 @@ func _get_active_character_family() -> String:
 	var character_id := str(player.get("active_character_id"))
 	if character_id == "":
 		return ""
+	var from_character_data := _resolve_character_family_from_data(character_id)
+	if from_character_data != "":
+		return from_character_data
 	var mapped_family := str(CHARACTER_FAMILY_BY_ID.get(character_id, ""))
 	if mapped_family != "":
 		return mapped_family
 	return character_id
+
+func _resolve_character_family_from_data(character_id: String) -> String:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null or not data_registry.has_method("get_character"):
+		return ""
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if not (character_variant is Dictionary):
+		return ""
+	var character_data: Dictionary = character_variant
+	var explicit_family := str(character_data.get("weapon_family", ""))
+	if explicit_family != "":
+		return explicit_family
+	explicit_family = str(character_data.get("family", ""))
+	if explicit_family != "":
+		return explicit_family
+	var starters_variant: Variant = character_data.get("starting_weapon_ids", [])
+	if starters_variant is Array:
+		for starter_id_variant in starters_variant:
+			var starter_id := str(starter_id_variant)
+			if starter_id == "":
+				continue
+			var weapon_resource_path := "res://data/weapons/%s.tres" % starter_id
+			if not ResourceLoader.exists(weapon_resource_path):
+				continue
+			var weapon_resource := load(weapon_resource_path) as WeaponData
+			if weapon_resource == null:
+				continue
+			if weapon_resource.family != "":
+				return weapon_resource.family
+			if weapon_resource.family_id != "":
+				return weapon_resource.family_id
+	return ""
 
 func _find_item_data(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():
