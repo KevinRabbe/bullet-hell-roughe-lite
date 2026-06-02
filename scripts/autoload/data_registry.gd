@@ -9,6 +9,7 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 ]
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
+const SET_BONUS_DIR: String = "res://data/set_bonuses"
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -35,6 +36,7 @@ func _register_defaults() -> void:
 	if items.is_empty():
 		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
+	_load_json_directory_into(set_bonuses, SET_BONUS_DIR)
 	_validate_registry_entries()
 
 func _load_enemy_resources() -> Array:
@@ -61,6 +63,22 @@ func _load_character_json_data(directory_path: String) -> void:
 			var character_id := str(data.get("id", ""))
 			if character_id != "":
 				characters[character_id] = data
+		file_name = directory.get_next()
+	directory.list_dir_end()
+
+func _load_json_directory_into(target: Dictionary, directory_path: String) -> void:
+	var directory := DirAccess.open(directory_path)
+	if directory == null:
+		return
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while file_name != "":
+		if not directory.current_is_dir() and file_name.ends_with(".json"):
+			var full_path := "%s/%s" % [directory_path, file_name]
+			var data := _load_json_dictionary(full_path)
+			var entry_id := str(data.get("id", ""))
+			if entry_id != "":
+				target[entry_id] = data
 		file_name = directory.get_next()
 	directory.list_dir_end()
 
