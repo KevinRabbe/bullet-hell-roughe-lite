@@ -116,10 +116,14 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 		return
 	var stat_id := str(result.get("stat_id", ""))
 	var amount := float(result.get("amount", 0.0))
+	var scope := str(result.get("scope", "player"))
 	if stat_id == "":
 		return
 	var weapon_name := weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
-	_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
+	if scope == "player":
+		_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
+	else:
+		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
 
 func _apply_item_effects(item: ItemData) -> void:
 	for stat_name in item.stat_modifiers.keys():
@@ -331,6 +335,13 @@ func get_preferred_weapon_family_id() -> String:
 
 func get_shop_weapon_family_bias() -> float:
 	return maxf(float(active_character_data.get("shop_weapon_family_bias", 0.0)), 0.0)
+
+func get_portal_event_bias(event_id: String) -> float:
+	var portal_event_biases_variant: Variant = active_character_data.get("portal_event_biases", {})
+	if not (portal_event_biases_variant is Dictionary):
+		return 1.0
+	var portal_event_biases: Dictionary = portal_event_biases_variant
+	return maxf(float(portal_event_biases.get(event_id, 1.0)), 0.0)
 
 func get_damage_stat_multiplier() -> float:
 	return stats.damage

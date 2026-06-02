@@ -22,3 +22,4 @@ tags = Array[String](["harvest", "rapid", "scaling"])
 kill_milestone_base_kills = 14
 kill_milestone_stat_id = "attack_speed"
 kill_milestone_amount = 0.05
+kill_milestone_scope = "weapon"

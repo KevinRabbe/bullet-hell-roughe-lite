@@ -190,9 +190,9 @@ func _pick_portal_event_id() -> String:
 			portal_instability = float(stats_variant.get("portal_instability"))
 
 	var weighted_events: Array[String] = []
-	_append_weighted_event(weighted_events, "double_elite", 1.0 + (portal_instability * 1.2))
-	_append_weighted_event(weighted_events, "power_for_hp_loss", 1.0)
-	_append_weighted_event(weighted_events, "enemy_flood_20s", 1.0 + (portal_instability * 1.5))
+	_append_weighted_event(weighted_events, "double_elite", (1.0 + (portal_instability * 1.2)) * _get_portal_event_bias("double_elite"))
+	_append_weighted_event(weighted_events, "power_for_hp_loss", 1.0 * _get_portal_event_bias("power_for_hp_loss"))
+	_append_weighted_event(weighted_events, "enemy_flood_20s", (1.0 + (portal_instability * 1.5)) * _get_portal_event_bias("enemy_flood_20s"))
 	if weighted_events.is_empty():
 		return "double_elite"
 	return weighted_events[rng.randi_range(0, weighted_events.size() - 1)]
@@ -201,6 +201,11 @@ func _append_weighted_event(weighted_events: Array[String], event_id: String, we
 	var repeat_count := maxi(int(round(maxf(weight, 0.0) * 10.0)), 1)
 	for _index in range(repeat_count):
 		weighted_events.append(event_id)
+
+func _get_portal_event_bias(event_id: String) -> float:
+	if player != null and player.has_method("get_portal_event_bias"):
+		return maxf(float(player.call("get_portal_event_bias", event_id)), 0.0)
+	return 1.0
 
 func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:

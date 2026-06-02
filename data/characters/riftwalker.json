@@ -15,5 +15,9 @@
     "portal_luck": 0.1,
     "portal_instability": 0.15
   },
+  "portal_event_biases": {
+    "double_elite": 1.2,
+    "enemy_flood_20s": 1.35
+  },
   "passive_tags": ["rift_sense", "unstable_path"]
 }

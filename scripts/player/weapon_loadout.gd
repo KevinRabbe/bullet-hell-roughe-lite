@@ -63,6 +63,10 @@ func try_merge_slot(slot_index: int) -> Dictionary:
 		target_index -= 1
 	current_entry["kill_count"] = int(current_entry.get("kill_count", 0)) + int(partner_entry.get("kill_count", 0))
 	current_entry["milestones_earned"] = int(current_entry.get("milestones_earned", 0)) + int(partner_entry.get("milestones_earned", 0))
+	current_entry["weapon_bonus_overrides"] = _merge_bonus_overrides(
+		current_entry.get("weapon_bonus_overrides", {}),
+		partner_entry.get("weapon_bonus_overrides", {})
+	)
 	current_entry["rarity"] = next_rarity
 	equipped_weapons[target_index] = current_entry
 	_sync_legacy_ids()
@@ -138,12 +142,19 @@ func register_weapon_kill(slot_index: int, weapon_data: WeaponData, kill_require
 	if kill_count < required_kills * next_milestone:
 		return {"triggered": false}
 	entry["milestones_earned"] = next_milestone
+	if weapon_data.kill_milestone_scope == "weapon":
+		entry["weapon_bonus_overrides"] = _apply_weapon_bonus_override(
+			entry.get("weapon_bonus_overrides", {}),
+			weapon_data.kill_milestone_stat_id,
+			weapon_data.kill_milestone_amount
+		)
 	equipped_weapons[slot_index] = entry
 	loadout_changed.emit()
 	return {
 		"triggered": true,
 		"stat_id": weapon_data.kill_milestone_stat_id,
 		"amount": weapon_data.kill_milestone_amount,
+		"scope": weapon_data.kill_milestone_scope,
 		"weapon_id": str(entry.get("id", "")),
 		"kill_count": kill_count,
 		"milestones_earned": next_milestone,
@@ -315,8 +326,28 @@ func _build_weapon_entry(weapon_id: String, rarity: String) -> Dictionary:
 		"id": weapon_id,
 		"rarity": rarity,
 		"kill_count": 0,
-		"milestones_earned": 0
+		"milestones_earned": 0,
+		"weapon_bonus_overrides": {}
 	}
+
+func _apply_weapon_bonus_override(current_overrides_variant: Variant, stat_id: String, amount: float) -> Dictionary:
+	var current_overrides: Dictionary = {}
+	if current_overrides_variant is Dictionary:
+		current_overrides = (current_overrides_variant as Dictionary).duplicate(true)
+	current_overrides[stat_id] = float(current_overrides.get(stat_id, 0.0)) + amount
+	return current_overrides
+
+func _merge_bonus_overrides(left_variant: Variant, right_variant: Variant) -> Dictionary:
+	var merged: Dictionary = {}
+	if left_variant is Dictionary:
+		for stat_id_variant in (left_variant as Dictionary).keys():
+			var stat_id := str(stat_id_variant)
+			merged[stat_id] = float((left_variant as Dictionary).get(stat_id, 0.0))
+	if right_variant is Dictionary:
+		for stat_id_variant in (right_variant as Dictionary).keys():
+			var stat_id := str(stat_id_variant)
+			merged[stat_id] = float(merged.get(stat_id, 0.0)) + float((right_variant as Dictionary).get(stat_id, 0.0))
+	return merged
 
 func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	# Try to load the weapon data to get its actual family, to respect Stage 8.1

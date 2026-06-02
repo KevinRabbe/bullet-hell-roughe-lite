@@ -53,3 +53,4 @@ extends Resource
 @export var kill_milestone_base_kills: int = 0
 @export var kill_milestone_stat_id: String = ""
 @export var kill_milestone_amount: float = 0.0
+@export_enum("player", "weapon") var kill_milestone_scope: String = "player"

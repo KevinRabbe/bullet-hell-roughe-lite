@@ -54,7 +54,9 @@ func _physics_process(delta: float) -> void:
 		var entry_data := _load_weapon_data(weapon_id)
 		if entry_data == null:
 			continue
+		var weapon_bonus_overrides := _get_entry_weapon_bonus_overrides(entry)
 		var weapon_range := _get_weapon_range(entry_data)
+		weapon_range += float(weapon_bonus_overrides.get("attack_range", 0.0)) * 900.0
 		var muzzle_position := _get_slot_muzzle_position(index)
 		var target := _find_nearest_enemy_for_origin(muzzle_position, weapon_range)
 		var aim_direction := _get_slot_aim_direction(index)
@@ -77,8 +79,8 @@ func _physics_process(delta: float) -> void:
 		var fire_direction := _get_slot_fire_direction(index, aim_direction)
 		var fire_spawn_position := _get_slot_muzzle_position(index)
 		var projectile_rotation_offset := _get_slot_projectile_rotation_offset(index)
-		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index)
-		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity)
+		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index, weapon_bonus_overrides)
+		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity, weapon_bonus_overrides)
 
 func _process_fallback_weapon(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
@@ -134,7 +136,7 @@ func _find_nearest_enemy_for_origin(origin: Vector2, search_range: float) -> Nod
 				nearest_enemy = enemy_node
 	return nearest_enemy
 
-func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int) -> void:
+func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int, weapon_bonus_overrides: Dictionary = {}) -> void:
 	var resolved_projectile_scene := _resolve_projectile_scene(entry_data)
 	if resolved_projectile_scene == null:
 		return
@@ -145,8 +147,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		get_tree().current_scene,
 		spawn_position,
 		aim_direction,
-		_get_weapon_damage(entry_data) * rarity_damage_multiplier * _get_player_damage_multiplier(),
-		_get_weapon_projectile_speed(entry_data) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
+		_get_weapon_damage(entry_data, weapon_bonus_overrides) * rarity_damage_multiplier * _get_player_damage_multiplier(),
+		_get_weapon_projectile_speed(entry_data, weapon_bonus_overrides) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
 		_get_weapon_lifetime(entry_data),
 		projectile_rotation_offset
 	)
@@ -214,15 +216,15 @@ func _resolve_projectile_scene(entry_data: WeaponData) -> PackedScene:
 			return projectile_resource as PackedScene
 	return projectile_scene
 
-func _get_weapon_damage(entry_data: WeaponData) -> float:
+func _get_weapon_damage(entry_data: WeaponData, weapon_bonus_overrides: Dictionary = {}) -> float:
 	if entry_data.damage > 0.0:
-		return entry_data.damage
-	return entry_data.base_damage
+		return entry_data.damage + float(weapon_bonus_overrides.get("damage", 0.0))
+	return entry_data.base_damage + float(weapon_bonus_overrides.get("damage", 0.0))
 
-func _get_weapon_projectile_speed(entry_data: WeaponData) -> float:
+func _get_weapon_projectile_speed(entry_data: WeaponData, weapon_bonus_overrides: Dictionary = {}) -> float:
 	if entry_data.projectile_speed > 0.0:
-		return entry_data.projectile_speed
-	return 700.0
+		return entry_data.projectile_speed + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
+	return 700.0 + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
 
 func _get_weapon_lifetime(entry_data: WeaponData) -> float:
 	if entry_data.projectile_lifetime_seconds > 0.0:
@@ -237,15 +239,16 @@ func _get_weapon_range(entry_data: WeaponData) -> float:
 		range_multiplier = 1.0
 	return 900.0 * range_multiplier * _get_player_attack_range_multiplier()
 
-func _get_effective_cooldown(entry_data: WeaponData, rarity: String) -> float:
+func _get_effective_cooldown(entry_data: WeaponData, rarity: String, weapon_bonus_overrides: Dictionary = {}) -> float:
 	var base_cooldown := entry_data.cooldown_seconds
 	if base_cooldown <= 0.0:
 		base_cooldown = entry_data.cooldown
 	if base_cooldown <= 0.0:
 		base_cooldown = 0.6
 	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(rarity, 1.0))
+	var weapon_attack_speed_multiplier := maxf(1.0 + float(weapon_bonus_overrides.get("attack_speed", 0.0)), 0.01)
 	var player_attack_speed_multiplier := maxf(_get_player_attack_speed_multiplier(), 0.01)
-	return base_cooldown / (rarity_speed_multiplier * player_attack_speed_multiplier)
+	return base_cooldown / (rarity_speed_multiplier * player_attack_speed_multiplier * weapon_attack_speed_multiplier)
 
 func _tick_slot_cooldowns(delta: float) -> void:
 	for index in range(slot_cooldowns.size()):
@@ -273,6 +276,12 @@ func _get_weapon_entries() -> Array[Dictionary]:
 		if entry_variant is Dictionary:
 			normalized_entries.append((entry_variant as Dictionary).duplicate(true))
 	return normalized_entries
+
+func _get_entry_weapon_bonus_overrides(entry: Dictionary) -> Dictionary:
+	var overrides_variant: Variant = entry.get("weapon_bonus_overrides", {})
+	if overrides_variant is Dictionary:
+		return (overrides_variant as Dictionary).duplicate(true)
+	return {}
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	if weapon_id == "":
