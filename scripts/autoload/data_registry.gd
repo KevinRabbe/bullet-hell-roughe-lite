@@ -9,6 +9,7 @@ const ENEMY_RESOURCE_PATHS: Array[String] = [
 ]
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
+const WAVE_COMPOSITION_PATH: String = "res://data/waves/wave_composition.json"
 
 var characters: Dictionary = {}
 var weapons: Dictionary = {}
@@ -16,6 +17,7 @@ var items: Dictionary = {}
 var enemies: Dictionary = {}
 var portal_events: Dictionary = {}
 var set_bonuses: Dictionary = {}
+var wave_composition: Dictionary = {}
 
 func _ready() -> void:
 	_register_defaults()
@@ -35,6 +37,7 @@ func _register_defaults() -> void:
 	if items.is_empty():
 		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
+	wave_composition = _load_json_dictionary(WAVE_COMPOSITION_PATH)
 	_validate_registry_entries()
 
 func _load_enemy_resources() -> Array:
@@ -151,3 +154,6 @@ func get_portal_event(id: String):
 
 func get_set_bonus(id: String):
 	return set_bonuses.get(id)
+
+func get_wave_composition() -> Dictionary:
+	return wave_composition.duplicate(true)

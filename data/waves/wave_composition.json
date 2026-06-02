@@ -1,0 +1,44 @@
+{
+  "bands": [
+    {
+      "min_wave": 1,
+      "max_wave": 1,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0}
+      ]
+    },
+    {
+      "min_wave": 2,
+      "max_wave": 2,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0}
+      ]
+    },
+    {
+      "min_wave": 3,
+      "max_wave": 3,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0},
+        {"id": "spit_fiend", "weight": 1.0}
+      ]
+    },
+    {
+      "min_wave": 4,
+      "max_wave": 9999,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0},
+        {"id": "spit_fiend", "weight": 1.0},
+        {"id": "skeleton_rifleman", "weight": 1.0}
+      ]
+    }
+  ],
+  "elite_rules": {
+    "unlock_wave": 5,
+    "variant": "husk_brute",
+    "chance": 0.14,
+    "role": "wave_tank"
+  }
+}
