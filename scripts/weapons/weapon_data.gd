@@ -26,6 +26,14 @@ extends Resource
 
 @export var special_effect_id: String = ""
 @export var shop_enabled: bool = true
+@export var on_hit_status_id: String = ""
+@export var on_hit_status_duration: float = 0.0
+@export var on_hit_status_tick_interval: float = 0.0
+@export var on_hit_status_flat_damage: float = 0.0
+@export var on_hit_status_max_hp_fraction: float = 0.0
+@export var on_hit_status_max_stacks: int = 1
+@export var bonus_damage_vs_status_id: String = ""
+@export var bonus_damage_vs_status_multiplier: float = 1.0
 
 # Existing fields preserved to avoid breaking gameplay
 @export var family_id: String = ""

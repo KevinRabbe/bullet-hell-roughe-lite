@@ -9,5 +9,8 @@
     "burn_damage": 1.35,
     "hp_regen": 0.0
   },
+  "status_power_multipliers": {
+    "hellfire_burn": 1.35
+  },
   "passive_tags": ["infernal_flame", "no_sustain"]
 }

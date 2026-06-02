@@ -12,5 +12,8 @@
     "max_hp": 40.0,
     "armor": 4.0
   },
+  "status_power_multipliers": {
+    "devils_debt": 1.35
+  },
   "passive_tags": ["unbreakable_pact", "low_direct_damage"]
 }

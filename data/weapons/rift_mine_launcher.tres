@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/heavy_pistol.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "rift_mine_launcher"
+display_name = "Rift Mine Launcher"
+description = "Heavier portal ordnance that trades speed for larger single hits."
+family_id = "portal"
+cooldown_seconds = 1.0
+damage = 20.0
+projectile_speed = 500.0
+attack_range = 1.08
+projectile_lifetime_seconds = 2.3
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "portal"
+price = 7
+tags = Array[String](["portal", "mine", "heavy", "instability"])

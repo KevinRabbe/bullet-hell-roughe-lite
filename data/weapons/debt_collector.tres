@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/rift_rifle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "debt_collector"
+display_name = "Debt Collector"
+description = "Execution rifle that cashes in Devil's Debt for much heavier shots."
+family_id = "devil"
+cooldown_seconds = 0.7
+damage = 11.0
+projectile_speed = 760.0
+attack_range = 1.12
+projectile_lifetime_seconds = 2.1
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "devil"
+price = 7
+tags = Array[String](["devil", "collector", "ranged", "debt"])
+bonus_damage_vs_status_id = "devils_debt"
+bonus_damage_vs_status_multiplier = 1.5

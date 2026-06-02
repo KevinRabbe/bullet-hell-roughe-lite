@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/infernal_shotgun.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "anchor_cannon"
+display_name = "Anchor Cannon"
+description = "Heavy portal artillery that locks in high-damage shots at the edge of the arena."
+family_id = "portal"
+cooldown_seconds = 1.08
+damage = 23.0
+projectile_speed = 660.0
+attack_range = 1.12
+projectile_lifetime_seconds = 2.25
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "portal"
+price = 8
+tags = Array[String](["portal", "anchor", "heavy", "artillery"])

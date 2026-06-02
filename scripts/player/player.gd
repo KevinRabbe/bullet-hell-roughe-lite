@@ -300,6 +300,13 @@ func get_family_kill_requirement_multiplier(family_id: String) -> float:
 	var family_multipliers: Dictionary = family_multipliers_variant
 	return float(family_multipliers.get(family_id, 1.0))
 
+func get_status_power_multiplier(status_id: String) -> float:
+	var status_multipliers_variant: Variant = active_character_data.get("status_power_multipliers", {})
+	if not (status_multipliers_variant is Dictionary):
+		return 1.0
+	var status_multipliers: Dictionary = status_multipliers_variant
+	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
+
 func get_preferred_weapon_family_id() -> String:
 	return str(active_character_data.get("preferred_weapon_family", ""))
 

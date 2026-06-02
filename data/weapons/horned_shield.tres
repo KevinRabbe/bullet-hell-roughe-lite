@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/infernal_shotgun.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "horned_shield"
+display_name = "Horned Shield"
+description = "Close pressure tool that brands nearby threats with Devil's Debt."
+family_id = "devil"
+cooldown_seconds = 0.9
+damage = 9.0
+projectile_speed = 520.0
+attack_range = 0.72
+projectile_lifetime_seconds = 1.15
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "devil"
+price = 6
+tags = Array[String](["devil", "shield", "debt", "close_range"])
+on_hit_status_id = "devils_debt"
+on_hit_status_duration = 4.5
+on_hit_status_tick_interval = 1.0
+on_hit_status_max_hp_fraction = 0.01
+on_hit_status_max_stacks = 4

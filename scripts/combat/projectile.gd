@@ -39,8 +39,23 @@ func _on_body_entered(body: Node) -> void:
 		var final_damage := damage * damage_multiplier
 		if shooter != null and shooter.has_method("get_damage_multiplier_for_target"):
 			final_damage *= float(shooter.call("get_damage_multiplier_for_target", body))
+		var weapon_data := _load_weapon_data()
+		if weapon_data != null and weapon_data.bonus_damage_vs_status_id != "":
+			var stacks := 0
+			if body.has_method("get_status_stack_count"):
+				stacks = int(body.call("get_status_stack_count", weapon_data.bonus_damage_vs_status_id))
+			if stacks > 0:
+				final_damage *= weapon_data.bonus_damage_vs_status_multiplier
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
 		if pierce_count > 0:
 			pierce_count -= 1
 			return
 		queue_free()
+
+func _load_weapon_data() -> WeaponData:
+	if source_weapon_id == "":
+		return null
+	var resource_path := "res://data/weapons/%s.tres" % source_weapon_id
+	if not ResourceLoader.exists(resource_path):
+		return null
+	return load(resource_path) as WeaponData

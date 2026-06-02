@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/skullpiercer_sniper.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "throne_of_sin"
+display_name = "Throne of Sin"
+description = "Heavy endgame pact weapon that punishes enemies already buried in Debt."
+family_id = "devil"
+cooldown_seconds = 1.1
+damage = 19.0
+projectile_speed = 690.0
+attack_range = 1.1
+projectile_lifetime_seconds = 2.2
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "devil"
+price = 8
+tags = Array[String](["devil", "throne", "heavy", "debt"])
+on_hit_status_id = "devils_debt"
+on_hit_status_duration = 5.5
+on_hit_status_tick_interval = 1.0
+on_hit_status_max_hp_fraction = 0.012
+on_hit_status_max_stacks = 6
+bonus_damage_vs_status_id = "devils_debt"
+bonus_damage_vs_status_multiplier = 1.35

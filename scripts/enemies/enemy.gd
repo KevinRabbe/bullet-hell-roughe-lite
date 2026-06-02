@@ -22,6 +22,7 @@ var ranged_cooldown_left: float = 0.0
 var last_hit_player: Node
 var last_hit_weapon_id: String = ""
 var last_hit_slot_index: int = -1
+var active_statuses: Dictionary = {}
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -55,6 +56,7 @@ func set_target(new_target: Node2D) -> void:
 func _physics_process(delta: float) -> void:
 	damage_cooldown_left = maxf(damage_cooldown_left - delta, 0.0)
 	ranged_cooldown_left = maxf(ranged_cooldown_left - delta, 0.0)
+	_tick_status_effects(delta)
 	_find_player_if_needed()
 
 	if target == null or not is_instance_valid(target):
@@ -86,6 +88,7 @@ func take_damage(amount: float, source: Node = null, source_weapon_id: String = 
 		last_hit_weapon_id = source_weapon_id
 		last_hit_slot_index = source_slot_index
 	current_hp = maxf(current_hp - amount, 0.0)
+	_apply_weapon_status_effect(source, source_weapon_id)
 	_spawn_enemy_hit_flash()
 	if current_hp <= 0.0:
 		_spawn_death_puff()
@@ -260,6 +263,91 @@ func _apply_enemy_data(data: EnemyData) -> void:
 	ranged_attack_range = data.ranged_attack_range
 	is_elite = data.is_elite
 	is_boss = data.is_boss
+
+func _tick_status_effects(delta: float) -> void:
+	if active_statuses.is_empty():
+		return
+	var expired_statuses: Array[String] = []
+	for status_id_variant in active_statuses.keys():
+		var status_id := str(status_id_variant)
+		var status_variant: Variant = active_statuses.get(status_id, {})
+		if not (status_variant is Dictionary):
+			expired_statuses.append(status_id)
+			continue
+		var status: Dictionary = status_variant
+		var remaining_duration := maxf(float(status.get("remaining_duration", 0.0)) - delta, 0.0)
+		var tick_time_left := float(status.get("tick_time_left", 0.0)) - delta
+		var tick_interval := maxf(float(status.get("tick_interval", 0.0)), 0.0)
+		while tick_interval > 0.0 and tick_time_left <= 0.0 and remaining_duration > 0.0:
+			_apply_status_tick_damage(status)
+			tick_time_left += tick_interval
+		status["remaining_duration"] = remaining_duration
+		status["tick_time_left"] = tick_time_left
+		active_statuses[status_id] = status
+		if remaining_duration <= 0.0:
+			expired_statuses.append(status_id)
+	for expired_status_id in expired_statuses:
+		active_statuses.erase(expired_status_id)
+
+func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void:
+	if source_weapon_id == "":
+		return
+	var weapon_data := _load_weapon_data(source_weapon_id)
+	if weapon_data == null:
+		return
+	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
+		return
+	var status_power_multiplier := 1.0
+	if source != null and source.has_method("get_status_power_multiplier"):
+		status_power_multiplier = maxf(float(source.call("get_status_power_multiplier", weapon_data.on_hit_status_id)), 0.0)
+	_apply_status_from_weapon(weapon_data, status_power_multiplier)
+
+func _apply_status_from_weapon(weapon_data: WeaponData, status_power_multiplier: float) -> void:
+	var status_id := weapon_data.on_hit_status_id
+	var max_stacks := maxi(weapon_data.on_hit_status_max_stacks, 1)
+	var current_stacks := 0
+	var current_status_variant: Variant = active_statuses.get(status_id, {})
+	if current_status_variant is Dictionary:
+		current_stacks = int((current_status_variant as Dictionary).get("stacks", 0))
+	var next_stacks := mini(current_stacks + 1, max_stacks)
+	var scaled_flat_damage := weapon_data.on_hit_status_flat_damage * status_power_multiplier
+	var scaled_max_hp_fraction := weapon_data.on_hit_status_max_hp_fraction * status_power_multiplier
+	active_statuses[status_id] = {
+		"remaining_duration": weapon_data.on_hit_status_duration,
+		"tick_interval": weapon_data.on_hit_status_tick_interval,
+		"tick_time_left": weapon_data.on_hit_status_tick_interval,
+		"flat_damage": scaled_flat_damage,
+		"max_hp_fraction": scaled_max_hp_fraction,
+		"stacks": next_stacks
+	}
+
+func _apply_status_tick_damage(status: Dictionary) -> void:
+	var stacks := maxi(int(status.get("stacks", 1)), 1)
+	var tick_damage := float(status.get("flat_damage", 0.0))
+	tick_damage += max_hp * float(status.get("max_hp_fraction", 0.0))
+	tick_damage *= stacks
+	if tick_damage <= 0.0:
+		return
+	current_hp = maxf(current_hp - tick_damage, 0.0)
+	_spawn_enemy_hit_flash()
+	if current_hp <= 0.0:
+		_spawn_death_puff()
+		_grant_kill_rewards()
+		queue_free()
+
+func _load_weapon_data(weapon_id: String) -> WeaponData:
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if not ResourceLoader.exists(resource_path):
+		return null
+	return load(resource_path) as WeaponData
+
+func get_status_stack_count(status_id: String) -> int:
+	if status_id == "":
+		return 0
+	var status_variant: Variant = active_statuses.get(status_id, {})
+	if not (status_variant is Dictionary):
+		return 0
+	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
 
 func _spawn_enemy_hit_flash() -> void:
 	if visual == null:

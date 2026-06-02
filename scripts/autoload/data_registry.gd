@@ -120,7 +120,8 @@ func _validate_registry_entries() -> void:
 			continue
 		if str(weapon.get("display_name")) == "":
 			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
-		if int(weapon.get("price")) <= 0:
+		var shop_enabled := bool(weapon.get("shop_enabled"))
+		if shop_enabled and int(weapon.get("price")) <= 0:
 			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
 	for item_id in items.keys():
 		var item: Variant = items[item_id]
