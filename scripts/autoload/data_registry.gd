@@ -1,12 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
-const ENEMY_RESOURCE_PATHS: Array[String] = [
-	"res://data/enemies/imp_runner.tres",
-	"res://data/enemies/husk_brute.tres",
-	"res://data/enemies/spit_fiend.tres",
-	"res://data/enemies/skeleton_rifleman.tres",
-]
+const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
 const SET_BONUS_DIR: String = "res://data/set_bonuses"
@@ -40,14 +35,7 @@ func _register_defaults() -> void:
 	_validate_registry_entries()
 
 func _load_enemy_resources() -> Array:
-	var loaded: Array = []
-	for resource_path in ENEMY_RESOURCE_PATHS:
-		if not ResourceLoader.exists(resource_path):
-			continue
-		var enemy_resource := load(resource_path)
-		if enemy_resource != null:
-			loaded.append(enemy_resource)
-	return loaded
+	return _load_resource_directory(ENEMY_RESOURCE_DIR)
 
 func _load_character_json_data(directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
@@ -107,17 +95,21 @@ func _load_resource_directory(directory_path: String) -> Array:
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
 		return loaded
+	var file_names: Array[String] = []
 	directory.list_dir_begin()
 	var file_name := directory.get_next()
 	while file_name != "":
 		if not directory.current_is_dir() and file_name.ends_with(".tres"):
-			var full_path := "%s/%s" % [directory_path, file_name]
-			if ResourceLoader.exists(full_path):
-				var resource := load(full_path)
-				if resource != null:
-					loaded.append(resource)
+			file_names.append(file_name)
 		file_name = directory.get_next()
 	directory.list_dir_end()
+	file_names.sort()
+	for sorted_file_name in file_names:
+		var full_path := "%s/%s" % [directory_path, sorted_file_name]
+		if ResourceLoader.exists(full_path):
+			var resource := load(full_path)
+			if resource != null:
+				loaded.append(resource)
 	return loaded
 
 func _validate_registry_entries() -> void:

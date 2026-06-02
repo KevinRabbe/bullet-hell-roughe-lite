@@ -1,16 +1,10 @@
 extends RefCounted
 
-const ITEM_RESOURCE_PATHS: Array[String] = [
-	"res://data/items/swift_boots.tres",
-	"res://data/items/glass_scope.tres",
-	"res://data/items/steel_heart.tres",
-	"res://data/items/trigger_core.tres",
-	"res://data/items/lucky_charm.tres",
-]
+const ITEM_RESOURCE_DIR: String = "res://data/items"
 
 static func get_prototype_items() -> Array[ItemData]:
 	var items: Array[ItemData] = []
-	for resource_path in ITEM_RESOURCE_PATHS:
+	for resource_path in _list_item_resource_paths():
 		if not ResourceLoader.exists(resource_path):
 			continue
 		var item_resource := load(resource_path)
@@ -41,3 +35,21 @@ static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> I
 	if pool.is_empty():
 		return get_random_item(rng)
 	return pool[rng.randi_range(0, pool.size() - 1)]
+
+static func _list_item_resource_paths() -> Array[String]:
+	var paths: Array[String] = []
+	var directory := DirAccess.open(ITEM_RESOURCE_DIR)
+	if directory == null:
+		return paths
+	var file_names: Array[String] = []
+	directory.list_dir_begin()
+	var file_name := directory.get_next()
+	while file_name != "":
+		if not directory.current_is_dir() and file_name.ends_with(".tres"):
+			file_names.append(file_name)
+		file_name = directory.get_next()
+	directory.list_dir_end()
+	file_names.sort()
+	for sorted_file_name in file_names:
+		paths.append("%s/%s" % [ITEM_RESOURCE_DIR, sorted_file_name])
+	return paths
