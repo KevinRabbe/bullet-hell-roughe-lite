@@ -14,5 +14,13 @@
   "status_power_multipliers": {
     "hellfire_burn": 1.35
   },
+  "status_propagation_rules": {
+    "hellfire_burn": {
+      "radius": 110.0,
+      "chance": 0.4,
+      "duration_scale": 0.75,
+      "max_targets": 2
+    }
+  },
   "passive_tags": ["infernal_flame", "no_sustain"]
 }

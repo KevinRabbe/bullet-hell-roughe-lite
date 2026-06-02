@@ -313,6 +313,16 @@ func get_status_power_multiplier(status_id: String) -> float:
 	var status_multipliers: Dictionary = status_multipliers_variant
 	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
 
+func get_status_propagation_rule(status_id: String) -> Dictionary:
+	var propagation_rules_variant: Variant = active_character_data.get("status_propagation_rules", {})
+	if not (propagation_rules_variant is Dictionary):
+		return {}
+	var propagation_rules: Dictionary = propagation_rules_variant
+	var rule_variant: Variant = propagation_rules.get(status_id, {})
+	if rule_variant is Dictionary:
+		return (rule_variant as Dictionary).duplicate(true)
+	return {}
+
 func notify_damaged_by_enemy(enemy: Node) -> void:
 	_apply_passive_status_rules_for_trigger("on_enemy_hit", enemy)
 

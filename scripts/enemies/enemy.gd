@@ -23,6 +23,7 @@ var last_hit_player: Node
 var last_hit_weapon_id: String = ""
 var last_hit_slot_index: int = -1
 var active_statuses: Dictionary = {}
+var status_rng: RandomNumberGenerator
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -43,6 +44,7 @@ const ENEMY_DATA_PATHS: Dictionary = {
 }
 
 func _ready() -> void:
+	status_rng = _resolve_rng("status_effects")
 	_apply_variant_stats()
 	current_hp = max_hp
 	add_to_group("enemies")
@@ -315,6 +317,15 @@ func _apply_status_from_weapon(weapon_data: WeaponData, source: Node, source_wea
 		"max_hp_fraction": weapon_data.on_hit_status_max_hp_fraction,
 		"max_stacks": weapon_data.on_hit_status_max_stacks
 	}
+	if source != null and source.has_method("get_status_propagation_rule"):
+		var propagation_variant: Variant = source.call("get_status_propagation_rule", weapon_data.on_hit_status_id)
+		if propagation_variant is Dictionary:
+			var propagation_rule: Dictionary = propagation_variant
+			status_payload["spread_radius"] = float(propagation_rule.get("radius", 0.0))
+			status_payload["spread_chance"] = float(propagation_rule.get("chance", 0.0))
+			status_payload["spread_duration_scale"] = float(propagation_rule.get("duration_scale", 1.0))
+			status_payload["spread_max_targets"] = int(propagation_rule.get("max_targets", 1))
+			status_payload["allow_spread"] = true
 	apply_status_payload(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
 
 func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
@@ -343,6 +354,38 @@ func apply_status_payload(status_payload: Dictionary, source: Node = null, sourc
 		"max_hp_fraction": float(status_payload.get("max_hp_fraction", 0.0)) * status_power_multiplier,
 		"stacks": next_stacks
 	}
+	_try_spread_status(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
+
+func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
+	if not bool(status_payload.get("allow_spread", false)):
+		return
+	var spread_radius := maxf(float(status_payload.get("spread_radius", 0.0)), 0.0)
+	var spread_chance := clampf(float(status_payload.get("spread_chance", 0.0)), 0.0, 1.0)
+	var spread_duration_scale := maxf(float(status_payload.get("spread_duration_scale", 1.0)), 0.0)
+	var spread_max_targets := maxi(int(status_payload.get("spread_max_targets", 1)), 0)
+	if spread_radius <= 0.0 or spread_chance <= 0.0 or spread_max_targets <= 0:
+		return
+	if status_rng.randf() > spread_chance:
+		return
+
+	var spread_payload := status_payload.duplicate(true)
+	spread_payload["duration"] = float(spread_payload.get("duration", 0.0)) * spread_duration_scale
+	spread_payload["allow_spread"] = false
+	if float(spread_payload.get("duration", 0.0)) <= 0.0:
+		return
+
+	var targets_applied := 0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if targets_applied >= spread_max_targets:
+			break
+		if not (enemy is Node2D) or not is_instance_valid(enemy) or enemy == self:
+			continue
+		var enemy_node := enemy as Node2D
+		if global_position.distance_to(enemy_node.global_position) > spread_radius:
+			continue
+		if enemy_node.has_method("apply_status_payload"):
+			enemy_node.call("apply_status_payload", spread_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
+			targets_applied += 1
 
 func _apply_status_tick_damage(status: Dictionary) -> void:
 	var stacks := maxi(int(status.get("stacks", 1)), 1)
@@ -398,3 +441,13 @@ func _spawn_death_puff() -> void:
 		if is_instance_valid(puff):
 			puff.queue_free()
 	)
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	var fallback := RandomNumberGenerator.new()
+	fallback.randomize()
+	return fallback
