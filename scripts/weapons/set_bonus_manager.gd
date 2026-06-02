@@ -3,12 +3,14 @@ extends Node
 @export var weapon_loadout_path: NodePath
 
 var weapon_loadout: Node
+var data_registry: Node
 var last_reported_bonuses: Dictionary = {}
-var shots_fired_since_execution: int = 0
+var cadence_counters: Dictionary = {}
 var rng: RandomNumberGenerator
 
 func _ready() -> void:
 	rng = _resolve_rng("set_bonus")
+	data_registry = get_node_or_null("/root/DataRegistry")
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
 
@@ -21,29 +23,43 @@ func evaluate_and_debug_print() -> Dictionary:
 	return active_bonuses
 
 func get_damage_multiplier_bonus() -> float:
-	var gunslinger_count := _get_family_count("gunslinger")
-	if gunslinger_count >= 2:
-		return 0.15
-	return 0.0
+	var total_bonus := 0.0
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			if str(effect.get("type", "")) == "damage_multiplier_bonus":
+				total_bonus += float(effect.get("value", 0.0))
+	return total_bonus
 
 func can_pierce_shot() -> bool:
-	var gunslinger_count := _get_family_count("gunslinger")
-	if gunslinger_count < 4:
-		return false
-	return rng.randf() <= 0.3
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			if str(effect.get("type", "")) != "pierce_proc":
+				continue
+			if rng.randf() <= float(effect.get("chance", 0.0)):
+				return true
+	return false
 
 func should_fire_execution_shot() -> bool:
-	var gunslinger_count := _get_family_count("gunslinger")
-	if gunslinger_count < 6:
-		return false
-	shots_fired_since_execution += 1
-	if shots_fired_since_execution >= 5:
-		shots_fired_since_execution = 0
-		return true
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			if str(effect.get("type", "")) != "execution_cadence":
+				continue
+			var cadence_key := "%s:%s" % [str(family_id), str(effect.get("type", ""))]
+			var next_count := int(cadence_counters.get(cadence_key, 0)) + 1
+			var cadence := maxi(int(effect.get("every_shots", 0)), 1)
+			if next_count >= cadence:
+				cadence_counters[cadence_key] = 0
+				return true
+			cadence_counters[cadence_key] = next_count
 	return false
 
 func get_execution_damage_multiplier() -> float:
-	return 2.5
+	var multiplier := 1.0
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			if str(effect.get("type", "")) == "execution_damage_multiplier":
+				multiplier = maxf(multiplier, float(effect.get("value", 1.0)))
+	return multiplier
 
 func debug_evaluate_from_weapon_ids(weapon_ids: Array[String]) -> Dictionary:
 	var family_counts: Dictionary = {}
@@ -61,28 +77,51 @@ func _read_family_counts() -> Dictionary:
 		return weapon_loadout.call("get_family_counts")
 	return {}
 
-func _get_family_count(family_id: String) -> int:
-	var counts := _read_family_counts()
-	return int(counts.get(family_id, 0))
-
 func _build_active_bonus_state(family_counts: Dictionary) -> Dictionary:
 	var active_bonuses: Dictionary = {}
 	for family_id in family_counts.keys():
-		var count := int(family_counts[family_id])
-		active_bonuses[family_id] = {
-			"2_piece": count >= 2,
-			"4_piece": count >= 4,
-			"6_piece": count >= 6,
-			"count": count
-		}
+		var family_key := str(family_id)
+		var count := int(family_counts[family_key])
+		var family_state: Dictionary = {"count": count}
+		for threshold in _thresholds_for_family(family_key):
+			var pieces := int(threshold.get("pieces", 0))
+			var state_key := str(threshold.get("state_key", "%d_piece" % pieces))
+			family_state[state_key] = count >= pieces
+		active_bonuses[family_key] = family_state
 	return active_bonuses
 
-func _get_family_id_from_weapon_id(weapon_id: String) -> String:
-	if "/" in weapon_id:
-		return weapon_id.split("/", false, 1)[0]
-	if "_" in weapon_id:
-		return weapon_id.split("_", false, 1)[0]
-	return weapon_id
+func _thresholds_for_family(family_id: String) -> Array:
+	var definition := _get_set_bonus_definition(family_id)
+	if definition.is_empty():
+		return []
+	var thresholds_variant: Variant = definition.get("thresholds", [])
+	if thresholds_variant is Array:
+		return thresholds_variant
+	return []
+
+func _active_effects_for_family(family_id: String) -> Array[Dictionary]:
+	var count := int(_read_family_counts().get(family_id, 0))
+	var effects: Array[Dictionary] = []
+	for threshold_variant in _thresholds_for_family(family_id):
+		if not (threshold_variant is Dictionary):
+			continue
+		var threshold: Dictionary = threshold_variant
+		if count < int(threshold.get("pieces", 0)):
+			continue
+		var threshold_effects_variant: Variant = threshold.get("effects", [])
+		if threshold_effects_variant is Array:
+			for effect_variant in threshold_effects_variant:
+				if effect_variant is Dictionary:
+					effects.append((effect_variant as Dictionary).duplicate(true))
+	return effects
+
+func _get_set_bonus_definition(family_id: String) -> Dictionary:
+	if data_registry == null or not data_registry.has_method("get_set_bonus"):
+		return {}
+	var definition_variant: Variant = data_registry.call("get_set_bonus", family_id)
+	if definition_variant is Dictionary:
+		return definition_variant
+	return {}
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
