@@ -9,6 +9,8 @@ extends Area2D
 var direction: Vector2 = Vector2.RIGHT
 var life_left: float = 0.0
 var shooter: Node
+var source_weapon_id: String = ""
+var source_slot_index: int = -1
 
 func _ready() -> void:
 	life_left = lifetime_seconds
@@ -28,12 +30,16 @@ func set_direction(new_direction: Vector2) -> void:
 func set_shooter(new_shooter: Node) -> void:
 	shooter = new_shooter
 
+func set_source_context(weapon_id: String, slot_index: int) -> void:
+	source_weapon_id = weapon_id
+	source_slot_index = slot_index
+
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		var final_damage := damage * damage_multiplier
 		if shooter != null and shooter.has_method("get_damage_multiplier_for_target"):
 			final_damage *= float(shooter.call("get_damage_multiplier_for_target", body))
-		body.call("take_damage", final_damage)
+		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
 		if pierce_count > 0:
 			pierce_count -= 1
 			return

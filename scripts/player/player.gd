@@ -90,6 +90,33 @@ func grant_item(item: ItemData) -> void:
 	print("Gained item: %s" % item.name)
 	_print_debug_stats()
 
+func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
+	if weapon_loadout == null or not weapon_loadout.has_method("register_weapon_kill"):
+		return
+	if weapon_id == "" or slot_index < 0:
+		return
+	var weapon_resource := _load_weapon_resource(weapon_id)
+	if weapon_resource == null:
+		return
+	var family_id := _resolve_weapon_family_id(weapon_resource)
+	var result_variant := weapon_loadout.call(
+		"register_weapon_kill",
+		slot_index,
+		weapon_resource,
+		get_family_kill_requirement_multiplier(family_id)
+	)
+	if not (result_variant is Dictionary):
+		return
+	var result: Dictionary = result_variant
+	if not bool(result.get("triggered", false)):
+		return
+	var stat_id := str(result.get("stat_id", ""))
+	var amount := float(result.get("amount", 0.0))
+	if stat_id == "":
+		return
+	var weapon_name := weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
+	_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
+
 func _apply_item_effects(item: ItemData) -> void:
 	for stat_name in item.stat_modifiers.keys():
 		if not _has_stat_property(stat_name):
@@ -129,6 +156,21 @@ func _print_debug_stats() -> void:
 			stats.portal_reward_multiplier
 		]
 	)
+
+func _apply_runtime_stat_bonus(stat_id: String, value: float, label: String = "") -> void:
+	if stat_id == "max_hp":
+		stats.max_hp += value
+		current_hp += value
+		current_hp = minf(current_hp, stats.max_hp)
+	elif _has_stat_property(stat_id):
+		var current_value: Variant = stats.get(stat_id)
+		if current_value is float:
+			stats.set(stat_id, float(current_value) + value)
+		elif current_value is int:
+			stats.set(stat_id, int(current_value) + int(round(value)))
+	_update_hp_label()
+	var bonus_label := label if label != "" else stat_id
+	print("%s bonus: %s %+0.2f" % [bonus_label, stat_id, value])
 
 func _get_stat_value(stat_name: String, fallback: float) -> float:
 	if _has_stat_property(stat_name):
@@ -269,6 +311,13 @@ func get_attack_range_multiplier() -> float:
 
 func get_projectile_speed_multiplier() -> float:
 	return stats.projectile_speed
+
+func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
+	if weapon_resource.family != "":
+		return weapon_resource.family
+	if weapon_resource.family_id != "":
+		return weapon_resource.family_id
+	return ""
 
 func _weapon_slot_index_from_key(keycode: int) -> int:
 	match keycode:

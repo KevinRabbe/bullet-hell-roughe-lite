@@ -77,7 +77,7 @@ func _physics_process(delta: float) -> void:
 		var fire_direction := _get_slot_fire_direction(index, aim_direction)
 		var fire_spawn_position := _get_slot_muzzle_position(index)
 		var projectile_rotation_offset := _get_slot_projectile_rotation_offset(index)
-		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset)
+		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index)
 		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity)
 
 func _process_fallback_weapon(delta: float) -> void:
@@ -97,7 +97,7 @@ func _process_fallback_weapon(delta: float) -> void:
 		if strongest_target != null:
 			target = strongest_target
 	var fallback_direction := (target.global_position - owner_player.global_position).normalized()
-	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1))
+	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1), weapon_data.id, -1)
 	cooldown_left = _get_effective_cooldown(weapon_data, current_rarity)
 
 func set_weapon_data(new_weapon_data: WeaponData) -> void:
@@ -134,7 +134,7 @@ func _find_nearest_enemy_for_origin(origin: Vector2, search_range: float) -> Nod
 				nearest_enemy = enemy_node
 	return nearest_enemy
 
-func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float) -> void:
+func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int) -> void:
 	var resolved_projectile_scene := _resolve_projectile_scene(entry_data)
 	if resolved_projectile_scene == null:
 		return
@@ -154,6 +154,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		return
 	if projectile.has_method("set_shooter"):
 		projectile.call("set_shooter", owner_player)
+	if projectile.has_method("set_source_context"):
+		projectile.call("set_source_context", weapon_id, slot_index)
 	var total_damage_multiplier := 1.0
 	if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
 		total_damage_multiplier += float(set_bonus_manager.call("get_damage_multiplier_bonus"))

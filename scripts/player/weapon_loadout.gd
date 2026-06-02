@@ -56,10 +56,13 @@ func try_merge_slot(slot_index: int) -> Dictionary:
 	if target_index < 0 or partner_index < 0:
 		return {"success": false, "message": "Cannot merge this slot.", "new_rarity": ""}
 	var current_entry: Dictionary = equipped_weapons[target_index]
+	var partner_entry := _get_entry(partner_index)
 	var next_rarity := str(result.get("new_rarity", ""))
 	equipped_weapons.remove_at(partner_index)
 	if partner_index < target_index:
 		target_index -= 1
+	current_entry["kill_count"] = int(current_entry.get("kill_count", 0)) + int(partner_entry.get("kill_count", 0))
+	current_entry["milestones_earned"] = int(current_entry.get("milestones_earned", 0)) + int(partner_entry.get("milestones_earned", 0))
 	current_entry["rarity"] = next_rarity
 	equipped_weapons[target_index] = current_entry
 	_sync_legacy_ids()
@@ -88,7 +91,7 @@ func equip_weapon(weapon_id: String) -> bool:
 		return false
 	if not has_space():
 		return false
-	equipped_weapons.append({"id": weapon_id, "rarity": "common"})
+	equipped_weapons.append(_build_weapon_entry(weapon_id, "common"))
 	_sync_legacy_ids()
 	loadout_changed.emit()
 	return true
@@ -99,7 +102,7 @@ func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "commo
 	if RARITY_ORDER.find(incoming_rarity) == -1:
 		incoming_rarity = "common"
 	if has_space():
-		equipped_weapons.append({"id": weapon_id, "rarity": incoming_rarity})
+		equipped_weapons.append(_build_weapon_entry(weapon_id, incoming_rarity))
 		_sync_legacy_ids()
 		loadout_changed.emit()
 		return {"success": true, "combined": false, "rarity": incoming_rarity}
@@ -117,6 +120,35 @@ func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "commo
 	_sync_legacy_ids()
 	loadout_changed.emit()
 	return {"success": true, "combined": true, "rarity": next_rarity}
+
+func register_weapon_kill(slot_index: int, weapon_data: WeaponData, kill_requirement_multiplier: float = 1.0) -> Dictionary:
+	if slot_index < 0 or slot_index >= equipped_weapons.size():
+		return {"triggered": false}
+	if weapon_data == null:
+		return {"triggered": false}
+	var entry := _get_entry(slot_index)
+	entry["kill_count"] = int(entry.get("kill_count", 0)) + 1
+	equipped_weapons[slot_index] = entry
+	var base_kills := maxi(weapon_data.kill_milestone_base_kills, 0)
+	if base_kills <= 0 or weapon_data.kill_milestone_stat_id == "" or is_zero_approx(weapon_data.kill_milestone_amount):
+		return {"triggered": false}
+	var required_kills := maxi(int(round(float(base_kills) * maxf(kill_requirement_multiplier, 0.01))), 1)
+	var next_milestone := int(entry.get("milestones_earned", 0)) + 1
+	var kill_count := int(entry.get("kill_count", 0))
+	if kill_count < required_kills * next_milestone:
+		return {"triggered": false}
+	entry["milestones_earned"] = next_milestone
+	equipped_weapons[slot_index] = entry
+	loadout_changed.emit()
+	return {
+		"triggered": true,
+		"stat_id": weapon_data.kill_milestone_stat_id,
+		"amount": weapon_data.kill_milestone_amount,
+		"weapon_id": str(entry.get("id", "")),
+		"kill_count": kill_count,
+		"milestones_earned": next_milestone,
+		"required_kills": required_kills
+	}
 
 func clear_loadout() -> void:
 	equipped_weapons.clear()
@@ -160,6 +192,12 @@ func _find_weapon_entry_index(weapon_id: String) -> int:
 		if str(entry.get("id", "")) == weapon_id:
 			return index
 	return -1
+
+func _get_entry(index: int) -> Dictionary:
+	var entry_variant := equipped_weapons[index]
+	if entry_variant is Dictionary:
+		return (entry_variant as Dictionary).duplicate(true)
+	return {}
 
 func _find_combine_pair(weapon_id: String) -> Array[int]:
 	var rarity_indexes: Dictionary = {}
@@ -270,7 +308,15 @@ func _migrate_legacy_ids_if_needed() -> void:
 	if not equipped_weapons.is_empty() or equipped_weapon_ids.is_empty():
 		return
 	for weapon_id in equipped_weapon_ids:
-		equipped_weapons.append({"id": weapon_id, "rarity": "common"})
+		equipped_weapons.append(_build_weapon_entry(weapon_id, "common"))
+
+func _build_weapon_entry(weapon_id: String, rarity: String) -> Dictionary:
+	return {
+		"id": weapon_id,
+		"rarity": rarity,
+		"kill_count": 0,
+		"milestones_earned": 0
+	}
 
 func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	# Try to load the weapon data to get its actual family, to respect Stage 8.1

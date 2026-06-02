@@ -19,6 +19,9 @@ var target: Node2D
 var current_hp: float
 var damage_cooldown_left: float = 0.0
 var ranged_cooldown_left: float = 0.0
+var last_hit_player: Node
+var last_hit_weapon_id: String = ""
+var last_hit_slot_index: int = -1
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -77,7 +80,11 @@ func _physics_process(delta: float) -> void:
 	_try_damage_player()
 	_try_ranged_damage_player()
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
+	if source != null and source.is_in_group("players"):
+		last_hit_player = source
+		last_hit_weapon_id = source_weapon_id
+		last_hit_slot_index = source_slot_index
 	current_hp = maxf(current_hp - amount, 0.0)
 	_spawn_enemy_hit_flash()
 	if current_hp <= 0.0:
@@ -87,15 +94,19 @@ func take_damage(amount: float) -> void:
 
 func _grant_kill_rewards() -> void:
 	var players := get_tree().get_nodes_in_group("players")
-	if players.is_empty():
+	if players.is_empty() and (last_hit_player == null or not is_instance_valid(last_hit_player)):
 		return
 	var reward_gold := 10 if is_boss else 1
 	var reward_xp := 15 if is_boss else 1
-	var player_node := players[0]
+	var player_node: Node = last_hit_player
+	if player_node == null or not is_instance_valid(player_node):
+		player_node = players[0]
 	if player_node != null and player_node.has_method("add_gold"):
 		player_node.call("add_gold", reward_gold)
 	if player_node != null and player_node.has_method("add_xp"):
 		player_node.call("add_xp", reward_xp)
+	if player_node != null and player_node.has_method("notify_enemy_killed"):
+		player_node.call("notify_enemy_killed", last_hit_weapon_id, last_hit_slot_index)
 
 func _find_player_if_needed() -> void:
 	if target != null and is_instance_valid(target):

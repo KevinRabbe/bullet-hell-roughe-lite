@@ -39,3 +39,6 @@ extends Resource
 @export var orbit_scale_multiplier: float = 1.0
 @export var aim_forward_sign: float = 1.0
 @export var projectile_rotation_offset: float = 0.0
+@export var kill_milestone_base_kills: int = 0
+@export var kill_milestone_stat_id: String = ""
+@export var kill_milestone_amount: float = 0.0
