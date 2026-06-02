@@ -324,7 +324,9 @@ func get_status_propagation_rule(status_id: String) -> Dictionary:
 	var propagation_rules: Dictionary = propagation_rules_variant
 	var rule_variant: Variant = propagation_rules.get(status_id, {})
 	if rule_variant is Dictionary:
-		return (rule_variant as Dictionary).duplicate(true)
+		var resolved_rule: Dictionary = (rule_variant as Dictionary).duplicate(true)
+		_apply_pressure_scaling_to_propagation_rule(resolved_rule)
+		return resolved_rule
 	return {}
 
 func notify_damaged_by_enemy(enemy: Node) -> void:
@@ -355,6 +357,18 @@ func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> 
 			if global_position.distance_to(enemy_node.global_position) > max_distance:
 				continue
 		if enemy.has_method("get_status_stack_count") and int(enemy.call("get_status_stack_count", status_id)) > 0:
+			count += 1
+	return count
+
+func count_nearby_enemies(max_distance: float) -> int:
+	if max_distance <= 0.0:
+		return 0
+	var count := 0
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(enemy) or not (enemy is Node2D):
+			continue
+		var enemy_node := enemy as Node2D
+		if global_position.distance_to(enemy_node.global_position) <= max_distance:
 			count += 1
 	return count
 
@@ -691,5 +705,28 @@ func _get_effective_kill_requirement(weapon_resource: WeaponData, family_id: Str
 		return 0
 	return maxi(
 		int(round(float(weapon_resource.kill_milestone_base_kills) * get_family_kill_requirement_multiplier(family_id))),
+		1
+	)
+
+func _apply_pressure_scaling_to_propagation_rule(rule: Dictionary) -> void:
+	var pressure_radius := maxf(float(rule.get("pressure_radius", 0.0)), 0.0)
+	if pressure_radius <= 0.0:
+		return
+	var nearby_enemy_count := count_nearby_enemies(pressure_radius)
+	if nearby_enemy_count <= 0:
+		return
+	var pressure_target_limit := maxi(int(rule.get("pressure_target_limit", nearby_enemy_count)), 1)
+	var effective_pressure := mini(nearby_enemy_count, pressure_target_limit)
+	rule["chance"] = clampf(
+		float(rule.get("chance", 0.0)) + (float(rule.get("spread_chance_per_nearby_enemy", 0.0)) * effective_pressure),
+		0.0,
+		1.0
+	)
+	rule["radius"] = maxf(
+		float(rule.get("radius", 0.0)) + (float(rule.get("spread_radius_per_nearby_enemy", 0.0)) * effective_pressure),
+		0.0
+	)
+	rule["max_targets"] = maxi(
+		int(round(float(rule.get("max_targets", 1)) + (float(rule.get("spread_max_targets_per_nearby_enemy", 0.0)) * effective_pressure))),
 		1
 	)
