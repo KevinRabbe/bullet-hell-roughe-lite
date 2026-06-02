@@ -11,6 +11,7 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 @export var continue_button_path: NodePath
 @export var reroll_cost: int = 2
 @export var enabled: bool = false
+@export var verbose_shop_logs: bool = false
 
 # Weapon IDs available in the shop pool. Prices/names read from WeaponData.
 const SHOP_WEAPON_IDS: Array[String] = [
@@ -319,6 +320,7 @@ func _pick_weighted_offer_index(pool: Array) -> int:
 	var active_family := _get_active_character_family()
 	var total_weight := 0.0
 	var weighted_values: Array[float] = []
+	var family_weighted_entries: int = 0
 	for candidate in pool:
 		var weight := 1.0
 		if candidate is Dictionary:
@@ -327,8 +329,14 @@ func _pick_weighted_offer_index(pool: Array) -> int:
 				var offer_family := str(offer.get("family", ""))
 				if active_family != "" and offer_family == active_family:
 					weight += CHARACTER_FAMILY_OFFER_WEIGHT_BONUS
+					family_weighted_entries += 1
 		weighted_values.append(weight)
 		total_weight += weight
+	if verbose_shop_logs and active_family != "":
+		print(
+			"Shop weight debug | family=%s | boosted_entries=%d | total_entries=%d | total_weight=%.2f"
+			% [active_family, family_weighted_entries, pool.size(), total_weight]
+		)
 	if total_weight <= 0.0:
 		return rng.randi_range(0, pool.size() - 1)
 	var roll := rng.randf_range(0.0, total_weight)
