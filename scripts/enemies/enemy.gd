@@ -136,6 +136,8 @@ func _try_damage_player() -> void:
 
 	print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
 	target.call("take_damage", contact_damage)
+	if target.has_method("notify_damaged_by_enemy"):
+		target.call("notify_damaged_by_enemy", self)
 	damage_cooldown_left = damage_interval_seconds
 
 func _try_ranged_damage_player() -> void:
@@ -172,6 +174,8 @@ func _try_ranged_damage_player() -> void:
 		PI
 	)
 	if projectile != null:
+		if projectile.has_method("set_source_enemy"):
+			projectile.call("set_source_enemy", self)
 		var projectile_visual := projectile.get_node_or_null("Visual")
 		if projectile_visual is Sprite2D:
 			var projectile_sprite := projectile_visual as Sprite2D
@@ -300,24 +304,43 @@ func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void
 	var status_power_multiplier := 1.0
 	if source != null and source.has_method("get_status_power_multiplier"):
 		status_power_multiplier = maxf(float(source.call("get_status_power_multiplier", weapon_data.on_hit_status_id)), 0.0)
-	_apply_status_from_weapon(weapon_data, status_power_multiplier)
+	_apply_status_from_weapon(weapon_data, source, source_weapon_id, -1, status_power_multiplier)
 
-func _apply_status_from_weapon(weapon_data: WeaponData, status_power_multiplier: float) -> void:
-	var status_id := weapon_data.on_hit_status_id
-	var max_stacks := maxi(weapon_data.on_hit_status_max_stacks, 1)
+func _apply_status_from_weapon(weapon_data: WeaponData, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
+	var status_payload := {
+		"status_id": weapon_data.on_hit_status_id,
+		"duration": weapon_data.on_hit_status_duration,
+		"tick_interval": weapon_data.on_hit_status_tick_interval,
+		"flat_damage": weapon_data.on_hit_status_flat_damage,
+		"max_hp_fraction": weapon_data.on_hit_status_max_hp_fraction,
+		"max_stacks": weapon_data.on_hit_status_max_stacks
+	}
+	apply_status_payload(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
+
+func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
+	var status_id := str(status_payload.get("status_id", ""))
+	if status_id == "":
+		return
+	var duration := float(status_payload.get("duration", 0.0))
+	if duration <= 0.0:
+		return
+	var tick_interval := maxf(float(status_payload.get("tick_interval", 0.0)), 0.0)
+	var max_stacks := maxi(int(status_payload.get("max_stacks", 1)), 1)
 	var current_stacks := 0
 	var current_status_variant: Variant = active_statuses.get(status_id, {})
 	if current_status_variant is Dictionary:
 		current_stacks = int((current_status_variant as Dictionary).get("stacks", 0))
 	var next_stacks := mini(current_stacks + 1, max_stacks)
-	var scaled_flat_damage := weapon_data.on_hit_status_flat_damage * status_power_multiplier
-	var scaled_max_hp_fraction := weapon_data.on_hit_status_max_hp_fraction * status_power_multiplier
+	if source != null and source.is_in_group("players"):
+		last_hit_player = source
+		last_hit_weapon_id = source_weapon_id
+		last_hit_slot_index = source_slot_index
 	active_statuses[status_id] = {
-		"remaining_duration": weapon_data.on_hit_status_duration,
-		"tick_interval": weapon_data.on_hit_status_tick_interval,
-		"tick_time_left": weapon_data.on_hit_status_tick_interval,
-		"flat_damage": scaled_flat_damage,
-		"max_hp_fraction": scaled_max_hp_fraction,
+		"remaining_duration": duration,
+		"tick_interval": tick_interval,
+		"tick_time_left": tick_interval,
+		"flat_damage": float(status_payload.get("flat_damage", 0.0)) * status_power_multiplier,
+		"max_hp_fraction": float(status_payload.get("max_hp_fraction", 0.0)) * status_power_multiplier,
 		"stacks": next_stacks
 	}
 

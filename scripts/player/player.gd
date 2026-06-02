@@ -18,6 +18,7 @@ var is_dead: bool = false
 var active_character_id: String = "gunslinger"
 var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
+var _passive_rule_timers: Dictionary = {}
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -48,6 +49,7 @@ func _physics_process(_delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * stats.movement_speed
 	move_and_slide()
+	_process_passive_status_rules(_delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -271,6 +273,7 @@ func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
 func _apply_character_rules(character_data: Dictionary = {}) -> void:
 	_apply_stat_multipliers(character_data.get("stat_multipliers", {}))
 	_apply_stat_bonuses(character_data.get("stat_bonuses", {}))
+	_reset_passive_rule_timers(character_data)
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
@@ -309,6 +312,9 @@ func get_status_power_multiplier(status_id: String) -> float:
 		return 1.0
 	var status_multipliers: Dictionary = status_multipliers_variant
 	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
+
+func notify_damaged_by_enemy(enemy: Node) -> void:
+	_apply_passive_status_rules_for_trigger("on_enemy_hit", enemy)
 
 func get_preferred_weapon_family_id() -> String:
 	return str(active_character_data.get("preferred_weapon_family", ""))
@@ -423,6 +429,87 @@ func _apply_character_visual(character_data: Dictionary) -> void:
 		visual_sprite.texture = texture_resource as Texture2D
 	var scale_value := float(character_data.get("visual_scale", 0.12))
 	visual_sprite.scale = Vector2.ONE * scale_value
+
+func _reset_passive_rule_timers(character_data: Dictionary) -> void:
+	_passive_rule_timers.clear()
+	var passive_rules_variant: Variant = character_data.get("passive_status_rules", [])
+	if not (passive_rules_variant is Array):
+		return
+	var passive_rules: Array = passive_rules_variant
+	for index in range(passive_rules.size()):
+		var rule_variant: Variant = passive_rules[index]
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		if str(rule.get("trigger", "")) != "proximity_tick":
+			continue
+		_passive_rule_timers[index] = 0.0
+
+func _process_passive_status_rules(delta: float) -> void:
+	var passive_rules_variant: Variant = active_character_data.get("passive_status_rules", [])
+	if not (passive_rules_variant is Array):
+		return
+	var passive_rules: Array = passive_rules_variant
+	for index in range(passive_rules.size()):
+		var rule_variant: Variant = passive_rules[index]
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		if str(rule.get("trigger", "")) != "proximity_tick":
+			continue
+		var time_left := float(_passive_rule_timers.get(index, 0.0)) - delta
+		if time_left > 0.0:
+			_passive_rule_timers[index] = time_left
+			continue
+		_passive_rule_timers[index] = maxf(float(rule.get("interval", 1.0)), 0.05)
+		_apply_passive_status_rule(rule)
+
+func _apply_passive_status_rules_for_trigger(trigger_id: String, enemy: Node) -> void:
+	var passive_rules_variant: Variant = active_character_data.get("passive_status_rules", [])
+	if not (passive_rules_variant is Array):
+		return
+	var passive_rules: Array = passive_rules_variant
+	for rule_variant in passive_rules:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		if str(rule.get("trigger", "")) != trigger_id:
+			continue
+		_apply_passive_status_rule(rule, enemy)
+
+func _apply_passive_status_rule(rule: Dictionary, enemy_override: Node = null) -> void:
+	if enemy_override != null:
+		_apply_status_rule_to_enemy(enemy_override, rule)
+		return
+	var radius := maxf(float(rule.get("radius", 0.0)), 0.0)
+	if radius <= 0.0:
+		return
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not (enemy is Node2D) or not is_instance_valid(enemy):
+			continue
+		var enemy_node := enemy as Node2D
+		if global_position.distance_to(enemy_node.global_position) > radius:
+			continue
+		_apply_status_rule_to_enemy(enemy_node, rule)
+
+func _apply_status_rule_to_enemy(enemy: Node, rule: Dictionary) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	if not enemy.has_method("apply_status_payload"):
+		return
+	var status_id := str(rule.get("status_id", ""))
+	if status_id == "":
+		return
+	var status_payload := {
+		"status_id": status_id,
+		"duration": float(rule.get("duration", 0.0)),
+		"tick_interval": float(rule.get("tick_interval", 0.0)),
+		"flat_damage": float(rule.get("flat_damage", 0.0)),
+		"max_hp_fraction": float(rule.get("max_hp_fraction", 0.0)),
+		"max_stacks": int(rule.get("max_stacks", 1))
+	}
+	var status_power_multiplier := get_status_power_multiplier(status_id)
+	enemy.call("apply_status_payload", status_payload, self, "", -1, status_power_multiplier)
 
 func _weapon_resource_exists(weapon_id: String) -> bool:
 	return ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id)

@@ -17,5 +17,25 @@
   "status_power_multipliers": {
     "devils_debt": 1.35
   },
+  "passive_status_rules": [
+    {
+      "trigger": "on_enemy_hit",
+      "status_id": "devils_debt",
+      "duration": 4.0,
+      "tick_interval": 1.0,
+      "max_hp_fraction": 0.008,
+      "max_stacks": 4
+    },
+    {
+      "trigger": "proximity_tick",
+      "status_id": "devils_debt",
+      "radius": 92.0,
+      "interval": 1.0,
+      "duration": 3.5,
+      "tick_interval": 1.0,
+      "max_hp_fraction": 0.004,
+      "max_stacks": 4
+    }
+  ],
   "passive_tags": ["unbreakable_pact", "low_direct_damage"]
 }
