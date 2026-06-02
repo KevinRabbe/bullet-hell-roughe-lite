@@ -16,6 +16,7 @@ var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
 var active_character_id: String = "gunslinger"
+var _logged_resource_warnings: Dictionary = {}
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -28,15 +29,6 @@ const GUNSLINGER_WEAPON_IDS: Array[String] = [
 	"gunslinger_assault_rifle",
 	"gunslinger_sniper_rifle"
 ]
-
-const GUNSLINGER_WEAPON_RESOURCES: Dictionary = {
-	"heavy_pistol": "res://data/weapons/heavy_pistol.tres",
-	"gunslinger_smg": "res://data/weapons/gunslinger_smg.tres",
-	"gunslinger_shotgun": "res://data/weapons/gunslinger_shotgun.tres",
-	"gunslinger_revolver": "res://data/weapons/gunslinger_revolver.tres",
-	"gunslinger_assault_rifle": "res://data/weapons/gunslinger_assault_rifle.tres",
-	"gunslinger_sniper_rifle": "res://data/weapons/gunslinger_sniper_rifle.tres"
-}
 
 func _ready() -> void:
 	add_to_group("players")
@@ -292,11 +284,9 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 	var combined := bool(grant_result.get("combined", false))
 	var granted_rarity := str(grant_result.get("rarity", "common"))
 
-	var weapon_path := str(GUNSLINGER_WEAPON_RESOURCES.get(weapon_id, ""))
-	if weapon_path != "":
-		var weapon_resource := load(weapon_path)
-		if auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
-			auto_weapon.call("set_weapon_data", weapon_resource)
+	var weapon_resource := _load_weapon_resource(weapon_id)
+	if weapon_resource != null and auto_weapon != null and auto_weapon.has_method("set_weapon_data"):
+		auto_weapon.call("set_weapon_data", weapon_resource)
 
 	if combined:
 		print("Weapon combined: %s -> %s" % [weapon_id, granted_rarity])
@@ -307,6 +297,23 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 # TODO: remove after all callers use grant_weapon directly.
 func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
 	grant_weapon(weapon_id)
+
+func _load_weapon_resource(weapon_id: String) -> WeaponData:
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if not ResourceLoader.exists(resource_path):
+		_log_resource_warning_once("missing_weapon:%s" % weapon_id, "Missing weapon resource: %s" % resource_path)
+		return null
+	var resource := load(resource_path)
+	if resource is WeaponData:
+		return resource as WeaponData
+	_log_resource_warning_once("invalid_weapon:%s" % weapon_id, "Invalid weapon resource type: %s" % resource_path)
+	return null
+
+func _log_resource_warning_once(warning_key: String, message: String) -> void:
+	if _logged_resource_warnings.has(warning_key):
+		return
+	_logged_resource_warnings[warning_key] = true
+	push_warning(message)
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 	if not _has_stat_property(stat_id):
