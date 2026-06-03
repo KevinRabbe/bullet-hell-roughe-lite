@@ -306,6 +306,11 @@ func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void
 	var status_power_multiplier := 1.0
 	if source != null and source.has_method("get_status_power_multiplier"):
 		status_power_multiplier = maxf(float(source.call("get_status_power_multiplier", weapon_data.on_hit_status_id)), 0.0)
+	if source != null and weapon_data.on_hit_status_power_stat_id != "" and source.has_method("get_status_power_stat_multiplier"):
+		status_power_multiplier *= maxf(
+			float(source.call("get_status_power_stat_multiplier", weapon_data.on_hit_status_power_stat_id, 1.0)),
+			0.0
+		)
 	_apply_status_from_weapon(weapon_data, source, source_weapon_id, -1, status_power_multiplier)
 
 func _apply_status_from_weapon(weapon_data: WeaponData, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:

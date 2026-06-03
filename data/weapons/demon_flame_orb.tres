@@ -26,4 +26,5 @@ on_hit_status_duration = 3.4
 on_hit_status_tick_interval = 0.75
 on_hit_status_flat_damage = 2.4
 on_hit_status_max_stacks = 4
+on_hit_status_power_stat_id = "burn_damage"
 orbit_scale_multiplier = 1.05

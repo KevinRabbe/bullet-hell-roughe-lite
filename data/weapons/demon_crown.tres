@@ -26,6 +26,7 @@ on_hit_status_duration = 3.8
 on_hit_status_tick_interval = 0.75
 on_hit_status_flat_damage = 2.8
 on_hit_status_max_stacks = 5
+on_hit_status_power_stat_id = "burn_damage"
 bonus_damage_vs_status_id = "hellfire_burn"
 bonus_damage_vs_status_multiplier = 1.35
 bonus_damage_per_enemy_with_status_id = "hellfire_burn"

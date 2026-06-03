@@ -317,6 +317,9 @@ func get_status_power_multiplier(status_id: String) -> float:
 	var status_multipliers: Dictionary = status_multipliers_variant
 	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
 
+func get_status_power_stat_multiplier(stat_name: String, fallback: float = 1.0) -> float:
+	return maxf(_get_stat_value(stat_name, fallback), 0.0)
+
 func get_status_propagation_rule(status_id: String) -> Dictionary:
 	var propagation_rules_variant: Variant = active_character_data.get("status_propagation_rules", {})
 	if not (propagation_rules_variant is Dictionary):
