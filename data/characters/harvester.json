@@ -2,6 +2,7 @@
   "id": "harvester",
   "display_name": "The Harvester",
   "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
+  "roster_order": 2,
   "starting_weapon_ids": ["scrap_pistol"],
   "preferred_weapon_family": "harvester",
   "shop_weapon_family_bias": 0.2,

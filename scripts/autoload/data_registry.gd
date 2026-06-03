@@ -148,6 +148,31 @@ func get_character_ids() -> Array[String]:
 	ids.sort()
 	return ids
 
+func get_selectable_character_ids() -> Array[String]:
+	var entries: Array[Dictionary] = []
+	for character_id in characters.keys():
+		var entry_variant: Variant = characters[character_id]
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		if entry.has("selectable") and not bool(entry.get("selectable", true)):
+			continue
+		entries.append({
+			"id": str(character_id),
+			"order": int(entry.get("roster_order", 9999))
+		})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var order_a := int(a.get("order", 9999))
+		var order_b := int(b.get("order", 9999))
+		if order_a == order_b:
+			return str(a.get("id", "")) < str(b.get("id", ""))
+		return order_a < order_b
+	)
+	var ids: Array[String] = []
+	for entry in entries:
+		ids.append(str(entry.get("id", "")))
+	return ids
+
 func get_weapon(id: String):
 	return weapons.get(id)
 

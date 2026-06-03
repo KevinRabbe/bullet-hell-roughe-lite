@@ -253,9 +253,15 @@ func _hide_control_if_present(path: NodePath) -> void:
 
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	if data_registry == null or not data_registry.has_method("get_character_ids"):
+	if data_registry == null:
 		return
-	var ids_variant: Variant = data_registry.call("get_character_ids")
+	var ids_variant: Variant
+	if data_registry.has_method("get_selectable_character_ids"):
+		ids_variant = data_registry.call("get_selectable_character_ids")
+	elif data_registry.has_method("get_character_ids"):
+		ids_variant = data_registry.call("get_character_ids")
+	else:
+		return
 	if ids_variant is Array:
 		var ids: Array = ids_variant
 		if ids.is_empty():

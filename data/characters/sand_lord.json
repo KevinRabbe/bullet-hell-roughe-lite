@@ -2,6 +2,8 @@
   "id": "sand_lord",
   "display_name": "The Sand Lord",
   "description": "Placeholder: control and erosion archetype.",
+  "selectable": false,
+  "roster_order": 99,
   "starting_weapon_ids": ["sand_burst"],
   "passive_tags": ["placeholder_passive"]
 }

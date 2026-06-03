@@ -2,6 +2,7 @@
   "id": "demon_lord",
   "display_name": "The Demon Lord",
   "description": "Hellfire destruction archetype with stronger burn output and no sustain fallback.",
+  "roster_order": 3,
   "visual_path": "res://assets/sprites/characters/demon_lord/character_b_sprite.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["hellfire_scepter"],
