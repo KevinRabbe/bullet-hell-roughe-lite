@@ -19,8 +19,18 @@
       "radius": 110.0,
       "chance": 0.4,
       "duration_scale": 0.75,
-      "max_targets": 2
+      "max_targets": 2,
+      "spread_status_count_id": "hellfire_burn",
+      "spread_status_count_radius": 220.0,
+      "spread_status_count_limit": 6,
+      "spread_chance_per_marked_enemy": 0.04,
+      "spread_radius_per_marked_enemy": 8.0,
+      "spread_max_targets_per_marked_enemy": 0.15
     }
+  },
+  "portal_event_biases": {
+    "enemy_flood_20s": 1.35,
+    "power_for_hp_loss": 1.15
   },
   "passive_tags": ["infernal_flame", "no_sustain"]
 }

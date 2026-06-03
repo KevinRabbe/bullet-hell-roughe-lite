@@ -326,6 +326,7 @@ func get_status_propagation_rule(status_id: String) -> Dictionary:
 	if rule_variant is Dictionary:
 		var resolved_rule: Dictionary = (rule_variant as Dictionary).duplicate(true)
 		_apply_pressure_scaling_to_propagation_rule(resolved_rule)
+		_apply_status_density_scaling_to_propagation_rule(status_id, resolved_rule)
 		return resolved_rule
 	return {}
 
@@ -735,5 +736,29 @@ func _apply_pressure_scaling_to_propagation_rule(rule: Dictionary) -> void:
 	)
 	rule["max_targets"] = maxi(
 		int(round(float(rule.get("max_targets", 1)) + (float(rule.get("spread_max_targets_per_nearby_enemy", 0.0)) * effective_pressure))),
+		1
+	)
+
+func _apply_status_density_scaling_to_propagation_rule(status_id: String, rule: Dictionary) -> void:
+	var counted_status_id := str(rule.get("spread_status_count_id", status_id))
+	if counted_status_id == "":
+		return
+	var count_radius := maxf(float(rule.get("spread_status_count_radius", 0.0)), 0.0)
+	var marked_enemy_count := count_enemies_with_status(counted_status_id, count_radius)
+	if marked_enemy_count <= 0:
+		return
+	var marked_enemy_limit := maxi(int(rule.get("spread_status_count_limit", marked_enemy_count)), 1)
+	var effective_marked_enemy_count := mini(marked_enemy_count, marked_enemy_limit)
+	rule["chance"] = clampf(
+		float(rule.get("chance", 0.0)) + (float(rule.get("spread_chance_per_marked_enemy", 0.0)) * effective_marked_enemy_count),
+		0.0,
+		1.0
+	)
+	rule["radius"] = maxf(
+		float(rule.get("radius", 0.0)) + (float(rule.get("spread_radius_per_marked_enemy", 0.0)) * effective_marked_enemy_count),
+		0.0
+	)
+	rule["max_targets"] = maxi(
+		int(round(float(rule.get("max_targets", 1)) + (float(rule.get("spread_max_targets_per_marked_enemy", 0.0)) * effective_marked_enemy_count))),
 		1
 	)
