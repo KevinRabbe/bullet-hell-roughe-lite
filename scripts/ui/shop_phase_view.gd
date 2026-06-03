@@ -400,7 +400,8 @@ func _refresh_weapon_slots() -> void:
 			var kill_requirement := int(entry.get("kill_requirement", 0))
 			var kill_progress := int(entry.get("kill_progress", 0))
 			if kill_requirement > 0:
-				slot_label.text = "%s\n%d/%d" % [base_label, kill_progress, kill_requirement]
+				var milestone_summary := _format_milestone_summary(entry)
+				slot_label.text = "%s\n%d/%d%s" % [base_label, kill_progress, kill_requirement, milestone_summary]
 			else:
 				slot_label.text = base_label
 		else:
@@ -453,6 +454,35 @@ func _update_merge_button_state() -> void:
 		fallback_can_merge = bool(weapon_loadout.call("can_merge_slot", selected_weapon_slot))
 	merge_selected_button.disabled = not fallback_can_merge
 	merge_selected_button.text = "Merge selected" if fallback_can_merge else "No valid merge"
+
+func _format_milestone_summary(entry: Dictionary) -> String:
+	var stat_id := str(entry.get("milestone_stat_id", ""))
+	var amount := float(entry.get("milestone_amount", 0.0))
+	if stat_id == "" or is_zero_approx(amount):
+		return ""
+	var stat_label := _milestone_stat_short_label(stat_id)
+	if stat_label == "":
+		return ""
+	var amount_text := _format_milestone_amount(amount)
+	return "\n+%s %s" % [amount_text, stat_label]
+
+func _milestone_stat_short_label(stat_id: String) -> String:
+	match stat_id:
+		"damage":
+			return "DMG"
+		"attack_speed":
+			return "AS"
+		"attack_range":
+			return "RNG"
+		"max_hp":
+			return "HP"
+		_:
+			return stat_id.capitalize()
+
+func _format_milestone_amount(amount: float) -> String:
+	if is_equal_approx(amount, round(amount)):
+		return str(int(round(amount)))
+	return "%.2f" % amount
 
 func _apply_card_border(index: int, offer_type: String) -> void:
 	if index < 0 or index >= card_panels.size():
