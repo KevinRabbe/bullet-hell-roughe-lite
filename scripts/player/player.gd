@@ -625,9 +625,28 @@ func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
 				if bool(target.get("is_boss")):
 					return true
 			"strongest":
-				if bool(target.get("is_priority_target")):
+				if _is_priority_damage_target(target):
 					return true
 	return false
+
+func _is_priority_damage_target(target: Node) -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	if bool(target.get("is_priority_target")):
+		return true
+	if not target.is_in_group("enemies"):
+		return false
+	var target_hp := float(target.get("current_hp"))
+	var strongest_hp := -INF
+	var strongest_target: Node = null
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if enemy == null or not is_instance_valid(enemy):
+			continue
+		var enemy_hp := float(enemy.get("current_hp"))
+		if enemy_hp > strongest_hp:
+			strongest_hp = enemy_hp
+			strongest_target = enemy
+	return strongest_target == target
 
 func _load_weapon_resource(weapon_id: String) -> WeaponData:
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
