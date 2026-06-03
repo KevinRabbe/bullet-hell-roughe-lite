@@ -392,6 +392,9 @@ func get_attack_range_multiplier() -> float:
 func get_projectile_speed_multiplier() -> float:
 	return stats.projectile_speed
 
+func get_stat_value_for_weapon_bonus(stat_name: String, fallback: float = 0.0) -> float:
+	return _get_stat_value(stat_name, fallback)
+
 func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
 	if weapon_resource.family != "":
 		return weapon_resource.family

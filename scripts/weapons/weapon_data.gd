@@ -39,6 +39,9 @@ extends Resource
 @export var bonus_damage_per_enemy_with_status_id: String = ""
 @export var bonus_damage_per_enemy_with_status_amount: float = 0.0
 @export var bonus_damage_per_enemy_with_status_max_enemies: int = 0
+@export var bonus_damage_per_player_stat_id: String = ""
+@export var bonus_damage_per_player_stat_amount: float = 0.0
+@export var bonus_damage_per_player_stat_max_value: float = 0.0
 
 # Existing fields preserved to avoid breaking gameplay
 @export var family_id: String = ""
