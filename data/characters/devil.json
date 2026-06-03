@@ -30,6 +30,15 @@
       "spread_max_targets_per_nearby_enemy": 0.2
     }
   },
+  "portal_event_biases": {
+    "double_elite": 1.2,
+    "power_for_hp_loss": 1.3,
+    "enemy_flood_20s": 0.9
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.03,
+    "3": 0.04
+  },
   "passive_status_rules": [
     {
       "trigger": "on_enemy_hit",
