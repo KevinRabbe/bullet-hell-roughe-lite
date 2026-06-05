@@ -24,15 +24,6 @@ var _passive_rule_timers: Dictionary = {}
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
-const GUNSLINGER_WEAPON_IDS: Array[String] = [
-	"heavy_pistol",
-	"gunslinger_smg",
-	"gunslinger_shotgun",
-	"gunslinger_revolver",
-	"gunslinger_assault_rifle",
-	"gunslinger_sniper_rifle"
-]
-
 func _ready() -> void:
 	add_to_group("players")
 	_reset_character_stats()
@@ -61,7 +52,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var index := _weapon_slot_index_from_key(key_event.keycode)
 	if index == -1:
 		return
-	_equip_gunslinger_weapon(index)
+	_equip_family_weapon(index)
 
 func take_damage(amount: float) -> void:
 	if is_dead:
@@ -415,10 +406,11 @@ func _weapon_slot_index_from_key(keycode: int) -> int:
 		KEY_6: return 5
 		_: return -1
 
-func _equip_gunslinger_weapon(index: int) -> void:
-	if index < 0 or index >= GUNSLINGER_WEAPON_IDS.size():
+func _equip_family_weapon(index: int) -> void:
+	var family_weapon_ids := _get_family_weapon_ids()
+	if index < 0 or index >= family_weapon_ids.size():
 		return
-	var weapon_id := GUNSLINGER_WEAPON_IDS[index]
+	var weapon_id := family_weapon_ids[index]
 	grant_weapon(weapon_id)
 
 func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool:
@@ -481,6 +473,32 @@ func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
 				return starting_weapon_id
 			_log_resource_warning_once("missing_starting_weapon:%s" % starting_weapon_id, "Missing starting weapon resource: %s" % starting_weapon_id)
 	return "heavy_pistol"
+
+func _get_family_weapon_ids() -> Array[String]:
+	var family_weapon_ids_variant: Variant = active_character_data.get("family_weapon_ids", [])
+	if family_weapon_ids_variant is Array:
+		var configured_ids: Array[String] = []
+		for weapon_id_variant in family_weapon_ids_variant:
+			var weapon_id := str(weapon_id_variant)
+			if weapon_id == "":
+				continue
+			if _weapon_resource_exists(weapon_id):
+				configured_ids.append(weapon_id)
+			else:
+				_log_resource_warning_once("missing_family_weapon:%s" % weapon_id, "Missing family weapon resource: %s" % weapon_id)
+		if not configured_ids.is_empty():
+			return configured_ids
+	if weapon_loadout != null and weapon_loadout.has_method("get_equipped_weapon_ids"):
+		var equipped_ids_variant: Variant = weapon_loadout.call("get_equipped_weapon_ids")
+		if equipped_ids_variant is Array:
+			var equipped_ids: Array[String] = []
+			for weapon_id_variant in equipped_ids_variant:
+				var weapon_id := str(weapon_id_variant)
+				if weapon_id != "":
+					equipped_ids.append(weapon_id)
+			if not equipped_ids.is_empty():
+				return equipped_ids
+	return ["heavy_pistol"]
 
 func _apply_character_visual(character_data: Dictionary) -> void:
 	if visual_sprite == null:

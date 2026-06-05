@@ -4,6 +4,14 @@
   "description": "Elite-hunter marksman with weaker status power.",
   "roster_order": 1,
   "starting_weapon_ids": ["heavy_pistol"],
+  "family_weapon_ids": [
+    "heavy_pistol",
+    "gunslinger_smg",
+    "gunslinger_shotgun",
+    "gunslinger_revolver",
+    "gunslinger_assault_rifle",
+    "gunslinger_sniper_rifle"
+  ],
   "preferred_weapon_family": "gunslinger",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {

@@ -6,6 +6,14 @@
   "visual_path": "res://assets/sprites/characters/riftwalker/character_c_riftwalker.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_pistol"],
+  "family_weapon_ids": [
+    "rift_pistol",
+    "rift_blaster",
+    "phase_crossbow",
+    "rift_mine_launcher",
+    "reality_bow",
+    "anchor_cannon"
+  ],
   "preferred_weapon_family": "portal",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {

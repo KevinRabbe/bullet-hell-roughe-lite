@@ -4,6 +4,14 @@
   "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
   "roster_order": 2,
   "starting_weapon_ids": ["scrap_pistol"],
+  "family_weapon_ids": [
+    "scrap_pistol",
+    "bone_knife",
+    "heart_collector",
+    "rusted_smg",
+    "grave_rifle",
+    "butcher_tool"
+  ],
   "preferred_weapon_family": "harvester",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {

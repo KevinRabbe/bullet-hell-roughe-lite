@@ -6,6 +6,14 @@
   "visual_path": "res://assets/sprites/characters/devil/devil_character.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["devils_contract"],
+  "family_weapon_ids": [
+    "devils_contract",
+    "horned_shield",
+    "sin_chain",
+    "infernal_plate",
+    "debt_collector",
+    "throne_of_sin"
+  ],
   "preferred_weapon_family": "devil",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {

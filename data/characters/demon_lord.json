@@ -6,6 +6,14 @@
   "visual_path": "res://assets/sprites/characters/demon_lord/character_b_sprite.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["hellfire_scepter"],
+  "family_weapon_ids": [
+    "hellfire_scepter",
+    "demon_flame_orb",
+    "infernal_breath",
+    "flame_halo",
+    "hell_chain",
+    "demon_crown"
+  ],
   "preferred_weapon_family": "hellfire",
   "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
