@@ -302,9 +302,18 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 func _ensure_fallback_character_selection() -> void:
 	if not selectable_characters.is_empty():
 		return
-	selectable_characters = ["gunslinger"]
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null or not data_registry.has_method("get_default_selectable_character_id"):
+		return
+	var fallback_character_id := str(data_registry.call("get_default_selectable_character_id"))
+	if fallback_character_id == "":
+		return
+	selectable_characters = [fallback_character_id]
 	selected_character_index = 0
-	character_display_names = {"gunslinger": "The Gunslinger"}
+	var fallback_display_name := fallback_character_id
+	if data_registry.has_method("get_character_display_name"):
+		fallback_display_name = str(data_registry.call("get_character_display_name", fallback_character_id))
+	character_display_names = {fallback_character_id: fallback_display_name}
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)

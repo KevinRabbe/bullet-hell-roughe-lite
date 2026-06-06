@@ -455,10 +455,6 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 func _grant_starting_weapon_by_id(weapon_id: String) -> void:
 	grant_weapon(weapon_id)
 
-# TODO: remove after all callers use grant_weapon directly.
-func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
-	_grant_starting_weapon_by_id(weapon_id)
-
 func _get_character_data(character_id: String) -> Dictionary:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	if data_registry == null or not data_registry.has_method("get_character"):
@@ -476,8 +472,7 @@ func _resolve_default_character_id() -> void:
 		var resolved_character_id := str(data_registry.call("get_default_selectable_character_id"))
 		if resolved_character_id != "":
 			active_character_id = resolved_character_id
-			return
-	active_character_id = "gunslinger"
+	return
 
 func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
 	var starting_weapon_ids_variant: Variant = character_data.get("starting_weapon_ids", [])

@@ -175,9 +175,19 @@ func get_selectable_character_ids() -> Array[String]:
 
 func get_default_selectable_character_id() -> String:
 	var selectable_ids := get_selectable_character_ids()
-	if selectable_ids.is_empty():
+	if not selectable_ids.is_empty():
+		return selectable_ids[0]
+	var all_ids := get_character_ids()
+	if all_ids.is_empty():
 		return ""
-	return selectable_ids[0]
+	return all_ids[0]
+
+func get_character_display_name(id: String) -> String:
+	var character_variant: Variant = characters.get(id, {})
+	if character_variant is Dictionary:
+		var character_data: Dictionary = character_variant
+		return str(character_data.get("display_name", id))
+	return id
 
 func get_weapon(id: String):
 	return weapons.get(id)

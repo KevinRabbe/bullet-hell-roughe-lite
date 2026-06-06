@@ -14,8 +14,7 @@ func _ready() -> void:
 		var resolved_character_id := str(data_registry.call("get_default_selectable_character_id"))
 		if resolved_character_id != "":
 			active_character_id = resolved_character_id
-			return
-	active_character_id = "gunslinger"
+	return
 
 func add_weapon_id(weapon_id: String) -> void:
 	if weapon_id == "":
