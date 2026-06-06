@@ -21,7 +21,8 @@
   },
   "stat_bonuses": {
     "max_hp": 40.0,
-    "armor": 4.0
+    "armor": 4.0,
+    "hp_regen": 1.5
   },
   "status_power_multipliers": {
     "devils_debt": 1.35

@@ -21,6 +21,7 @@ var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
+var _regen_tick_accumulator: float = 0.0
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -36,7 +37,7 @@ func _ready() -> void:
 	_apply_character_visual(active_character_data)
 	_update_hp_label()
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if is_dead:
 		velocity = Vector2.ZERO
 		move_and_slide()
@@ -44,7 +45,8 @@ func _physics_process(_delta: float) -> void:
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * stats.movement_speed
 	move_and_slide()
-	_process_passive_status_rules(_delta)
+	_process_hp_regen(delta)
+	_process_passive_status_rules(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -182,6 +184,24 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 
 func _update_hp_label() -> void:
 	pass
+
+func _process_hp_regen(delta: float) -> void:
+	if delta <= 0.0 or is_dead:
+		return
+	if stats.hp_regen <= 0.0 or current_hp >= stats.max_hp:
+		_regen_tick_accumulator = 0.0
+		return
+	_regen_tick_accumulator += delta
+	const REGEN_TICK_SECONDS := 0.25
+	if _regen_tick_accumulator < REGEN_TICK_SECONDS:
+		return
+	var elapsed := _regen_tick_accumulator
+	_regen_tick_accumulator = 0.0
+	var heal_amount := stats.hp_regen * elapsed
+	if heal_amount <= 0.0:
+		return
+	current_hp = minf(current_hp + heal_amount, stats.max_hp)
+	_update_hp_label()
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
