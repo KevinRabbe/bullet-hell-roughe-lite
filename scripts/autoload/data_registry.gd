@@ -113,6 +113,7 @@ func _load_resource_directory(directory_path: String) -> Array:
 	return loaded
 
 func _validate_registry_entries() -> void:
+	_validate_character_entries()
 	for weapon_id in weapons.keys():
 		var weapon: Variant = weapons[weapon_id]
 		if weapon == null:
@@ -137,6 +138,41 @@ func _validate_registry_entries() -> void:
 			continue
 		if float(enemy.get("max_hp")) <= 0.0:
 			push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+
+func _validate_character_entries() -> void:
+	for character_id in characters.keys():
+		var character_variant: Variant = characters[character_id]
+		if not (character_variant is Dictionary):
+			push_warning("Character entry '%s' is invalid." % str(character_id))
+			continue
+		var character_data: Dictionary = character_variant
+		if str(character_data.get("display_name", "")) == "":
+			push_warning("Character '%s' is missing display_name." % str(character_id))
+		var visual_path := str(character_data.get("visual_path", ""))
+		if visual_path != "" and not ResourceLoader.exists(visual_path):
+			push_warning("Character '%s' is missing visual resource: %s" % [str(character_id), visual_path])
+		var selectable := bool(character_data.get("selectable", true))
+		if not selectable:
+			continue
+		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
+		_validate_character_weapon_list(str(character_id), "family_weapon_ids", character_data.get("family_weapon_ids", []))
+
+func _validate_character_weapon_list(character_id: String, field_name: String, weapon_ids_variant: Variant) -> void:
+	if not (weapon_ids_variant is Array):
+		push_warning("Character '%s' has invalid %s payload." % [character_id, field_name])
+		return
+	var weapon_ids: Array = weapon_ids_variant
+	if weapon_ids.is_empty():
+		push_warning("Character '%s' has no entries in %s." % [character_id, field_name])
+		return
+	for weapon_id_variant in weapon_ids:
+		var weapon_id := str(weapon_id_variant)
+		if weapon_id == "":
+			push_warning("Character '%s' has an empty weapon id in %s." % [character_id, field_name])
+			continue
+		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
+		if not ResourceLoader.exists(resource_path):
+			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
 
 func get_character(id: String):
 	return characters.get(id)
