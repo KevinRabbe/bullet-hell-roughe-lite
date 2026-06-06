@@ -15,10 +15,12 @@ var xp_to_next_level: int = 10
 var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
 var is_dead: bool = false
-var active_character_id: String = "gunslinger"
+var active_character_id: String = ""
 var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
+var _default_visual_texture: Texture2D
+var _default_visual_scale: Vector2 = Vector2.ONE
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -27,6 +29,8 @@ var _passive_rule_timers: Dictionary = {}
 func _ready() -> void:
 	add_to_group("players")
 	_reset_character_stats()
+	_resolve_default_character_id()
+	_cache_default_visual_state()
 	active_character_data = _get_character_data(active_character_id)
 	_apply_character_rules(active_character_data)
 	_apply_character_visual(active_character_data)
@@ -263,7 +267,7 @@ func _reset_character_stats() -> void:
 
 func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
 	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
-	_debug_add_gunslinger_weapon_by_id(starting_weapon_id)
+	_grant_starting_weapon_by_id(starting_weapon_id)
 
 func _apply_character_rules(character_data: Dictionary = {}) -> void:
 	_apply_stat_multipliers(character_data.get("stat_multipliers", {}))
@@ -448,9 +452,12 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 		print("Weapon granted: %s (%s)" % [weapon_id, granted_rarity])
 	return true
 
+func _grant_starting_weapon_by_id(weapon_id: String) -> void:
+	grant_weapon(weapon_id)
+
 # TODO: remove after all callers use grant_weapon directly.
 func _debug_add_gunslinger_weapon_by_id(weapon_id: String) -> void:
-	grant_weapon(weapon_id)
+	_grant_starting_weapon_by_id(weapon_id)
 
 func _get_character_data(character_id: String) -> Dictionary:
 	var data_registry := get_node_or_null("/root/DataRegistry")
@@ -460,6 +467,17 @@ func _get_character_data(character_id: String) -> Dictionary:
 	if character_variant is Dictionary:
 		return character_variant as Dictionary
 	return {}
+
+func _resolve_default_character_id() -> void:
+	if active_character_id != "":
+		return
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.has_method("get_default_selectable_character_id"):
+		var resolved_character_id := str(data_registry.call("get_default_selectable_character_id"))
+		if resolved_character_id != "":
+			active_character_id = resolved_character_id
+			return
+	active_character_id = "gunslinger"
 
 func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
 	var starting_weapon_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
@@ -505,12 +523,26 @@ func _apply_character_visual(character_data: Dictionary) -> void:
 		return
 	var visual_path := str(character_data.get("visual_path", ""))
 	if visual_path == "" or not ResourceLoader.exists(visual_path):
+		_restore_default_visual_state()
 		return
 	var texture_resource := load(visual_path)
 	if texture_resource is Texture2D:
 		visual_sprite.texture = texture_resource as Texture2D
-	var scale_value := float(character_data.get("visual_scale", 0.12))
+	var default_scale := _default_visual_scale.x if _default_visual_scale != Vector2.ZERO else 0.12
+	var scale_value := float(character_data.get("visual_scale", default_scale))
 	visual_sprite.scale = Vector2.ONE * scale_value
+
+func _cache_default_visual_state() -> void:
+	if visual_sprite == null:
+		return
+	_default_visual_texture = visual_sprite.texture
+	_default_visual_scale = visual_sprite.scale
+
+func _restore_default_visual_state() -> void:
+	if visual_sprite == null:
+		return
+	visual_sprite.texture = _default_visual_texture
+	visual_sprite.scale = _default_visual_scale
 
 func _reset_passive_rule_timers(character_data: Dictionary) -> void:
 	_passive_rule_timers.clear()

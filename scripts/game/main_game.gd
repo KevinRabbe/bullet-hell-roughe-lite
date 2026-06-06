@@ -27,8 +27,8 @@ extends Node2D
 var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
 var waiting_for_level_up_choice: bool = false
-var selectable_characters: Array[String] = ["gunslinger"]
-var character_display_names: Dictionary = {"gunslinger": "The Gunslinger"}
+var selectable_characters: Array[String] = []
+var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
 var run_started: bool = false
 var levelup_rng: RandomNumberGenerator
@@ -254,6 +254,7 @@ func _hide_control_if_present(path: NodePath) -> void:
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	if data_registry == null:
+		_ensure_fallback_character_selection()
 		return
 	var ids_variant: Variant
 	if data_registry.has_method("get_selectable_character_ids"):
@@ -265,6 +266,7 @@ func _load_selectable_characters() -> void:
 	if ids_variant is Array:
 		var ids: Array = ids_variant
 		if ids.is_empty():
+			_ensure_fallback_character_selection()
 			return
 		var normalized: Array[String] = []
 		for id_value in ids:
@@ -276,6 +278,8 @@ func _load_selectable_characters() -> void:
 			selected_character_index = 0
 			_refresh_character_display_names(data_registry)
 			print("Character selection list: " + str(selectable_characters))
+			return
+	_ensure_fallback_character_selection()
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
@@ -294,6 +298,13 @@ func _refresh_character_display_names(data_registry: Node) -> void:
 			if character_variant is Dictionary:
 				display_name = str(character_variant.get("display_name", default_name))
 		character_display_names[character_id] = display_name
+
+func _ensure_fallback_character_selection() -> void:
+	if not selectable_characters.is_empty():
+		return
+	selectable_characters = ["gunslinger"]
+	selected_character_index = 0
+	character_display_names = {"gunslinger": "The Gunslinger"}
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)

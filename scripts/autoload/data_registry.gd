@@ -173,6 +173,12 @@ func get_selectable_character_ids() -> Array[String]:
 		ids.append(str(entry.get("id", "")))
 	return ids
 
+func get_default_selectable_character_id() -> String:
+	var selectable_ids := get_selectable_character_ids()
+	if selectable_ids.is_empty():
+		return ""
+	return selectable_ids[0]
+
 func get_weapon(id: String):
 	return weapons.get(id)
 
