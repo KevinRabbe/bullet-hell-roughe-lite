@@ -356,7 +356,7 @@ func _exit_intermission_phase() -> void:
 	_hide_run_overlays()
 
 func _finish_intermission_or_open_levelup() -> void:
-	if player != null and player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
+	if player != null and player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
 		_open_level_up_screen()
 	else:
 		_start_next_wave_after_intermission()
@@ -425,7 +425,7 @@ func _heal_player_to_full() -> void:
 func _is_shop_enabled() -> bool:
 	if shop_controller == null:
 		return false
-	return bool(shop_controller.get("enabled"))
+	return shop_controller.get("enabled") == true
 
 func _on_level_up_pending_changed() -> void:
 	print("Level-up pending. Will show after wave.")
@@ -476,7 +476,7 @@ func _on_level_up_choice_pressed(index: int) -> void:
 	waiting_for_level_up_choice = false
 	if level_up_panel != null:
 		level_up_panel.visible = false
-	if player.has_method("has_pending_level_up") and bool(player.call("has_pending_level_up")):
+	if player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
 		_open_level_up_screen()
 		return
 	_start_next_wave_after_intermission()
@@ -487,7 +487,7 @@ func _on_level_up_reroll_pressed() -> void:
 	if player == null or not player.has_method("spend_gold"):
 		return
 	var reroll_cost := _current_level_up_reroll_cost()
-	var paid: bool = bool(player.call("spend_gold", reroll_cost))
+	var paid: bool = player.call("spend_gold", reroll_cost) == true
 	if not paid:
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return

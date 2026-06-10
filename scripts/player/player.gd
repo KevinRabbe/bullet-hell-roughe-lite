@@ -121,7 +121,7 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	if not (result_variant is Dictionary):
 		return
 	var result: Dictionary = result_variant
-	if not bool(result.get("triggered", false)):
+	if result.get("triggered", false) != true:
 		return
 	var stat_id := str(result.get("stat_id", ""))
 	var amount := float(result.get("amount", 0.0))
@@ -478,18 +478,18 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 	if weapon_loadout.has_method("grant_or_combine_weapon"):
 		grant_result_variant = weapon_loadout.call("grant_or_combine_weapon", weapon_id, incoming_rarity)
 	else:
-		var equipped: bool = bool(weapon_loadout.call("equip_weapon", weapon_id))
+		var equipped: bool = weapon_loadout.call("equip_weapon", weapon_id) == true
 		grant_result_variant = {"success": equipped, "combined": false, "rarity": incoming_rarity}
 
 	if not (grant_result_variant is Dictionary):
 		push_warning("Weapon grant failed: invalid loadout result for %s" % weapon_id)
 		return false
 	var grant_result: Dictionary = grant_result_variant
-	var success := bool(grant_result.get("success", false))
+	var success: bool = grant_result.get("success", false) == true
 	if not success:
 		push_warning("Weapon loadout full or weapon rejected: %s" % weapon_id)
 		return false
-	var combined := bool(grant_result.get("combined", false))
+	var combined: bool = grant_result.get("combined", false) == true
 	var granted_rarity := str(grant_result.get("rarity", "common"))
 
 	var weapon_resource := _load_weapon_resource(weapon_id)
@@ -717,10 +717,10 @@ func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
 		var target_key := str(target_key_variant)
 		match target_key:
 			"elite":
-				if bool(target.get("is_elite")):
+				if target.get("is_elite") == true:
 					return true
 			"boss":
-				if bool(target.get("is_boss")):
+				if target.get("is_boss") == true:
 					return true
 			"strongest":
 				if _is_priority_damage_target(target):
@@ -730,7 +730,7 @@ func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
 func _is_priority_damage_target(target: Node) -> bool:
 	if target == null or not is_instance_valid(target):
 		return false
-	if bool(target.get("is_priority_target")):
+	if target.get("is_priority_target") == true:
 		return true
 	if not target.is_in_group("enemies"):
 		return false

@@ -176,7 +176,7 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 			print("Set Bonus 6-piece: fired execution shot.")
 	if projectile.has_method("set"):
 		projectile.set("damage_multiplier", total_damage_multiplier)
-		var can_pierce := set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and bool(set_bonus_manager.call("can_pierce_shot"))
+		var can_pierce: bool = set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and set_bonus_manager.call("can_pierce_shot") == true
 		projectile.set("pierce_count", 1 if can_pierce else 0)
 		if can_pierce:
 			if _should_log_set_bonus_events():
@@ -321,7 +321,7 @@ func _should_use_execution_shot() -> bool:
 		return false
 	if not set_bonus_manager.has_method("should_fire_execution_shot"):
 		return false
-	return bool(set_bonus_manager.call("should_fire_execution_shot"))
+	return set_bonus_manager.call("should_fire_execution_shot") == true
 
 func _find_strongest_enemy() -> Node2D:
 	var strongest_enemy: Node2D
@@ -337,7 +337,7 @@ func _find_strongest_enemy() -> Node2D:
 func _should_log_set_bonus_events() -> bool:
 	if set_bonus_manager == null:
 		return false
-	return bool(set_bonus_manager.get("log_set_bonus_changes"))
+	return set_bonus_manager.get("log_set_bonus_changes") == true
 
 func _get_player_damage_multiplier() -> float:
 	if owner_player != null and owner_player.has_method("get_damage_stat_multiplier"):

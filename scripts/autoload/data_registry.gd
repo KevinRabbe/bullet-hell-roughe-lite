@@ -119,25 +119,52 @@ func _validate_registry_entries() -> void:
 		if weapon == null:
 			push_warning("Weapon entry '%s' is null." % str(weapon_id))
 			continue
-		if str(weapon.get("display_name")) == "":
-			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
-		var shop_enabled := bool(weapon.get("shop_enabled"))
-		if shop_enabled and not _is_placeholder_weapon(weapon) and int(weapon.get("price")) <= 0:
-			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		if weapon is WeaponData:
+			var weapon_resource: WeaponData = weapon
+			if weapon_resource.display_name == "":
+				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			var shop_enabled: bool = weapon_resource.shop_enabled == true
+			if shop_enabled and not _is_placeholder_weapon(weapon_resource) and weapon_resource.price <= 0:
+				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		elif weapon is Dictionary:
+			var weapon_dict: Dictionary = weapon
+			if str(weapon_dict.get("display_name", "")) == "":
+				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			var shop_enabled_dict: bool = weapon_dict.get("shop_enabled", false) == true
+			if shop_enabled_dict and not _is_placeholder_weapon(weapon_dict) and int(weapon_dict.get("price", 0)) <= 0:
+				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		else:
+			push_warning("Weapon entry '%s' has unsupported type." % str(weapon_id))
 	for item_id in items.keys():
 		var item: Variant = items[item_id]
 		if item == null:
 			push_warning("Item entry '%s' is null." % str(item_id))
 			continue
-		if str(item.get("name")) == "":
-			push_warning("Item '%s' is missing name." % str(item_id))
+		if item is ItemData:
+			var item_resource: ItemData = item
+			if item_resource.name == "":
+				push_warning("Item '%s' is missing name." % str(item_id))
+		elif item is Dictionary:
+			var item_dict: Dictionary = item
+			if str(item_dict.get("name", "")) == "":
+				push_warning("Item '%s' is missing name." % str(item_id))
+		else:
+			push_warning("Item entry '%s' has unsupported type." % str(item_id))
 	for enemy_id in enemies.keys():
 		var enemy: Variant = enemies[enemy_id]
 		if enemy == null:
 			push_warning("Enemy entry '%s' is null." % str(enemy_id))
 			continue
-		if float(enemy.get("max_hp")) <= 0.0:
-			push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		if enemy is EnemyData:
+			var enemy_resource: EnemyData = enemy
+			if enemy_resource.max_hp <= 0.0:
+				push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		elif enemy is Dictionary:
+			var enemy_dict: Dictionary = enemy
+			if float(enemy_dict.get("max_hp", 0.0)) <= 0.0:
+				push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		else:
+			push_warning("Enemy entry '%s' has unsupported type." % str(enemy_id))
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():
@@ -151,7 +178,7 @@ func _validate_character_entries() -> void:
 		var visual_path := str(character_data.get("visual_path", ""))
 		if visual_path != "" and not ResourceLoader.exists(visual_path):
 			push_warning("Character '%s' is missing visual resource: %s" % [str(character_id), visual_path])
-		var selectable := bool(character_data.get("selectable", true))
+		var selectable: bool = character_data.get("selectable", true) != false
 		if not selectable:
 			continue
 		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
@@ -204,7 +231,7 @@ func get_selectable_character_ids() -> Array[String]:
 		if not (entry_variant is Dictionary):
 			continue
 		var entry: Dictionary = entry_variant
-		if entry.has("selectable") and not bool(entry.get("selectable", true)):
+		if entry.has("selectable") and entry.get("selectable", true) == false:
 			continue
 		entries.append({
 			"id": str(character_id),
