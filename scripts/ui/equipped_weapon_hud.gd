@@ -86,7 +86,7 @@ func _update_hud() -> void:
 	
 	for i in range(6):
 		if i < equipped_entries.size():
-			var entry := equipped_entries[i]
+			var entry: Dictionary = equipped_entries[i]
 			var weapon_id := str(entry.get("id", ""))
 			var rarity := str(entry.get("rarity", "common"))
 			var weapon_data := _load_weapon_data(weapon_id)
@@ -129,7 +129,7 @@ func _on_merge_pressed(index: int) -> void:
 	if not (result_variant is Dictionary):
 		return
 	var result: Dictionary = result_variant
-	var success := bool(result.get("success", false))
+	var success: bool = result.get("success", false) == true
 	var message := str(result.get("message", ""))
 	if message != "":
 		print(message)
@@ -149,7 +149,7 @@ func _update_slot_selection_visuals() -> void:
 
 func _update_merge_controls() -> void:
 	var equipped_entries: Array[Dictionary] = _get_equipped_entries()
-	var shop_open := _is_shop_open()
+	var shop_open: bool = _is_shop_open()
 	for i in range(slot_merge_buttons.size()):
 		var merge_button := slot_merge_buttons[i]
 		if merge_button == null:
@@ -159,10 +159,10 @@ func _update_merge_controls() -> void:
 		if not merge_button.visible:
 			merge_button.disabled = true
 			continue
-		var is_selected := i == selected_slot_index
-		var can_merge := false
+		var is_selected: bool = i == selected_slot_index
+		var can_merge: bool = false
 		if is_selected and weapon_loadout != null and weapon_loadout.has_method("can_merge_slot"):
-			can_merge = bool(weapon_loadout.call("can_merge_slot", i))
+			can_merge = weapon_loadout.call("can_merge_slot", i) == true
 		merge_button.disabled = not (is_selected and can_merge)
 
 func _is_shop_open() -> bool:
