@@ -122,7 +122,7 @@ func _validate_registry_entries() -> void:
 		if str(weapon.get("display_name")) == "":
 			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
 		var shop_enabled := bool(weapon.get("shop_enabled"))
-		if shop_enabled and int(weapon.get("price")) <= 0:
+		if shop_enabled and not _is_placeholder_weapon(weapon) and int(weapon.get("price")) <= 0:
 			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
 	for item_id in items.keys():
 		var item: Variant = items[item_id]
@@ -173,6 +173,19 @@ func _validate_character_weapon_list(character_id: String, field_name: String, w
 		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
 		if not ResourceLoader.exists(resource_path):
 			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
+
+func _is_placeholder_weapon(weapon: Variant) -> bool:
+	if weapon == null or not weapon.has_method("get"):
+		return false
+	var weapon_id := str(weapon.get("id"))
+	if weapon_id.contains("placeholder"):
+		return true
+	var family_id := ""
+	if weapon.has_method("get_family_value"):
+		family_id = str(weapon.call("get_family_value"))
+	else:
+		family_id = str(weapon.get("family"))
+	return family_id.contains("placeholder")
 
 func get_character(id: String):
 	return characters.get(id)

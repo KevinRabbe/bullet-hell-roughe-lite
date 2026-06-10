@@ -12,6 +12,7 @@ var slot_icons: Array[TextureRect] = []
 var slot_panels: Array[PanelContainer] = []
 var slot_merge_buttons: Array[Button] = []
 var selected_slot_index: int = -1
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	if weapon_loadout_path != NodePath():
@@ -186,10 +187,15 @@ func _get_equipped_entries() -> Array[Dictionary]:
 	return fallback_entries
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
+	if _weapon_data_cache.has(weapon_id):
+		return _weapon_data_cache[weapon_id] as WeaponData
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(resource_path):
 		return null
-	return load(resource_path) as WeaponData
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[weapon_id] = loaded
+	return loaded
 
 func _get_display_name(weapon_id: String, weapon_data: WeaponData) -> String:
 	if weapon_data != null and weapon_data.display_name != "":

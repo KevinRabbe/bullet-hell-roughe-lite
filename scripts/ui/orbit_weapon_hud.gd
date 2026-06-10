@@ -14,6 +14,7 @@ var slot_base_positions: Array[Vector2] = []
 var slot_aim_directions: Array[Vector2] = []
 var slot_forward_signs: Array[float] = []
 var slot_projectile_rotation_offsets: Array[float] = []
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	if player_path != NodePath():
@@ -144,10 +145,15 @@ func _load_weapon_icon(weapon_id: String) -> Texture2D:
 	return weapon_data.icon
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
+	if _weapon_data_cache.has(weapon_id):
+		return _weapon_data_cache[weapon_id] as WeaponData
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(resource_path):
 		return null
-	return load(resource_path) as WeaponData
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[weapon_id] = loaded
+	return loaded
 
 func _rarity_color(rarity: String) -> Color:
 	match rarity:

@@ -2,9 +2,11 @@ extends CharacterBody2D
 
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
+@export var log_runtime_events: bool = false
 
 signal player_died
 signal level_up_pending_changed
+signal ui_snapshot_changed
 
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
@@ -19,6 +21,7 @@ var active_character_id: String = ""
 var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
+var _weapon_resource_cache: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
 var _regen_tick_accumulator: float = 0.0
@@ -35,7 +38,11 @@ func _ready() -> void:
 	active_character_data = _get_character_data(active_character_id)
 	_apply_character_rules(active_character_data)
 	_apply_character_visual(active_character_data)
+	var snapshot_callable := Callable(self, "_emit_ui_snapshot_changed")
+	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", snapshot_callable):
+		weapon_loadout.connect("loadout_changed", snapshot_callable)
 	_update_hp_label()
+	_emit_ui_snapshot_changed()
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
@@ -65,7 +72,9 @@ func take_damage(amount: float) -> void:
 		return
 	current_hp = maxf(current_hp - amount, 0.0)
 	_update_hp_label()
-	print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
 	if current_hp <= 0.0:
 		die()
 
@@ -74,7 +83,9 @@ func heal_to_full() -> void:
 		return
 	current_hp = stats.max_hp
 	_update_hp_label()
-	print("PLAYER HEALED TO FULL | HP: %.1f / %.1f" % [current_hp, stats.max_hp])
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("PLAYER HEALED TO FULL | HP: %.1f / %.1f" % [current_hp, stats.max_hp])
 
 func die() -> void:
 	if is_dead:
@@ -88,6 +99,7 @@ func grant_item(item: ItemData) -> void:
 		return
 	owned_items.append(item)
 	_apply_item_effects(item)
+	_emit_ui_snapshot_changed()
 	print("Gained item: %s" % item.name)
 	_print_debug_stats()
 
@@ -100,7 +112,7 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	if weapon_resource == null:
 		return
 	var family_id := _resolve_weapon_family_id(weapon_resource)
-	var result_variant := weapon_loadout.call(
+	var result_variant: Variant = weapon_loadout.call(
 		"register_weapon_kill",
 		slot_index,
 		weapon_resource,
@@ -119,7 +131,7 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	var weapon_name := weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
 	if scope == "player":
 		_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
-	else:
+	elif log_runtime_events:
 		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
 
 func _apply_item_effects(item: ItemData) -> void:
@@ -145,6 +157,8 @@ func _has_stat_property(stat_name: String) -> bool:
 	return false
 
 func _print_debug_stats() -> void:
+	if not log_runtime_events:
+		return
 	var attack_range_value: float = _get_stat_value("attack_range", _get_stat_value("range", 1.0))
 	print(
 		"Stats | HP %.1f/%.1f | DMG %.2f | AS %.2f | MS %.1f | AR %.2f | Portal(Luck %.2f, Freq %.2f, Instability %.2f, Reward %.2f)"
@@ -175,7 +189,9 @@ func _apply_runtime_stat_bonus(stat_id: String, value: float, label: String = ""
 			stats.set(stat_id, int(current_value) + int(round(value)))
 	_update_hp_label()
 	var bonus_label := label if label != "" else stat_id
-	print("%s bonus: %s %+0.2f" % [bonus_label, stat_id, value])
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("%s bonus: %s %+0.2f" % [bonus_label, stat_id, value])
 
 func _get_stat_value(stat_name: String, fallback: float) -> float:
 	if _has_stat_property(stat_name):
@@ -184,6 +200,9 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 
 func _update_hp_label() -> void:
 	pass
+
+func _emit_ui_snapshot_changed() -> void:
+	ui_snapshot_changed.emit()
 
 func _process_hp_regen(delta: float) -> void:
 	if delta <= 0.0 or is_dead:
@@ -202,13 +221,16 @@ func _process_hp_regen(delta: float) -> void:
 		return
 	current_hp = minf(current_hp + heal_amount, stats.max_hp)
 	_update_hp_label()
+	_emit_ui_snapshot_changed()
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
 		return
 	current_gold += amount
 	_update_hp_label()
-	print("GOLD +%d | Total: %d" % [amount, current_gold])
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("GOLD +%d | Total: %d" % [amount, current_gold])
 
 func spend_gold(amount: int) -> bool:
 	if amount <= 0:
@@ -218,14 +240,17 @@ func spend_gold(amount: int) -> bool:
 		return false
 	current_gold -= amount
 	_update_hp_label()
-	print("GOLD -%d | Total: %d" % [amount, current_gold])
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("GOLD -%d | Total: %d" % [amount, current_gold])
 	return true
 
 func add_xp(amount: int) -> void:
 	if amount <= 0:
 		return
 	current_xp += amount
-	print("XP +%d | Progress: %d/%d" % [amount, current_xp, xp_to_next_level])
+	if log_runtime_events:
+		print("XP +%d | Progress: %d/%d" % [amount, current_xp, xp_to_next_level])
 	while current_xp >= xp_to_next_level:
 		current_xp -= xp_to_next_level
 		current_level += 1
@@ -234,6 +259,7 @@ func add_xp(amount: int) -> void:
 		print("LEVEL UP! Reached level %d. Pending choices: %d" % [current_level, pending_level_ups])
 		level_up_pending_changed.emit()
 	_update_hp_label()
+	_emit_ui_snapshot_changed()
 
 func has_pending_level_up() -> bool:
 	return pending_level_ups > 0
@@ -243,6 +269,7 @@ func consume_pending_level_up() -> bool:
 		return false
 	pending_level_ups -= 1
 	level_up_pending_changed.emit()
+	_emit_ui_snapshot_changed()
 	return true
 
 func apply_level_up_bonus(stat_id: String, value: float) -> void:
@@ -257,6 +284,7 @@ func apply_level_up_bonus(stat_id: String, value: float) -> void:
 		elif current_value is int:
 			stats.set(stat_id, int(current_value) + int(value))
 	_update_hp_label()
+	_emit_ui_snapshot_changed()
 	print("LEVEL-UP BONUS: %s %+0.2f" % [stat_id, value])
 
 func apply_character_by_id(character_id: String) -> void:
@@ -270,7 +298,9 @@ func apply_character_by_id(character_id: String) -> void:
 	_apply_character_starting_weapon(active_character_data)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
-	print("Selected character: %s" % active_character_id)
+	_emit_ui_snapshot_changed()
+	if log_runtime_events:
+		print("Selected character: %s" % active_character_id)
 
 func _reset_character_stats() -> void:
 	stats = StatBlock.new()
@@ -313,7 +343,7 @@ func get_damage_multiplier_for_target(target: Node) -> float:
 			var damage_rule: Dictionary = damage_rule_variant
 			if _target_matches_damage_rule(target, damage_rule):
 				var debug_label := str(damage_rule.get("debug_label", ""))
-				if debug_label != "":
+				if debug_label != "" and log_runtime_events:
 					print(debug_label)
 				return float(damage_rule.get("multiplier", 1.0))
 	return 1.0
@@ -414,10 +444,10 @@ func get_stat_value_for_weapon_bonus(stat_name: String, fallback: float = 0.0) -
 	return _get_stat_value(stat_name, fallback)
 
 func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
-	if weapon_resource.family != "":
-		return weapon_resource.family
-	if weapon_resource.family_id != "":
-		return weapon_resource.family_id
+	if weapon_resource == null:
+		return ""
+	if weapon_resource.has_method("get_family_value"):
+		return weapon_resource.get_family_value()
 	return ""
 
 func _weapon_slot_index_from_key(keycode: int) -> int:
@@ -452,12 +482,12 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 		grant_result_variant = {"success": equipped, "combined": false, "rarity": incoming_rarity}
 
 	if not (grant_result_variant is Dictionary):
-		print("Weapon grant failed: invalid loadout result for %s" % weapon_id)
+		push_warning("Weapon grant failed: invalid loadout result for %s" % weapon_id)
 		return false
 	var grant_result: Dictionary = grant_result_variant
 	var success := bool(grant_result.get("success", false))
 	if not success:
-		print("Weapon loadout full or weapon rejected: %s" % weapon_id)
+		push_warning("Weapon loadout full or weapon rejected: %s" % weapon_id)
 		return false
 	var combined := bool(grant_result.get("combined", false))
 	var granted_rarity := str(grant_result.get("rarity", "common"))
@@ -718,12 +748,18 @@ func _is_priority_damage_target(target: Node) -> bool:
 
 func _load_weapon_resource(weapon_id: String) -> WeaponData:
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if _weapon_resource_cache.has(resource_path):
+		var cached: Variant = _weapon_resource_cache[resource_path]
+		if cached is WeaponData:
+			return cached
 	if not ResourceLoader.exists(resource_path):
 		_log_resource_warning_once("missing_weapon:%s" % weapon_id, "Missing weapon resource: %s" % resource_path)
 		return null
 	var resource := load(resource_path)
 	if resource is WeaponData:
-		return resource as WeaponData
+		var weapon_resource := resource as WeaponData
+		_weapon_resource_cache[resource_path] = weapon_resource
+		return weapon_resource
 	_log_resource_warning_once("invalid_weapon:%s" % weapon_id, "Invalid weapon resource type: %s" % resource_path)
 	return null
 
@@ -735,7 +771,7 @@ func _log_resource_warning_once(warning_key: String, message: String) -> void:
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 	if not _has_stat_property(stat_id):
-		print("Unknown stat bonus: %s" % stat_id)
+		push_warning("Unknown stat bonus: %s" % stat_id)
 		return
 	var current_value: Variant = stats.get(stat_id)
 	if current_value is float:
@@ -743,7 +779,8 @@ func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 	elif current_value is int:
 		stats.set(stat_id, int(current_value) + int(value))
 	_update_hp_label()
-	print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
+	if log_runtime_events:
+		print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
 
 func get_ui_snapshot() -> Dictionary:
 	return {

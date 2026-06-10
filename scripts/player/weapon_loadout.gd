@@ -7,6 +7,7 @@ const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
 
 @export var equipped_weapon_ids: Array[String] = []
 var equipped_weapons: Array[Dictionary] = []
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	_migrate_legacy_ids_if_needed()
@@ -350,14 +351,10 @@ func _merge_bonus_overrides(left_variant: Variant, right_variant: Variant) -> Di
 	return merged
 
 func _get_family_id_from_weapon_id(weapon_id: String) -> String:
-	# Try to load the weapon data to get its actual family, to respect Stage 8.1
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if ResourceLoader.exists(resource_path):
-		var weapon_data := load(resource_path) as WeaponData
-		if weapon_data != null and weapon_data.family != "":
-			return weapon_data.family
-		elif weapon_data != null and weapon_data.family_id != "":
-			return weapon_data.family_id
+	var weapon_data := _load_weapon_data(weapon_id)
+	if weapon_data != null:
+		if weapon_data.has_method("get_family_value"):
+			return weapon_data.get_family_value()
 			
 	# Fallback parsing
 	if "/" in weapon_id:
@@ -365,3 +362,16 @@ func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	if "_" in weapon_id:
 		return weapon_id.split("_", false, 1)[0]
 	return weapon_id
+
+func _load_weapon_data(weapon_id: String) -> WeaponData:
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if _weapon_data_cache.has(resource_path):
+		var cached: Variant = _weapon_data_cache[resource_path]
+		if cached is WeaponData:
+			return cached
+	if not ResourceLoader.exists(resource_path):
+		return null
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[resource_path] = loaded
+	return loaded

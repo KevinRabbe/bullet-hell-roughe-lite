@@ -1,6 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var player_path: NodePath
 @export var portal_event_manager_path: NodePath
@@ -80,6 +81,4 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		var resolved: Variant = run_rng.call("get_rng", stream_name)
 		if resolved is RandomNumberGenerator:
 			return resolved
-	var fallback := RandomNumberGenerator.new()
-	fallback.randomize()
-	return fallback
+	return DeterministicRng.create_fallback_rng(stream_name, "RewardController")

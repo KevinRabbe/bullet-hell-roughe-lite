@@ -5,6 +5,7 @@ extends Control
 @export var wave_intermission_panel_path: NodePath
 @export var shop_panel_path: NodePath
 @export var level_up_panel_path: NodePath
+@export var character_select_layer_path: NodePath
 @export var stats_label_path: NodePath
 @export var state_label_path: NodePath
 @export var wave_progress_bar_path: NodePath
@@ -14,6 +15,7 @@ var enemy_spawner: Node
 var wave_intermission_panel: Control
 var shop_panel: Control
 var level_up_panel: Control
+var character_select_layer: CanvasLayer
 var stats_label: Label
 var state_label: Label
 var wave_progress_bar: ProgressBar
@@ -29,6 +31,8 @@ func _ready() -> void:
 		shop_panel = get_node_or_null(shop_panel_path)
 	if level_up_panel_path != NodePath():
 		level_up_panel = get_node_or_null(level_up_panel_path)
+	if character_select_layer_path != NodePath():
+		character_select_layer = get_node_or_null(character_select_layer_path)
 	if stats_label_path != NodePath():
 		stats_label = get_node_or_null(stats_label_path)
 	if state_label_path != NodePath():
@@ -42,6 +46,10 @@ func _process(_delta: float) -> void:
 
 func _update_hud() -> void:
 	if player == null or enemy_spawner == null:
+		return
+	var hud_visible := not _is_character_select_open()
+	visible = hud_visible
+	if not hud_visible:
 		return
 	var player_snapshot := _get_player_snapshot()
 	if stats_label != null:
@@ -79,6 +87,9 @@ func _get_run_state() -> String:
 
 func _is_shop_open() -> bool:
 	return shop_panel != null and shop_panel.visible
+
+func _is_character_select_open() -> bool:
+	return character_select_layer != null and character_select_layer.visible
 
 func _get_debug_preset_label() -> String:
 	var main_game := get_tree().current_scene

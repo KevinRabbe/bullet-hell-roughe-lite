@@ -11,6 +11,7 @@ var life_left: float = 0.0
 var shooter: Node
 var source_weapon_id: String = ""
 var source_slot_index: int = -1
+var source_weapon_data: WeaponData
 @onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -34,6 +35,9 @@ func set_shooter(new_shooter: Node) -> void:
 func set_source_context(weapon_id: String, slot_index: int) -> void:
 	source_weapon_id = weapon_id
 	source_slot_index = slot_index
+
+func set_source_weapon_data(new_weapon_data: WeaponData) -> void:
+	source_weapon_data = new_weapon_data
 
 func set_visual_texture(texture: Texture2D) -> void:
 	if visual == null or texture == null:
@@ -77,6 +81,8 @@ func _on_body_entered(body: Node) -> void:
 		queue_free()
 
 func _load_weapon_data() -> WeaponData:
+	if source_weapon_data != null:
+		return source_weapon_data
 	if source_weapon_id == "":
 		return null
 	var resource_path := "res://data/weapons/%s.tres" % source_weapon_id

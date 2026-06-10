@@ -1,5 +1,7 @@
 extends CharacterBody2D
+
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
 @export var max_hp: float = 20.0
@@ -14,6 +16,7 @@ const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helpe
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2
 @export var ranged_attack_range: float = 210.0
+@export var log_combat_events: bool = false
 
 var target: Node2D
 var current_hp: float
@@ -24,6 +27,9 @@ var last_hit_weapon_id: String = ""
 var last_hit_slot_index: int = -1
 var active_statuses: Dictionary = {}
 var status_rng: RandomNumberGenerator
+var _enemy_data_cache: Dictionary = {}
+var _weapon_data_cache: Dictionary = {}
+var _texture_cache: Dictionary = {}
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -36,12 +42,7 @@ const MARKSMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellsh
 const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/skull_fireball.png")
 const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/hell_arcane_shot.png")
 const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyProjectile.tscn")
-const ENEMY_DATA_PATHS: Dictionary = {
-	"imp_runner": "res://data/enemies/imp_runner.tres",
-	"husk_brute": "res://data/enemies/husk_brute.tres",
-	"spit_fiend": "res://data/enemies/spit_fiend.tres",
-	"skeleton_rifleman": "res://data/enemies/skeleton_rifleman.tres"
-}
+const ENEMY_DATA_DIR: String = "res://data/enemies"
 
 func _ready() -> void:
 	status_rng = _resolve_rng("status_effects")
@@ -136,7 +137,8 @@ func _try_damage_player() -> void:
 	if distance_to_player > contact_range:
 		return
 
-	print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
+	if log_combat_events:
+		print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
 	target.call("take_damage", contact_damage)
 	if target.has_method("notify_damaged_by_enemy"):
 		target.call("notify_damaged_by_enemy", self)
@@ -181,12 +183,10 @@ func _try_ranged_damage_player() -> void:
 		var projectile_visual := projectile.get_node_or_null("Visual")
 		if projectile_visual is Sprite2D:
 			var projectile_sprite := projectile_visual as Sprite2D
-			if enemy_variant == "skeleton_rifleman" or elite_role == "rift_caller":
-				projectile_sprite.texture = RIFT_SHARD_TEXTURE
-			else:
-				projectile_sprite.texture = SKULL_FIREBALL_TEXTURE
-			projectile_sprite.rotation = (target.global_position - global_position).angle() + PI
-	print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
+			projectile_sprite.texture = _resolve_projectile_texture()
+			projectile_sprite.rotation = (target.global_position - global_position).angle() + _resolve_projectile_rotation_offset()
+	if log_combat_events:
+		print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
 	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:
@@ -201,22 +201,22 @@ func _apply_variant_stats() -> void:
 				max_hp = 16.0
 				contact_damage = 5.0
 				damage_interval_seconds = 0.65
-			if visual != null:
-				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-			if visual_sprite != null:
-				visual_sprite.texture = IMP_RUNNER_TEXTURE
-				visual_sprite.scale = Vector2(0.085, 0.085)
+				if visual != null:
+					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+				if visual_sprite != null:
+					visual_sprite.texture = IMP_RUNNER_TEXTURE
+					visual_sprite.scale = Vector2(0.085, 0.085)
 		"husk_brute":
 			if not has_data:
 				move_speed = 95.0
 				max_hp = 40.0
 				contact_damage = 10.0
 				damage_interval_seconds = 1.0
-			if visual != null:
-				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-			if visual_sprite != null:
-				visual_sprite.texture = HUSK_BRUTE_TEXTURE
-				visual_sprite.scale = Vector2(0.1, 0.1)
+				if visual != null:
+					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+				if visual_sprite != null:
+					visual_sprite.texture = HUSK_BRUTE_TEXTURE
+					visual_sprite.scale = Vector2(0.1, 0.1)
 		"spit_fiend":
 			if not has_data:
 				move_speed = 120.0
@@ -226,14 +226,14 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 4.0
 				ranged_interval_seconds = 1.1
 				ranged_attack_range = 230.0
-			if visual != null:
-				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-			if visual_sprite != null:
-				if elite_role == "rift_caller":
-					visual_sprite.texture = ARCHMAGE_TEXTURE
-				else:
-					visual_sprite.texture = SPIT_FIEND_TEXTURE
-				visual_sprite.scale = Vector2(0.09, 0.09)
+				if visual != null:
+					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+				if visual_sprite != null:
+					if elite_role == "rift_caller":
+						visual_sprite.texture = ARCHMAGE_TEXTURE
+					else:
+						visual_sprite.texture = SPIT_FIEND_TEXTURE
+					visual_sprite.scale = Vector2(0.09, 0.09)
 		"skeleton_rifleman":
 			if not has_data:
 				move_speed = 130.0
@@ -243,20 +243,27 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 6.0
 				ranged_interval_seconds = 1.35
 				ranged_attack_range = 290.0
-			if visual != null:
-				visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-			if visual_sprite != null:
-				if elite_role == "marksman":
-					visual_sprite.texture = MARKSMAN_TEXTURE
-				else:
-					visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
-				visual_sprite.scale = Vector2(0.09, 0.09)
+				if visual != null:
+					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
+				if visual_sprite != null:
+					if elite_role == "marksman":
+						visual_sprite.texture = MARKSMAN_TEXTURE
+					else:
+						visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
+					visual_sprite.scale = Vector2(0.09, 0.09)
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
-	var resource_path := str(ENEMY_DATA_PATHS.get(variant_id, ""))
+	if variant_id == "":
+		return null
+	var resource_path := "%s/%s.tres" % [ENEMY_DATA_DIR, variant_id]
 	if resource_path == "" or not ResourceLoader.exists(resource_path):
 		return null
-	return load(resource_path) as EnemyData
+	if _enemy_data_cache.has(resource_path):
+		return _enemy_data_cache[resource_path] as EnemyData
+	var loaded := load(resource_path) as EnemyData
+	if loaded != null:
+		_enemy_data_cache[resource_path] = loaded
+	return loaded
 
 func _apply_enemy_data(data: EnemyData) -> void:
 	max_hp = data.max_hp
@@ -269,6 +276,9 @@ func _apply_enemy_data(data: EnemyData) -> void:
 	ranged_attack_range = data.ranged_attack_range
 	is_elite = data.is_elite
 	is_boss = data.is_boss
+	if visual_sprite != null and data.visual_texture_path != "" and ResourceLoader.exists(data.visual_texture_path):
+		visual_sprite.texture = _load_texture(data.visual_texture_path)
+		visual_sprite.scale = data.visual_scale
 
 func _tick_status_effects(delta: float) -> void:
 	if active_statuses.is_empty():
@@ -410,7 +420,38 @@ func _load_weapon_data(weapon_id: String) -> WeaponData:
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(resource_path):
 		return null
-	return load(resource_path) as WeaponData
+	if _weapon_data_cache.has(resource_path):
+		return _weapon_data_cache[resource_path] as WeaponData
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[resource_path] = loaded
+	return loaded
+
+func _resolve_projectile_texture() -> Texture2D:
+	var data := _load_enemy_data(enemy_variant)
+	if data != null and data.projectile_texture_path != "" and ResourceLoader.exists(data.projectile_texture_path):
+		return _load_texture(data.projectile_texture_path)
+	if enemy_variant == "skeleton_rifleman" or elite_role == "rift_caller":
+		return RIFT_SHARD_TEXTURE
+	return SKULL_FIREBALL_TEXTURE
+
+func _resolve_projectile_rotation_offset() -> float:
+	var data := _load_enemy_data(enemy_variant)
+	if data != null:
+		return data.projectile_rotation_offset
+	return PI
+
+func _load_texture(resource_path: String) -> Texture2D:
+	if resource_path == "":
+		return null
+	if _texture_cache.has(resource_path):
+		return _texture_cache[resource_path] as Texture2D
+	if not ResourceLoader.exists(resource_path):
+		return null
+	var loaded := load(resource_path) as Texture2D
+	if loaded != null:
+		_texture_cache[resource_path] = loaded
+	return loaded
 
 func get_status_stack_count(status_id: String) -> int:
 	if status_id == "":
@@ -453,6 +494,4 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		var resolved: Variant = run_rng.call("get_rng", stream_name)
 		if resolved is RandomNumberGenerator:
 			return resolved
-	var fallback := RandomNumberGenerator.new()
-	fallback.randomize()
-	return fallback
+	return DeterministicRng.create_fallback_rng(stream_name, "Enemy")

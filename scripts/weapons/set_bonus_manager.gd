@@ -1,6 +1,9 @@
 extends Node
 
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+
 @export var weapon_loadout_path: NodePath
+@export var log_set_bonus_changes: bool = false
 
 var weapon_loadout: Node
 var data_registry: Node
@@ -17,9 +20,11 @@ func _ready() -> void:
 func evaluate_and_debug_print() -> Dictionary:
 	var family_counts := _read_family_counts()
 	var active_bonuses := _build_active_bonus_state(family_counts)
-	if active_bonuses != last_reported_bonuses:
+	if log_set_bonus_changes and active_bonuses != last_reported_bonuses:
 		last_reported_bonuses = active_bonuses
 		print("Set bonuses active: %s" % active_bonuses)
+	else:
+		last_reported_bonuses = active_bonuses
 	return active_bonuses
 
 func get_damage_multiplier_bonus() -> float:
@@ -67,7 +72,8 @@ func debug_evaluate_from_weapon_ids(weapon_ids: Array[String]) -> Dictionary:
 		var family_id := _get_family_id_from_weapon_id(weapon_id)
 		family_counts[family_id] = int(family_counts.get(family_id, 0)) + 1
 	var active_bonuses := _build_active_bonus_state(family_counts)
-	print("Set bonus debug | counts=%s bonuses=%s" % [family_counts, active_bonuses])
+	if log_set_bonus_changes:
+		print("Set bonus debug | counts=%s bonuses=%s" % [family_counts, active_bonuses])
 	return active_bonuses
 
 func _read_family_counts() -> Dictionary:
@@ -129,6 +135,4 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		var resolved: Variant = run_rng.call("get_rng", stream_name)
 		if resolved is RandomNumberGenerator:
 			return resolved
-	var fallback := RandomNumberGenerator.new()
-	fallback.randomize()
-	return fallback
+	return DeterministicRng.create_fallback_rng(stream_name, "SetBonusManager")

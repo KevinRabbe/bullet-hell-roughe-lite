@@ -1,6 +1,15 @@
 extends Node
+
 signal continue_requested
+signal shop_opened(wave_index: int)
+signal shop_closed
+signal offers_changed
+signal reroll_cost_changed(new_cost: int)
+signal offer_purchased(index: int, offer: Dictionary)
+
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
 
 @export var enemy_spawner_path: NodePath
 @export var player_path: NodePath
@@ -40,6 +49,7 @@ var _current_wave_index: int = 1
 var _weapon_offer_pool: Array[Dictionary] = []
 var _item_offer_pool: Array[Dictionary] = []
 var active_offers: Array[Dictionary] = []
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
@@ -110,9 +120,7 @@ func _build_weapon_offer_pool() -> void:
 
 func _make_weapon_offer(weapon_id: String) -> Dictionary:
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	var data: WeaponData
-	if ResourceLoader.exists(resource_path):
-		data = load(resource_path) as WeaponData
+	var data := _load_weapon_data(resource_path)
 	if data == null:
 		return {}
 	if not data.shop_enabled:
@@ -130,7 +138,7 @@ func _make_weapon_offer(weapon_id: String) -> Dictionary:
 		display_name = data.display_name
 	if data.price > 0:
 		price = data.price
-	family = data.family
+	family = data.get_family_value() if data.has_method("get_family_value") else data.family
 	tags = data.tags.duplicate()
 	rarity_name = data.rarity
 	return {
@@ -171,9 +179,12 @@ func _on_wave_completed(wave_index: int) -> void:
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
 	if title_label != null:
-		title_label.text = "Shop — Pick one"
+		title_label.text = "Shop - Pick one"
 	if panel != null:
 		panel.visible = true
+	shop_opened.emit(_current_wave_index)
+	offers_changed.emit()
+	reroll_cost_changed.emit(_current_reroll_cost())
 	print("Shop opened with %d offers." % active_offers.size())
 
 func get_active_offers() -> Array[Dictionary]:
@@ -280,6 +291,8 @@ func _on_offer_pressed(index: int) -> void:
 	print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
 	active_offers[index] = _sold_out_offer()
 	_refresh_offer_buttons()
+	offer_purchased.emit(index, offer.duplicate(true))
+	offers_changed.emit()
 
 func _on_reroll_pressed() -> void:
 	var total_cost := _current_reroll_cost()
@@ -292,6 +305,8 @@ func _on_reroll_pressed() -> void:
 	_roll_offers()
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
+	offers_changed.emit()
+	reroll_cost_changed.emit(_current_reroll_cost())
 
 func _update_reroll_button_text() -> void:
 	if reroll_button == null:
@@ -306,8 +321,8 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 		return {}
 	var preferred_family := _get_preferred_weapon_family()
 	var preferred_family_bias := _get_preferred_weapon_family_bias()
-	var total_weight := 0.0
-	var weighted_entries: Array[Dictionary] = []
+	var weighted_offers: Array = []
+	var weights: Array[float] = []
 	for selected_variant in pool:
 		if not (selected_variant is Dictionary):
 			continue
@@ -317,22 +332,11 @@ func _pick_random_offer(pool: Array) -> Dictionary:
 			var family_id := str(source_offer.get("family", ""))
 			if family_id == preferred_family:
 				weight += preferred_family_bias
-		total_weight += weight
-		weighted_entries.append({
-			"offer": source_offer,
-			"cumulative_weight": total_weight
-		})
-	if weighted_entries.is_empty():
+		weighted_offers.append(source_offer)
+		weights.append(weight)
+	if weighted_offers.is_empty():
 		return {}
-	var roll := rng.randf_range(0.0, total_weight)
-	var selected: Variant = weighted_entries.back().get("offer", {})
-	for weighted_entry_variant in weighted_entries:
-		if not (weighted_entry_variant is Dictionary):
-			continue
-		var weighted_entry: Dictionary = weighted_entry_variant
-		if roll <= float(weighted_entry.get("cumulative_weight", total_weight)):
-			selected = weighted_entry.get("offer", {})
-			break
+	var selected: Variant = WeightedPicker.pick_value(rng, weighted_offers, weights)
 	if selected is Dictionary:
 		var offer := (selected as Dictionary).duplicate(true)
 		if str(offer.get("type", "")) == "weapon":
@@ -398,6 +402,7 @@ func _scaled_weapon_price(base_price: int, rolled_rarity: String) -> int:
 func _on_continue_pressed() -> void:
 	if panel != null:
 		panel.visible = false
+	shop_closed.emit()
 	continue_requested.emit()
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
@@ -406,6 +411,16 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		var resolved: Variant = run_rng.call("get_rng", stream_name)
 		if resolved is RandomNumberGenerator:
 			return resolved
-	var fallback := RandomNumberGenerator.new()
-	fallback.randomize()
-	return fallback
+	return DeterministicRng.create_fallback_rng(stream_name, "ShopController")
+
+func _load_weapon_data(resource_path: String) -> WeaponData:
+	if _weapon_data_cache.has(resource_path):
+		var cached: Variant = _weapon_data_cache[resource_path]
+		if cached is WeaponData:
+			return cached
+	if not ResourceLoader.exists(resource_path):
+		return null
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[resource_path] = loaded
+	return loaded

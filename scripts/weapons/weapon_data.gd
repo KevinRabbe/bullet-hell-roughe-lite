@@ -18,6 +18,7 @@ extends Resource
 @warning_ignore("shadowed_global_identifier")
 @export var range: float = 1.0
 @export var projectile_speed: float = 700.0
+@export var projectile_lifetime: float = 2.0
 @export var pierce: int = 0
 @export var knockback: float = 0.0
 
@@ -44,12 +45,12 @@ extends Resource
 @export var bonus_damage_per_player_stat_amount: float = 0.0
 @export var bonus_damage_per_player_stat_max_value: float = 0.0
 
-# Existing fields preserved to avoid breaking gameplay
+# Legacy compatibility fields preserved for migrated resources.
 @export var family_id: String = ""
-@export var cooldown_seconds: float = 0.6
-@export var damage: float = 10.0
-@export var attack_range: float = 1.0
-@export var projectile_lifetime_seconds: float = 2.0
+@export var cooldown_seconds: float = 0.0
+@export var damage: float = 0.0
+@export var attack_range: float = 0.0
+@export var projectile_lifetime_seconds: float = 0.0
 @export var projectile_scene_path: String = ""
 
 # Visual/orbit calibration fields (Stage 11 stabilization)
@@ -61,3 +62,39 @@ extends Resource
 @export var kill_milestone_stat_id: String = ""
 @export var kill_milestone_amount: float = 0.0
 @export_enum("player", "weapon") var kill_milestone_scope: String = "player"
+
+func get_family_value() -> String:
+	if family != "":
+		return family
+	return family_id
+
+func get_damage_value() -> float:
+	if base_damage > 0.0:
+		return base_damage
+	if damage > 0.0:
+		return damage
+	return 0.0
+
+func get_cooldown_value() -> float:
+	if cooldown > 0.0:
+		return cooldown
+	if cooldown_seconds > 0.0:
+		return cooldown_seconds
+	return 0.0
+
+func get_attack_range_value() -> float:
+	if range > 0.0:
+		return range
+	if attack_range > 0.0:
+		return attack_range
+	return 0.0
+
+func get_projectile_lifetime_value() -> float:
+	if projectile_lifetime > 0.0:
+		return projectile_lifetime
+	if projectile_lifetime_seconds > 0.0:
+		return projectile_lifetime_seconds
+	return 2.0
+
+func get_projectile_scene_path_value() -> String:
+	return projectile_scene_path

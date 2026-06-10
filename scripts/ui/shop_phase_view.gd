@@ -38,18 +38,16 @@ var card_lock_buttons: Array[Button] = []
 var card_panels: Array[Panel] = []
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
+var _is_dirty: bool = true
+var _weapon_cache: Dictionary = {}
 
 func _ready() -> void:
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
-	_refresh_all()
-
-func _process(_delta: float) -> void:
-	if panel == null:
-		return
-	if panel.visible:
-		_refresh_all()
+	_connect_runtime_updates()
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _resolve_references() -> void:
 	shop_controller = get_node_or_null(shop_controller_path)
@@ -67,6 +65,44 @@ func _resolve_references() -> void:
 func _init_view_model() -> void:
 	shop_view_model = ShopViewModelScript.new()
 	shop_view_model.configure(shop_controller, player, weapon_loadout)
+
+func _connect_runtime_updates() -> void:
+	var state_changed_callable := Callable(self, "_on_shop_state_changed")
+	var payload_changed_callable := Callable(self, "_on_shop_payload_changed")
+	if shop_controller != null:
+		if shop_controller.has_signal("shop_opened") and not shop_controller.is_connected("shop_opened", state_changed_callable):
+			shop_controller.connect("shop_opened", state_changed_callable)
+		if shop_controller.has_signal("shop_closed") and not shop_controller.is_connected("shop_closed", state_changed_callable):
+			shop_controller.connect("shop_closed", state_changed_callable)
+		if shop_controller.has_signal("offers_changed") and not shop_controller.is_connected("offers_changed", payload_changed_callable):
+			shop_controller.connect("offers_changed", payload_changed_callable)
+		if shop_controller.has_signal("reroll_cost_changed") and not shop_controller.is_connected("reroll_cost_changed", payload_changed_callable):
+			shop_controller.connect("reroll_cost_changed", payload_changed_callable)
+		if shop_controller.has_signal("offer_purchased") and not shop_controller.is_connected("offer_purchased", payload_changed_callable):
+			shop_controller.connect("offer_purchased", payload_changed_callable)
+	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", payload_changed_callable):
+		weapon_loadout.connect("loadout_changed", payload_changed_callable)
+	if player != null and player.has_signal("ui_snapshot_changed") and not player.is_connected("ui_snapshot_changed", payload_changed_callable):
+		player.connect("ui_snapshot_changed", payload_changed_callable)
+
+func _mark_dirty() -> void:
+	_is_dirty = true
+
+func _refresh_if_needed() -> void:
+	if panel == null:
+		return
+	if not _is_dirty:
+		return
+	_refresh_all()
+	_is_dirty = false
+
+func _on_shop_state_changed(_value: Variant = null) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
+
+func _on_shop_payload_changed(_arg0: Variant = null, _arg1: Variant = null) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _build_layout_once() -> void:
 	if panel == null:
@@ -339,16 +375,16 @@ func _build_offer_description(offer: Dictionary) -> String:
 		var weapon_data := _load_weapon_data(weapon_id)
 		if weapon_data == null:
 			return "Weapon"
-		var rarity_text := str(offer.get("rarity", weapon_data.rarity)).capitalize()
+		var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
 		var desc_text := weapon_data.description
 		if desc_text == "":
 			desc_text = "No description."
 		return "[color=#7fd0ff]Rarity: %s[/color]\n%s\nDMG %.1f\nCD %.2fs\nRange x%.2f" % [
 			rarity_text,
 			desc_text,
-			weapon_data.damage,
-			weapon_data.cooldown_seconds,
-			weapon_data.attack_range
+			weapon_data.get_damage_value(),
+			weapon_data.get_cooldown_value(),
+			weapon_data.get_attack_range_value()
 		]
 	if offer_type == "item":
 		var item_id := str(offer.get("id", ""))
@@ -416,7 +452,8 @@ func _refresh_weapon_slots() -> void:
 
 func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
-	_update_merge_button_state()
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
@@ -504,10 +541,17 @@ func _apply_card_border(index: int, offer_type: String) -> void:
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	if weapon_id == "":
 		return null
+	if _weapon_cache.has(weapon_id):
+		var cached: Variant = _weapon_cache[weapon_id]
+		if cached is WeaponData:
+			return cached
 	var path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(path):
 		return null
-	return load(path) as WeaponData
+	var loaded := load(path) as WeaponData
+	if loaded != null:
+		_weapon_cache[weapon_id] = loaded
+	return loaded
 
 func _find_item(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():
@@ -522,7 +566,7 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 	if loadout == null:
 		return false
 	var weapon_id := str(offer.get("id", ""))
-	var incoming_rarity := str(offer.get("rarity", "common"))
+	var incoming_rarity := _get_offer_weapon_rarity(offer)
 	if weapon_id == "":
 		return false
 	if loadout.has_method("can_grant_weapon"):
@@ -534,7 +578,7 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 func _get_weapon_offer_block_reason(offer: Dictionary) -> String:
 	var default_message := "Need empty slot or valid same-rarity merge."
 	var weapon_id := str(offer.get("id", ""))
-	var incoming_rarity := str(offer.get("rarity", "common"))
+	var incoming_rarity := _get_offer_weapon_rarity(offer)
 	if weapon_id == "":
 		return default_message
 	if shop_view_model != null:
@@ -542,3 +586,11 @@ func _get_weapon_offer_block_reason(offer: Dictionary) -> String:
 		if reason != "":
 			return reason
 	return default_message
+
+func _get_offer_weapon_rarity(offer: Dictionary, weapon_data: WeaponData = null) -> String:
+	var rolled_rarity := str(offer.get("rolled_rarity", ""))
+	if rolled_rarity != "":
+		return rolled_rarity
+	if weapon_data != null and weapon_data.rarity != "":
+		return weapon_data.rarity
+	return "common"
