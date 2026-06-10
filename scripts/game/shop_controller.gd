@@ -257,22 +257,22 @@ func _on_offer_pressed(index: int) -> void:
 		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 		if loadout != null:
 			if loadout.has_method("can_grant_weapon"):
-				if not bool(loadout.call("can_grant_weapon", offer_id, rolled_rarity)):
+				if loadout.call("can_grant_weapon", offer_id, rolled_rarity) != true:
 					print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
 					return
-			elif loadout.has_method("has_space") and not bool(loadout.call("has_space")):
+			elif loadout.has_method("has_space") and loadout.call("has_space") != true:
 				print("Cannot buy weapon. Weapon loadout is full.")
 				return
 
 	if player.has_method("spend_gold"):
-		var paid: bool = bool(player.call("spend_gold", offer_price))
+		var paid: bool = player.call("spend_gold", offer_price) == true
 		if not paid:
 			return
 
 	if offer_type == "weapon":
 		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
 		if player.has_method("grant_weapon"):
-			var granted: bool = bool(player.call("grant_weapon", offer_id, rolled_rarity))
+			var granted: bool = player.call("grant_weapon", offer_id, rolled_rarity) == true
 			if not granted:
 				if player.has_method("add_gold"):
 					player.call("add_gold", offer_price)
@@ -297,7 +297,7 @@ func _on_offer_pressed(index: int) -> void:
 func _on_reroll_pressed() -> void:
 	var total_cost := _current_reroll_cost()
 	if player != null and is_instance_valid(player) and player.has_method("spend_gold"):
-		var paid: bool = bool(player.call("spend_gold", total_cost))
+		var paid: bool = player.call("spend_gold", total_cost) == true
 		if not paid:
 			return
 	reroll_count += 1

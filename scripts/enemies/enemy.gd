@@ -16,6 +16,8 @@ const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2
 @export var ranged_attack_range: float = 210.0
+@export var reward_gold: int = 1
+@export var reward_xp: int = 1
 @export var log_combat_events: bool = false
 
 var target: Node2D
@@ -102,15 +104,15 @@ func _grant_kill_rewards() -> void:
 	var players := get_tree().get_nodes_in_group("players")
 	if players.is_empty() and (last_hit_player == null or not is_instance_valid(last_hit_player)):
 		return
-	var reward_gold := 10 if is_boss else 1
-	var reward_xp := 15 if is_boss else 1
+	var granted_gold := reward_gold
+	var granted_xp := reward_xp
 	var player_node: Node = last_hit_player
 	if player_node == null or not is_instance_valid(player_node):
 		player_node = players[0]
 	if player_node != null and player_node.has_method("add_gold"):
-		player_node.call("add_gold", reward_gold)
+		player_node.call("add_gold", granted_gold)
 	if player_node != null and player_node.has_method("add_xp"):
-		player_node.call("add_xp", reward_xp)
+		player_node.call("add_xp", granted_xp)
 	if player_node != null and player_node.has_method("notify_enemy_killed"):
 		player_node.call("notify_enemy_killed", last_hit_weapon_id, last_hit_slot_index)
 
@@ -276,9 +278,11 @@ func _apply_enemy_data(data: EnemyData) -> void:
 	ranged_attack_range = data.ranged_attack_range
 	is_elite = data.is_elite
 	is_boss = data.is_boss
+	reward_gold = data.reward_gold
+	reward_xp = data.reward_xp
 	if visual_sprite != null and data.visual_texture_path != "" and ResourceLoader.exists(data.visual_texture_path):
 		visual_sprite.texture = _load_texture(data.visual_texture_path)
-		visual_sprite.scale = data.visual_scale
+		visual_sprite.scale = Vector2.ONE * data.visual_scale
 
 func _tick_status_effects(delta: float) -> void:
 	if active_statuses.is_empty():
@@ -372,7 +376,7 @@ func apply_status_payload(status_payload: Dictionary, source: Node = null, sourc
 	_try_spread_status(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
 
 func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
-	if not bool(status_payload.get("allow_spread", false)):
+	if status_payload.get("allow_spread", false) != true:
 		return
 	var spread_radius := maxf(float(status_payload.get("spread_radius", 0.0)), 0.0)
 	var spread_chance := clampf(float(status_payload.get("spread_chance", 0.0)), 0.0, 1.0)

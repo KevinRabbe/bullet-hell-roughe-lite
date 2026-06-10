@@ -134,5 +134,5 @@ func _get_player_snapshot() -> Dictionary:
 
 func _is_shop_open() -> bool:
 	if shop_controller != null and shop_controller.has_method("is_shop_open"):
-		return bool(shop_controller.call("is_shop_open"))
+		return shop_controller.call("is_shop_open") == true
 	return false

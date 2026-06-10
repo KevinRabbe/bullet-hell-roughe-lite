@@ -76,6 +76,17 @@ func debug_evaluate_from_weapon_ids(weapon_ids: Array[String]) -> Dictionary:
 		print("Set bonus debug | counts=%s bonuses=%s" % [family_counts, active_bonuses])
 	return active_bonuses
 
+func _get_family_id_from_weapon_id(weapon_id: String) -> String:
+	if data_registry != null and data_registry.has_method("get_weapon"):
+		var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+		if weapon_variant != null and weapon_variant.has_method("get_family_value"):
+			return str(weapon_variant.call("get_family_value"))
+	if "/" in weapon_id:
+		return weapon_id.split("/", false, 1)[0]
+	if "_" in weapon_id:
+		return weapon_id.split("_", false, 1)[0]
+	return weapon_id
+
 func _read_family_counts() -> Dictionary:
 	if weapon_loadout == null or not is_instance_valid(weapon_loadout):
 		return {}

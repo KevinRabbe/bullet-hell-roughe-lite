@@ -346,7 +346,7 @@ func _refresh_offer_cards() -> void:
 				button.text = "N/A"
 				button.disabled = true
 			continue
-		var offer := offers[i]
+		var offer: Dictionary = offers[i]
 		var offer_type := str(offer.get("type", ""))
 		_apply_card_border(i, offer_type)
 		title.text = str(offer.get("label", "Offer"))
@@ -464,7 +464,7 @@ func _on_merge_selected_pressed() -> void:
 	if result_variant is Dictionary:
 		var result: Dictionary = result_variant
 		print(str(result.get("message", "")))
-		if bool(result.get("success", false)):
+		if result.get("success", false) == true:
 			selected_weapon_slot = -1
 	_refresh_all()
 
@@ -479,7 +479,7 @@ func _update_merge_button_state() -> void:
 		var state_variant: Variant = weapon_loadout.call("get_merge_slot_state", selected_weapon_slot)
 		if state_variant is Dictionary:
 			var merge_state: Dictionary = state_variant
-			var can_merge := bool(merge_state.get("can_merge", false))
+			var can_merge: bool = merge_state.get("can_merge", false) == true
 			merge_selected_button.disabled = not can_merge
 			if can_merge:
 				merge_selected_button.text = "Merge selected"
@@ -488,7 +488,7 @@ func _update_merge_button_state() -> void:
 			return
 	var fallback_can_merge := false
 	if weapon_loadout != null and weapon_loadout.has_method("can_merge_slot"):
-		fallback_can_merge = bool(weapon_loadout.call("can_merge_slot", selected_weapon_slot))
+		fallback_can_merge = weapon_loadout.call("can_merge_slot", selected_weapon_slot) == true
 	merge_selected_button.disabled = not fallback_can_merge
 	merge_selected_button.text = "Merge selected" if fallback_can_merge else "No valid merge"
 
@@ -570,9 +570,9 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 	if weapon_id == "":
 		return false
 	if loadout.has_method("can_grant_weapon"):
-		return bool(loadout.call("can_grant_weapon", weapon_id, incoming_rarity))
+		return loadout.call("can_grant_weapon", weapon_id, incoming_rarity) == true
 	if loadout.has_method("has_space"):
-		return bool(loadout.call("has_space"))
+		return loadout.call("has_space") == true
 	return true
 
 func _get_weapon_offer_block_reason(offer: Dictionary) -> String:

@@ -3,6 +3,7 @@ extends Node2D
 signal wave_completed(wave_index: int)
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
 
 @export var enemy_scene: PackedScene
 @export var target_path: NodePath
@@ -89,20 +90,39 @@ func _pick_enemy_variant() -> String:
 	var pool := _variant_pool_for_wave(current_wave_index)
 	if pool.is_empty():
 		return "imp_runner"
-	return str(pool[rng.randi_range(0, pool.size() - 1)])
+	var variant_ids: Array = []
+	var weights: Array[float] = []
+	for pool_entry in pool:
+		if pool_entry is Dictionary:
+			var entry: Dictionary = pool_entry
+			var variant_id := str(entry.get("id", ""))
+			if variant_id == "":
+				continue
+			variant_ids.append(variant_id)
+			weights.append(maxf(float(entry.get("weight", 1.0)), 0.0))
+		else:
+			variant_ids.append(str(pool_entry))
+			weights.append(1.0)
+	if variant_ids.is_empty():
+		return "imp_runner"
+	var selected: Variant = WeightedPicker.pick_value(rng, variant_ids, weights)
+	return str(selected if selected != null else "imp_runner")
 
-func _variant_pool_for_wave(wave_index: int) -> Array[String]:
-	var result: Array[String] = []
+func _variant_pool_for_wave(wave_index: int) -> Array:
+	var result: Array = []
 	for band in _wave_variant_pools:
 		if wave_index <= int(band.get("max_wave", 9999)):
 			var configured: Variant = band.get("variants", [])
 			if configured is Array:
 				for item in configured:
 					if item is Dictionary:
-						result.append(str((item as Dictionary).get("id", "")))
+						var entry: Dictionary = (item as Dictionary).duplicate(true)
+						if str(entry.get("id", "")) != "":
+							result.append(entry)
 					else:
-						result.append(str(item))
-			result = result.filter(func(variant_id: String) -> bool: return variant_id != "")
+						var variant_id := str(item)
+						if variant_id != "":
+							result.append(variant_id)
 			return result
 	return result
 
@@ -151,7 +171,7 @@ func _load_wave_config() -> void:
 		_set_default_wave_config()
 		return
 	var config_text := FileAccess.get_file_as_string(wave_config_path)
-	var parsed := JSON.parse_string(config_text)
+	var parsed: Variant = JSON.parse_string(config_text)
 	if not (parsed is Dictionary):
 		_set_default_wave_config()
 		return

@@ -34,19 +34,19 @@ func get_grant_block_reason(weapon_id: String, incoming_rarity: String = "common
 
 func can_merge_slot(slot_index: int) -> bool:
 	var result := _evaluate_slot_merge(slot_index)
-	return bool(result.get("can_merge", false))
+	return result.get("can_merge", false) == true
 
 func get_merge_slot_state(slot_index: int) -> Dictionary:
 	var result := _evaluate_slot_merge(slot_index)
 	return {
-		"state": "merge_available" if bool(result.get("can_merge", false)) else "merge_blocked",
-		"can_merge": bool(result.get("can_merge", false)),
+		"state": "merge_available" if result.get("can_merge", false) == true else "merge_blocked",
+		"can_merge": result.get("can_merge", false) == true,
 		"message": str(result.get("message", ""))
 	}
 
 func try_merge_slot(slot_index: int) -> Dictionary:
 	var result := _evaluate_slot_merge(slot_index)
-	if not bool(result.get("can_merge", false)):
+	if result.get("can_merge", false) != true:
 		return {
 			"success": false,
 			"message": str(result.get("message", "Cannot merge this slot.")),
