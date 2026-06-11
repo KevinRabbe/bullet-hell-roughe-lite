@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -8,6 +8,11 @@
 [ext_resource type="Script" path="res://scripts/weapons/set_bonus_manager.gd" id="6"]
 [ext_resource type="Resource" path="res://data/weapons/heavy_pistol.tres" id="7"]
 [ext_resource type="Texture2D" path="res://assets/sprites/characters/gunslinger/gunslinger_idle.png" id="8"]
+[ext_resource type="Script" path="res://scripts/player/player_health.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/player/player_stats.gd" id="10"]
+[ext_resource type="Script" path="res://scripts/player/player_xp_level.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/player/player_weapon_controller.gd" id="12"]
+[ext_resource type="Script" path="res://scripts/player/player_collision_targeting.gd" id="13"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
@@ -35,6 +40,21 @@ target_range = 900.0
 
 [node name="PlayerBuild" type="Node" parent="."]
 script = ExtResource("4")
+
+[node name="PlayerHealth" type="Node" parent="."]
+script = ExtResource("9")
+
+[node name="PlayerStats" type="Node" parent="."]
+script = ExtResource("10")
+
+[node name="PlayerXPLevel" type="Node" parent="."]
+script = ExtResource("11")
+
+[node name="PlayerWeaponController" type="Node" parent="."]
+script = ExtResource("12")
+
+[node name="PlayerCollisionTargeting" type="Node" parent="."]
+script = ExtResource("13")
 
 [node name="WeaponLoadout" type="Node" parent="."]
 script = ExtResource("5")

@@ -29,9 +29,15 @@ var _regen_tick_accumulator: float = 0.0
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
+@onready var health_component: Node = get_node_or_null("PlayerHealth")
+@onready var stats_component: Node = get_node_or_null("PlayerStats")
+@onready var xp_level_component: Node = get_node_or_null("PlayerXPLevel")
+@onready var weapon_controller_component: Node = get_node_or_null("PlayerWeaponController")
+@onready var collision_targeting_component: Node = get_node_or_null("PlayerCollisionTargeting")
 
 func _ready() -> void:
 	add_to_group("players")
+	_wire_runtime_components()
 	_reset_character_stats()
 	_resolve_default_character_id()
 	_cache_default_visual_state()
@@ -43,6 +49,18 @@ func _ready() -> void:
 		weapon_loadout.connect("loadout_changed", snapshot_callable)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
+
+func _wire_runtime_components() -> void:
+	_configure_player_component(health_component)
+	_configure_player_component(stats_component)
+	_configure_player_component(xp_level_component)
+	_configure_player_component(weapon_controller_component)
+	_configure_player_component(collision_targeting_component)
+
+func _configure_player_component(component: Node) -> void:
+	if component == null or not component.has_method("configure"):
+		return
+	component.call("configure", self)
 
 func _physics_process(delta: float) -> void:
 	if is_dead:
