@@ -113,29 +113,106 @@ func _load_resource_directory(directory_path: String) -> Array:
 	return loaded
 
 func _validate_registry_entries() -> void:
+	_validate_character_entries()
 	for weapon_id in weapons.keys():
 		var weapon: Variant = weapons[weapon_id]
 		if weapon == null:
 			push_warning("Weapon entry '%s' is null." % str(weapon_id))
 			continue
-		if str(weapon.get("display_name")) == "":
-			push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
-		if int(weapon.get("price")) <= 0:
-			push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		if weapon is WeaponData:
+			var weapon_resource: WeaponData = weapon
+			if weapon_resource.display_name == "":
+				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			var shop_enabled: bool = weapon_resource.shop_enabled == true
+			if shop_enabled and not _is_placeholder_weapon(weapon_resource) and weapon_resource.price <= 0:
+				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		elif weapon is Dictionary:
+			var weapon_dict: Dictionary = weapon
+			if str(weapon_dict.get("display_name", "")) == "":
+				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			var shop_enabled_dict: bool = weapon_dict.get("shop_enabled", false) == true
+			if shop_enabled_dict and not _is_placeholder_weapon(weapon_dict) and int(weapon_dict.get("price", 0)) <= 0:
+				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
+		else:
+			push_warning("Weapon entry '%s' has unsupported type." % str(weapon_id))
 	for item_id in items.keys():
 		var item: Variant = items[item_id]
 		if item == null:
 			push_warning("Item entry '%s' is null." % str(item_id))
 			continue
-		if str(item.get("name")) == "":
-			push_warning("Item '%s' is missing name." % str(item_id))
+		if item is ItemData:
+			var item_resource: ItemData = item
+			if item_resource.name == "":
+				push_warning("Item '%s' is missing name." % str(item_id))
+		elif item is Dictionary:
+			var item_dict: Dictionary = item
+			if str(item_dict.get("name", "")) == "":
+				push_warning("Item '%s' is missing name." % str(item_id))
+		else:
+			push_warning("Item entry '%s' has unsupported type." % str(item_id))
 	for enemy_id in enemies.keys():
 		var enemy: Variant = enemies[enemy_id]
 		if enemy == null:
 			push_warning("Enemy entry '%s' is null." % str(enemy_id))
 			continue
-		if float(enemy.get("max_hp")) <= 0.0:
-			push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		if enemy is EnemyData:
+			var enemy_resource: EnemyData = enemy
+			if enemy_resource.max_hp <= 0.0:
+				push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		elif enemy is Dictionary:
+			var enemy_dict: Dictionary = enemy
+			if float(enemy_dict.get("max_hp", 0.0)) <= 0.0:
+				push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
+		else:
+			push_warning("Enemy entry '%s' has unsupported type." % str(enemy_id))
+
+func _validate_character_entries() -> void:
+	for character_id in characters.keys():
+		var character_variant: Variant = characters[character_id]
+		if not (character_variant is Dictionary):
+			push_warning("Character entry '%s' is invalid." % str(character_id))
+			continue
+		var character_data: Dictionary = character_variant
+		if str(character_data.get("display_name", "")) == "":
+			push_warning("Character '%s' is missing display_name." % str(character_id))
+		var visual_path := str(character_data.get("visual_path", ""))
+		if visual_path != "" and not ResourceLoader.exists(visual_path):
+			push_warning("Character '%s' is missing visual resource: %s" % [str(character_id), visual_path])
+		var selectable: bool = character_data.get("selectable", true) != false
+		if not selectable:
+			continue
+		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
+		_validate_character_weapon_list(str(character_id), "family_weapon_ids", character_data.get("family_weapon_ids", []))
+
+func _validate_character_weapon_list(character_id: String, field_name: String, weapon_ids_variant: Variant) -> void:
+	if not (weapon_ids_variant is Array):
+		push_warning("Character '%s' has invalid %s payload." % [character_id, field_name])
+		return
+	var weapon_ids: Array = weapon_ids_variant
+	if weapon_ids.is_empty():
+		push_warning("Character '%s' has no entries in %s." % [character_id, field_name])
+		return
+	for weapon_id_variant in weapon_ids:
+		var weapon_id := str(weapon_id_variant)
+		if weapon_id == "":
+			push_warning("Character '%s' has an empty weapon id in %s." % [character_id, field_name])
+			continue
+		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
+		if not ResourceLoader.exists(resource_path):
+			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
+
+func _is_placeholder_weapon(weapon: Variant) -> bool:
+	if weapon == null or not weapon.has_method("get"):
+		return false
+	var weapon_id := str(weapon.get("id"))
+	if weapon_id.contains("placeholder"):
+		return true
+	var family_id := ""
+	if weapon.has_method("get_family_value"):
+		family_id = str(weapon.call("get_family_value"))
+	else:
+		family_id = str(weapon.get("family"))
+	return family_id.contains("placeholder")
 
 func get_character(id: String):
 	return characters.get(id)
@@ -146,6 +223,47 @@ func get_character_ids() -> Array[String]:
 		ids.append(str(character_id))
 	ids.sort()
 	return ids
+
+func get_selectable_character_ids() -> Array[String]:
+	var entries: Array[Dictionary] = []
+	for character_id in characters.keys():
+		var entry_variant: Variant = characters[character_id]
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		if entry.has("selectable") and entry.get("selectable", true) == false:
+			continue
+		entries.append({
+			"id": str(character_id),
+			"order": int(entry.get("roster_order", 9999))
+		})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var order_a := int(a.get("order", 9999))
+		var order_b := int(b.get("order", 9999))
+		if order_a == order_b:
+			return str(a.get("id", "")) < str(b.get("id", ""))
+		return order_a < order_b
+	)
+	var ids: Array[String] = []
+	for entry in entries:
+		ids.append(str(entry.get("id", "")))
+	return ids
+
+func get_default_selectable_character_id() -> String:
+	var selectable_ids := get_selectable_character_ids()
+	if not selectable_ids.is_empty():
+		return selectable_ids[0]
+	var all_ids := get_character_ids()
+	if all_ids.is_empty():
+		return ""
+	return all_ids[0]
+
+func get_character_display_name(id: String) -> String:
+	var character_variant: Variant = characters.get(id, {})
+	if character_variant is Dictionary:
+		var character_data: Dictionary = character_variant
+		return str(character_data.get("display_name", id))
+	return id
 
 func get_weapon(id: String):
 	return weapons.get(id)

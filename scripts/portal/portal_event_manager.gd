@@ -2,6 +2,9 @@ extends Node2D
 
 signal portal_event_completed
 
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
+
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
 @export var player_path: NodePath
@@ -10,6 +13,8 @@ signal portal_event_completed
 @export var elite_spawn_distance: float = 180.0
 @export var elite_move_speed: float = 240.0
 @export var elite_max_hp: float = 80.0
+@export var log_portal_spawns: bool = false
+@export var log_portal_events: bool = true
 
 var player: Node2D
 var enemy_spawner: Node
@@ -55,11 +60,13 @@ func _on_wave_completed(wave_index: int) -> void:
 
 func _try_spawn_portal_for_wave(wave_index: int) -> void:
 	if _active_portal_count() >= 1:
-		print("Portal spawn skipped for wave %d: active portal already exists." % wave_index)
+		if log_portal_spawns:
+			print("Portal spawn skipped for wave %d: active portal already exists." % wave_index)
 		return
 	var chance := _compute_portal_spawn_chance()
 	var roll := rng.randf()
-	print("Portal spawn roll | wave=%d chance=%.2f roll=%.2f" % [wave_index, chance, roll])
+	if log_portal_spawns:
+		print("Portal spawn roll | wave=%d chance=%.2f roll=%.2f" % [wave_index, chance, roll])
 	if roll <= chance:
 		_spawn_first_portal()
 
@@ -99,7 +106,8 @@ func _try_activate_nearest_portal() -> void:
 
 func _on_portal_activated(portal_position: Vector2) -> void:
 	var event_id := _pick_portal_event_id()
-	print("Portal activated. Event: %s" % event_id)
+	if log_portal_events:
+		print("Portal activated. Event: %s" % event_id)
 	match event_id:
 		"double_elite":
 			_start_double_elite_event(portal_position)
@@ -109,16 +117,19 @@ func _on_portal_activated(portal_position: Vector2) -> void:
 			_start_enemy_flood_event()
 
 func _start_double_elite_event(portal_position: Vector2) -> void:
-	print("Portal event started: Double Elite")
+	if log_portal_events:
+		print("Portal event started: Double Elite")
 	active_event_elites.clear()
 	_track_event_elite(_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance))
 	_track_event_elite(_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance))
 	if active_event_elites.is_empty():
-		print("Portal event completed: no active elites.")
+		if log_portal_events:
+			print("Portal event completed: no active elites.")
 		portal_event_completed.emit()
 
 func _start_power_for_hp_loss_event() -> void:
-	print("Portal event started: Power for Max HP loss")
+	if log_portal_events:
+		print("Portal event started: Power for Max HP loss")
 	if player != null and is_instance_valid(player):
 		var stats_variant: Variant = player.get("stats")
 		if stats_variant != null and stats_variant is Object:
@@ -127,12 +138,15 @@ func _start_power_for_hp_loss_event() -> void:
 			player.set("current_hp", minf(float(player.get("current_hp")), float(stats_variant.get("max_hp"))))
 			if player.has_method("_update_hp_label"):
 				player.call("_update_hp_label")
-			print("Power trade applied: +0.35 damage, -20 max HP")
-	print("Portal event completed: Power for Max HP loss")
+			if log_portal_events:
+				print("Power trade applied: +0.35 damage, -20 max HP")
+	if log_portal_events:
+		print("Portal event completed: Power for Max HP loss")
 	portal_event_completed.emit()
 
 func _start_enemy_flood_event() -> void:
-	print("Portal event started: 20-second enemy flood")
+	if log_portal_events:
+		print("Portal event started: 20-second enemy flood")
 	if enemy_spawner != null and is_instance_valid(enemy_spawner):
 		flood_original_spawn_interval = float(enemy_spawner.get("spawn_interval_seconds"))
 		flood_original_max_alive = int(enemy_spawner.get("max_alive_enemies"))
@@ -144,7 +158,8 @@ func _on_flood_event_finished() -> void:
 	if enemy_spawner != null and is_instance_valid(enemy_spawner):
 		enemy_spawner.set("spawn_interval_seconds", flood_original_spawn_interval)
 		enemy_spawner.set("max_alive_enemies", flood_original_max_alive)
-	print("Portal event completed: enemy flood survived.")
+	if log_portal_events:
+		print("Portal event completed: enemy flood survived.")
 	portal_event_completed.emit()
 
 func _spawn_elite(spawn_position: Vector2) -> Node:
@@ -164,7 +179,8 @@ func _spawn_elite(spawn_position: Vector2) -> Node:
 			enemy_node.set("is_elite", true)
 			var elite_role := _pick_elite_role()
 			enemy_node.set("elite_role", elite_role)
-			print("Spawned elite variant: %s" % elite_role)
+			if log_portal_events:
+				print("Spawned elite variant: %s" % elite_role)
 		add_child(enemy_node)
 		return enemy_node
 	return null
@@ -177,14 +193,40 @@ func _track_event_elite(enemy: Node) -> void:
 
 func _on_event_elite_exited(enemy: Node) -> void:
 	active_event_elites.erase(enemy)
-	print("Portal elite defeated. Remaining elites: %d" % active_event_elites.size())
+	if log_portal_events:
+		print("Portal elite defeated. Remaining elites: %d" % active_event_elites.size())
 	if active_event_elites.is_empty():
-		print("Portal event completed: all elites defeated.")
+		if log_portal_events:
+			print("Portal event completed: all elites defeated.")
 		portal_event_completed.emit()
 
 func _pick_portal_event_id() -> String:
-	var events := ["double_elite", "power_for_hp_loss", "enemy_flood_20s"]
-	return events[rng.randi_range(0, events.size() - 1)]
+	var portal_instability := 0.0
+	if player != null and is_instance_valid(player):
+		var stats_variant: Variant = player.get("stats")
+		if stats_variant != null and stats_variant is Object:
+			portal_instability = float(stats_variant.get("portal_instability"))
+
+	var event_ids: Array = []
+	var weights: Array[float] = []
+	_append_weighted_event(event_ids, weights, "double_elite", (1.0 + (portal_instability * 1.2)) * _get_portal_event_bias("double_elite"))
+	_append_weighted_event(event_ids, weights, "power_for_hp_loss", 1.0 * _get_portal_event_bias("power_for_hp_loss"))
+	_append_weighted_event(event_ids, weights, "enemy_flood_20s", (1.0 + (portal_instability * 1.5)) * _get_portal_event_bias("enemy_flood_20s"))
+	if event_ids.is_empty():
+		return "double_elite"
+	return str(WeightedPicker.pick_value(rng, event_ids, weights))
+
+func _append_weighted_event(event_ids: Array, weights: Array[float], event_id: String, weight: float) -> void:
+	var safe_weight := maxf(weight, 0.0)
+	if safe_weight <= 0.0:
+		return
+	event_ids.append(event_id)
+	weights.append(safe_weight)
+
+func _get_portal_event_bias(event_id: String) -> float:
+	if player != null and player.has_method("get_portal_event_bias"):
+		return maxf(float(player.call("get_portal_event_bias", event_id)), 0.0)
+	return 1.0
 
 func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:
@@ -197,6 +239,4 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		var resolved: Variant = run_rng.call("get_rng", stream_name)
 		if resolved is RandomNumberGenerator:
 			return resolved
-	var fallback := RandomNumberGenerator.new()
-	fallback.randomize()
-	return fallback
+	return DeterministicRng.create_fallback_rng(stream_name, "PortalEventManager")

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/riftwalker/weapon_2_rift_bow.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/riftwalker/projectile_2_rift_spike.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "phase_crossbow"
+display_name = "Phase Crossbow"
+description = "Longer-range phase bolt launcher with clean single-shot portal damage."
+cooldown = 0.72
+base_damage = 14.0
+projectile_speed = 760.0
+range = 1.18
+projectile_lifetime = 2.1
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "portal"
+price = 7
+tags = Array[String](["portal", "precision", "phase", "ranged"])
+orbit_radius_multiplier = 1.08
+orbit_scale_multiplier = 0.94
+projectile_rotation_offset = 1.5708

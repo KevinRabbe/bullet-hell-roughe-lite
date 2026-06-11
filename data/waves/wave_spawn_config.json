@@ -1,0 +1,52 @@
+{
+  "elite_unlock_wave": 5,
+  "elite_spawn_chance": 0.14,
+  "elite_variant": "husk_brute",
+  "elite_role": "wave_tank",
+  "elite_overrides": {
+    "max_hp_multiplier": 2.0,
+    "contact_damage_multiplier": 1.35,
+    "move_speed_multiplier": 0.88
+  },
+  "waves": [
+    {
+      "max_wave": 1,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0}
+      ]
+    },
+    {
+      "max_wave": 2,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0}
+      ]
+    },
+    {
+      "max_wave": 3,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0},
+        {"id": "spit_fiend", "weight": 1.0}
+      ]
+    },
+    {
+      "max_wave": 4,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0},
+        {"id": "spit_fiend", "weight": 1.0},
+        {"id": "skeleton_rifleman", "weight": 1.0}
+      ]
+    },
+    {
+      "max_wave": 999,
+      "variants": [
+        {"id": "imp_runner", "weight": 1.0},
+        {"id": "husk_brute", "weight": 1.0},
+        {"id": "spit_fiend", "weight": 1.0},
+        {"id": "skeleton_rifleman", "weight": 1.0}
+      ]
+    }
+  ]
+}

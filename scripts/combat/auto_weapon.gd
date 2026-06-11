@@ -14,6 +14,8 @@ var weapon_loadout: Node
 var orbit_weapon_hud: Node
 var current_rarity: String = "common"
 var slot_cooldowns: Array[float] = []
+var _weapon_data_cache: Dictionary = {}
+var _projectile_scene_cache: Dictionary = {}
 
 const RARITY_DAMAGE_MULTIPLIER: Dictionary = {
 	"common": 1.0,
@@ -39,8 +41,6 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if owner_player == null or not is_instance_valid(owner_player):
 		return
-	if set_bonus_manager != null and set_bonus_manager.has_method("evaluate_and_debug_print"):
-		set_bonus_manager.call("evaluate_and_debug_print")
 	_tick_slot_cooldowns(delta)
 	var entries := _get_weapon_entries()
 	if entries.is_empty():
@@ -54,7 +54,9 @@ func _physics_process(delta: float) -> void:
 		var entry_data := _load_weapon_data(weapon_id)
 		if entry_data == null:
 			continue
+		var weapon_bonus_overrides := _get_entry_weapon_bonus_overrides(entry)
 		var weapon_range := _get_weapon_range(entry_data)
+		weapon_range += float(weapon_bonus_overrides.get("attack_range", 0.0)) * 900.0
 		var muzzle_position := _get_slot_muzzle_position(index)
 		var target := _find_nearest_enemy_for_origin(muzzle_position, weapon_range)
 		var aim_direction := _get_slot_aim_direction(index)
@@ -77,8 +79,8 @@ func _physics_process(delta: float) -> void:
 		var fire_direction := _get_slot_fire_direction(index, aim_direction)
 		var fire_spawn_position := _get_slot_muzzle_position(index)
 		var projectile_rotation_offset := _get_slot_projectile_rotation_offset(index)
-		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset)
-		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity)
+		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index, weapon_bonus_overrides)
+		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity, weapon_bonus_overrides)
 
 func _process_fallback_weapon(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
@@ -97,7 +99,7 @@ func _process_fallback_weapon(delta: float) -> void:
 		if strongest_target != null:
 			target = strongest_target
 	var fallback_direction := (target.global_position - owner_player.global_position).normalized()
-	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1))
+	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1), weapon_data.id, -1)
 	cooldown_left = _get_effective_cooldown(weapon_data, current_rarity)
 
 func set_weapon_data(new_weapon_data: WeaponData) -> void:
@@ -112,13 +114,17 @@ func _apply_weapon_data() -> void:
 	if weapon_data == null:
 		return
 	current_rarity = _resolve_weapon_rarity()
-	if weapon_data.projectile_scene_path != "":
-		var projectile_resource: Resource = load(weapon_data.projectile_scene_path)
+	var projectile_scene_path := weapon_data.get_projectile_scene_path_value() if weapon_data.has_method("get_projectile_scene_path_value") else weapon_data.projectile_scene_path
+	if projectile_scene_path != "":
+		var projectile_resource: Resource = _projectile_scene_cache.get(projectile_scene_path)
+		if projectile_resource == null:
+			projectile_resource = load(projectile_scene_path)
+			if projectile_resource != null:
+				_projectile_scene_cache[projectile_scene_path] = projectile_resource
 		if projectile_resource is PackedScene:
 			projectile_scene = projectile_resource as PackedScene
-	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(current_rarity, 1.0))
-	fire_interval_seconds = weapon_data.cooldown_seconds / rarity_speed_multiplier
-	target_range = 900.0 * weapon_data.attack_range
+	fire_interval_seconds = _get_effective_cooldown(weapon_data, current_rarity)
+	target_range = _get_weapon_range(weapon_data)
 
 func _find_nearest_enemy(search_range: float) -> Node2D:
 	return _find_nearest_enemy_for_origin(owner_player.global_position, search_range)
@@ -135,7 +141,7 @@ func _find_nearest_enemy_for_origin(origin: Vector2, search_range: float) -> Nod
 				nearest_enemy = enemy_node
 	return nearest_enemy
 
-func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float) -> void:
+func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int, weapon_bonus_overrides: Dictionary = {}) -> void:
 	var resolved_projectile_scene := _resolve_projectile_scene(entry_data)
 	if resolved_projectile_scene == null:
 		return
@@ -146,27 +152,35 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		get_tree().current_scene,
 		spawn_position,
 		aim_direction,
-		_get_weapon_damage(entry_data) * rarity_damage_multiplier,
-		_get_weapon_projectile_speed(entry_data) * rarity_speed_multiplier,
+		_get_weapon_damage(entry_data, weapon_bonus_overrides) * rarity_damage_multiplier * _get_player_damage_multiplier(),
+		_get_weapon_projectile_speed(entry_data, weapon_bonus_overrides) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
 		_get_weapon_lifetime(entry_data),
 		projectile_rotation_offset
 	)
 	if projectile == null:
 		return
+	if entry_data.projectile_texture != null and projectile.has_method("set_visual_texture"):
+		projectile.call("set_visual_texture", entry_data.projectile_texture)
+	if projectile.has_method("set_source_weapon_data"):
+		projectile.call("set_source_weapon_data", entry_data)
 	if projectile.has_method("set_shooter"):
 		projectile.call("set_shooter", owner_player)
+	if projectile.has_method("set_source_context"):
+		projectile.call("set_source_context", weapon_id, slot_index)
 	var total_damage_multiplier := 1.0
 	if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
 		total_damage_multiplier += float(set_bonus_manager.call("get_damage_multiplier_bonus"))
 	if execution_shot and set_bonus_manager != null and set_bonus_manager.has_method("get_execution_damage_multiplier"):
 		total_damage_multiplier *= float(set_bonus_manager.call("get_execution_damage_multiplier"))
-		print("Set Bonus 6-piece: fired execution shot.")
+		if _should_log_set_bonus_events():
+			print("Set Bonus 6-piece: fired execution shot.")
 	if projectile.has_method("set"):
 		projectile.set("damage_multiplier", total_damage_multiplier)
-		var can_pierce := set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and bool(set_bonus_manager.call("can_pierce_shot"))
+		var can_pierce: bool = set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and set_bonus_manager.call("can_pierce_shot") == true
 		projectile.set("pierce_count", 1 if can_pierce else 0)
 		if can_pierce:
-			print("Set Bonus 4-piece: pierce shot proc.")
+			if _should_log_set_bonus_events():
+				print("Set Bonus 4-piece: pierce shot proc.")
 
 func _get_slot_muzzle_position(slot_index: int) -> Vector2:
 	var fire_direction := _get_slot_fire_direction(slot_index, _get_slot_aim_direction(slot_index))
@@ -205,43 +219,49 @@ func _get_slot_projectile_rotation_offset(slot_index: int) -> float:
 	return 0.0
 
 func _resolve_projectile_scene(entry_data: WeaponData) -> PackedScene:
-	if entry_data != null and entry_data.projectile_scene_path != "":
-		var projectile_resource: Resource = load(entry_data.projectile_scene_path)
+	var projectile_scene_path := ""
+	if entry_data != null:
+		projectile_scene_path = entry_data.get_projectile_scene_path_value() if entry_data.has_method("get_projectile_scene_path_value") else entry_data.projectile_scene_path
+	if projectile_scene_path != "":
+		var projectile_resource: Resource = _projectile_scene_cache.get(projectile_scene_path)
+		if projectile_resource == null:
+			projectile_resource = load(projectile_scene_path)
+			if projectile_resource != null:
+				_projectile_scene_cache[projectile_scene_path] = projectile_resource
 		if projectile_resource is PackedScene:
 			return projectile_resource as PackedScene
 	return projectile_scene
 
-func _get_weapon_damage(entry_data: WeaponData) -> float:
-	if entry_data.damage > 0.0:
-		return entry_data.damage
-	return entry_data.base_damage
+func _get_weapon_damage(entry_data: WeaponData, weapon_bonus_overrides: Dictionary = {}) -> float:
+	if entry_data == null:
+		return float(weapon_bonus_overrides.get("damage", 0.0))
+	var base_damage := entry_data.get_damage_value() if entry_data.has_method("get_damage_value") else entry_data.base_damage
+	return base_damage + float(weapon_bonus_overrides.get("damage", 0.0))
 
-func _get_weapon_projectile_speed(entry_data: WeaponData) -> float:
+func _get_weapon_projectile_speed(entry_data: WeaponData, weapon_bonus_overrides: Dictionary = {}) -> float:
 	if entry_data.projectile_speed > 0.0:
-		return entry_data.projectile_speed
-	return 700.0
+		return entry_data.projectile_speed + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
+	return 700.0 + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
 
 func _get_weapon_lifetime(entry_data: WeaponData) -> float:
-	if entry_data.projectile_lifetime_seconds > 0.0:
-		return entry_data.projectile_lifetime_seconds
+	if entry_data != null and entry_data.has_method("get_projectile_lifetime_value"):
+		return entry_data.get_projectile_lifetime_value()
 	return 2.0
 
 func _get_weapon_range(entry_data: WeaponData) -> float:
-	var range_multiplier := entry_data.attack_range
-	if range_multiplier <= 0.0:
-		range_multiplier = entry_data.range
+	var range_multiplier := entry_data.get_attack_range_value() if entry_data != null and entry_data.has_method("get_attack_range_value") else 1.0
 	if range_multiplier <= 0.0:
 		range_multiplier = 1.0
-	return 900.0 * range_multiplier
+	return 900.0 * range_multiplier * _get_player_attack_range_multiplier()
 
-func _get_effective_cooldown(entry_data: WeaponData, rarity: String) -> float:
-	var base_cooldown := entry_data.cooldown_seconds
-	if base_cooldown <= 0.0:
-		base_cooldown = entry_data.cooldown
+func _get_effective_cooldown(entry_data: WeaponData, rarity: String, weapon_bonus_overrides: Dictionary = {}) -> float:
+	var base_cooldown := entry_data.get_cooldown_value() if entry_data != null and entry_data.has_method("get_cooldown_value") else 0.6
 	if base_cooldown <= 0.0:
 		base_cooldown = 0.6
 	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(rarity, 1.0))
-	return base_cooldown / rarity_speed_multiplier
+	var weapon_attack_speed_multiplier := maxf(1.0 + float(weapon_bonus_overrides.get("attack_speed", 0.0)), 0.01)
+	var player_attack_speed_multiplier := maxf(_get_player_attack_speed_multiplier(), 0.01)
+	return base_cooldown / (rarity_speed_multiplier * player_attack_speed_multiplier * weapon_attack_speed_multiplier)
 
 func _tick_slot_cooldowns(delta: float) -> void:
 	for index in range(slot_cooldowns.size()):
@@ -270,13 +290,24 @@ func _get_weapon_entries() -> Array[Dictionary]:
 			normalized_entries.append((entry_variant as Dictionary).duplicate(true))
 	return normalized_entries
 
+func _get_entry_weapon_bonus_overrides(entry: Dictionary) -> Dictionary:
+	var overrides_variant: Variant = entry.get("weapon_bonus_overrides", {})
+	if overrides_variant is Dictionary:
+		return (overrides_variant as Dictionary).duplicate(true)
+	return {}
+
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	if weapon_id == "":
 		return null
+	if _weapon_data_cache.has(weapon_id):
+		return _weapon_data_cache[weapon_id] as WeaponData
 	var resource_path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(resource_path):
 		return null
-	return load(resource_path) as WeaponData
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[weapon_id] = loaded
+	return loaded
 
 func _resolve_weapon_rarity() -> String:
 	if weapon_data == null:
@@ -290,7 +321,7 @@ func _should_use_execution_shot() -> bool:
 		return false
 	if not set_bonus_manager.has_method("should_fire_execution_shot"):
 		return false
-	return bool(set_bonus_manager.call("should_fire_execution_shot"))
+	return set_bonus_manager.call("should_fire_execution_shot") == true
 
 func _find_strongest_enemy() -> Node2D:
 	var strongest_enemy: Node2D
@@ -302,3 +333,28 @@ func _find_strongest_enemy() -> Node2D:
 				strongest_hp = enemy_hp
 				strongest_enemy = enemy
 	return strongest_enemy
+
+func _should_log_set_bonus_events() -> bool:
+	if set_bonus_manager == null:
+		return false
+	return set_bonus_manager.get("log_set_bonus_changes") == true
+
+func _get_player_damage_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_damage_stat_multiplier"):
+		return maxf(float(owner_player.call("get_damage_stat_multiplier")), 0.0)
+	return 1.0
+
+func _get_player_attack_speed_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_attack_speed_multiplier"):
+		return maxf(float(owner_player.call("get_attack_speed_multiplier")), 0.01)
+	return 1.0
+
+func _get_player_attack_range_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_attack_range_multiplier"):
+		return maxf(float(owner_player.call("get_attack_range_multiplier")), 0.01)
+	return 1.0
+
+func _get_player_projectile_speed_multiplier() -> float:
+	if owner_player != null and owner_player.has_method("get_projectile_speed_multiplier"):
+		return maxf(float(owner_player.call("get_projectile_speed_multiplier")), 0.01)
+	return 1.0

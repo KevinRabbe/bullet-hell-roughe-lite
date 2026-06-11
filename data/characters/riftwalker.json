@@ -1,7 +1,37 @@
 {
   "id": "riftwalker",
   "display_name": "The Riftwalker",
-  "description": "Placeholder: portal-stat specialist archetype.",
+  "description": "Portal-risk specialist with more frequent, luckier, and more dangerous rifts.",
+  "roster_order": 4,
+  "visual_path": "res://assets/sprites/characters/riftwalker/character_c_riftwalker.png",
+  "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_pistol"],
-  "passive_tags": ["placeholder_passive"]
+  "family_weapon_ids": [
+    "rift_pistol",
+    "rift_blaster",
+    "phase_crossbow",
+    "rift_mine_launcher",
+    "reality_bow",
+    "anchor_cannon"
+  ],
+  "preferred_weapon_family": "portal",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {
+    "portal_frequency": 1.25,
+    "portal_reward_multiplier": 1.2
+  },
+  "stat_bonuses": {
+    "portal_luck": 0.1,
+    "portal_instability": 0.15
+  },
+  "portal_event_biases": {
+    "double_elite": 1.25,
+    "power_for_hp_loss": 1.2,
+    "enemy_flood_20s": 0.9
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.04,
+    "3": 0.06
+  },
+  "passive_tags": ["rift_sense", "unstable_path"]
 }

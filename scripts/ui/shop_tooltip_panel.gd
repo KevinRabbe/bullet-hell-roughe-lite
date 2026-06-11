@@ -13,6 +13,7 @@ var offer_buttons: Array[Button] = []
 var tooltip_panel: Panel
 var tooltip_title: Label
 var tooltip_body: Label
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	if shop_controller_path != NodePath():
@@ -72,15 +73,10 @@ func _get_offer(index: int) -> Dictionary:
 	return {}
 
 func _build_weapon_tooltip(weapon_id: String) -> String:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if not ResourceLoader.exists(resource_path):
-		return "No WeaponData found."
-	var weapon_data := load(resource_path) as WeaponData
+	var weapon_data := _load_weapon_data(weapon_id)
 	if weapon_data == null:
 		return "No WeaponData found."
-	var family := weapon_data.family
-	if family == "":
-		family = weapon_data.family_id
+	var family := weapon_data.get_family_value() if weapon_data.has_method("get_family_value") else weapon_data.family
 	var tags_text := ", ".join(weapon_data.tags)
 	if tags_text == "":
 		tags_text = "-"
@@ -95,3 +91,16 @@ func _build_item_tooltip(item_id: String) -> String:
 func _hide_tooltip() -> void:
 	if tooltip_panel != null:
 		tooltip_panel.visible = false
+
+func _load_weapon_data(weapon_id: String) -> WeaponData:
+	if weapon_id == "":
+		return null
+	if _weapon_data_cache.has(weapon_id):
+		return _weapon_data_cache[weapon_id] as WeaponData
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if not ResourceLoader.exists(resource_path):
+		return null
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[weapon_id] = loaded
+	return loaded

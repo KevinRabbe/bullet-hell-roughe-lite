@@ -7,6 +7,7 @@ const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
 
 @export var equipped_weapon_ids: Array[String] = []
 var equipped_weapons: Array[Dictionary] = []
+var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	_migrate_legacy_ids_if_needed()
@@ -33,19 +34,19 @@ func get_grant_block_reason(weapon_id: String, incoming_rarity: String = "common
 
 func can_merge_slot(slot_index: int) -> bool:
 	var result := _evaluate_slot_merge(slot_index)
-	return bool(result.get("can_merge", false))
+	return result.get("can_merge", false) == true
 
 func get_merge_slot_state(slot_index: int) -> Dictionary:
 	var result := _evaluate_slot_merge(slot_index)
 	return {
-		"state": "merge_available" if bool(result.get("can_merge", false)) else "merge_blocked",
-		"can_merge": bool(result.get("can_merge", false)),
+		"state": "merge_available" if result.get("can_merge", false) == true else "merge_blocked",
+		"can_merge": result.get("can_merge", false) == true,
 		"message": str(result.get("message", ""))
 	}
 
 func try_merge_slot(slot_index: int) -> Dictionary:
 	var result := _evaluate_slot_merge(slot_index)
-	if not bool(result.get("can_merge", false)):
+	if result.get("can_merge", false) != true:
 		return {
 			"success": false,
 			"message": str(result.get("message", "Cannot merge this slot.")),
@@ -56,10 +57,17 @@ func try_merge_slot(slot_index: int) -> Dictionary:
 	if target_index < 0 or partner_index < 0:
 		return {"success": false, "message": "Cannot merge this slot.", "new_rarity": ""}
 	var current_entry: Dictionary = equipped_weapons[target_index]
+	var partner_entry := _get_entry(partner_index)
 	var next_rarity := str(result.get("new_rarity", ""))
 	equipped_weapons.remove_at(partner_index)
 	if partner_index < target_index:
 		target_index -= 1
+	current_entry["kill_count"] = int(current_entry.get("kill_count", 0)) + int(partner_entry.get("kill_count", 0))
+	current_entry["milestones_earned"] = int(current_entry.get("milestones_earned", 0)) + int(partner_entry.get("milestones_earned", 0))
+	current_entry["weapon_bonus_overrides"] = _merge_bonus_overrides(
+		current_entry.get("weapon_bonus_overrides", {}),
+		partner_entry.get("weapon_bonus_overrides", {})
+	)
 	current_entry["rarity"] = next_rarity
 	equipped_weapons[target_index] = current_entry
 	_sync_legacy_ids()
@@ -88,7 +96,7 @@ func equip_weapon(weapon_id: String) -> bool:
 		return false
 	if not has_space():
 		return false
-	equipped_weapons.append({"id": weapon_id, "rarity": "common"})
+	equipped_weapons.append(_build_weapon_entry(weapon_id, "common"))
 	_sync_legacy_ids()
 	loadout_changed.emit()
 	return true
@@ -99,7 +107,7 @@ func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "commo
 	if RARITY_ORDER.find(incoming_rarity) == -1:
 		incoming_rarity = "common"
 	if has_space():
-		equipped_weapons.append({"id": weapon_id, "rarity": incoming_rarity})
+		equipped_weapons.append(_build_weapon_entry(weapon_id, incoming_rarity))
 		_sync_legacy_ids()
 		loadout_changed.emit()
 		return {"success": true, "combined": false, "rarity": incoming_rarity}
@@ -117,6 +125,42 @@ func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "commo
 	_sync_legacy_ids()
 	loadout_changed.emit()
 	return {"success": true, "combined": true, "rarity": next_rarity}
+
+func register_weapon_kill(slot_index: int, weapon_data: WeaponData, kill_requirement_multiplier: float = 1.0) -> Dictionary:
+	if slot_index < 0 or slot_index >= equipped_weapons.size():
+		return {"triggered": false}
+	if weapon_data == null:
+		return {"triggered": false}
+	var entry := _get_entry(slot_index)
+	entry["kill_count"] = int(entry.get("kill_count", 0)) + 1
+	equipped_weapons[slot_index] = entry
+	var base_kills := maxi(weapon_data.kill_milestone_base_kills, 0)
+	if base_kills <= 0 or weapon_data.kill_milestone_stat_id == "" or is_zero_approx(weapon_data.kill_milestone_amount):
+		return {"triggered": false}
+	var required_kills := maxi(int(round(float(base_kills) * maxf(kill_requirement_multiplier, 0.01))), 1)
+	var next_milestone := int(entry.get("milestones_earned", 0)) + 1
+	var kill_count := int(entry.get("kill_count", 0))
+	if kill_count < required_kills * next_milestone:
+		return {"triggered": false}
+	entry["milestones_earned"] = next_milestone
+	if weapon_data.kill_milestone_scope == "weapon":
+		entry["weapon_bonus_overrides"] = _apply_weapon_bonus_override(
+			entry.get("weapon_bonus_overrides", {}),
+			weapon_data.kill_milestone_stat_id,
+			weapon_data.kill_milestone_amount
+		)
+	equipped_weapons[slot_index] = entry
+	loadout_changed.emit()
+	return {
+		"triggered": true,
+		"stat_id": weapon_data.kill_milestone_stat_id,
+		"amount": weapon_data.kill_milestone_amount,
+		"scope": weapon_data.kill_milestone_scope,
+		"weapon_id": str(entry.get("id", "")),
+		"kill_count": kill_count,
+		"milestones_earned": next_milestone,
+		"required_kills": required_kills
+	}
 
 func clear_loadout() -> void:
 	equipped_weapons.clear()
@@ -160,6 +204,12 @@ func _find_weapon_entry_index(weapon_id: String) -> int:
 		if str(entry.get("id", "")) == weapon_id:
 			return index
 	return -1
+
+func _get_entry(index: int) -> Dictionary:
+	var entry_variant := equipped_weapons[index]
+	if entry_variant is Dictionary:
+		return (entry_variant as Dictionary).duplicate(true)
+	return {}
 
 func _find_combine_pair(weapon_id: String) -> Array[int]:
 	var rarity_indexes: Dictionary = {}
@@ -270,17 +320,41 @@ func _migrate_legacy_ids_if_needed() -> void:
 	if not equipped_weapons.is_empty() or equipped_weapon_ids.is_empty():
 		return
 	for weapon_id in equipped_weapon_ids:
-		equipped_weapons.append({"id": weapon_id, "rarity": "common"})
+		equipped_weapons.append(_build_weapon_entry(weapon_id, "common"))
+
+func _build_weapon_entry(weapon_id: String, rarity: String) -> Dictionary:
+	return {
+		"id": weapon_id,
+		"rarity": rarity,
+		"kill_count": 0,
+		"milestones_earned": 0,
+		"weapon_bonus_overrides": {}
+	}
+
+func _apply_weapon_bonus_override(current_overrides_variant: Variant, stat_id: String, amount: float) -> Dictionary:
+	var current_overrides: Dictionary = {}
+	if current_overrides_variant is Dictionary:
+		current_overrides = (current_overrides_variant as Dictionary).duplicate(true)
+	current_overrides[stat_id] = float(current_overrides.get(stat_id, 0.0)) + amount
+	return current_overrides
+
+func _merge_bonus_overrides(left_variant: Variant, right_variant: Variant) -> Dictionary:
+	var merged: Dictionary = {}
+	if left_variant is Dictionary:
+		for stat_id_variant in (left_variant as Dictionary).keys():
+			var stat_id := str(stat_id_variant)
+			merged[stat_id] = float((left_variant as Dictionary).get(stat_id, 0.0))
+	if right_variant is Dictionary:
+		for stat_id_variant in (right_variant as Dictionary).keys():
+			var stat_id := str(stat_id_variant)
+			merged[stat_id] = float(merged.get(stat_id, 0.0)) + float((right_variant as Dictionary).get(stat_id, 0.0))
+	return merged
 
 func _get_family_id_from_weapon_id(weapon_id: String) -> String:
-	# Try to load the weapon data to get its actual family, to respect Stage 8.1
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if ResourceLoader.exists(resource_path):
-		var weapon_data := load(resource_path) as WeaponData
-		if weapon_data != null and weapon_data.family != "":
-			return weapon_data.family
-		elif weapon_data != null and weapon_data.family_id != "":
-			return weapon_data.family_id
+	var weapon_data := _load_weapon_data(weapon_id)
+	if weapon_data != null:
+		if weapon_data.has_method("get_family_value"):
+			return weapon_data.get_family_value()
 			
 	# Fallback parsing
 	if "/" in weapon_id:
@@ -288,3 +362,16 @@ func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	if "_" in weapon_id:
 		return weapon_id.split("_", false, 1)[0]
 	return weapon_id
+
+func _load_weapon_data(weapon_id: String) -> WeaponData:
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if _weapon_data_cache.has(resource_path):
+		var cached: Variant = _weapon_data_cache[resource_path]
+		if cached is WeaponData:
+			return cached
+	if not ResourceLoader.exists(resource_path):
+		return null
+	var loaded := load(resource_path) as WeaponData
+	if loaded != null:
+		_weapon_data_cache[resource_path] = loaded
+	return loaded

@@ -5,12 +5,16 @@
 [resource]
 script = ExtResource("1")
 id = "harvester_placeholder"
-display_name = "Harvester Placeholder"
-description = "Data stub weapon for the Harvester family."
-family_id = "harvester"
-cooldown_seconds = 0.5
-damage = 8.0
+display_name = "Scrap Pistol"
+description = "Salvaged sidearm that grows stronger as the Harvester feeds it kills."
+family = "harvester"
+cooldown = 0.5
+base_damage = 8.0
 projectile_speed = 700.0
-attack_range = 1.0
-projectile_lifetime_seconds = 1.8
+range = 1.0
+projectile_lifetime = 1.8
 price = 6
+shop_enabled = false
+kill_milestone_base_kills = 10
+kill_milestone_stat_id = "damage"
+kill_milestone_amount = 0.08

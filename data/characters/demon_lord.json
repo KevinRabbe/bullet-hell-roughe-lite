@@ -1,7 +1,45 @@
 {
   "id": "demon_lord",
   "display_name": "The Demon Lord",
-  "description": "Placeholder: high-risk hellfire scaling archetype.",
-  "starting_weapon_ids": ["hellfire_orb"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Hellfire destruction archetype with stronger burn output and no sustain fallback.",
+  "roster_order": 3,
+  "visual_path": "res://assets/sprites/characters/demon_lord/character_b_sprite.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["hellfire_scepter"],
+  "family_weapon_ids": [
+    "hellfire_scepter",
+    "demon_flame_orb",
+    "infernal_breath",
+    "flame_halo",
+    "hell_chain",
+    "demon_crown"
+  ],
+  "preferred_weapon_family": "hellfire",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {
+    "burn_damage": 1.35,
+    "hp_regen": 0.0
+  },
+  "status_power_multipliers": {
+    "hellfire_burn": 1.35
+  },
+  "status_propagation_rules": {
+    "hellfire_burn": {
+      "radius": 110.0,
+      "chance": 0.4,
+      "duration_scale": 0.75,
+      "max_targets": 2,
+      "spread_status_count_id": "hellfire_burn",
+      "spread_status_count_radius": 220.0,
+      "spread_status_count_limit": 6,
+      "spread_chance_per_marked_enemy": 0.04,
+      "spread_radius_per_marked_enemy": 8.0,
+      "spread_max_targets_per_marked_enemy": 0.15
+    }
+  },
+  "portal_event_biases": {
+    "enemy_flood_20s": 1.35,
+    "power_for_hp_loss": 1.15
+  },
+  "passive_tags": ["infernal_flame", "no_sustain"]
 }

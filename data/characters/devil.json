@@ -1,7 +1,73 @@
 {
   "id": "devil",
   "display_name": "The Devil",
-  "description": "Placeholder: cursed-power trading archetype.",
-  "starting_weapon_ids": ["devil_fang"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Endurance-focused pact bearer with high survivability and very low direct damage.",
+  "roster_order": 5,
+  "visual_path": "res://assets/sprites/characters/devil/devil_character.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["devils_contract"],
+  "family_weapon_ids": [
+    "devils_contract",
+    "horned_shield",
+    "sin_chain",
+    "infernal_plate",
+    "debt_collector",
+    "throne_of_sin"
+  ],
+  "preferred_weapon_family": "devil",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {
+    "damage": 0.6
+  },
+  "stat_bonuses": {
+    "max_hp": 40.0,
+    "armor": 4.0,
+    "hp_regen": 1.5
+  },
+  "status_power_multipliers": {
+    "devils_debt": 1.35
+  },
+  "status_propagation_rules": {
+    "devils_debt": {
+      "radius": 105.0,
+      "chance": 0.35,
+      "duration_scale": 0.85,
+      "max_targets": 2,
+      "pressure_radius": 150.0,
+      "pressure_target_limit": 6,
+      "spread_chance_per_nearby_enemy": 0.05,
+      "spread_radius_per_nearby_enemy": 10.0,
+      "spread_max_targets_per_nearby_enemy": 0.2
+    }
+  },
+  "portal_event_biases": {
+    "double_elite": 1.2,
+    "power_for_hp_loss": 1.3,
+    "enemy_flood_20s": 0.9
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.03,
+    "3": 0.04
+  },
+  "passive_status_rules": [
+    {
+      "trigger": "on_enemy_hit",
+      "status_id": "devils_debt",
+      "duration": 4.0,
+      "tick_interval": 1.0,
+      "max_hp_fraction": 0.008,
+      "max_stacks": 4
+    },
+    {
+      "trigger": "proximity_tick",
+      "status_id": "devils_debt",
+      "radius": 92.0,
+      "interval": 1.0,
+      "duration": 3.5,
+      "tick_interval": 1.0,
+      "max_hp_fraction": 0.004,
+      "max_stacks": 4
+    }
+  ],
+  "passive_tags": ["unbreakable_pact", "low_direct_damage"]
 }

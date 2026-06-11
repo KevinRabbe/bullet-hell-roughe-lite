@@ -38,18 +38,16 @@ var card_lock_buttons: Array[Button] = []
 var card_panels: Array[Panel] = []
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
+var _is_dirty: bool = true
+var _weapon_cache: Dictionary = {}
 
 func _ready() -> void:
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
-	_refresh_all()
-
-func _process(_delta: float) -> void:
-	if panel == null:
-		return
-	if panel.visible:
-		_refresh_all()
+	_connect_runtime_updates()
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _resolve_references() -> void:
 	shop_controller = get_node_or_null(shop_controller_path)
@@ -67,6 +65,44 @@ func _resolve_references() -> void:
 func _init_view_model() -> void:
 	shop_view_model = ShopViewModelScript.new()
 	shop_view_model.configure(shop_controller, player, weapon_loadout)
+
+func _connect_runtime_updates() -> void:
+	var state_changed_callable := Callable(self, "_on_shop_state_changed")
+	var payload_changed_callable := Callable(self, "_on_shop_payload_changed")
+	if shop_controller != null:
+		if shop_controller.has_signal("shop_opened") and not shop_controller.is_connected("shop_opened", state_changed_callable):
+			shop_controller.connect("shop_opened", state_changed_callable)
+		if shop_controller.has_signal("shop_closed") and not shop_controller.is_connected("shop_closed", state_changed_callable):
+			shop_controller.connect("shop_closed", state_changed_callable)
+		if shop_controller.has_signal("offers_changed") and not shop_controller.is_connected("offers_changed", payload_changed_callable):
+			shop_controller.connect("offers_changed", payload_changed_callable)
+		if shop_controller.has_signal("reroll_cost_changed") and not shop_controller.is_connected("reroll_cost_changed", payload_changed_callable):
+			shop_controller.connect("reroll_cost_changed", payload_changed_callable)
+		if shop_controller.has_signal("offer_purchased") and not shop_controller.is_connected("offer_purchased", payload_changed_callable):
+			shop_controller.connect("offer_purchased", payload_changed_callable)
+	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", payload_changed_callable):
+		weapon_loadout.connect("loadout_changed", payload_changed_callable)
+	if player != null and player.has_signal("ui_snapshot_changed") and not player.is_connected("ui_snapshot_changed", payload_changed_callable):
+		player.connect("ui_snapshot_changed", payload_changed_callable)
+
+func _mark_dirty() -> void:
+	_is_dirty = true
+
+func _refresh_if_needed() -> void:
+	if panel == null:
+		return
+	if not _is_dirty:
+		return
+	_refresh_all()
+	_is_dirty = false
+
+func _on_shop_state_changed(_value: Variant = null) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
+
+func _on_shop_payload_changed(_arg0: Variant = null, _arg1: Variant = null) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _build_layout_once() -> void:
 	if panel == null:
@@ -310,7 +346,7 @@ func _refresh_offer_cards() -> void:
 				button.text = "N/A"
 				button.disabled = true
 			continue
-		var offer := offers[i]
+		var offer: Dictionary = offers[i]
 		var offer_type := str(offer.get("type", ""))
 		_apply_card_border(i, offer_type)
 		title.text = str(offer.get("label", "Offer"))
@@ -339,16 +375,16 @@ func _build_offer_description(offer: Dictionary) -> String:
 		var weapon_data := _load_weapon_data(weapon_id)
 		if weapon_data == null:
 			return "Weapon"
-		var rarity_text := str(offer.get("rarity", weapon_data.rarity)).capitalize()
+		var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
 		var desc_text := weapon_data.description
 		if desc_text == "":
 			desc_text = "No description."
 		return "[color=#7fd0ff]Rarity: %s[/color]\n%s\nDMG %.1f\nCD %.2fs\nRange x%.2f" % [
 			rarity_text,
 			desc_text,
-			weapon_data.damage,
-			weapon_data.cooldown_seconds,
-			weapon_data.attack_range
+			weapon_data.get_damage_value(),
+			weapon_data.get_cooldown_value(),
+			weapon_data.get_attack_range_value()
 		]
 	if offer_type == "item":
 		var item_id := str(offer.get("id", ""))
@@ -391,11 +427,19 @@ func _refresh_weapon_slots() -> void:
 			var data := _load_weapon_data(weapon_id)
 			icon_button.icon = data.icon if data != null else null
 			icon_button.disabled = false
+			var base_label := ""
 			if data != null and data.display_name != "":
 				var short_name := data.display_name.substr(0, mini(3, data.display_name.length()))
-				slot_label.text = "%s %s" % [short_name, rarity.capitalize().substr(0, 1)]
+				base_label = "%s %s" % [short_name, rarity.capitalize().substr(0, 1)]
 			else:
-				slot_label.text = "%s %s" % [weapon_id.substr(0, mini(3, weapon_id.length())), rarity.capitalize().substr(0, 1)]
+				base_label = "%s %s" % [weapon_id.substr(0, mini(3, weapon_id.length())), rarity.capitalize().substr(0, 1)]
+			var kill_requirement := int(entry.get("kill_requirement", 0))
+			var kill_progress := int(entry.get("kill_progress", 0))
+			if kill_requirement > 0:
+				var milestone_summary := _format_milestone_summary(entry)
+				slot_label.text = "%s\n%d/%d%s" % [base_label, kill_progress, kill_requirement, milestone_summary]
+			else:
+				slot_label.text = base_label
 		else:
 			icon_button.icon = null
 			icon_button.disabled = true
@@ -408,7 +452,8 @@ func _refresh_weapon_slots() -> void:
 
 func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
-	_update_merge_button_state()
+	_mark_dirty()
+	_refresh_if_needed()
 
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
@@ -419,7 +464,7 @@ func _on_merge_selected_pressed() -> void:
 	if result_variant is Dictionary:
 		var result: Dictionary = result_variant
 		print(str(result.get("message", "")))
-		if bool(result.get("success", false)):
+		if result.get("success", false) == true:
 			selected_weapon_slot = -1
 	_refresh_all()
 
@@ -434,7 +479,7 @@ func _update_merge_button_state() -> void:
 		var state_variant: Variant = weapon_loadout.call("get_merge_slot_state", selected_weapon_slot)
 		if state_variant is Dictionary:
 			var merge_state: Dictionary = state_variant
-			var can_merge := bool(merge_state.get("can_merge", false))
+			var can_merge: bool = merge_state.get("can_merge", false) == true
 			merge_selected_button.disabled = not can_merge
 			if can_merge:
 				merge_selected_button.text = "Merge selected"
@@ -443,9 +488,38 @@ func _update_merge_button_state() -> void:
 			return
 	var fallback_can_merge := false
 	if weapon_loadout != null and weapon_loadout.has_method("can_merge_slot"):
-		fallback_can_merge = bool(weapon_loadout.call("can_merge_slot", selected_weapon_slot))
+		fallback_can_merge = weapon_loadout.call("can_merge_slot", selected_weapon_slot) == true
 	merge_selected_button.disabled = not fallback_can_merge
 	merge_selected_button.text = "Merge selected" if fallback_can_merge else "No valid merge"
+
+func _format_milestone_summary(entry: Dictionary) -> String:
+	var stat_id := str(entry.get("milestone_stat_id", ""))
+	var amount := float(entry.get("milestone_amount", 0.0))
+	if stat_id == "" or is_zero_approx(amount):
+		return ""
+	var stat_label := _milestone_stat_short_label(stat_id)
+	if stat_label == "":
+		return ""
+	var amount_text := _format_milestone_amount(amount)
+	return "\n+%s %s" % [amount_text, stat_label]
+
+func _milestone_stat_short_label(stat_id: String) -> String:
+	match stat_id:
+		"damage":
+			return "DMG"
+		"attack_speed":
+			return "AS"
+		"attack_range":
+			return "RNG"
+		"max_hp":
+			return "HP"
+		_:
+			return stat_id.capitalize()
+
+func _format_milestone_amount(amount: float) -> String:
+	if is_equal_approx(amount, round(amount)):
+		return str(int(round(amount)))
+	return "%.2f" % amount
 
 func _apply_card_border(index: int, offer_type: String) -> void:
 	if index < 0 or index >= card_panels.size():
@@ -467,10 +541,17 @@ func _apply_card_border(index: int, offer_type: String) -> void:
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	if weapon_id == "":
 		return null
+	if _weapon_cache.has(weapon_id):
+		var cached: Variant = _weapon_cache[weapon_id]
+		if cached is WeaponData:
+			return cached
 	var path := "res://data/weapons/%s.tres" % weapon_id
 	if not ResourceLoader.exists(path):
 		return null
-	return load(path) as WeaponData
+	var loaded := load(path) as WeaponData
+	if loaded != null:
+		_weapon_cache[weapon_id] = loaded
+	return loaded
 
 func _find_item(item_id: String) -> ItemData:
 	for item in ItemDatabase.get_prototype_items():
@@ -485,21 +566,31 @@ func _can_buy_weapon_offer(offer: Dictionary) -> bool:
 	if loadout == null:
 		return false
 	var weapon_id := str(offer.get("id", ""))
+	var incoming_rarity := _get_offer_weapon_rarity(offer)
 	if weapon_id == "":
 		return false
 	if loadout.has_method("can_grant_weapon"):
-		return bool(loadout.call("can_grant_weapon", weapon_id))
+		return loadout.call("can_grant_weapon", weapon_id, incoming_rarity) == true
 	if loadout.has_method("has_space"):
-		return bool(loadout.call("has_space"))
+		return loadout.call("has_space") == true
 	return true
 
 func _get_weapon_offer_block_reason(offer: Dictionary) -> String:
 	var default_message := "Need empty slot or valid same-rarity merge."
 	var weapon_id := str(offer.get("id", ""))
+	var incoming_rarity := _get_offer_weapon_rarity(offer)
 	if weapon_id == "":
 		return default_message
 	if shop_view_model != null:
-		var reason := str(shop_view_model.get_weapon_offer_block_reason(weapon_id))
+		var reason := str(shop_view_model.get_weapon_offer_block_reason(weapon_id, incoming_rarity))
 		if reason != "":
 			return reason
 	return default_message
+
+func _get_offer_weapon_rarity(offer: Dictionary, weapon_data: WeaponData = null) -> String:
+	var rolled_rarity := str(offer.get("rolled_rarity", ""))
+	if rolled_rarity != "":
+		return rolled_rarity
+	if weapon_data != null and weapon_data.rarity != "":
+		return weapon_data.rarity
+	return "common"

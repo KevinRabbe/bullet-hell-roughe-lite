@@ -1,7 +1,33 @@
 {
   "id": "harvester",
   "display_name": "The Harvester",
-  "description": "Placeholder: sustain and drain-focused archetype.",
-  "starting_weapon_ids": ["scythe_alpha"],
-  "passive_tags": ["placeholder_passive"]
+  "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
+  "roster_order": 2,
+  "starting_weapon_ids": ["scrap_pistol"],
+  "family_weapon_ids": [
+    "scrap_pistol",
+    "bone_knife",
+    "heart_collector",
+    "rusted_smg",
+    "grave_rifle",
+    "butcher_tool"
+  ],
+  "preferred_weapon_family": "harvester",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {
+    "damage": 0.85
+  },
+  "family_kill_requirement_multipliers": {
+    "harvester": 0.8
+  },
+  "portal_event_biases": {
+    "enemy_flood_20s": 1.45,
+    "power_for_hp_loss": 1.15,
+    "double_elite": 0.8
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.02,
+    "3": 0.03
+  },
+  "passive_tags": ["efficient_harvest", "weak_start"]
 }

@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/rift_rifle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+id = "grave_rifle"
+display_name = "Grave Rifle"
+description = "Long relic rifle that learns the lane and extends its reach with kills."
+cooldown = 0.34
+base_damage = 7.0
+projectile_speed = 780.0
+range = 1.15
+projectile_lifetime = 2.1
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 6
+tags = Array[String](["harvest", "rifle", "range", "scaling"])
+kill_milestone_base_kills = 10
+kill_milestone_stat_id = "attack_range"
+kill_milestone_amount = 0.07
+kill_milestone_scope = "weapon"

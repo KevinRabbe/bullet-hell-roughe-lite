@@ -15,6 +15,10 @@ extends Resource
 @export var ranged_damage: float = 0.0
 @export var ranged_interval_seconds: float = 0.0
 @export var ranged_attack_range: float = 0.0
+@export var visual_texture_path: String = ""
+@export var visual_scale: float = 0.09
+@export var projectile_texture_path: String = ""
+@export var projectile_rotation_offset: float = PI
 
 @export var is_elite: bool = false
 @export var is_boss: bool = false

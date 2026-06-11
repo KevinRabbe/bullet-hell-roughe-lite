@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/demon_lord/weapon_5_infernal_sigil.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/demon_lord/projectile_1_skull_flame.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "infernal_breath"
+display_name = "Infernal Breath"
+description = "Short-range burst of hellfire that trades range for heavy close-up pressure."
+cooldown = 0.95
+base_damage = 20.0
+projectile_speed = 560.0
+range = 0.72
+projectile_lifetime = 1.2
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "hellfire"
+price = 7
+tags = Array[String](["hellfire", "close_range", "burst", "burn"])
+on_hit_status_id = "hellfire_burn"
+on_hit_status_duration = 2.8
+on_hit_status_tick_interval = 0.65
+on_hit_status_flat_damage = 1.8
+on_hit_status_max_stacks = 5
+on_hit_status_power_stat_id = "burn_damage"
+orbit_radius_multiplier = 0.92
+orbit_scale_multiplier = 1.08

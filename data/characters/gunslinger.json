@@ -2,6 +2,39 @@
   "id": "gunslinger",
   "display_name": "The Gunslinger",
   "description": "Elite-hunter marksman with weaker status power.",
+  "roster_order": 1,
   "starting_weapon_ids": ["heavy_pistol"],
+  "family_weapon_ids": [
+    "heavy_pistol",
+    "gunslinger_smg",
+    "gunslinger_shotgun",
+    "gunslinger_revolver",
+    "gunslinger_assault_rifle",
+    "gunslinger_sniper_rifle"
+  ],
+  "preferred_weapon_family": "gunslinger",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {
+    "burn_damage": 0.8,
+    "poison_damage": 0.8,
+    "bleed_damage": 0.8,
+    "frost_power": 0.8
+  },
+  "damage_rules": [
+    {
+      "targets": ["elite", "boss", "strongest"],
+      "multiplier": 1.35,
+      "debug_label": "GUNSLINGER PASSIVE: +35% damage vs priority target"
+    }
+  ],
+  "portal_event_biases": {
+    "double_elite": 1.3,
+    "power_for_hp_loss": 1.15,
+    "enemy_flood_20s": 0.85
+  },
+  "portal_reward_tier_biases": {
+    "2": 0.02,
+    "3": 0.03
+  },
   "passive_tags": ["bonus_vs_elite", "bonus_vs_boss", "status_weakened"]
 }

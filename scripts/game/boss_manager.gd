@@ -1,5 +1,8 @@
 extends Node
 
+signal boss_spawned_signal
+signal boss_defeated_signal
+
 @export var boss_scene: PackedScene
 @export var player_path: NodePath
 @export var spawn_after_seconds: float = 45.0
@@ -8,6 +11,7 @@ extends Node
 var player: Node2D
 var boss_spawned: bool = false
 var elapsed_seconds: float = 0.0
+var active_boss: Node2D
 
 func _ready() -> void:
 	if player_path != NodePath():
@@ -46,10 +50,24 @@ func _spawn_gate_beast() -> void:
 	if boss.has_method("set_target"):
 		boss.call("set_target", player)
 	get_tree().current_scene.add_child(boss)
+	active_boss = boss
 	boss_spawned = true
+	boss_spawned_signal.emit()
 	print("Boss spawned: Gate Beast")
-	if boss.has_signal("tree_exited"):
-		boss.tree_exited.connect(_on_gate_beast_defeated)
+	if boss.has_signal("tree_exiting"):
+		boss.tree_exiting.connect(_on_gate_beast_exiting.bind(boss))
+
+func _on_gate_beast_exiting(boss: Node2D) -> void:
+	if boss != active_boss:
+		return
+	active_boss = null
+	if boss == null or not is_instance_valid(boss):
+		return
+	if float(boss.get("current_hp")) > 0.0:
+		boss_spawned = false
+		return
+	_on_gate_beast_defeated()
 
 func _on_gate_beast_defeated() -> void:
+	boss_defeated_signal.emit()
 	print("Boss defeated: Gate Beast")

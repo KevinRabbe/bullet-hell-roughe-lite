@@ -19,19 +19,19 @@ func get_snapshot() -> Dictionary:
 		"offers": _get_offers(),
 		"items_text": _get_items_text(player_snapshot),
 		"weapon_count": _get_weapon_count(),
-		"weapon_entries": _get_weapon_entries(),
+		"weapon_entries": _get_weapon_entries(player_snapshot),
 		"stats_text": _get_stats_text(player_snapshot),
 		"is_shop_open": _is_shop_open()
 	}
 
-func get_weapon_offer_block_reason(weapon_id: String) -> String:
+func get_weapon_offer_block_reason(weapon_id: String, incoming_rarity: String = "common") -> String:
 	if player == null:
 		return "Need empty slot or valid same-rarity merge."
 	var loadout: Node = player.get_node_or_null("WeaponLoadout")
 	if loadout == null:
 		return "Need empty slot or valid same-rarity merge."
 	if loadout.has_method("get_grant_block_reason"):
-		var reason := str(loadout.call("get_grant_block_reason", weapon_id))
+		var reason := str(loadout.call("get_grant_block_reason", weapon_id, incoming_rarity))
 		if reason != "":
 			return reason
 	return "Need empty slot or valid same-rarity merge."
@@ -87,7 +87,15 @@ func _get_weapon_count() -> int:
 			count += 1
 	return count
 
-func _get_weapon_entries() -> Array[Dictionary]:
+func _get_weapon_entries(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
+	var snapshot_entries_variant: Variant = player_snapshot.get("weapon_entries", [])
+	if snapshot_entries_variant is Array:
+		var snapshot_entries: Array[Dictionary] = []
+		for entry_variant in snapshot_entries_variant:
+			if entry_variant is Dictionary:
+				snapshot_entries.append((entry_variant as Dictionary).duplicate(true))
+		if not snapshot_entries.is_empty():
+			return snapshot_entries
 	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_entries"):
 		var entries_variant: Variant = weapon_loadout.call("get_weapon_entries")
 		if entries_variant is Array:
@@ -126,5 +134,5 @@ func _get_player_snapshot() -> Dictionary:
 
 func _is_shop_open() -> bool:
 	if shop_controller != null and shop_controller.has_method("is_shop_open"):
-		return bool(shop_controller.call("is_shop_open"))
+		return shop_controller.call("is_shop_open") == true
 	return false

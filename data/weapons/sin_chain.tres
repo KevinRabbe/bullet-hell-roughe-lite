@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/devil/devil_hell_chain.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/devil/devil_projectile_orb.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "sin_chain"
+display_name = "Sin Chain"
+description = "Rapid pact-fire that stacks Devil's Debt quickly for longer attrition fights."
+cooldown = 0.2
+base_damage = 3.5
+projectile_speed = 680.0
+range = 0.95
+projectile_lifetime = 1.6
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "devil"
+price = 5
+tags = Array[String](["devil", "chain", "debt", "rapid"])
+on_hit_status_id = "devils_debt"
+on_hit_status_duration = 3.8
+on_hit_status_tick_interval = 1.0
+on_hit_status_max_hp_fraction = 0.0065
+on_hit_status_max_stacks = 5
+orbit_scale_multiplier = 0.94

@@ -7,6 +7,7 @@ extends Area2D
 
 var direction: Vector2 = Vector2.RIGHT
 var life_left: float = 0.0
+var source_enemy: Node
 @onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -28,9 +29,14 @@ func set_direction(new_direction: Vector2) -> void:
 		if visual != null:
 			visual.rotation = direction.angle() + visual_rotation_offset
 
+func set_source_enemy(new_source_enemy: Node) -> void:
+	source_enemy = new_source_enemy
+
 func _on_body_entered(body: Node) -> void:
 	if body != null and body.is_in_group("players") and body.has_method("take_damage"):
 		body.call("take_damage", damage)
+		if body.has_method("notify_damaged_by_enemy"):
+			body.call("notify_damaged_by_enemy", source_enemy)
 		_spawn_impact_effect()
 		queue_free()
 
