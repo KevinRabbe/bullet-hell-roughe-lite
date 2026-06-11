@@ -8,9 +8,9 @@
 script = ExtResource("1")
 icon = ExtResource("2")
 projectile_texture = ExtResource("3")
-id = "reality_bow"
-display_name = "Reality Bow"
-description = "Stable long-range portal weapon that benefits from safer spacing and range scaling."
+id = "void_rifle"
+display_name = "Void Rifle"
+description = "Long-range rifle that stitches the battlefield with accurate void shots and clean spacing."
 cooldown = 0.42
 base_damage = 8.0
 projectile_speed = 820.0

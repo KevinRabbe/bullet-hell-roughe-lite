@@ -8,9 +8,9 @@
 script = ExtResource("1")
 icon = ExtResource("2")
 projectile_texture = ExtResource("3")
-id = "rift_pistol"
-display_name = "Rift Pistol"
-description = "Portal-infused sidearm for Riftwalker."
+id = "void_revolver"
+display_name = "Void Revolver"
+description = "Reliable sidearm that tears short-lived void lanes through space for the Riftwalker."
 family = "portal"
 cooldown = 0.4
 base_damage = 9.0

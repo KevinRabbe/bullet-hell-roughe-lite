@@ -8,9 +8,9 @@
 script = ExtResource("1")
 icon = ExtResource("2")
 projectile_texture = ExtResource("3")
-id = "rift_blaster"
-display_name = "Rift Blaster"
-description = "Close-range portal burst that destabilizes space with heavier shots."
+id = "rift_cannon"
+display_name = "Rift Cannon"
+description = "Close-range cannon that blasts condensed rift matter for heavy dimensional impact."
 cooldown = 0.9
 base_damage = 17.0
 projectile_speed = 580.0
