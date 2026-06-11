@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/weapon_02_lantern.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/harvester/projectile_01_skull_fireball.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "harvester_lantern"
+display_name = "Soul Lantern"
+description = "Launches a hungry soul flame that turns repeated kills into lasting vitality."
+cooldown = 0.58
+base_damage = 9.0
+projectile_speed = 680.0
+range = 0.95
+projectile_lifetime = 1.7
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 6
+shop_enabled = true
+tags = Array[String](["harvest", "soul", "lantern", "vitality"])
+kill_milestone_base_kills = 12
+kill_milestone_stat_id = "max_hp"
+kill_milestone_amount = 5.0
+kill_milestone_scope = "player"
