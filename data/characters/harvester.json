@@ -1,16 +1,18 @@
 {
   "id": "harvester",
   "display_name": "The Harvester",
-  "description": "Kill-scaling scavenger with a weak start and faster Harvester milestones.",
+  "description": "Death-soaked reaper who snowballs through kills, souls, and grim harvest milestones.",
   "roster_order": 2,
-  "starting_weapon_ids": ["scrap_pistol"],
+  "visual_path": "res://assets/sprites/characters/harvester/character_a_necromancer.png",
+  "visual_scale": 0.11,
+  "starting_weapon_ids": ["harvester_scythe"],
   "family_weapon_ids": [
-    "scrap_pistol",
-    "bone_knife",
-    "heart_collector",
-    "rusted_smg",
-    "grave_rifle",
-    "butcher_tool"
+    "harvester_scythe",
+    "harvester_lantern",
+    "harvester_grimoire",
+    "harvester_bell",
+    "harvester_eye_scepter",
+    "harvester_occult_weapon"
   ],
   "preferred_weapon_family": "harvester",
   "shop_weapon_family_bias": 0.2,

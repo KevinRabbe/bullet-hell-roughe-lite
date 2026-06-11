@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/weapon_03_grimoire.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/harvester/projectile_06_pink_magic_projectile.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "harvester_grimoire"
+display_name = "Grave Grimoire"
+description = "Cursed pages spit rapid necromantic volleys that reward sustained harvesting."
+cooldown = 0.14
+base_damage = 3.5
+projectile_speed = 720.0
+range = 0.88
+projectile_lifetime = 1.4
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 5
+shop_enabled = true
+tags = Array[String](["harvest", "grimoire", "rapid", "necromancy"])
+kill_milestone_base_kills = 14
+kill_milestone_stat_id = "attack_speed"
+kill_milestone_amount = 0.05
+kill_milestone_scope = "weapon"

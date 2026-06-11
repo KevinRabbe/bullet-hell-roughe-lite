@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/harvester/weapon_01_scythe.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/harvester/projectile_02_arcane_bow_sigil.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "harvester_scythe"
+display_name = "Harvester Scythe"
+description = "Reaping arc that cuts a clean lane and scales harder as the harvest grows."
+cooldown = 0.5
+base_damage = 8.0
+projectile_speed = 700.0
+range = 1.0
+projectile_lifetime = 1.2
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "harvester"
+price = 6
+shop_enabled = true
+tags = Array[String](["harvest", "scythe", "reap"])
+kill_milestone_base_kills = 10
+kill_milestone_stat_id = "damage"
+kill_milestone_amount = 0.08
+kill_milestone_scope = "weapon"
