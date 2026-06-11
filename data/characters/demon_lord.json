@@ -5,14 +5,14 @@
   "roster_order": 3,
   "visual_path": "res://assets/sprites/characters/demon_lord/character_b_sprite.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["hellfire_scepter"],
+  "starting_weapon_ids": ["cursed_lantern"],
   "family_weapon_ids": [
-    "hellfire_scepter",
-    "demon_flame_orb",
-    "infernal_breath",
-    "flame_halo",
-    "hell_chain",
-    "demon_crown"
+    "cursed_lantern",
+    "hellfire_orb",
+    "demonic_crown",
+    "hell_sphere",
+    "infernal_sigil",
+    "demonic_scepter"
   ],
   "preferred_weapon_family": "hellfire",
   "shop_weapon_family_bias": 0.2,
