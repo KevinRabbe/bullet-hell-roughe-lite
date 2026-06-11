@@ -9,14 +9,32 @@ signal level_up_pending_changed
 signal ui_snapshot_changed
 
 var stats: StatBlock = StatBlock.new()
-var current_hp: float
+var _current_hp_storage: float = 0.0
+var current_hp: float:
+	get:
+		if health_component != null and health_component.has_method("get_current_hp"):
+			return float(health_component.call("get_current_hp"))
+		return _current_hp_storage
+	set(value):
+		_current_hp_storage = value
+		if health_component != null and health_component.has_method("set_current_hp"):
+			health_component.call("set_current_hp", value)
 var current_gold: int = 0
 var current_xp: int = 0
 var current_level: int = 1
 var xp_to_next_level: int = 10
 var pending_level_ups: int = 0
 var owned_items: Array[ItemData] = []
-var is_dead: bool = false
+var _is_dead_storage: bool = false
+var is_dead: bool:
+	get:
+		if health_component != null and health_component.has_method("get_is_dead"):
+			return health_component.call("get_is_dead") == true
+		return _is_dead_storage
+	set(value):
+		_is_dead_storage = value
+		if health_component != null and health_component.has_method("set_is_dead"):
+			health_component.call("set_is_dead", value)
 var active_character_id: String = ""
 var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
@@ -24,7 +42,6 @@ var _passive_rule_timers: Dictionary = {}
 var _weapon_resource_cache: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
-var _regen_tick_accumulator: float = 0.0
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -86,31 +103,19 @@ func _unhandled_input(event: InputEvent) -> void:
 	_equip_family_weapon(index)
 
 func take_damage(amount: float) -> void:
-	if is_dead:
+	if health_component == null or not health_component.has_method("take_damage"):
 		return
-	current_hp = maxf(current_hp - amount, 0.0)
-	_update_hp_label()
-	_emit_ui_snapshot_changed()
-	if log_runtime_events:
-		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
-	if current_hp <= 0.0:
-		die()
+	health_component.call("take_damage", amount)
 
 func heal_to_full() -> void:
-	if is_dead:
+	if health_component == null or not health_component.has_method("heal_to_full"):
 		return
-	current_hp = stats.max_hp
-	_update_hp_label()
-	_emit_ui_snapshot_changed()
-	if log_runtime_events:
-		print("PLAYER HEALED TO FULL | HP: %.1f / %.1f" % [current_hp, stats.max_hp])
+	health_component.call("heal_to_full")
 
 func die() -> void:
-	if is_dead:
+	if health_component == null or not health_component.has_method("die"):
 		return
-	is_dead = true
-	print("PLAYER DIED. Press R to restart.")
-	player_died.emit()
+	health_component.call("die")
 
 func grant_item(item: ItemData) -> void:
 	if item == null:
@@ -223,23 +228,9 @@ func _emit_ui_snapshot_changed() -> void:
 	ui_snapshot_changed.emit()
 
 func _process_hp_regen(delta: float) -> void:
-	if delta <= 0.0 or is_dead:
+	if health_component == null or not health_component.has_method("process_regen"):
 		return
-	if stats.hp_regen <= 0.0 or current_hp >= stats.max_hp:
-		_regen_tick_accumulator = 0.0
-		return
-	_regen_tick_accumulator += delta
-	const REGEN_TICK_SECONDS := 0.25
-	if _regen_tick_accumulator < REGEN_TICK_SECONDS:
-		return
-	var elapsed := _regen_tick_accumulator
-	_regen_tick_accumulator = 0.0
-	var heal_amount := stats.hp_regen * elapsed
-	if heal_amount <= 0.0:
-		return
-	current_hp = minf(current_hp + heal_amount, stats.max_hp)
-	_update_hp_label()
-	_emit_ui_snapshot_changed()
+	health_component.call("process_regen", delta)
 
 func add_gold(amount: int) -> void:
 	if amount <= 0:
@@ -324,7 +315,6 @@ func _reset_character_stats() -> void:
 	stats = StatBlock.new()
 	stats.max_hp = debug_starting_hp
 	stats.movement_speed = debug_move_speed
-	current_hp = stats.max_hp
 	stats.burn_damage = 1.0
 	stats.poison_damage = 1.0
 	stats.bleed_damage = 1.0
@@ -332,6 +322,11 @@ func _reset_character_stats() -> void:
 	stats.portal_frequency = 1.0
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
+	if health_component != null and health_component.has_method("reset_for_stats"):
+		health_component.call("reset_for_stats", stats.max_hp)
+	else:
+		current_hp = stats.max_hp
+		is_dead = false
 
 func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
 	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
