@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/weapons/ritualist/ritualist_blood_needle_weapon.png" id="2"]
+[ext_resource type="Texture2D" path="res://assets/sprites/projectiles/ritualist/ritualist_blood_needle_projectile.png" id="3"]
+
+[resource]
+script = ExtResource("1")
+icon = ExtResource("2")
+projectile_texture = ExtResource("3")
+id = "blood_needle"
+display_name = "Blood Needle"
+description = "Fast ritual spike that opens the kit with clean occult pressure and precise bloodletting."
+cooldown = 0.32
+base_damage = 6.0
+projectile_speed = 790.0
+range = 1.0
+projectile_lifetime = 1.85
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+family = "ritual"
+price = 5
+shop_enabled = true
+tags = Array[String](["ritual", "needle", "blood", "precision"])

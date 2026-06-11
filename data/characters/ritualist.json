@@ -2,13 +2,20 @@
   "id": "ritualist",
   "display_name": "The Ritualist",
   "description": "Occult ritual master who weaponizes sigils, blood marks, curses, and forbidden ceremony.",
-  "selectable": false,
+  "selectable": true,
   "roster_order": 6,
   "visual_path": "res://assets/sprites/characters/ritualist/ritualCaracter.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": [],
-  "family_weapon_ids": [],
+  "starting_weapon_ids": ["blood_needle"],
+  "family_weapon_ids": [
+    "blood_needle",
+    "ritual_candles",
+    "cursed_bell",
+    "ash_censer",
+    "hex_totem",
+    "grand_sigil"
+  ],
   "preferred_weapon_family": "ritual",
   "shop_weapon_family_bias": 0.2,
-  "passive_tags": ["planned_ritual_master"]
+  "passive_tags": ["ritual_master", "blood_rite_pending"]
 }
