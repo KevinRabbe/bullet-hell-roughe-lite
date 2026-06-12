@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
+const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
@@ -421,15 +422,7 @@ func _apply_status_tick_damage(status: Dictionary) -> void:
 		queue_free()
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if not ResourceLoader.exists(resource_path):
-		return null
-	if _weapon_data_cache.has(resource_path):
-		return _weapon_data_cache[resource_path] as WeaponData
-	var loaded := load(resource_path) as WeaponData
-	if loaded != null:
-		_weapon_data_cache[resource_path] = loaded
-	return loaded
+	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
 
 func _resolve_projectile_texture() -> Texture2D:
 	var data := _load_enemy_data(enemy_variant)

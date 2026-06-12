@@ -1,5 +1,7 @@
 extends Node
 
+const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+
 signal loadout_changed
 
 const MAX_WEAPON_SLOTS: int = 6
@@ -364,14 +366,4 @@ func _get_family_id_from_weapon_id(weapon_id: String) -> String:
 	return weapon_id
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if _weapon_data_cache.has(resource_path):
-		var cached: Variant = _weapon_data_cache[resource_path]
-		if cached is WeaponData:
-			return cached
-	if not ResourceLoader.exists(resource_path):
-		return null
-	var loaded := load(resource_path) as WeaponData
-	if loaded != null:
-		_weapon_data_cache[resource_path] = loaded
-	return loaded
+	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
