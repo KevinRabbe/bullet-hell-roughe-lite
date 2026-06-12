@@ -110,9 +110,7 @@ var is_dead: bool:
 			health_component.call("set_is_dead", value)
 var active_character_id: String = ""
 var active_character_data: Dictionary = {}
-var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
-var _weapon_resource_cache: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
@@ -438,7 +436,7 @@ func _reset_character_stats() -> void:
 		is_dead = false
 
 func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
-	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
+	var starting_weapon_id: String = _resolve_starting_weapon_id(character_data)
 	_grant_starting_weapon_by_id(starting_weapon_id)
 
 func _apply_character_rules(character_data: Dictionary = {}) -> void:
@@ -504,9 +502,13 @@ func notify_damaged_by_enemy(enemy: Node) -> void:
 	_apply_passive_status_rules_for_trigger("on_enemy_hit", enemy)
 
 func get_preferred_weapon_family_id() -> String:
+	if weapon_controller_component != null and weapon_controller_component.has_method("get_preferred_weapon_family_id"):
+		return str(weapon_controller_component.call("get_preferred_weapon_family_id"))
 	return str(active_character_data.get("preferred_weapon_family", ""))
 
 func get_shop_weapon_family_bias() -> float:
+	if weapon_controller_component != null and weapon_controller_component.has_method("get_shop_weapon_family_bias"):
+		return float(weapon_controller_component.call("get_shop_weapon_family_bias"))
 	return maxf(float(active_character_data.get("shop_weapon_family_bias", 0.0)), 0.0)
 
 func get_portal_event_bias(event_id: String) -> float:
@@ -566,6 +568,8 @@ func get_stat_value_for_weapon_bonus(stat_name: String, fallback: float = 0.0) -
 	return _get_stat_value(stat_name, fallback)
 
 func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
+	if weapon_controller_component != null and weapon_controller_component.has_method("resolve_weapon_family_id"):
+		return str(weapon_controller_component.call("resolve_weapon_family_id", weapon_resource))
 	if weapon_resource == null:
 		return ""
 	if weapon_resource.has_method("get_family_value"):
@@ -573,6 +577,8 @@ func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
 	return ""
 
 func _weapon_slot_index_from_key(keycode: int) -> int:
+	if weapon_controller_component != null and weapon_controller_component.has_method("weapon_slot_index_from_key"):
+		return int(weapon_controller_component.call("weapon_slot_index_from_key", keycode))
 	match keycode:
 		KEY_1: return 0
 		KEY_2: return 1
@@ -583,13 +589,18 @@ func _weapon_slot_index_from_key(keycode: int) -> int:
 		_: return -1
 
 func _equip_family_weapon(index: int) -> void:
-	var family_weapon_ids := _get_family_weapon_ids()
+	if weapon_controller_component != null and weapon_controller_component.has_method("equip_family_weapon"):
+		weapon_controller_component.call("equip_family_weapon", index)
+		return
+	var family_weapon_ids: Array[String] = _get_family_weapon_ids()
 	if index < 0 or index >= family_weapon_ids.size():
 		return
-	var weapon_id := family_weapon_ids[index]
+	var weapon_id: String = family_weapon_ids[index]
 	grant_weapon(weapon_id)
 
 func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool:
+	if weapon_controller_component != null and weapon_controller_component.has_method("grant_weapon"):
+		return weapon_controller_component.call("grant_weapon", weapon_id, incoming_rarity) == true
 	if weapon_id == "":
 		return false
 	if weapon_loadout == null or not weapon_loadout.has_method("equip_weapon"):
@@ -625,6 +636,9 @@ func grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> bool
 	return true
 
 func _grant_starting_weapon_by_id(weapon_id: String) -> void:
+	if weapon_controller_component != null and weapon_controller_component.has_method("grant_starting_weapon_by_id"):
+		weapon_controller_component.call("grant_starting_weapon_by_id", weapon_id)
+		return
 	grant_weapon(weapon_id)
 
 func _get_character_data(character_id: String) -> Dictionary:
@@ -647,6 +661,8 @@ func _resolve_default_character_id() -> void:
 	return
 
 func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
+	if weapon_controller_component != null and weapon_controller_component.has_method("resolve_starting_weapon_id"):
+		return str(weapon_controller_component.call("resolve_starting_weapon_id", character_data))
 	var starting_weapon_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
 	if starting_weapon_ids_variant is Array:
 		var starting_weapon_ids: Array = starting_weapon_ids_variant
@@ -660,6 +676,18 @@ func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
 	return "heavy_pistol"
 
 func _get_family_weapon_ids() -> Array[String]:
+	if weapon_controller_component != null and weapon_controller_component.has_method("get_family_weapon_ids"):
+		var family_ids_variant: Variant = weapon_controller_component.call("get_family_weapon_ids")
+		if family_ids_variant is Array[String]:
+			return family_ids_variant
+		if family_ids_variant is Array:
+			var resolved_ids: Array[String] = []
+			for weapon_id_variant in family_ids_variant:
+				var weapon_id: String = str(weapon_id_variant)
+				if weapon_id != "":
+					resolved_ids.append(weapon_id)
+			if not resolved_ids.is_empty():
+				return resolved_ids
 	var family_weapon_ids_variant: Variant = active_character_data.get("family_weapon_ids", [])
 	if family_weapon_ids_variant is Array:
 		var configured_ids: Array[String] = []
@@ -800,6 +828,8 @@ func _apply_status_rule_to_enemy(enemy: Node, rule: Dictionary) -> void:
 	enemy.call("apply_status_payload", status_payload, self, "", -1, status_power_multiplier)
 
 func _weapon_resource_exists(weapon_id: String) -> bool:
+	if weapon_controller_component != null and weapon_controller_component.has_method("weapon_resource_exists"):
+		return weapon_controller_component.call("weapon_resource_exists", weapon_id) == true
 	return ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id)
 
 func _apply_stat_multipliers(stat_multipliers_variant: Variant) -> void:
@@ -875,26 +905,25 @@ func _is_priority_damage_target(target: Node) -> bool:
 	return strongest_target == target
 
 func _load_weapon_resource(weapon_id: String) -> WeaponData:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if _weapon_resource_cache.has(resource_path):
-		var cached: Variant = _weapon_resource_cache[resource_path]
-		if cached is WeaponData:
-			return cached
-	if not ResourceLoader.exists(resource_path):
-		_log_resource_warning_once("missing_weapon:%s" % weapon_id, "Missing weapon resource: %s" % resource_path)
+	if weapon_controller_component != null and weapon_controller_component.has_method("load_weapon_resource"):
+		var weapon_resource_variant: Variant = weapon_controller_component.call("load_weapon_resource", weapon_id)
+		if weapon_resource_variant is WeaponData:
+			return weapon_resource_variant as WeaponData
 		return null
-	var resource := load(resource_path)
+	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	if not ResourceLoader.exists(resource_path):
+		push_warning("Missing weapon resource: %s" % resource_path)
+		return null
+	var resource: Variant = load(resource_path)
 	if resource is WeaponData:
-		var weapon_resource := resource as WeaponData
-		_weapon_resource_cache[resource_path] = weapon_resource
-		return weapon_resource
-	_log_resource_warning_once("invalid_weapon:%s" % weapon_id, "Invalid weapon resource type: %s" % resource_path)
+		return resource as WeaponData
+	push_warning("Invalid weapon resource type: %s" % resource_path)
 	return null
 
 func _log_resource_warning_once(warning_key: String, message: String) -> void:
-	if _logged_resource_warnings.has(warning_key):
+	if weapon_controller_component != null and weapon_controller_component.has_method("log_resource_warning_once"):
+		weapon_controller_component.call("log_resource_warning_once", warning_key, message)
 		return
-	_logged_resource_warnings[warning_key] = true
 	push_warning(message)
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
@@ -937,6 +966,16 @@ func get_ui_snapshot() -> Dictionary:
 	}
 
 func get_weapon_ui_entries() -> Array[Dictionary]:
+	if weapon_controller_component != null and weapon_controller_component.has_method("get_weapon_ui_entries"):
+		var entries_variant: Variant = weapon_controller_component.call("get_weapon_ui_entries")
+		if entries_variant is Array[Dictionary]:
+			return entries_variant
+		if entries_variant is Array:
+			var resolved_entries: Array[Dictionary] = []
+			for entry_variant in entries_variant:
+				if entry_variant is Dictionary:
+					resolved_entries.append((entry_variant as Dictionary).duplicate(true))
+			return resolved_entries
 	var entries: Array[Dictionary] = []
 	if weapon_loadout == null or not weapon_loadout.has_method("get_weapon_entries"):
 		return entries
