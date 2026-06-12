@@ -30,12 +30,74 @@ var current_hp: float:
 		_current_hp_storage = value
 		if health_component != null and health_component.has_method("set_current_hp"):
 			health_component.call("set_current_hp", value)
-var current_gold: int = 0
-var current_xp: int = 0
-var current_level: int = 1
-var xp_to_next_level: int = 10
-var pending_level_ups: int = 0
-var owned_items: Array[ItemData] = []
+var _current_gold_storage: int = 0
+var current_gold: int:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_current_gold"):
+			return int(xp_level_component.call("get_current_gold"))
+		return _current_gold_storage
+	set(value):
+		_current_gold_storage = value
+		if xp_level_component != null and xp_level_component.has_method("set_current_gold"):
+			xp_level_component.call("set_current_gold", value)
+var _current_xp_storage: int = 0
+var current_xp: int:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_current_xp"):
+			return int(xp_level_component.call("get_current_xp"))
+		return _current_xp_storage
+	set(value):
+		_current_xp_storage = value
+		if xp_level_component != null and xp_level_component.has_method("set_current_xp"):
+			xp_level_component.call("set_current_xp", value)
+var _current_level_storage: int = 1
+var current_level: int:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_current_level"):
+			return int(xp_level_component.call("get_current_level"))
+		return _current_level_storage
+	set(value):
+		_current_level_storage = value
+		if xp_level_component != null and xp_level_component.has_method("set_current_level"):
+			xp_level_component.call("set_current_level", value)
+var _xp_to_next_level_storage: int = 10
+var xp_to_next_level: int:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_xp_to_next_level"):
+			return int(xp_level_component.call("get_xp_to_next_level"))
+		return _xp_to_next_level_storage
+	set(value):
+		_xp_to_next_level_storage = value
+		if xp_level_component != null and xp_level_component.has_method("set_xp_to_next_level"):
+			xp_level_component.call("set_xp_to_next_level", value)
+var _pending_level_ups_storage: int = 0
+var pending_level_ups: int:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_pending_level_ups"):
+			return int(xp_level_component.call("get_pending_level_ups"))
+		return _pending_level_ups_storage
+	set(value):
+		_pending_level_ups_storage = value
+		if xp_level_component != null and xp_level_component.has_method("set_pending_level_ups"):
+			xp_level_component.call("set_pending_level_ups", value)
+var _owned_items_storage: Array[ItemData] = []
+var owned_items: Array[ItemData]:
+	get:
+		if xp_level_component != null and xp_level_component.has_method("get_owned_items"):
+			var items_variant: Variant = xp_level_component.call("get_owned_items")
+			if items_variant is Array[ItemData]:
+				return items_variant
+			if items_variant is Array:
+				var resolved_items: Array[ItemData] = []
+				for item_variant in items_variant:
+					if item_variant is ItemData:
+						resolved_items.append(item_variant)
+				return resolved_items
+		return _owned_items_storage
+	set(value):
+		_owned_items_storage = value.duplicate()
+		if xp_level_component != null and xp_level_component.has_method("set_owned_items"):
+			xp_level_component.call("set_owned_items", _owned_items_storage)
 var _is_dead_storage: bool = false
 var is_dead: bool:
 	get:
@@ -86,6 +148,19 @@ func _wire_runtime_components() -> void:
 	_configure_player_component(collision_targeting_component)
 	if stats_component != null and stats_component.has_method("set_stats"):
 		stats_component.call("set_stats", _stats_storage)
+	if xp_level_component != null:
+		if xp_level_component.has_method("set_current_gold"):
+			xp_level_component.call("set_current_gold", _current_gold_storage)
+		if xp_level_component.has_method("set_current_xp"):
+			xp_level_component.call("set_current_xp", _current_xp_storage)
+		if xp_level_component.has_method("set_current_level"):
+			xp_level_component.call("set_current_level", _current_level_storage)
+		if xp_level_component.has_method("set_xp_to_next_level"):
+			xp_level_component.call("set_xp_to_next_level", _xp_to_next_level_storage)
+		if xp_level_component.has_method("set_pending_level_ups"):
+			xp_level_component.call("set_pending_level_ups", _pending_level_ups_storage)
+		if xp_level_component.has_method("set_owned_items"):
+			xp_level_component.call("set_owned_items", _owned_items_storage)
 
 func _configure_player_component(component: Node) -> void:
 	if component == null or not component.has_method("configure"):
@@ -133,7 +208,10 @@ func die() -> void:
 func grant_item(item: ItemData) -> void:
 	if item == null:
 		return
-	owned_items.append(item)
+	if xp_level_component != null and xp_level_component.has_method("add_owned_item"):
+		xp_level_component.call("add_owned_item", item)
+	else:
+		owned_items.append(item)
 	_apply_item_effects(item)
 	_emit_ui_snapshot_changed()
 	print("Gained item: %s" % item.name)
@@ -246,15 +324,20 @@ func _process_hp_regen(delta: float) -> void:
 	health_component.call("process_regen", delta)
 
 func add_gold(amount: int) -> void:
-	if amount <= 0:
+	if xp_level_component == null or not xp_level_component.has_method("add_gold"):
+		if amount <= 0:
+			return
+		current_gold += amount
+		_update_hp_label()
+		_emit_ui_snapshot_changed()
+		if log_runtime_events:
+			print("GOLD +%d | Total: %d" % [amount, current_gold])
 		return
-	current_gold += amount
-	_update_hp_label()
-	_emit_ui_snapshot_changed()
-	if log_runtime_events:
-		print("GOLD +%d | Total: %d" % [amount, current_gold])
+	xp_level_component.call("add_gold", amount)
 
 func spend_gold(amount: int) -> bool:
+	if xp_level_component != null and xp_level_component.has_method("spend_gold"):
+		return xp_level_component.call("spend_gold", amount) == true
 	if amount <= 0:
 		return true
 	if current_gold < amount:
@@ -268,6 +351,9 @@ func spend_gold(amount: int) -> bool:
 	return true
 
 func add_xp(amount: int) -> void:
+	if xp_level_component != null and xp_level_component.has_method("add_xp"):
+		xp_level_component.call("add_xp", amount)
+		return
 	if amount <= 0:
 		return
 	current_xp += amount
@@ -284,9 +370,13 @@ func add_xp(amount: int) -> void:
 	_emit_ui_snapshot_changed()
 
 func has_pending_level_up() -> bool:
+	if xp_level_component != null and xp_level_component.has_method("has_pending_level_up"):
+		return xp_level_component.call("has_pending_level_up") == true
 	return pending_level_ups > 0
 
 func consume_pending_level_up() -> bool:
+	if xp_level_component != null and xp_level_component.has_method("consume_pending_level_up"):
+		return xp_level_component.call("consume_pending_level_up") == true
 	if pending_level_ups <= 0:
 		return false
 	pending_level_ups -= 1
