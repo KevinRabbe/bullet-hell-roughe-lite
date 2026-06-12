@@ -452,6 +452,8 @@ func _apply_character_rules(character_data: Dictionary = {}) -> void:
 				player_build.set("equipped_weapon_ids", weapons)
 
 func get_damage_multiplier_for_target(target: Node) -> float:
+	if collision_targeting_component != null and collision_targeting_component.has_method("get_damage_multiplier_for_target"):
+		return float(collision_targeting_component.call("get_damage_multiplier_for_target", target))
 	if target == null:
 		return 1.0
 	var damage_rules_variant: Variant = active_character_data.get("damage_rules", [])
@@ -486,6 +488,10 @@ func get_status_power_stat_multiplier(stat_name: String, fallback: float = 1.0) 
 	return maxf(_get_stat_value(stat_name, fallback), 0.0)
 
 func get_status_propagation_rule(status_id: String) -> Dictionary:
+	if collision_targeting_component != null and collision_targeting_component.has_method("get_status_propagation_rule"):
+		var propagation_rule_variant: Variant = collision_targeting_component.call("get_status_propagation_rule", status_id)
+		if propagation_rule_variant is Dictionary:
+			return (propagation_rule_variant as Dictionary).duplicate(true)
 	var propagation_rules_variant: Variant = active_character_data.get("status_propagation_rules", {})
 	if not (propagation_rules_variant is Dictionary):
 		return {}
@@ -526,6 +532,8 @@ func get_portal_reward_tier_bias(tier: int) -> float:
 	return float(portal_reward_tier_biases.get(str(tier), 0.0))
 
 func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> int:
+	if collision_targeting_component != null and collision_targeting_component.has_method("count_enemies_with_status"):
+		return int(collision_targeting_component.call("count_enemies_with_status", status_id, max_distance))
 	if status_id == "":
 		return 0
 	var count := 0
@@ -541,6 +549,8 @@ func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> 
 	return count
 
 func count_nearby_enemies(max_distance: float) -> int:
+	if collision_targeting_component != null and collision_targeting_component.has_method("count_nearby_enemies"):
+		return int(collision_targeting_component.call("count_nearby_enemies", max_distance))
 	if max_distance <= 0.0:
 		return 0
 	var count := 0
@@ -867,6 +877,8 @@ func _apply_stat_bonuses(stat_bonuses_variant: Variant) -> void:
 			stats.set(str(stat_name), int(current_value) + int(round(bonus)))
 
 func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
+	if collision_targeting_component != null and collision_targeting_component.has_method("target_matches_damage_rule"):
+		return collision_targeting_component.call("target_matches_damage_rule", target, damage_rule) == true
 	var targets_variant: Variant = damage_rule.get("targets", [])
 	if not (targets_variant is Array):
 		return false
@@ -886,6 +898,8 @@ func _target_matches_damage_rule(target: Node, damage_rule: Dictionary) -> bool:
 	return false
 
 func _is_priority_damage_target(target: Node) -> bool:
+	if collision_targeting_component != null and collision_targeting_component.has_method("is_priority_damage_target"):
+		return collision_targeting_component.call("is_priority_damage_target", target) == true
 	if target == null or not is_instance_valid(target):
 		return false
 	if target.get("is_priority_target") == true:
@@ -1016,6 +1030,9 @@ func _get_effective_kill_requirement(weapon_resource: WeaponData, family_id: Str
 	)
 
 func _apply_pressure_scaling_to_propagation_rule(rule: Dictionary) -> void:
+	if collision_targeting_component != null and collision_targeting_component.has_method("apply_pressure_scaling_to_propagation_rule"):
+		collision_targeting_component.call("apply_pressure_scaling_to_propagation_rule", rule)
+		return
 	var pressure_radius := maxf(float(rule.get("pressure_radius", 0.0)), 0.0)
 	if pressure_radius <= 0.0:
 		return
@@ -1039,6 +1056,9 @@ func _apply_pressure_scaling_to_propagation_rule(rule: Dictionary) -> void:
 	)
 
 func _apply_status_density_scaling_to_propagation_rule(status_id: String, rule: Dictionary) -> void:
+	if collision_targeting_component != null and collision_targeting_component.has_method("apply_status_density_scaling_to_propagation_rule"):
+		collision_targeting_component.call("apply_status_density_scaling_to_propagation_rule", status_id, rule)
+		return
 	var counted_status_id := str(rule.get("spread_status_count_id", status_id))
 	if counted_status_id == "":
 		return
