@@ -8,7 +8,18 @@ signal player_died
 signal level_up_pending_changed
 signal ui_snapshot_changed
 
-var stats: StatBlock = StatBlock.new()
+var _stats_storage: StatBlock = StatBlock.new()
+var stats: StatBlock:
+	get:
+		if stats_component != null and stats_component.has_method("get_stats"):
+			var stats_variant: Variant = stats_component.call("get_stats")
+			if stats_variant is StatBlock:
+				return stats_variant as StatBlock
+		return _stats_storage
+	set(value):
+		_stats_storage = value if value != null else StatBlock.new()
+		if stats_component != null and stats_component.has_method("set_stats"):
+			stats_component.call("set_stats", _stats_storage)
 var _current_hp_storage: float = 0.0
 var current_hp: float:
 	get:
@@ -73,6 +84,8 @@ func _wire_runtime_components() -> void:
 	_configure_player_component(xp_level_component)
 	_configure_player_component(weapon_controller_component)
 	_configure_player_component(collision_targeting_component)
+	if stats_component != null and stats_component.has_method("set_stats"):
+		stats_component.call("set_stats", _stats_storage)
 
 func _configure_player_component(component: Node) -> void:
 	if component == null or not component.has_method("configure"):
@@ -158,15 +171,8 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
 
 func _apply_item_effects(item: ItemData) -> void:
-	for stat_name in item.stat_modifiers.keys():
-		if not _has_stat_property(stat_name):
-			continue
-		var current_value: Variant = stats.get(stat_name)
-		var modifier: Variant = item.stat_modifiers[stat_name]
-		if current_value is float and modifier is float:
-			stats.set(stat_name, current_value + modifier)
-		elif current_value is int and modifier is int:
-			stats.set(stat_name, current_value + modifier)
+	if stats_component != null and stats_component.has_method("apply_item_effects"):
+		stats_component.call("apply_item_effects", item)
 
 	if item.stat_modifiers.has("max_hp"):
 		current_hp += float(item.stat_modifiers["max_hp"])
@@ -174,6 +180,8 @@ func _apply_item_effects(item: ItemData) -> void:
 	_update_hp_label()
 
 func _has_stat_property(stat_name: String) -> bool:
+	if stats_component != null and stats_component.has_method("has_stat_property"):
+		return stats_component.call("has_stat_property", stat_name) == true
 	for property_info in stats.get_property_list():
 		if str(property_info.get("name", "")) == stat_name:
 			return true
@@ -200,16 +208,19 @@ func _print_debug_stats() -> void:
 	)
 
 func _apply_runtime_stat_bonus(stat_id: String, value: float, label: String = "") -> void:
-	if stat_id == "max_hp":
+	if stats_component != null and stats_component.has_method("apply_runtime_stat_bonus"):
+		stats_component.call("apply_runtime_stat_bonus", stat_id, value)
+	elif stat_id == "max_hp":
 		stats.max_hp += value
-		current_hp += value
-		current_hp = minf(current_hp, stats.max_hp)
 	elif _has_stat_property(stat_id):
 		var current_value: Variant = stats.get(stat_id)
 		if current_value is float:
 			stats.set(stat_id, float(current_value) + value)
 		elif current_value is int:
 			stats.set(stat_id, int(current_value) + int(round(value)))
+	if stat_id == "max_hp":
+		current_hp += value
+		current_hp = minf(current_hp, stats.max_hp)
 	_update_hp_label()
 	var bonus_label := label if label != "" else stat_id
 	_emit_ui_snapshot_changed()
@@ -217,6 +228,8 @@ func _apply_runtime_stat_bonus(stat_id: String, value: float, label: String = ""
 		print("%s bonus: %s %+0.2f" % [bonus_label, stat_id, value])
 
 func _get_stat_value(stat_name: String, fallback: float) -> float:
+	if stats_component != null and stats_component.has_method("get_stat_value"):
+		return float(stats_component.call("get_stat_value", stat_name, fallback))
 	if _has_stat_property(stat_name):
 		return float(stats.get(stat_name))
 	return fallback
@@ -282,16 +295,19 @@ func consume_pending_level_up() -> bool:
 	return true
 
 func apply_level_up_bonus(stat_id: String, value: float) -> void:
-	if stat_id == "max_hp":
+	if stats_component != null and stats_component.has_method("apply_level_up_bonus"):
+		stats_component.call("apply_level_up_bonus", stat_id, value)
+	elif stat_id == "max_hp":
 		stats.max_hp += value
-		current_hp += value
-		current_hp = minf(current_hp, stats.max_hp)
 	elif _has_stat_property(stat_id):
 		var current_value: Variant = stats.get(stat_id)
 		if current_value is float:
 			stats.set(stat_id, float(current_value) + value)
 		elif current_value is int:
 			stats.set(stat_id, int(current_value) + int(value))
+	if stat_id == "max_hp":
+		current_hp += value
+		current_hp = minf(current_hp, stats.max_hp)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
 	print("LEVEL-UP BONUS: %s %+0.2f" % [stat_id, value])
@@ -312,16 +328,19 @@ func apply_character_by_id(character_id: String) -> void:
 		print("Selected character: %s" % active_character_id)
 
 func _reset_character_stats() -> void:
-	stats = StatBlock.new()
-	stats.max_hp = debug_starting_hp
-	stats.movement_speed = debug_move_speed
-	stats.burn_damage = 1.0
-	stats.poison_damage = 1.0
-	stats.bleed_damage = 1.0
-	stats.frost_power = 1.0
-	stats.portal_frequency = 1.0
-	stats.portal_luck = 0.0
-	stats.portal_instability = 0.0
+	if stats_component != null and stats_component.has_method("reset_to_debug_defaults"):
+		stats_component.call("reset_to_debug_defaults", debug_starting_hp, debug_move_speed)
+	else:
+		stats = StatBlock.new()
+		stats.max_hp = debug_starting_hp
+		stats.movement_speed = debug_move_speed
+		stats.burn_damage = 1.0
+		stats.poison_damage = 1.0
+		stats.bleed_damage = 1.0
+		stats.frost_power = 1.0
+		stats.portal_frequency = 1.0
+		stats.portal_luck = 0.0
+		stats.portal_instability = 0.0
 	if health_component != null and health_component.has_method("reset_for_stats"):
 		health_component.call("reset_for_stats", stats.max_hp)
 	else:
@@ -694,6 +713,9 @@ func _weapon_resource_exists(weapon_id: String) -> bool:
 	return ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id)
 
 func _apply_stat_multipliers(stat_multipliers_variant: Variant) -> void:
+	if stats_component != null and stats_component.has_method("apply_stat_multipliers"):
+		stats_component.call("apply_stat_multipliers", stat_multipliers_variant)
+		return
 	if not (stat_multipliers_variant is Dictionary):
 		return
 	var stat_multipliers: Dictionary = stat_multipliers_variant
@@ -708,6 +730,9 @@ func _apply_stat_multipliers(stat_multipliers_variant: Variant) -> void:
 			stats.set(str(stat_name), int(round(float(current_value) * multiplier)))
 
 func _apply_stat_bonuses(stat_bonuses_variant: Variant) -> void:
+	if stats_component != null and stats_component.has_method("apply_stat_bonuses"):
+		stats_component.call("apply_stat_bonuses", stat_bonuses_variant)
+		return
 	if not (stat_bonuses_variant is Dictionary):
 		return
 	var stat_bonuses: Dictionary = stat_bonuses_variant
@@ -783,14 +808,19 @@ func _log_resource_warning_once(warning_key: String, message: String) -> void:
 	push_warning(message)
 
 func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
-	if not _has_stat_property(stat_id):
+	if stats_component != null and stats_component.has_method("debug_add_stat_bonus"):
+		if stats_component.call("debug_add_stat_bonus", stat_id, value) != true:
+			push_warning("Unknown stat bonus: %s" % stat_id)
+			return
+	elif not _has_stat_property(stat_id):
 		push_warning("Unknown stat bonus: %s" % stat_id)
 		return
-	var current_value: Variant = stats.get(stat_id)
-	if current_value is float:
-		stats.set(stat_id, float(current_value) + value)
-	elif current_value is int:
-		stats.set(stat_id, int(current_value) + int(value))
+	elif _has_stat_property(stat_id):
+		var current_value: Variant = stats.get(stat_id)
+		if current_value is float:
+			stats.set(stat_id, float(current_value) + value)
+		elif current_value is int:
+			stats.set(stat_id, int(current_value) + int(value))
 	_update_hp_label()
 	if log_runtime_events:
 		print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
