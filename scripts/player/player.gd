@@ -8,6 +8,8 @@ signal player_died
 signal level_up_pending_changed
 signal ui_snapshot_changed
 
+var _cached_ui_snapshot: Dictionary = {}
+var _ui_snapshot_dirty: bool = true
 var _stats_storage: StatBlock = StatBlock.new()
 var stats: StatBlock:
 	get:
@@ -136,7 +138,7 @@ func _ready() -> void:
 	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", snapshot_callable):
 		weapon_loadout.connect("loadout_changed", snapshot_callable)
 	_update_hp_label()
-	_emit_ui_snapshot_changed()
+	_mark_ui_snapshot_dirty()
 
 func _wire_runtime_components() -> void:
 	_configure_player_component(health_component)
@@ -211,7 +213,7 @@ func grant_item(item: ItemData) -> void:
 	else:
 		owned_items.append(item)
 	_apply_item_effects(item)
-	_emit_ui_snapshot_changed()
+	request_ui_snapshot_refresh()
 	print("Gained item: %s" % item.name)
 	_print_debug_stats()
 
@@ -299,7 +301,7 @@ func _apply_runtime_stat_bonus(stat_id: String, value: float, label: String = ""
 		current_hp = minf(current_hp, stats.max_hp)
 	_update_hp_label()
 	var bonus_label := label if label != "" else stat_id
-	_emit_ui_snapshot_changed()
+	request_ui_snapshot_refresh()
 	if log_runtime_events:
 		print("%s bonus: %s %+0.2f" % [bonus_label, stat_id, value])
 
@@ -314,6 +316,13 @@ func _update_hp_label() -> void:
 	pass
 
 func _emit_ui_snapshot_changed() -> void:
+	_mark_ui_snapshot_dirty()
+
+func request_ui_snapshot_refresh() -> void:
+	_mark_ui_snapshot_dirty()
+
+func _mark_ui_snapshot_dirty() -> void:
+	_ui_snapshot_dirty = true
 	ui_snapshot_changed.emit()
 
 func _process_hp_regen(delta: float) -> void:
@@ -959,6 +968,12 @@ func _debug_add_stat_bonus(stat_id: String, value: float) -> void:
 		print("DEBUG stat bonus: %s %+0.2f" % [stat_id, value])
 
 func get_ui_snapshot() -> Dictionary:
+	if _ui_snapshot_dirty:
+		_cached_ui_snapshot = _build_ui_snapshot()
+		_ui_snapshot_dirty = false
+	return _cached_ui_snapshot.duplicate(true)
+
+func _build_ui_snapshot() -> Dictionary:
 	return {
 		"hp": float(current_hp),
 		"max_hp": float(stats.max_hp),

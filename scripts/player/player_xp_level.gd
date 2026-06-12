@@ -103,7 +103,9 @@ func _emit_level_up_pending_changed() -> void:
 		player_facade.emit_signal("level_up_pending_changed")
 
 func _emit_ui_snapshot_changed() -> void:
-	if player_facade != null and player_facade.has_method("_emit_ui_snapshot_changed"):
+	if player_facade != null and player_facade.has_method("request_ui_snapshot_refresh"):
+		player_facade.call("request_ui_snapshot_refresh")
+	elif player_facade != null and player_facade.has_method("_emit_ui_snapshot_changed"):
 		player_facade.call("_emit_ui_snapshot_changed")
 	if player_facade != null and player_facade.has_method("_update_hp_label"):
 		player_facade.call("_update_hp_label")

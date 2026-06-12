@@ -93,5 +93,7 @@ func _emit_player_ui_updates() -> void:
 		return
 	if player_facade.has_method("_update_hp_label"):
 		player_facade.call("_update_hp_label")
-	if player_facade.has_method("_emit_ui_snapshot_changed"):
+	if player_facade.has_method("request_ui_snapshot_refresh"):
+		player_facade.call("request_ui_snapshot_refresh")
+	elif player_facade.has_method("_emit_ui_snapshot_changed"):
 		player_facade.call("_emit_ui_snapshot_changed")
