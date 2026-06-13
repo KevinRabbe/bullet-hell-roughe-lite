@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
+const EnemyLifecycleRuntimeUtil = preload("res://scripts/enemies/enemy_lifecycle_runtime.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
 const EnemyVariantRuntimeUtil = preload("res://scripts/enemies/enemy_variant_runtime.gd")
@@ -76,33 +77,31 @@ func _physics_process(delta: float) -> void:
 	_try_ranged_damage_player()
 
 func take_damage(amount: float, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
-	if source != null and source.is_in_group("players"):
-		last_hit_player = source
-		last_hit_weapon_id = source_weapon_id
-		last_hit_slot_index = source_slot_index
+	EnemyLifecycleRuntimeUtil.record_hit_source(self, source, source_weapon_id, source_slot_index)
 	current_hp = maxf(current_hp - amount, 0.0)
 	_apply_weapon_status_effect(source, source_weapon_id)
-	_spawn_enemy_hit_flash()
+	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
 	if current_hp <= 0.0:
-		_spawn_death_puff()
-		_grant_kill_rewards()
+		EnemyLifecycleRuntimeUtil.spawn_death_puff(get_tree(), global_position, z_index, visual_sprite)
+		EnemyLifecycleRuntimeUtil.grant_kill_rewards(
+			get_tree(),
+			last_hit_player,
+			last_hit_weapon_id,
+			last_hit_slot_index,
+			reward_gold,
+			reward_xp
+		)
 		queue_free()
 
 func _grant_kill_rewards() -> void:
-	var players := get_tree().get_nodes_in_group("players")
-	if players.is_empty() and (last_hit_player == null or not is_instance_valid(last_hit_player)):
-		return
-	var granted_gold := reward_gold
-	var granted_xp := reward_xp
-	var player_node: Node = last_hit_player
-	if player_node == null or not is_instance_valid(player_node):
-		player_node = players[0]
-	if player_node != null and player_node.has_method("add_gold"):
-		player_node.call("add_gold", granted_gold)
-	if player_node != null and player_node.has_method("add_xp"):
-		player_node.call("add_xp", granted_xp)
-	if player_node != null and player_node.has_method("notify_enemy_killed"):
-		player_node.call("notify_enemy_killed", last_hit_weapon_id, last_hit_slot_index)
+	EnemyLifecycleRuntimeUtil.grant_kill_rewards(
+		get_tree(),
+		last_hit_player,
+		last_hit_weapon_id,
+		last_hit_slot_index,
+		reward_gold,
+		reward_xp
+	)
 
 func _find_player_if_needed() -> void:
 	if target != null and is_instance_valid(target):
@@ -245,9 +244,9 @@ func _apply_status_tick_damage(status: Dictionary) -> void:
 	if tick_damage <= 0.0:
 		return
 	current_hp = maxf(current_hp - tick_damage, 0.0)
-	_spawn_enemy_hit_flash()
+	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
 	if current_hp <= 0.0:
-		_spawn_death_puff()
+		EnemyLifecycleRuntimeUtil.spawn_death_puff(get_tree(), global_position, z_index, visual_sprite)
 		_grant_kill_rewards()
 		queue_free()
 
@@ -273,33 +272,6 @@ func get_status_stack_count(status_id: String) -> int:
 	if not (status_variant is Dictionary):
 		return 0
 	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
-
-func _spawn_enemy_hit_flash() -> void:
-	if visual == null:
-		return
-	visual.modulate = Color(1.35, 1.35, 1.35, 1.0)
-	var tween := create_tween()
-	tween.tween_property(visual, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.12)
-
-func _spawn_death_puff() -> void:
-	if get_tree() == null or get_tree().current_scene == null:
-		return
-	var puff := Sprite2D.new()
-	puff.global_position = global_position
-	puff.z_index = z_index + 1
-	if visual_sprite != null and visual_sprite.texture != null:
-		puff.texture = visual_sprite.texture
-		puff.scale = visual_sprite.scale * 0.85
-	else:
-		puff.self_modulate = Color(1.0, 0.45, 0.35, 0.9)
-	get_tree().current_scene.add_child(puff)
-	var tween := create_tween()
-	tween.tween_property(puff, "scale", puff.scale * 1.35, 0.18)
-	tween.parallel().tween_property(puff, "modulate", Color(1.0, 0.45, 0.35, 0.0), 0.18)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(puff):
-			puff.queue_free()
-	)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
