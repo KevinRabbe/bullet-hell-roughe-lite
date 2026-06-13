@@ -1,6 +1,8 @@
 extends Node2D
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const LevelUpFlow = preload("res://scripts/game/level_up_flow.gd")
+const RunFlowState = preload("res://scripts/game/run_flow_state.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
 @export var debug_quick_shop_mode: bool = true
@@ -33,16 +35,11 @@ const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 @onready var run_end_body: Label = $RunEndUI/Panel/Body
 @onready var run_end_restart_button: Button = $RunEndUI/Panel/RestartButton
 @onready var run_end_menu_button: Button = $RunEndUI/Panel/MainMenuButton
-var waiting_for_restart: bool = false
-var waiting_for_wave_continue: bool = false
-var waiting_for_level_up_choice: bool = false
-var run_end_state: String = "inactive"
 var selectable_characters: Array[String] = []
 var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
 var run_started: bool = false
 var levelup_rng: RandomNumberGenerator
-var active_level_up_choices: Array[Dictionary] = []
 var level_up_stat_ids: Array[String] = ["damage", "attack_speed", "max_hp", "movement_speed", "armor"]
 var rarity_weights: Dictionary = {"Common": 0.65, "Rare": 0.25, "Epic": 0.08, "Legendary": 0.02}
 var rarity_values_by_stat: Dictionary = {
@@ -59,9 +56,10 @@ var stat_display_names: Dictionary = {
 	"movement_speed": "Move Speed",
 	"armor": "Armor"
 }
-var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
+var run_flow_state := RunFlowState.new()
+var level_up_flow := LevelUpFlow.new()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -93,6 +91,14 @@ func _ready() -> void:
 	if run_end_menu_button != null:
 		run_end_menu_button.pressed.connect(_return_to_main_menu)
 	levelup_rng = _resolve_rng("levelup")
+	level_up_flow.configure(
+		levelup_rng,
+		level_up_stat_ids,
+		stat_display_names,
+		rarity_weights,
+		rarity_values_by_stat,
+		level_up_base_reroll_cost
+	)
 	if enemy_spawner != null:
 		default_wave_duration_seconds = float(enemy_spawner.get("wave_duration_seconds"))
 		_apply_debug_wave_duration()
@@ -118,13 +124,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_start_pressed()
 		return
 
-	if waiting_for_restart and key_event.keycode == KEY_R:
+	if run_flow_state.waiting_for_restart and key_event.keycode == KEY_R:
 		_restart_run()
 		return
-	if waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
+	if run_flow_state.waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
 		_on_wave_continue_pressed()
 		return
-	if waiting_for_level_up_choice:
+	if run_flow_state.waiting_for_level_up_choice:
 		return
 	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
 		_toggle_pause()
@@ -166,6 +172,7 @@ func _on_start_pressed() -> void:
 	if run_started:
 		return
 	run_started = true
+	run_flow_state.reset()
 	_apply_selected_character()
 	_apply_debug_quick_shop_preset()
 	_hide_run_overlays()
@@ -333,13 +340,13 @@ func _on_boss_defeated() -> void:
 	_enter_run_end_state("victory")
 
 func _on_wave_continue_pressed() -> void:
-	if not waiting_for_wave_continue:
+	if not run_flow_state.waiting_for_wave_continue:
 		return
 	_exit_intermission_phase()
 	_finish_intermission_or_open_levelup()
 
 func _enter_intermission_phase(wave_index: int) -> void:
-	waiting_for_wave_continue = true
+	run_flow_state.enter_intermission()
 	_set_combat_active(false)
 	_clear_combat_entities()
 	if _is_shop_enabled():
@@ -352,7 +359,7 @@ func _enter_intermission_phase(wave_index: int) -> void:
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
 func _exit_intermission_phase() -> void:
-	waiting_for_wave_continue = false
+	run_flow_state.exit_intermission()
 	_hide_run_overlays()
 
 func _finish_intermission_or_open_levelup() -> void:
@@ -364,7 +371,7 @@ func _finish_intermission_or_open_levelup() -> void:
 func _start_next_wave_after_intermission() -> void:
 	_heal_player_to_full()
 	_set_combat_active(true)
-	run_end_state = "inactive"
+	run_flow_state.clear_run_end()
 	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
 		enemy_spawner.call("start_next_wave")
 
@@ -378,12 +385,8 @@ func _set_combat_active(active: bool) -> void:
 	_set_group_process_mode("projectiles", mode)
 
 func _enter_run_end_state(state: String) -> void:
-	if run_end_state == state:
+	if not run_flow_state.enter_run_end(state):
 		return
-	run_end_state = state
-	waiting_for_restart = state == "game_over" or state == "victory"
-	waiting_for_wave_continue = false
-	waiting_for_level_up_choice = false
 	_set_combat_active(false)
 	_hide_run_overlays()
 	if run_end_panel != null:
@@ -431,10 +434,10 @@ func _on_level_up_pending_changed() -> void:
 	print("Level-up pending. Will show after wave.")
 
 func _open_level_up_screen() -> void:
-	waiting_for_level_up_choice = true
-	level_up_reroll_count = 0
+	run_flow_state.open_level_up()
 	_set_combat_active(false)
-	_roll_level_up_choices()
+	level_up_flow.open_session()
+	_refresh_levelup_buttons()
 	if level_up_title != null:
 		level_up_title.text = "Level Up! Pick 1 of 4"
 	_update_level_up_reroll_button()
@@ -443,14 +446,11 @@ func _open_level_up_screen() -> void:
 	print("Level-up choices shown.")
 
 func _roll_level_up_choices() -> void:
-	active_level_up_choices.clear()
-	for _slot in 4:
-		var stat_index := levelup_rng.randi_range(0, level_up_stat_ids.size() - 1)
-		var stat_id := level_up_stat_ids[stat_index]
-		active_level_up_choices.append(_build_level_up_choice(stat_id))
+	level_up_flow.roll_choices()
 	_refresh_levelup_buttons()
 
 func _refresh_levelup_buttons() -> void:
+	var active_level_up_choices := level_up_flow.get_choices()
 	for index in level_up_choice_buttons.size():
 		var button := level_up_choice_buttons[index]
 		if index < active_level_up_choices.size():
@@ -462,18 +462,18 @@ func _refresh_levelup_buttons() -> void:
 			button.disabled = true
 
 func _on_level_up_choice_pressed(index: int) -> void:
-	if not waiting_for_level_up_choice:
-		return
-	if index < 0 or index >= active_level_up_choices.size():
+	if not run_flow_state.waiting_for_level_up_choice:
 		return
 	if player == null:
 		return
-	var choice := active_level_up_choices[index]
+	var choice := level_up_flow.get_choice(index)
+	if choice.is_empty():
+		return
 	if player.has_method("apply_level_up_bonus"):
 		player.call("apply_level_up_bonus", str(choice.get("id", "")), float(choice.get("value", 0.0)))
 	if player.has_method("consume_pending_level_up"):
 		player.call("consume_pending_level_up")
-	waiting_for_level_up_choice = false
+	run_flow_state.close_level_up()
 	if level_up_panel != null:
 		level_up_panel.visible = false
 	if player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
@@ -482,7 +482,7 @@ func _on_level_up_choice_pressed(index: int) -> void:
 	_start_next_wave_after_intermission()
 
 func _on_level_up_reroll_pressed() -> void:
-	if not waiting_for_level_up_choice:
+	if not run_flow_state.waiting_for_level_up_choice:
 		return
 	if player == null or not player.has_method("spend_gold"):
 		return
@@ -491,48 +491,18 @@ func _on_level_up_reroll_pressed() -> void:
 	if not paid:
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return
-	level_up_reroll_count += 1
-	_roll_level_up_choices()
+	level_up_flow.mark_reroll_paid()
+	_refresh_levelup_buttons()
 	_update_level_up_reroll_button()
 	print("Level-up choices rerolled for %d gold." % reroll_cost)
 
 func _current_level_up_reroll_cost() -> int:
-	return level_up_base_reroll_cost + level_up_reroll_count
+	return level_up_flow.current_reroll_cost()
 
 func _update_level_up_reroll_button() -> void:
 	if level_up_reroll_button == null:
 		return
 	level_up_reroll_button.text = "Reroll (%dG)" % _current_level_up_reroll_cost()
-
-func _build_level_up_choice(stat_id: String) -> Dictionary:
-	var rarity := _roll_rarity_name()
-	var value := _get_rarity_value(stat_id, rarity)
-	var display_name := str(stat_display_names.get(stat_id, stat_id))
-	var formatted_value := "%+.0f" % value
-	if stat_id == "damage" or stat_id == "attack_speed":
-		formatted_value = "%+.0f%%" % (value * 100.0)
-	return {
-		"id": stat_id,
-		"value": value,
-		"rarity": rarity,
-		"label": "[%s] %s %s" % [rarity, display_name, formatted_value]
-	}
-
-func _roll_rarity_name() -> String:
-	var roll := levelup_rng.randf()
-	var threshold := 0.0
-	for rarity_name in ["Common", "Rare", "Epic", "Legendary"]:
-		threshold += float(rarity_weights.get(rarity_name, 0.0))
-		if roll <= threshold:
-			return rarity_name
-	return "Common"
-
-func _get_rarity_value(stat_id: String, rarity_name: String) -> float:
-	var stat_entry_variant: Variant = rarity_values_by_stat.get(stat_id, {})
-	if stat_entry_variant is Dictionary:
-		var stat_entry: Dictionary = stat_entry_variant
-		return float(stat_entry.get(rarity_name, 0.0))
-	return 0.0
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
