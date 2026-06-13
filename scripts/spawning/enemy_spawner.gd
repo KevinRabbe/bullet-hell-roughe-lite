@@ -4,6 +4,7 @@ signal wave_completed(wave_index: int)
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
+const WaveSpawnProfile = preload("res://scripts/spawning/wave_spawn_profile.gd")
 
 @export var enemy_scene: PackedScene
 @export var target_path: NodePath
@@ -22,15 +23,14 @@ var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
 var completion_emitted: bool = false
-var _wave_variant_pools: Array[Dictionary] = []
-var _elite_config: Dictionary = {}
+var wave_spawn_profile := WaveSpawnProfile.new()
 
 func _ready() -> void:
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
 
 	rng = _resolve_rng("spawner")
-	_load_wave_config()
+	wave_spawn_profile.load_from_path(wave_config_path)
 	spawn_timer = Timer.new()
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.one_shot = false
@@ -87,9 +87,9 @@ func _on_spawn_timer_timeout() -> void:
 		enemy_node.call("set_target", target)
 
 func _pick_enemy_variant() -> String:
-	var pool := _variant_pool_for_wave(current_wave_index)
+	var pool := wave_spawn_profile.get_variant_pool_for_wave(current_wave_index)
 	if pool.is_empty():
-		return "imp_runner"
+		return wave_spawn_profile.get_fallback_variant()
 	var variant_ids: Array = []
 	var weights: Array[float] = []
 	for pool_entry in pool:
@@ -104,39 +104,17 @@ func _pick_enemy_variant() -> String:
 			variant_ids.append(str(pool_entry))
 			weights.append(1.0)
 	if variant_ids.is_empty():
-		return "imp_runner"
+		return wave_spawn_profile.get_fallback_variant()
 	var selected: Variant = WeightedPicker.pick_value(rng, variant_ids, weights)
-	return str(selected if selected != null else "imp_runner")
-
-func _variant_pool_for_wave(wave_index: int) -> Array:
-	var result: Array = []
-	for band in _wave_variant_pools:
-		if wave_index <= int(band.get("max_wave", 9999)):
-			var configured: Variant = band.get("variants", [])
-			if configured is Array:
-				for item in configured:
-					if item is Dictionary:
-						var entry: Dictionary = (item as Dictionary).duplicate(true)
-						if str(entry.get("id", "")) != "":
-							result.append(entry)
-					else:
-						var variant_id := str(item)
-						if variant_id != "":
-							result.append(variant_id)
-			return result
-	return result
+	return str(selected if selected != null else wave_spawn_profile.get_fallback_variant())
 
 func _apply_wave_enemy_overrides(enemy_node: Node2D, variant: String) -> void:
-	if current_wave_index < int(_elite_config.get("elite_unlock_wave", 9999)):
-		return
-	if variant != str(_elite_config.get("elite_variant", "husk_brute")):
-		return
-	if rng.randf() > float(_elite_config.get("elite_spawn_chance", 0.0)):
+	if not wave_spawn_profile.should_apply_elite(current_wave_index, variant, rng):
 		return
 	if enemy_node.has_method("set"):
-		var overrides: Dictionary = _elite_config.get("elite_overrides", {})
+		var overrides := wave_spawn_profile.get_elite_overrides()
 		enemy_node.set("is_elite", true)
-		enemy_node.set("elite_role", str(_elite_config.get("elite_role", "wave_tank")))
+		enemy_node.set("elite_role", wave_spawn_profile.get_elite_role())
 		var base_hp := float(enemy_node.get("max_hp"))
 		var base_damage := float(enemy_node.get("contact_damage"))
 		var base_speed := float(enemy_node.get("move_speed"))
@@ -163,56 +141,6 @@ func start_next_wave() -> void:
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.start()
 	print("Wave %d started." % current_wave_index)
-
-func _load_wave_config() -> void:
-	_wave_variant_pools.clear()
-	_elite_config = {}
-	if not FileAccess.file_exists(wave_config_path):
-		_set_default_wave_config()
-		return
-	var config_text := FileAccess.get_file_as_string(wave_config_path)
-	var parsed: Variant = JSON.parse_string(config_text)
-	if not (parsed is Dictionary):
-		_set_default_wave_config()
-		return
-	var config: Dictionary = parsed
-	var pools_variant: Variant = config.get("wave_variant_pools", config.get("waves", []))
-	if pools_variant is Array:
-		for pool_variant in pools_variant:
-			if pool_variant is Dictionary:
-				_wave_variant_pools.append((pool_variant as Dictionary).duplicate(true))
-	_wave_variant_pools.sort_custom(_sort_wave_band_order)
-	var elite_variant: Variant = config.get("elite", null)
-	if elite_variant is Dictionary:
-		_elite_config = (elite_variant as Dictionary).duplicate(true)
-	else:
-		_elite_config = {
-			"elite_unlock_wave": int(config.get("elite_unlock_wave", 5)),
-			"elite_spawn_chance": float(config.get("elite_spawn_chance", 0.14)),
-			"elite_variant": str(config.get("elite_variant", "husk_brute")),
-			"elite_role": str(config.get("elite_role", "wave_tank")),
-			"elite_overrides": (config.get("elite_overrides", {}) if config.get("elite_overrides", {}) is Dictionary else {})
-		}
-	if _wave_variant_pools.is_empty():
-		_set_default_wave_config()
-
-func _set_default_wave_config() -> void:
-	_wave_variant_pools = [
-		{"max_wave": 1, "variants": ["imp_runner"]},
-		{"max_wave": 2, "variants": ["imp_runner", "husk_brute"]},
-		{"max_wave": 3, "variants": ["imp_runner", "husk_brute", "spit_fiend"]},
-		{"max_wave": 9999, "variants": ["imp_runner", "husk_brute", "spit_fiend", "skeleton_rifleman"]},
-	]
-	_elite_config = {
-		"elite_unlock_wave": 5,
-		"elite_spawn_chance": 0.14,
-		"elite_variant": "husk_brute",
-		"elite_role": "wave_tank",
-		"elite_overrides": {"hp_multiplier": 2.0, "damage_multiplier": 1.35, "speed_multiplier": 0.88}
-	}
-
-func _sort_wave_band_order(a: Dictionary, b: Dictionary) -> bool:
-	return int(a.get("max_wave", 9999)) < int(b.get("max_wave", 9999))
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
