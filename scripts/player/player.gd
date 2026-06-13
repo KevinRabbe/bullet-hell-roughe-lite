@@ -1,5 +1,7 @@
 extends CharacterBody2D
 
+const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
 @export var log_runtime_events: bool = false
@@ -747,18 +749,16 @@ func _is_priority_damage_target(target: Node) -> bool:
 	return strongest_target == target
 
 func _load_weapon_resource(weapon_id: String) -> WeaponData:
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
+	var resource_path := WeaponRuntimeUtil.resource_path_for_id(weapon_id)
 	if _weapon_resource_cache.has(resource_path):
 		var cached: Variant = _weapon_resource_cache[resource_path]
 		if cached is WeaponData:
 			return cached
-	if not ResourceLoader.exists(resource_path):
+	if not WeaponRuntimeUtil.has_weapon_resource(weapon_id):
 		_log_resource_warning_once("missing_weapon:%s" % weapon_id, "Missing weapon resource: %s" % resource_path)
 		return null
-	var resource := load(resource_path)
-	if resource is WeaponData:
-		var weapon_resource := resource as WeaponData
-		_weapon_resource_cache[resource_path] = weapon_resource
+	var weapon_resource := WeaponRuntimeUtil.load_weapon_data(_weapon_resource_cache, weapon_id)
+	if weapon_resource != null:
 		return weapon_resource
 	_log_resource_warning_once("invalid_weapon:%s" % weapon_id, "Invalid weapon resource type: %s" % resource_path)
 	return null

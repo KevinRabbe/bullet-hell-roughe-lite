@@ -1,6 +1,7 @@
 extends Node2D
 
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
+const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 
 @export var projectile_scene: PackedScene
 @export var weapon_data: WeaponData
@@ -297,17 +298,7 @@ func _get_entry_weapon_bonus_overrides(entry: Dictionary) -> Dictionary:
 	return {}
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
-	if weapon_id == "":
-		return null
-	if _weapon_data_cache.has(weapon_id):
-		return _weapon_data_cache[weapon_id] as WeaponData
-	var resource_path := "res://data/weapons/%s.tres" % weapon_id
-	if not ResourceLoader.exists(resource_path):
-		return null
-	var loaded := load(resource_path) as WeaponData
-	if loaded != null:
-		_weapon_data_cache[weapon_id] = loaded
-	return loaded
+	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
 
 func _resolve_weapon_rarity() -> String:
 	if weapon_data == null:

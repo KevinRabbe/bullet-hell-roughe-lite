@@ -1,6 +1,7 @@
 extends Area2D
 
 const ProjectileImpactUtil = preload("res://scripts/combat/projectile_impact_helper.gd")
+const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 
 @export var speed: float = 700.0
 @export var damage: float = 10.0
@@ -14,6 +15,7 @@ var shooter: Node
 var source_weapon_id: String = ""
 var source_slot_index: int = -1
 var source_weapon_data: WeaponData
+var _weapon_data_cache: Dictionary = {}
 @onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -65,9 +67,4 @@ func _on_body_entered(body: Node) -> void:
 func _load_weapon_data() -> WeaponData:
 	if source_weapon_data != null:
 		return source_weapon_data
-	if source_weapon_id == "":
-		return null
-	var resource_path := "res://data/weapons/%s.tres" % source_weapon_id
-	if not ResourceLoader.exists(resource_path):
-		return null
-	return load(resource_path) as WeaponData
+	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, source_weapon_id)
