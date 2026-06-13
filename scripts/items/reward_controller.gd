@@ -2,6 +2,8 @@ extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
+const PortalRunProfile = preload("res://scripts/portal/portal_run_profile.gd")
 
 @export var player_path: NodePath
 @export var portal_event_manager_path: NodePath
@@ -38,42 +40,25 @@ func _grant_random_item(source: String) -> void:
 	player.call("grant_item", item)
 
 func _roll_reward_tier(source: String) -> int:
-	if source != "portal_event":
-		return 1
-
-	var portal_luck := _player_portal_stat("portal_luck", 0.0)
-	var portal_risk := _player_portal_stat("portal_instability", 0.0)
-	var reward_multiplier := maxf(_player_portal_stat("portal_reward_multiplier", 1.0), 0.25)
-	var tier2_bias := _player_portal_reward_tier_bias(2)
-	var tier3_bias := _player_portal_reward_tier_bias(3)
-	var tier2_chance := clampf(((0.35 + (portal_luck * 0.08) + (portal_risk * 0.03)) * reward_multiplier) + tier2_bias, 0.2, 0.9)
-	var tier3_chance := clampf(((0.08 + (portal_luck * 0.05) + (portal_risk * 0.1)) * reward_multiplier) + tier3_bias, 0.02, 0.7)
-	var roll := rng.randf()
-	var tier := 1
-	if roll <= tier3_chance:
-		tier = 3
-	elif roll <= tier2_chance:
-		tier = 2
+	var reward_result := PortalEventResolver.roll_reward_tier(rng, source, _build_portal_profile())
+	var tier := int(reward_result.get("tier", 1))
 	print(
 		"Portal reward roll | luck=%.2f risk=%.2f tier2=%.2f tier3=%.2f bias2=%.2f bias3=%.2f roll=%.2f -> tier=%d"
-		% [portal_luck, portal_risk, tier2_chance, tier3_chance, tier2_bias, tier3_bias, roll, tier]
+		% [
+			float(reward_result.get("portal_luck", 0.0)),
+			float(reward_result.get("portal_instability", 0.0)),
+			float(reward_result.get("tier2_chance", 0.0)),
+			float(reward_result.get("tier3_chance", 0.0)),
+			float(reward_result.get("tier2_bias", 0.0)),
+			float(reward_result.get("tier3_bias", 0.0)),
+			float(reward_result.get("roll", 0.0)),
+			tier
+		]
 	)
 	return tier
 
-func _player_portal_stat(stat_name: String, fallback: float) -> float:
-	if player == null or not is_instance_valid(player):
-		return fallback
-	var stats_variant: Variant = player.get("stats")
-	if stats_variant == null or not (stats_variant is Object):
-		return fallback
-	return float(stats_variant.get(stat_name))
-
-func _player_portal_reward_tier_bias(tier: int) -> float:
-	if player == null or not is_instance_valid(player):
-		return 0.0
-	if player.has_method("get_portal_reward_tier_bias"):
-		return float(player.call("get_portal_reward_tier_bias", tier))
-	return 0.0
+func _build_portal_profile() -> PortalRunProfile:
+	return PortalRunProfile.from_player(player)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
