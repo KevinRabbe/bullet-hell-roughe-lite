@@ -3,7 +3,8 @@ extends Node2D
 signal portal_event_completed
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
-const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
+const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
+const PortalRunProfile = preload("res://scripts/portal/portal_run_profile.gd")
 
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
@@ -71,14 +72,7 @@ func _try_spawn_portal_for_wave(wave_index: int) -> void:
 		_spawn_first_portal()
 
 func _compute_portal_spawn_chance() -> float:
-	var base_chance := 0.30
-	var portal_frequency := 1.0
-	if player != null and is_instance_valid(player):
-		var stats_variant: Variant = player.get("stats")
-		if stats_variant != null and stats_variant is Object:
-			portal_frequency = float(stats_variant.get("portal_frequency"))
-	var frequency_bonus := (portal_frequency - 1.0) * 0.15
-	return clampf(base_chance + frequency_bonus, 0.25, 0.9)
+	return _build_portal_profile().compute_spawn_chance()
 
 func _active_portal_count() -> int:
 	var count := 0
@@ -201,37 +195,15 @@ func _on_event_elite_exited(enemy: Node) -> void:
 		portal_event_completed.emit()
 
 func _pick_portal_event_id() -> String:
-	var portal_instability := 0.0
-	if player != null and is_instance_valid(player):
-		var stats_variant: Variant = player.get("stats")
-		if stats_variant != null and stats_variant is Object:
-			portal_instability = float(stats_variant.get("portal_instability"))
-
-	var event_ids: Array = []
-	var weights: Array[float] = []
-	_append_weighted_event(event_ids, weights, "double_elite", (1.0 + (portal_instability * 1.2)) * _get_portal_event_bias("double_elite"))
-	_append_weighted_event(event_ids, weights, "power_for_hp_loss", 1.0 * _get_portal_event_bias("power_for_hp_loss"))
-	_append_weighted_event(event_ids, weights, "enemy_flood_20s", (1.0 + (portal_instability * 1.5)) * _get_portal_event_bias("enemy_flood_20s"))
-	if event_ids.is_empty():
-		return "double_elite"
-	return str(WeightedPicker.pick_value(rng, event_ids, weights))
-
-func _append_weighted_event(event_ids: Array, weights: Array[float], event_id: String, weight: float) -> void:
-	var safe_weight := maxf(weight, 0.0)
-	if safe_weight <= 0.0:
-		return
-	event_ids.append(event_id)
-	weights.append(safe_weight)
-
-func _get_portal_event_bias(event_id: String) -> float:
-	if player != null and player.has_method("get_portal_event_bias"):
-		return maxf(float(player.call("get_portal_event_bias", event_id)), 0.0)
-	return 1.0
+	return PortalEventResolver.pick_event_id(rng, _build_portal_profile())
 
 func _pick_elite_role() -> String:
 	if rng.randf() < 0.5:
 		return "horned_bruiser"
 	return "rift_caller"
+
+func _build_portal_profile() -> PortalRunProfile:
+	return PortalRunProfile.from_player(player)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
