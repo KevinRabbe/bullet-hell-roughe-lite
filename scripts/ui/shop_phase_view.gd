@@ -1,6 +1,5 @@
 extends Node
 
-const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const ShopViewModelScript = preload("res://scripts/ui/shop_view_model.gd")
 
 @export var shop_controller_path: NodePath
@@ -39,7 +38,6 @@ var card_panels: Array[Panel] = []
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
-var _weapon_cache: Dictionary = {}
 
 func _ready() -> void:
 	_resolve_references()
@@ -320,25 +318,25 @@ func _refresh_all() -> void:
 
 func _refresh_top_bar() -> void:
 	if top_wave_label != null:
-		top_wave_label.text = "Shop (Wave %d)" % int(_snapshot.get("wave_index", 1))
+		top_wave_label.text = str(_snapshot.get("title", "Shop"))
 	if top_gold_label != null:
 		top_gold_label.text = "Gold: %d" % int(_snapshot.get("gold", 0))
 	if reroll_button != null:
 		reroll_button.text = "Reroll - %dG" % int(_snapshot.get("reroll_cost", 0))
 
 func _refresh_offer_cards() -> void:
-	var offers_variant: Variant = _snapshot.get("offers", [])
-	var offers: Array[Dictionary] = []
-	if offers_variant is Array:
-		for offer_variant in offers_variant:
-			if offer_variant is Dictionary:
-				offers.append((offer_variant as Dictionary))
+	var cards_variant: Variant = _snapshot.get("offer_cards", [])
+	var cards: Array[Dictionary] = []
+	if cards_variant is Array:
+		for card_variant in cards_variant:
+			if card_variant is Dictionary:
+				cards.append(card_variant as Dictionary)
 	for i in range(4):
 		var title := card_title_labels[i]
 		var type_label := card_type_labels[i]
 		var desc := card_desc_labels[i]
 		var button := offer_buttons[i] if i < offer_buttons.size() else null
-		if i >= offers.size():
+		if i >= cards.size():
 			title.text = "N/A"
 			type_label.text = "-"
 			desc.text = ""
@@ -346,56 +344,17 @@ func _refresh_offer_cards() -> void:
 				button.text = "N/A"
 				button.disabled = true
 			continue
-		var offer: Dictionary = offers[i]
-		var offer_type := str(offer.get("type", ""))
-		_apply_card_border(i, offer_type)
-		title.text = str(offer.get("label", "Offer"))
-		type_label.text = offer_type.capitalize()
-		var price := int(offer.get("price", 0))
-		if offer_type == "sold_out":
-			type_label.text = "Sold Out"
-			desc.text = "[color=gray]Already purchased.[/color]"
-			if button != null:
-				button.text = "Sold Out"
-				button.disabled = true
-			continue
-		desc.text = _build_offer_description(offer)
+		var card: Dictionary = cards[i]
+		_apply_card_border(i, str(card.get("kind", "")))
+		title.text = str(card.get("title", "Offer"))
+		type_label.text = str(card.get("type_label", "-"))
+		desc.text = str(card.get("description", ""))
+		var block_reason := str(card.get("block_reason", ""))
+		if block_reason != "":
+			desc.text += "\n[color=#ff7d7d]%s[/color]" % block_reason
 		if button != null:
-			button.disabled = false
-			button.text = "%dG" % price
-			if offer_type == "weapon" and not _can_buy_weapon_offer(offer):
-				button.disabled = true
-				button.text = "Blocked"
-				desc.text += "\n[color=#ff7d7d]%s[/color]" % _get_weapon_offer_block_reason(offer)
-
-func _build_offer_description(offer: Dictionary) -> String:
-	var offer_type := str(offer.get("type", ""))
-	if offer_type == "weapon":
-		var weapon_id := str(offer.get("id", ""))
-		var weapon_data := _load_weapon_data(weapon_id)
-		if weapon_data == null:
-			return "Weapon"
-		var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
-		var desc_text := weapon_data.description
-		if desc_text == "":
-			desc_text = "No description."
-		return "[color=#7fd0ff]Rarity: %s[/color]\n%s\nDMG %.1f\nCD %.2fs\nRange x%.2f" % [
-			rarity_text,
-			desc_text,
-			weapon_data.get_damage_value(),
-			weapon_data.get_cooldown_value(),
-			weapon_data.get_attack_range_value()
-		]
-	if offer_type == "item":
-		var item_id := str(offer.get("id", ""))
-		var item_data := _find_item(item_id)
-		if item_data == null:
-			return "Item"
-		var item_desc := item_data.description
-		if item_desc == "":
-			item_desc = "No description."
-		return "[color=#b5ff9a]Rarity: %s[/color]\n%s" % [str(item_data.rarity).capitalize(), item_desc]
-	return ""
+			button.disabled = card.get("button_disabled", false) == true
+			button.text = str(card.get("button_text", "Buy"))
 
 func _refresh_stats_panel() -> void:
 	if right_stats_label == null:
@@ -410,43 +369,28 @@ func _refresh_bottom_sections() -> void:
 	_refresh_weapon_slots()
 
 func _refresh_weapon_slots() -> void:
-	var entries: Array[Dictionary] = []
-	var entries_variant: Variant = _snapshot.get("weapon_entries", [])
-	if entries_variant is Array:
-		for entry_variant in entries_variant:
-			if entry_variant is Dictionary:
-				entries.append((entry_variant as Dictionary))
+	var slots: Array[Dictionary] = []
+	var slots_variant: Variant = _snapshot.get("weapon_slots", [])
+	if slots_variant is Array:
+		for slot_variant in slots_variant:
+			if slot_variant is Dictionary:
+				slots.append(slot_variant as Dictionary)
 	for index in range(weapon_slot_buttons.size()):
 		var icon_button := weapon_slot_buttons[index]
 		var slot_label := weapon_slot_labels[index]
 		icon_button.modulate = Color(1.0, 1.0, 1.0, 1.0)
-		if index < entries.size() and entries[index] is Dictionary:
-			var entry: Dictionary = entries[index]
-			var weapon_id := str(entry.get("id", ""))
-			var rarity := str(entry.get("rarity", "common"))
-			var data := _load_weapon_data(weapon_id)
-			icon_button.icon = data.icon if data != null else null
-			icon_button.disabled = false
-			var base_label := ""
-			if data != null and data.display_name != "":
-				var short_name := data.display_name.substr(0, mini(3, data.display_name.length()))
-				base_label = "%s %s" % [short_name, rarity.capitalize().substr(0, 1)]
-			else:
-				base_label = "%s %s" % [weapon_id.substr(0, mini(3, weapon_id.length())), rarity.capitalize().substr(0, 1)]
-			var kill_requirement := int(entry.get("kill_requirement", 0))
-			var kill_progress := int(entry.get("kill_progress", 0))
-			if kill_requirement > 0:
-				var milestone_summary := _format_milestone_summary(entry)
-				slot_label.text = "%s\n%d/%d%s" % [base_label, kill_progress, kill_requirement, milestone_summary]
-			else:
-				slot_label.text = base_label
+		if index < slots.size():
+			var slot: Dictionary = slots[index]
+			icon_button.icon = slot.get("icon", null)
+			icon_button.disabled = slot.get("occupied", false) != true
+			slot_label.text = str(slot.get("label", "-"))
 		else:
 			icon_button.icon = null
 			icon_button.disabled = true
 			slot_label.text = "-"
 		if index == selected_weapon_slot:
 			icon_button.modulate = Color(1.0, 0.95, 0.60, 1.0)
-	if selected_weapon_slot >= entries.size():
+	if selected_weapon_slot >= slots.size():
 		selected_weapon_slot = -1
 	_update_merge_button_state()
 
@@ -475,8 +419,8 @@ func _update_merge_button_state() -> void:
 		merge_selected_button.disabled = true
 		merge_selected_button.text = "Select weapon"
 		return
-	if weapon_loadout != null and weapon_loadout.has_method("get_merge_slot_state"):
-		var state_variant: Variant = weapon_loadout.call("get_merge_slot_state", selected_weapon_slot)
+	if shop_view_model != null:
+		var state_variant: Variant = shop_view_model.get_merge_slot_state(selected_weapon_slot)
 		if state_variant is Dictionary:
 			var merge_state: Dictionary = state_variant
 			var can_merge: bool = merge_state.get("can_merge", false) == true
@@ -486,40 +430,8 @@ func _update_merge_button_state() -> void:
 			else:
 				merge_selected_button.text = str(merge_state.get("message", "No valid merge"))
 			return
-	var fallback_can_merge := false
-	if weapon_loadout != null and weapon_loadout.has_method("can_merge_slot"):
-		fallback_can_merge = weapon_loadout.call("can_merge_slot", selected_weapon_slot) == true
-	merge_selected_button.disabled = not fallback_can_merge
-	merge_selected_button.text = "Merge selected" if fallback_can_merge else "No valid merge"
-
-func _format_milestone_summary(entry: Dictionary) -> String:
-	var stat_id := str(entry.get("milestone_stat_id", ""))
-	var amount := float(entry.get("milestone_amount", 0.0))
-	if stat_id == "" or is_zero_approx(amount):
-		return ""
-	var stat_label := _milestone_stat_short_label(stat_id)
-	if stat_label == "":
-		return ""
-	var amount_text := _format_milestone_amount(amount)
-	return "\n+%s %s" % [amount_text, stat_label]
-
-func _milestone_stat_short_label(stat_id: String) -> String:
-	match stat_id:
-		"damage":
-			return "DMG"
-		"attack_speed":
-			return "AS"
-		"attack_range":
-			return "RNG"
-		"max_hp":
-			return "HP"
-		_:
-			return stat_id.capitalize()
-
-func _format_milestone_amount(amount: float) -> String:
-	if is_equal_approx(amount, round(amount)):
-		return str(int(round(amount)))
-	return "%.2f" % amount
+	merge_selected_button.disabled = true
+	merge_selected_button.text = "No valid merge"
 
 func _apply_card_border(index: int, offer_type: String) -> void:
 	if index < 0 or index >= card_panels.size():
@@ -537,60 +449,3 @@ func _apply_card_border(index: int, offer_type: String) -> void:
 		var cloned := (style as StyleBoxFlat).duplicate() as StyleBoxFlat
 		cloned.border_color = border
 		card.add_theme_stylebox_override("panel", cloned)
-
-func _load_weapon_data(weapon_id: String) -> WeaponData:
-	if weapon_id == "":
-		return null
-	if _weapon_cache.has(weapon_id):
-		var cached: Variant = _weapon_cache[weapon_id]
-		if cached is WeaponData:
-			return cached
-	var path := "res://data/weapons/%s.tres" % weapon_id
-	if not ResourceLoader.exists(path):
-		return null
-	var loaded := load(path) as WeaponData
-	if loaded != null:
-		_weapon_cache[weapon_id] = loaded
-	return loaded
-
-func _find_item(item_id: String) -> ItemData:
-	for item in ItemDatabase.get_prototype_items():
-		if item != null and item.id == item_id:
-			return item
-	return null
-
-func _can_buy_weapon_offer(offer: Dictionary) -> bool:
-	if player == null:
-		return false
-	var loadout: Node = player.get_node_or_null("WeaponLoadout")
-	if loadout == null:
-		return false
-	var weapon_id := str(offer.get("id", ""))
-	var incoming_rarity := _get_offer_weapon_rarity(offer)
-	if weapon_id == "":
-		return false
-	if loadout.has_method("can_grant_weapon"):
-		return loadout.call("can_grant_weapon", weapon_id, incoming_rarity) == true
-	if loadout.has_method("has_space"):
-		return loadout.call("has_space") == true
-	return true
-
-func _get_weapon_offer_block_reason(offer: Dictionary) -> String:
-	var default_message := "Need empty slot or valid same-rarity merge."
-	var weapon_id := str(offer.get("id", ""))
-	var incoming_rarity := _get_offer_weapon_rarity(offer)
-	if weapon_id == "":
-		return default_message
-	if shop_view_model != null:
-		var reason := str(shop_view_model.get_weapon_offer_block_reason(weapon_id, incoming_rarity))
-		if reason != "":
-			return reason
-	return default_message
-
-func _get_offer_weapon_rarity(offer: Dictionary, weapon_data: WeaponData = null) -> String:
-	var rolled_rarity := str(offer.get("rolled_rarity", ""))
-	if rolled_rarity != "":
-		return rolled_rarity
-	if weapon_data != null and weapon_data.rarity != "":
-		return weapon_data.rarity
-	return "common"
