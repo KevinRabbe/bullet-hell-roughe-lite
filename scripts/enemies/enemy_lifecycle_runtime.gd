@@ -7,6 +7,35 @@ static func record_hit_source(owner: Node, source: Node, source_weapon_id: Strin
 		owner.last_hit_weapon_id = source_weapon_id
 		owner.last_hit_slot_index = source_slot_index
 
+static func apply_damage(
+	owner: Node2D,
+	visual: CanvasItem,
+	visual_sprite: Sprite2D,
+	amount: float,
+	source: Node,
+	source_weapon_id: String,
+	source_slot_index: int,
+	reward_gold: int,
+	reward_xp: int,
+	on_hit_status_callback: Callable
+) -> void:
+	record_hit_source(owner, source, source_weapon_id, source_slot_index)
+	owner.current_hp = maxf(float(owner.get("current_hp")) - amount, 0.0)
+	if on_hit_status_callback.is_valid():
+		on_hit_status_callback.call(source, source_weapon_id)
+	spawn_enemy_hit_flash(visual)
+	if float(owner.get("current_hp")) <= 0.0:
+		spawn_death_puff(owner.get_tree(), owner.global_position, owner.z_index, visual_sprite)
+		grant_kill_rewards(
+			owner.get_tree(),
+			owner.get("last_hit_player"),
+			str(owner.get("last_hit_weapon_id")),
+			int(owner.get("last_hit_slot_index")),
+			reward_gold,
+			reward_xp
+		)
+		owner.queue_free()
+
 static func grant_kill_rewards(
 	tree: SceneTree,
 	last_hit_player: Node,

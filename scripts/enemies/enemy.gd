@@ -77,21 +77,18 @@ func _physics_process(delta: float) -> void:
 	_try_ranged_damage_player()
 
 func take_damage(amount: float, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
-	EnemyLifecycleRuntimeUtil.record_hit_source(self, source, source_weapon_id, source_slot_index)
-	current_hp = maxf(current_hp - amount, 0.0)
-	_apply_weapon_status_effect(source, source_weapon_id)
-	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
-	if current_hp <= 0.0:
-		EnemyLifecycleRuntimeUtil.spawn_death_puff(get_tree(), global_position, z_index, visual_sprite)
-		EnemyLifecycleRuntimeUtil.grant_kill_rewards(
-			get_tree(),
-			last_hit_player,
-			last_hit_weapon_id,
-			last_hit_slot_index,
-			reward_gold,
-			reward_xp
-		)
-		queue_free()
+	EnemyLifecycleRuntimeUtil.apply_damage(
+		self,
+		visual,
+		visual_sprite,
+		amount,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		reward_gold,
+		reward_xp,
+		_apply_weapon_status_effect
+	)
 
 func _grant_kill_rewards() -> void:
 	EnemyLifecycleRuntimeUtil.grant_kill_rewards(
