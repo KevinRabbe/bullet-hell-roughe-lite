@@ -209,25 +209,21 @@ func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void
 	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
 		return
 	var status_power_multiplier := EnemyStatusRuntimeUtil.compute_status_power_multiplier(source, weapon_data)
-	_apply_status_from_weapon(weapon_data, source, source_weapon_id, -1, status_power_multiplier)
-
-func _apply_status_from_weapon(weapon_data: WeaponData, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
-	var status_payload := EnemyStatusRuntimeUtil.build_status_payload(weapon_data, source, status_power_multiplier)
-	apply_status_payload(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
+	EnemyStatusRuntimeUtil.apply_status_from_weapon(
+		self,
+		active_statuses,
+		status_rng,
+		weapon_data,
+		source,
+		source_weapon_id,
+		-1,
+		status_power_multiplier
+	)
 
 func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
-	var applied := EnemyStatusRuntimeUtil.apply_status_payload(active_statuses, status_payload)
-	if not applied:
-		return
-	if source != null and source.is_in_group("players"):
-		last_hit_player = source
-		last_hit_weapon_id = source_weapon_id
-		last_hit_slot_index = source_slot_index
-	_try_spread_status(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
-
-func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
-	EnemyStatusRuntimeUtil.try_spread_status(
+	EnemyStatusRuntimeUtil.apply_status_payload_to_owner(
 		self,
+		active_statuses,
 		status_rng,
 		status_payload,
 		source,
@@ -237,18 +233,7 @@ func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_
 	)
 
 func _apply_status_tick_damage(status: Dictionary) -> void:
-	var stacks := maxi(int(status.get("stacks", 1)), 1)
-	var tick_damage := float(status.get("flat_damage", 0.0))
-	tick_damage += max_hp * float(status.get("max_hp_fraction", 0.0))
-	tick_damage *= stacks
-	if tick_damage <= 0.0:
-		return
-	current_hp = maxf(current_hp - tick_damage, 0.0)
-	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
-	if current_hp <= 0.0:
-		EnemyLifecycleRuntimeUtil.spawn_death_puff(get_tree(), global_position, z_index, visual_sprite)
-		_grant_kill_rewards()
-		queue_free()
+	EnemyStatusRuntimeUtil.apply_status_tick_damage(self, visual, visual_sprite, status)
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
@@ -266,12 +251,7 @@ func _load_texture(resource_path: String) -> Texture2D:
 	return loaded
 
 func get_status_stack_count(status_id: String) -> int:
-	if status_id == "":
-		return 0
-	var status_variant: Variant = active_statuses.get(status_id, {})
-	if not (status_variant is Dictionary):
-		return 0
-	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
+	return EnemyStatusRuntimeUtil.get_status_stack_count(active_statuses, status_id)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")

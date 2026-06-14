@@ -65,6 +65,55 @@ static func apply_status_payload(
 	}
 	return true
 
+static func apply_status_from_weapon(
+	owner: Node2D,
+	active_statuses: Dictionary,
+	rng: RandomNumberGenerator,
+	weapon_data: WeaponData,
+	source: Node,
+	source_weapon_id: String,
+	source_slot_index: int,
+	status_power_multiplier: float
+) -> void:
+	var status_payload := build_status_payload(weapon_data, source, status_power_multiplier)
+	apply_status_payload_to_owner(
+		owner,
+		active_statuses,
+		rng,
+		status_payload,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		status_power_multiplier
+	)
+
+static func apply_status_payload_to_owner(
+	owner: Node2D,
+	active_statuses: Dictionary,
+	rng: RandomNumberGenerator,
+	status_payload: Dictionary,
+	source: Node = null,
+	source_weapon_id: String = "",
+	source_slot_index: int = -1,
+	status_power_multiplier: float = 1.0
+) -> void:
+	var applied := apply_status_payload(active_statuses, status_payload)
+	if not applied:
+		return
+	if source != null and source.is_in_group("players"):
+		owner.set("last_hit_player", source)
+		owner.set("last_hit_weapon_id", source_weapon_id)
+		owner.set("last_hit_slot_index", source_slot_index)
+	try_spread_status(
+		owner,
+		rng,
+		status_payload,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		status_power_multiplier
+	)
+
 static func tick_statuses(active_statuses: Dictionary, delta: float, tick_callback: Callable) -> void:
 	if active_statuses.is_empty():
 		return
@@ -89,6 +138,32 @@ static func tick_statuses(active_statuses: Dictionary, delta: float, tick_callba
 			expired_statuses.append(status_id)
 	for expired_status_id in expired_statuses:
 		active_statuses.erase(expired_status_id)
+
+static func apply_status_tick_damage(owner: Node2D, visual: CanvasItem, visual_sprite: Sprite2D, status: Dictionary) -> void:
+	var stacks := maxi(int(status.get("stacks", 1)), 1)
+	var max_hp := float(owner.get("max_hp"))
+	var current_hp := float(owner.get("current_hp"))
+	var tick_damage := float(status.get("flat_damage", 0.0))
+	tick_damage += max_hp * float(status.get("max_hp_fraction", 0.0))
+	tick_damage *= stacks
+	if tick_damage <= 0.0:
+		return
+	current_hp = maxf(current_hp - tick_damage, 0.0)
+	owner.set("current_hp", current_hp)
+	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
+	if current_hp <= 0.0:
+		EnemyLifecycleRuntimeUtil.spawn_death_puff(owner.get_tree(), owner.global_position, owner.z_index, visual_sprite)
+		if owner.has_method("_grant_kill_rewards"):
+			owner.call("_grant_kill_rewards")
+		owner.queue_free()
+
+static func get_status_stack_count(active_statuses: Dictionary, status_id: String) -> int:
+	if status_id == "":
+		return 0
+	var status_variant: Variant = active_statuses.get(status_id, {})
+	if not (status_variant is Dictionary):
+		return 0
+	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
 
 static func try_spread_status(
 	owner: Node2D,
