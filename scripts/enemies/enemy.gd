@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
+const EnemyCombatRuntimeUtil = preload("res://scripts/enemies/enemy_combat_runtime.gd")
 const EnemyLifecycleRuntimeUtil = preload("res://scripts/enemies/enemy_lifecycle_runtime.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
@@ -104,78 +104,36 @@ func _grant_kill_rewards() -> void:
 	)
 
 func _find_player_if_needed() -> void:
-	if target != null and is_instance_valid(target):
-		return
-	var players := get_tree().get_nodes_in_group("players")
-	if players.is_empty():
-		return
-	if players[0] is Node2D:
-		target = players[0] as Node2D
+	target = EnemyCombatRuntimeUtil.resolve_player_target(target, get_tree())
 
 func _try_damage_player() -> void:
-	if enemy_variant == "spit_fiend":
-		return
-	if damage_cooldown_left > 0.0:
-		return
-	if target == null or not is_instance_valid(target):
-		return
-	if not target.has_method("take_damage"):
-		return
-
-	var distance_to_player := global_position.distance_to(target.global_position)
-	if distance_to_player > contact_range:
-		return
-
-	if log_combat_events:
-		print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
-	target.call("take_damage", contact_damage)
-	if target.has_method("notify_damaged_by_enemy"):
-		target.call("notify_damaged_by_enemy", self)
-	damage_cooldown_left = damage_interval_seconds
+	damage_cooldown_left = EnemyCombatRuntimeUtil.try_damage_player(
+		self,
+		target,
+		enemy_variant,
+		damage_cooldown_left,
+		contact_range,
+		contact_damage,
+		damage_interval_seconds,
+		log_combat_events
+	)
 
 func _try_ranged_damage_player() -> void:
-	if not EnemyVariantRuntimeUtil.supports_ranged_attack(enemy_variant):
-		return
-	if ranged_cooldown_left > 0.0:
-		return
-	if target == null or not is_instance_valid(target):
-		return
-	if not target.has_method("take_damage"):
-		return
-	var distance_to_player := global_position.distance_to(target.global_position)
-	if distance_to_player > ranged_attack_range:
-		return
 	var data := _load_enemy_data(enemy_variant)
-	var projectile_speed := EnemyVariantRuntimeUtil.resolve_projectile_speed(enemy_variant, elite_role)
-	var projectile_lifetime := EnemyVariantRuntimeUtil.resolve_projectile_lifetime(enemy_variant, elite_role)
-	var projectile := ProjectileSpawnUtil.spawn_projectile(
-		ENEMY_PROJECTILE_SCENE,
-		get_tree().current_scene,
-		global_position,
-		target.global_position - global_position,
+	ranged_cooldown_left = EnemyCombatRuntimeUtil.try_ranged_damage_player(
+		self,
+		target,
+		enemy_variant,
+		elite_role,
+		ranged_cooldown_left,
+		ranged_attack_range,
 		ranged_damage,
-		projectile_speed,
-		projectile_lifetime,
-		PI
+		ranged_interval_seconds,
+		ENEMY_PROJECTILE_SCENE,
+		data,
+		_load_texture,
+		log_combat_events
 	)
-	if projectile != null:
-		if projectile.has_method("set_source_enemy"):
-			projectile.call("set_source_enemy", self)
-		var projectile_visual := projectile.get_node_or_null("Visual")
-		if projectile_visual is Sprite2D:
-			var projectile_sprite := projectile_visual as Sprite2D
-			projectile_sprite.texture = EnemyVariantRuntimeUtil.resolve_projectile_texture(
-				data,
-				enemy_variant,
-				elite_role,
-				_load_texture
-			)
-			projectile_sprite.rotation = (
-				target.global_position - global_position
-			).angle() + EnemyVariantRuntimeUtil.resolve_projectile_rotation_offset(data)
-	if log_combat_events:
-		print("%s SHOT PROJECTILE | distance %.1f | damage %.1f" % [enemy_variant.to_upper(), distance_to_player, ranged_damage])
-	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:
 	var data := _load_enemy_data(enemy_variant)
