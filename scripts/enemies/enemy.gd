@@ -2,10 +2,10 @@ extends CharacterBody2D
 
 const EnemyCombatRuntimeUtil = preload("res://scripts/enemies/enemy_combat_runtime.gd")
 const EnemyLifecycleRuntimeUtil = preload("res://scripts/enemies/enemy_lifecycle_runtime.gd")
+const EnemyResourceRuntimeUtil = preload("res://scripts/enemies/enemy_resource_runtime.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
 const EnemyVariantRuntimeUtil = preload("res://scripts/enemies/enemy_variant_runtime.gd")
-const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
 @export var max_hp: float = 20.0
@@ -43,7 +43,7 @@ const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyP
 const ENEMY_DATA_DIR: String = "res://data/enemies"
 
 func _ready() -> void:
-	status_rng = _resolve_rng("status_effects")
+	status_rng = EnemyResourceRuntimeUtil.resolve_rng(self, "status_effects")
 	_apply_variant_stats()
 	current_hp = max_hp
 	add_to_group("enemies")
@@ -143,17 +143,7 @@ func _apply_variant_stats() -> void:
 	EnemyVariantRuntimeUtil.apply_fallback_variant(self, enemy_variant, elite_role, visual, visual_sprite)
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
-	if variant_id == "":
-		return null
-	var resource_path := "%s/%s.tres" % [ENEMY_DATA_DIR, variant_id]
-	if resource_path == "" or not ResourceLoader.exists(resource_path):
-		return null
-	if _enemy_data_cache.has(resource_path):
-		return _enemy_data_cache[resource_path] as EnemyData
-	var loaded := load(resource_path) as EnemyData
-	if loaded != null:
-		_enemy_data_cache[resource_path] = loaded
-	return loaded
+	return EnemyResourceRuntimeUtil.load_enemy_data(_enemy_data_cache, ENEMY_DATA_DIR, variant_id)
 
 func _tick_status_effects(delta: float) -> void:
 	EnemyStatusRuntimeUtil.tick_statuses(active_statuses, delta, _apply_status_tick_damage)
@@ -197,24 +187,7 @@ func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
 
 func _load_texture(resource_path: String) -> Texture2D:
-	if resource_path == "":
-		return null
-	if _texture_cache.has(resource_path):
-		return _texture_cache[resource_path] as Texture2D
-	if not ResourceLoader.exists(resource_path):
-		return null
-	var loaded := load(resource_path) as Texture2D
-	if loaded != null:
-		_texture_cache[resource_path] = loaded
-	return loaded
+	return EnemyResourceRuntimeUtil.load_texture(_texture_cache, resource_path)
 
 func get_status_stack_count(status_id: String) -> int:
 	return EnemyStatusRuntimeUtil.get_status_stack_count(active_statuses, status_id)
-
-func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
-	var run_rng := get_node_or_null("/root/RunRng")
-	if run_rng != null and run_rng.has_method("get_rng"):
-		var resolved: Variant = run_rng.call("get_rng", stream_name)
-		if resolved is RandomNumberGenerator:
-			return resolved
-	return DeterministicRng.create_fallback_rng(stream_name, "Enemy")
