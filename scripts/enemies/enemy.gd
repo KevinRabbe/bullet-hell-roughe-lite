@@ -90,16 +90,6 @@ func take_damage(amount: float, source: Node = null, source_weapon_id: String = 
 		_apply_weapon_status_effect
 	)
 
-func _grant_kill_rewards() -> void:
-	EnemyLifecycleRuntimeUtil.grant_kill_rewards(
-		get_tree(),
-		last_hit_player,
-		last_hit_weapon_id,
-		last_hit_slot_index,
-		reward_gold,
-		reward_xp
-	)
-
 func _find_player_if_needed() -> void:
 	target = EnemyCombatRuntimeUtil.resolve_player_target(target, get_tree())
 
@@ -169,7 +159,7 @@ func apply_status_payload(status_payload: Dictionary, source: Node = null, sourc
 	)
 
 func _apply_status_tick_damage(status: Dictionary) -> void:
-	EnemyStatusRuntimeUtil.apply_status_tick_damage(self, visual, visual_sprite, status)
+	EnemyStatusRuntimeUtil.apply_status_tick_damage(self, visual, visual_sprite, status, reward_gold, reward_xp)
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)

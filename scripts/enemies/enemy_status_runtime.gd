@@ -170,7 +170,14 @@ static func tick_statuses(active_statuses: Dictionary, delta: float, tick_callba
 	for expired_status_id in expired_statuses:
 		active_statuses.erase(expired_status_id)
 
-static func apply_status_tick_damage(owner: Node2D, visual: CanvasItem, visual_sprite: Sprite2D, status: Dictionary) -> void:
+static func apply_status_tick_damage(
+	owner: Node2D,
+	visual: CanvasItem,
+	visual_sprite: Sprite2D,
+	status: Dictionary,
+	reward_gold: int,
+	reward_xp: int
+) -> void:
 	var stacks := maxi(int(status.get("stacks", 1)), 1)
 	var max_hp := float(owner.get("max_hp"))
 	var current_hp := float(owner.get("current_hp"))
@@ -184,8 +191,14 @@ static func apply_status_tick_damage(owner: Node2D, visual: CanvasItem, visual_s
 	EnemyLifecycleRuntimeUtil.spawn_enemy_hit_flash(visual)
 	if current_hp <= 0.0:
 		EnemyLifecycleRuntimeUtil.spawn_death_puff(owner.get_tree(), owner.global_position, owner.z_index, visual_sprite)
-		if owner.has_method("_grant_kill_rewards"):
-			owner.call("_grant_kill_rewards")
+		EnemyLifecycleRuntimeUtil.grant_kill_rewards(
+			owner.get_tree(),
+			owner.get("last_hit_player"),
+			str(owner.get("last_hit_weapon_id")),
+			int(owner.get("last_hit_slot_index")),
+			reward_gold,
+			reward_xp
+		)
 		owner.queue_free()
 
 static func get_status_stack_count(active_statuses: Dictionary, status_id: String) -> int:
