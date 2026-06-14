@@ -12,6 +12,37 @@ static func compute_status_power_multiplier(source: Node, weapon_data: WeaponDat
 		)
 	return status_power_multiplier
 
+static func apply_weapon_status_effect(
+	owner: Node2D,
+	active_statuses: Dictionary,
+	rng: RandomNumberGenerator,
+	source: Node,
+	source_weapon_id: String,
+	source_slot_index: int,
+	weapon_loader: Callable
+) -> void:
+	if source_weapon_id == "":
+		return
+	if not weapon_loader.is_valid():
+		return
+	var loaded_weapon: Variant = weapon_loader.call(source_weapon_id)
+	if not (loaded_weapon is WeaponData):
+		return
+	var weapon_data := loaded_weapon as WeaponData
+	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
+		return
+	var status_power_multiplier := compute_status_power_multiplier(source, weapon_data)
+	apply_status_from_weapon(
+		owner,
+		active_statuses,
+		rng,
+		weapon_data,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		status_power_multiplier
+	)
+
 static func build_status_payload(
 	weapon_data: WeaponData,
 	source: Node,

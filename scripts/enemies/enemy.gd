@@ -146,23 +146,14 @@ func _tick_status_effects(delta: float) -> void:
 	EnemyStatusRuntimeUtil.tick_statuses(active_statuses, delta, _apply_status_tick_damage)
 
 func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void:
-	if source_weapon_id == "":
-		return
-	var weapon_data := _load_weapon_data(source_weapon_id)
-	if weapon_data == null:
-		return
-	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
-		return
-	var status_power_multiplier := EnemyStatusRuntimeUtil.compute_status_power_multiplier(source, weapon_data)
-	EnemyStatusRuntimeUtil.apply_status_from_weapon(
+	EnemyStatusRuntimeUtil.apply_weapon_status_effect(
 		self,
 		active_statuses,
 		status_rng,
-		weapon_data,
 		source,
 		source_weapon_id,
 		-1,
-		status_power_multiplier
+		_load_weapon_data
 	)
 
 func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
