@@ -4,6 +4,7 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
+const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
@@ -359,16 +360,11 @@ func _on_level_up_choice_pressed(index: int) -> void:
 		return
 	if index < 0 or index >= active_level_up_choices.size():
 		return
-	if player == null:
-		return
 	var choice := active_level_up_choices[index]
-	if player.has_method("apply_level_up_bonus"):
-		player.call("apply_level_up_bonus", str(choice.get("id", "")), float(choice.get("value", 0.0)))
-	if player.has_method("consume_pending_level_up"):
-		player.call("consume_pending_level_up")
+	LevelUpFlowRuntime.apply_choice(player, choice)
 	waiting_for_level_up_choice = false
 	LevelUpPanelRuntime.hide_panel(level_up_panel)
-	if player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
+	if LevelUpFlowRuntime.has_pending_choice(player):
 		_open_level_up_screen()
 		return
 	_start_next_wave_after_intermission()
@@ -376,11 +372,8 @@ func _on_level_up_choice_pressed(index: int) -> void:
 func _on_level_up_reroll_pressed() -> void:
 	if not waiting_for_level_up_choice:
 		return
-	if player == null or not player.has_method("spend_gold"):
-		return
 	var reroll_cost := _current_level_up_reroll_cost()
-	var paid: bool = player.call("spend_gold", reroll_cost) == true
-	if not paid:
+	if not LevelUpFlowRuntime.try_reroll(player, reroll_cost):
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return
 	level_up_reroll_count += 1
