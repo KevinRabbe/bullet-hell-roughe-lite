@@ -4,6 +4,7 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
+const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -350,11 +351,12 @@ func _open_level_up_screen() -> void:
 	level_up_reroll_count = 0
 	_set_combat_active(false)
 	_roll_level_up_choices()
-	if level_up_title != null:
-		level_up_title.text = "Level Up! Pick 1 of 4"
-	_update_level_up_reroll_button()
-	if level_up_panel != null:
-		level_up_panel.visible = true
+	LevelUpPanelRuntime.show_panel(
+		level_up_panel,
+		level_up_title,
+		level_up_reroll_button,
+		_current_level_up_reroll_cost()
+	)
 	print("Level-up choices shown.")
 
 func _roll_level_up_choices() -> void:
@@ -362,15 +364,7 @@ func _roll_level_up_choices() -> void:
 	_refresh_levelup_buttons()
 
 func _refresh_levelup_buttons() -> void:
-	for index in level_up_choice_buttons.size():
-		var button := level_up_choice_buttons[index]
-		if index < active_level_up_choices.size():
-			var choice := active_level_up_choices[index]
-			button.text = str(choice.get("label", "Upgrade"))
-			button.disabled = false
-		else:
-			button.text = "N/A"
-			button.disabled = true
+	LevelUpPanelRuntime.refresh_choice_buttons(level_up_choice_buttons, active_level_up_choices)
 
 func _on_level_up_choice_pressed(index: int) -> void:
 	if not waiting_for_level_up_choice:
@@ -385,8 +379,7 @@ func _on_level_up_choice_pressed(index: int) -> void:
 	if player.has_method("consume_pending_level_up"):
 		player.call("consume_pending_level_up")
 	waiting_for_level_up_choice = false
-	if level_up_panel != null:
-		level_up_panel.visible = false
+	LevelUpPanelRuntime.hide_panel(level_up_panel)
 	if player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
 		_open_level_up_screen()
 		return
@@ -411,9 +404,12 @@ func _current_level_up_reroll_cost() -> int:
 	return level_up_base_reroll_cost + level_up_reroll_count
 
 func _update_level_up_reroll_button() -> void:
-	if level_up_reroll_button == null:
-		return
-	level_up_reroll_button.text = "Reroll (%dG)" % _current_level_up_reroll_cost()
+	LevelUpPanelRuntime.show_panel(
+		null,
+		null,
+		level_up_reroll_button,
+		_current_level_up_reroll_cost()
+	)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
