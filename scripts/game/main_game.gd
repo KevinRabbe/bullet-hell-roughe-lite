@@ -4,6 +4,7 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
+const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
@@ -218,26 +219,15 @@ func _get_current_wave_duration() -> float:
 	return default_wave_duration_seconds
 
 func _set_gameplay_active(active: bool) -> void:
-	_set_combat_active(active)
-	var shop_mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	var shop_node := get_node_or_null("ShopController")
-	if shop_node != null:
-		shop_node.process_mode = shop_mode
-	if not active:
-		_hide_run_overlays()
-	if character_select_layer != null:
-		character_select_layer.visible = not active
+	MainGameActivationRuntime.set_gameplay_active(
+		self,
+		character_select_layer,
+		get_node_or_null("ShopController"),
+		active
+	)
 
 func _hide_run_overlays() -> void:
-	_hide_control_if_present("WaveIntermission/Panel")
-	_hide_control_if_present("ShopUI/Panel")
-	_hide_control_if_present("LevelUpUI/Panel")
-	_hide_control_if_present("RunEndUI/Panel")
-
-func _hide_control_if_present(path: NodePath) -> void:
-	var node := get_node_or_null(path)
-	if node is Control:
-		(node as Control).visible = false
+	MainGameActivationRuntime.hide_run_overlays(self)
 
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
@@ -283,8 +273,10 @@ func _enter_intermission_phase(wave_index: int) -> void:
 	_set_combat_active(false)
 	_clear_combat_entities()
 	if _is_shop_enabled():
-		_hide_control_if_present("WaveIntermission/Panel")
-		_hide_control_if_present("LevelUpUI/Panel")
+		if wave_panel != null:
+			wave_panel.visible = false
+		if level_up_panel != null:
+			level_up_panel.visible = false
 	else:
 		_hide_run_overlays()
 	if not _is_shop_enabled() and wave_panel != null:
