@@ -6,6 +6,7 @@ const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runti
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
+const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
 @export var debug_quick_shop_mode: bool = true
@@ -140,16 +141,16 @@ func _cycle_character() -> void:
 	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
 
 func _apply_selected_character() -> void:
-	if selectable_characters.is_empty():
-		return
-	if player != null and player.has_method("apply_character_by_id"):
-		player.call("apply_character_by_id", selectable_characters[selected_character_index])
-		print("Selected character (placeholder): %s" % selectable_characters[selected_character_index])
+	var applied_character_id := MainGameStartRuntime.apply_selected_character(
+		player,
+		selectable_characters,
+		selected_character_index
+	)
+	if applied_character_id != "":
+		print("Selected character (placeholder): %s" % applied_character_id)
 
 func _new_run_seed() -> void:
-	var run_rng := get_node_or_null("/root/RunRng")
-	if run_rng != null and run_rng.has_method("new_run"):
-		run_rng.call("new_run")
+	MainGameStartRuntime.new_run_seed(get_node_or_null("/root/RunRng"))
 
 func _on_start_pressed() -> void:
 	if run_started:
@@ -164,27 +165,19 @@ func _on_start_pressed() -> void:
 
 func _apply_debug_quick_shop_preset() -> void:
 	var preset := _get_effective_debug_preset()
-	var starting_gold := 0
-	match preset:
-		"shop_test":
-			starting_gold = debug_starting_gold
-		"combat_test":
-			starting_gold = debug_combat_starting_gold
-		_:
-			starting_gold = 0
-	if player != null and starting_gold > 0 and player.has_method("add_gold"):
-		player.call("add_gold", starting_gold)
+	var starting_gold := _get_current_starting_gold_for_preset()
+	MainGameStartRuntime.apply_debug_quick_shop_preset(player, preset, starting_gold)
 	_apply_debug_wave_duration()
 	print("DEBUG PRESET APPLIED: %s | Gold: %d | Wave Duration: %.1fs" % [preset, starting_gold, _get_debug_wave_duration_for_preset(preset)])
 
 func _apply_debug_wave_duration() -> void:
-	if enemy_spawner == null:
-		return
 	var preset := _get_effective_debug_preset()
-	if preset == "normal":
-		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
-	else:
-		enemy_spawner.set("wave_duration_seconds", _get_debug_wave_duration_for_preset(preset))
+	MainGameStartRuntime.set_wave_duration_for_preset(
+		enemy_spawner,
+		preset,
+		default_wave_duration_seconds,
+		_get_debug_wave_duration_for_preset(preset)
+	)
 
 func _cycle_debug_run_preset() -> void:
 	debug_run_preset = DebugRunPresetRuntime.next_preset(debug_run_preset)
