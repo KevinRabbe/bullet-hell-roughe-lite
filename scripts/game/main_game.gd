@@ -7,6 +7,7 @@ const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd"
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
+const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
@@ -337,7 +338,7 @@ func _open_level_up_screen() -> void:
 	level_up_reroll_count = 0
 	_set_combat_active(false)
 	_roll_level_up_choices()
-	LevelUpPanelRuntime.show_panel(
+	MainGameLevelUpStateRuntime.open_level_up_screen(
 		level_up_panel,
 		level_up_title,
 		level_up_reroll_button,
@@ -358,10 +359,13 @@ func _on_level_up_choice_pressed(index: int) -> void:
 	if index < 0 or index >= active_level_up_choices.size():
 		return
 	var choice := active_level_up_choices[index]
-	LevelUpFlowRuntime.apply_choice(player, choice)
+	var result := MainGameLevelUpStateRuntime.apply_choice_and_close(
+		player,
+		choice,
+		level_up_panel
+	)
 	waiting_for_level_up_choice = false
-	LevelUpPanelRuntime.hide_panel(level_up_panel)
-	if LevelUpFlowRuntime.has_pending_choice(player):
+	if result.get("reopen", false) == true:
 		_open_level_up_screen()
 		return
 	_start_next_wave_after_intermission()
@@ -370,10 +374,15 @@ func _on_level_up_reroll_pressed() -> void:
 	if not waiting_for_level_up_choice:
 		return
 	var reroll_cost := _current_level_up_reroll_cost()
-	if not LevelUpFlowRuntime.try_reroll(player, reroll_cost):
+	var result := MainGameLevelUpStateRuntime.try_reroll_choices(
+		player,
+		reroll_cost,
+		level_up_reroll_count
+	)
+	if result.get("success", false) != true:
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return
-	level_up_reroll_count += 1
+	level_up_reroll_count = int(result.get("reroll_count", level_up_reroll_count))
 	_roll_level_up_choices()
 	_update_level_up_reroll_button()
 	print("Level-up choices rerolled for %d gold." % reroll_cost)
