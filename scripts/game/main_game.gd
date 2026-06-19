@@ -3,6 +3,7 @@ extends Node2D
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
+const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
@@ -264,22 +265,12 @@ func _on_wave_continue_pressed() -> void:
 
 func _enter_intermission_phase(wave_index: int) -> void:
 	waiting_for_wave_continue = true
-	_set_combat_active(false)
-	_clear_combat_entities()
-	if _is_shop_enabled():
-		if wave_panel != null:
-			wave_panel.visible = false
-		if level_up_panel != null:
-			level_up_panel.visible = false
-	else:
-		_hide_run_overlays()
-	if not _is_shop_enabled() and wave_panel != null:
-		wave_panel.visible = true
+	IntermissionRuntime.begin_intermission(self, wave_panel, level_up_panel, _is_shop_enabled())
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
 func _exit_intermission_phase() -> void:
 	waiting_for_wave_continue = false
-	_hide_run_overlays()
+	IntermissionRuntime.end_intermission(self)
 
 func _finish_intermission_or_open_levelup() -> void:
 	if RunFlowRuntime.has_pending_level_up(player):
@@ -288,11 +279,8 @@ func _finish_intermission_or_open_levelup() -> void:
 		_start_next_wave_after_intermission()
 
 func _start_next_wave_after_intermission() -> void:
-	_heal_player_to_full()
-	_set_combat_active(true)
+	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
-	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
-		enemy_spawner.call("start_next_wave")
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
