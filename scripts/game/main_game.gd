@@ -1,5 +1,6 @@
 extends Node2D
 
+const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
@@ -240,32 +241,22 @@ func _hide_control_if_present(path: NodePath) -> void:
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	if data_registry == null:
-		_ensure_fallback_character_selection()
 		return
-	var ids_variant: Variant
-	if data_registry.has_method("get_selectable_character_ids"):
-		ids_variant = data_registry.call("get_selectable_character_ids")
-	elif data_registry.has_method("get_character_ids"):
-		ids_variant = data_registry.call("get_character_ids")
-	else:
+	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	if selection_state.is_empty():
 		return
-	if ids_variant is Array:
-		var ids: Array = ids_variant
-		if ids.is_empty():
-			_ensure_fallback_character_selection()
-			return
-		var normalized: Array[String] = []
-		for id_value in ids:
-			var id_string := str(id_value)
-			if id_string != "":
-				normalized.append(id_string)
-		if not normalized.is_empty():
-			selectable_characters = normalized
-			selected_character_index = 0
-			_refresh_character_display_names(data_registry)
-			print("Character selection list: " + str(selectable_characters))
-			return
-	_ensure_fallback_character_selection()
+	var ids_variant: Variant = selection_state.get("ids", [])
+	if not (ids_variant is Array):
+		return
+	var ids: Array = ids_variant
+	var normalized := CharacterSelectionRuntime.normalize_character_ids(ids)
+	if normalized.is_empty():
+		return
+	selectable_characters = normalized
+	selected_character_index = 0
+	var display_names_variant: Variant = selection_state.get("display_names", {})
+	character_display_names = display_names_variant if display_names_variant is Dictionary else {}
+	print("Character selection list: " + str(selectable_characters))
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
@@ -273,33 +264,6 @@ func _update_character_debug_label() -> void:
 	var selected_id := selectable_characters[selected_character_index]
 	var display_name := str(character_display_names.get(selected_id, selected_id))
 	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
-
-func _refresh_character_display_names(data_registry: Node) -> void:
-	character_display_names.clear()
-	for character_id in selectable_characters:
-		var default_name := str(character_id)
-		var display_name := default_name
-		if data_registry.has_method("get_character"):
-			var character_variant: Variant = data_registry.call("get_character", character_id)
-			if character_variant is Dictionary:
-				display_name = str(character_variant.get("display_name", default_name))
-		character_display_names[character_id] = display_name
-
-func _ensure_fallback_character_selection() -> void:
-	if not selectable_characters.is_empty():
-		return
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	if data_registry == null or not data_registry.has_method("get_default_selectable_character_id"):
-		return
-	var fallback_character_id := str(data_registry.call("get_default_selectable_character_id"))
-	if fallback_character_id == "":
-		return
-	selectable_characters = [fallback_character_id]
-	selected_character_index = 0
-	var fallback_display_name := fallback_character_id
-	if data_registry.has_method("get_character_display_name"):
-		fallback_display_name = str(data_registry.call("get_character_display_name", fallback_character_id))
-	character_display_names = {fallback_character_id: fallback_display_name}
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)
