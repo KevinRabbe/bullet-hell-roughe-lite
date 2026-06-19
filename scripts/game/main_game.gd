@@ -1,6 +1,7 @@
 extends Node2D
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
@@ -183,11 +184,7 @@ func _apply_debug_wave_duration() -> void:
 		enemy_spawner.set("wave_duration_seconds", _get_debug_wave_duration_for_preset(preset))
 
 func _cycle_debug_run_preset() -> void:
-	var modes: Array[String] = ["normal", "shop_test", "combat_test"]
-	var current_index := modes.find(debug_run_preset)
-	if current_index == -1:
-		current_index = 0
-	debug_run_preset = modes[(current_index + 1) % modes.size()]
+	debug_run_preset = DebugRunPresetRuntime.next_preset(debug_run_preset)
 	debug_quick_shop_mode = debug_run_preset != "normal"
 	_apply_debug_wave_duration()
 	print("DEBUG PRESET: %s | Wave Duration %.1fs | Start Gold %d on run start" % [debug_run_preset, _get_current_wave_duration(), _get_current_starting_gold_for_preset()])
@@ -196,29 +193,22 @@ func get_debug_preset_label() -> String:
 	return "DebugPreset: %s" % _get_effective_debug_preset()
 
 func _get_effective_debug_preset() -> String:
-	if not debug_quick_shop_mode:
-		return "normal"
-	if debug_run_preset == "normal":
-		return "shop_test"
-	return debug_run_preset
+	return DebugRunPresetRuntime.effective_preset(debug_quick_shop_mode, debug_run_preset)
 
 func _get_debug_wave_duration_for_preset(preset: String) -> float:
-	match preset:
-		"shop_test":
-			return maxf(debug_wave_duration_seconds, 1.0)
-		"combat_test":
-			return maxf(debug_combat_wave_duration_seconds, 1.0)
-		_:
-			return default_wave_duration_seconds
+	return DebugRunPresetRuntime.wave_duration_for_preset(
+		preset,
+		default_wave_duration_seconds,
+		debug_wave_duration_seconds,
+		debug_combat_wave_duration_seconds
+	)
 
 func _get_current_starting_gold_for_preset() -> int:
-	match _get_effective_debug_preset():
-		"shop_test":
-			return debug_starting_gold
-		"combat_test":
-			return debug_combat_starting_gold
-		_:
-			return 0
+	return DebugRunPresetRuntime.starting_gold_for_preset(
+		_get_effective_debug_preset(),
+		debug_starting_gold,
+		debug_combat_starting_gold
+	)
 
 func _get_current_wave_duration() -> float:
 	if enemy_spawner != null:
