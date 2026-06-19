@@ -8,6 +8,7 @@ const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd"
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
 
@@ -294,30 +295,26 @@ func _set_combat_active(active: bool) -> void:
 	RunFlowRuntime.set_group_process_mode(get_tree(), "projectiles", mode)
 
 func _enter_run_end_state(state: String) -> void:
-	if run_end_state == state:
+	var transition := RunEndRuntime.enter_run_end_state(
+		run_end_state,
+		state
+	)
+	if transition.get("changed", false) != true:
 		return
-	run_end_state = state
-	waiting_for_restart = RunFlowRuntime.should_wait_for_restart(state)
-	waiting_for_wave_continue = false
-	waiting_for_level_up_choice = false
+	run_end_state = str(transition.get("run_end_state", run_end_state))
+	waiting_for_restart = transition.get("waiting_for_restart", false) == true
+	waiting_for_wave_continue = transition.get("waiting_for_wave_continue", false) == true
+	waiting_for_level_up_choice = transition.get("waiting_for_level_up_choice", false) == true
 	_set_combat_active(false)
 	_hide_run_overlays()
-	var copy := RunFlowRuntime.get_run_end_copy(state)
-	if run_end_panel != null:
-		run_end_panel.visible = true
-	if run_end_title != null:
-		run_end_title.text = str(copy.get("title", "Victory"))
-	if run_end_body != null:
-		run_end_body.text = str(copy.get("body", "The arena is clear. Press R or Restart to run it back."))
+	RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
 
 func _restart_run() -> void:
 	print("Restarting current scene...")
-	_new_run_seed()
-	get_tree().reload_current_scene()
+	RunEndRuntime.restart_run(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _return_to_main_menu() -> void:
-	_new_run_seed()
-	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
 	RunFlowRuntime.clear_group_nodes(get_tree(), "enemies")
