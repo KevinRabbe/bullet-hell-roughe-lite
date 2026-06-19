@@ -4,6 +4,7 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
+const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
 @export var debug_quick_shop_mode: bool = true
@@ -295,7 +296,7 @@ func _exit_intermission_phase() -> void:
 	_hide_run_overlays()
 
 func _finish_intermission_or_open_levelup() -> void:
-	if player != null and player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
+	if RunFlowRuntime.has_pending_level_up(player):
 		_open_level_up_screen()
 	else:
 		_start_next_wave_after_intermission()
@@ -309,28 +310,30 @@ func _start_next_wave_after_intermission() -> void:
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	for path in ["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"]:
-		var node := get_node_or_null(path)
-		if node != null:
-			node.process_mode = mode
-	_set_group_process_mode("enemies", mode)
-	_set_group_process_mode("projectiles", mode)
+	RunFlowRuntime.set_process_mode_for_paths(
+		self,
+		["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"],
+		mode
+	)
+	RunFlowRuntime.set_group_process_mode(get_tree(), "enemies", mode)
+	RunFlowRuntime.set_group_process_mode(get_tree(), "projectiles", mode)
 
 func _enter_run_end_state(state: String) -> void:
 	if run_end_state == state:
 		return
 	run_end_state = state
-	waiting_for_restart = state == "game_over" or state == "victory"
+	waiting_for_restart = RunFlowRuntime.should_wait_for_restart(state)
 	waiting_for_wave_continue = false
 	waiting_for_level_up_choice = false
 	_set_combat_active(false)
 	_hide_run_overlays()
+	var copy := RunFlowRuntime.get_run_end_copy(state)
 	if run_end_panel != null:
 		run_end_panel.visible = true
 	if run_end_title != null:
-		run_end_title.text = "Game Over" if state == "game_over" else "Victory"
+		run_end_title.text = str(copy.get("title", "Victory"))
 	if run_end_body != null:
-		run_end_body.text = "You were overwhelmed. Press R or Restart to try again." if state == "game_over" else "The arena is clear. Press R or Restart to run it back."
+		run_end_body.text = str(copy.get("body", "The arena is clear. Press R or Restart to run it back."))
 
 func _restart_run() -> void:
 	print("Restarting current scene...")
@@ -341,21 +344,9 @@ func _return_to_main_menu() -> void:
 	_new_run_seed()
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
-func _set_group_process_mode(group_name: StringName, mode: Node.ProcessMode) -> void:
-	var nodes := get_tree().get_nodes_in_group(group_name)
-	for group_node in nodes:
-		if group_node is Node:
-			(group_node as Node).process_mode = mode
-
 func _clear_combat_entities() -> void:
-	_clear_group_nodes("enemies")
-	_clear_group_nodes("projectiles")
-
-func _clear_group_nodes(group_name: StringName) -> void:
-	var nodes := get_tree().get_nodes_in_group(group_name)
-	for group_node in nodes:
-		if group_node is Node:
-			(group_node as Node).queue_free()
+	RunFlowRuntime.clear_group_nodes(get_tree(), "enemies")
+	RunFlowRuntime.clear_group_nodes(get_tree(), "projectiles")
 
 func _heal_player_to_full() -> void:
 	if player != null and player.has_method("heal_to_full"):
