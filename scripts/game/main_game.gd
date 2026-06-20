@@ -1,6 +1,17 @@
 extends Node2D
 
+const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
+const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
+const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
+const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
+const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
+const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
+const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
+const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
+const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
 @export var debug_quick_shop_mode: bool = true
@@ -43,22 +54,6 @@ var selected_character_index: int = 0
 var run_started: bool = false
 var levelup_rng: RandomNumberGenerator
 var active_level_up_choices: Array[Dictionary] = []
-var level_up_stat_ids: Array[String] = ["damage", "attack_speed", "max_hp", "movement_speed", "armor"]
-var rarity_weights: Dictionary = {"Common": 0.65, "Rare": 0.25, "Epic": 0.08, "Legendary": 0.02}
-var rarity_values_by_stat: Dictionary = {
-	"damage": {"Common": 0.05, "Rare": 0.12, "Epic": 0.22, "Legendary": 0.40},
-	"attack_speed": {"Common": 0.05, "Rare": 0.10, "Epic": 0.18, "Legendary": 0.30},
-	"max_hp": {"Common": 10.0, "Rare": 25.0, "Epic": 45.0, "Legendary": 75.0},
-	"movement_speed": {"Common": 10.0, "Rare": 25.0, "Epic": 40.0, "Legendary": 65.0},
-	"armor": {"Common": 1.0, "Rare": 3.0, "Epic": 5.0, "Legendary": 9.0}
-}
-var stat_display_names: Dictionary = {
-	"damage": "Damage",
-	"attack_speed": "Attack Speed",
-	"max_hp": "Max HP",
-	"movement_speed": "Move Speed",
-	"armor": "Armor"
-}
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
@@ -151,16 +146,16 @@ func _cycle_character() -> void:
 	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
 
 func _apply_selected_character() -> void:
-	if selectable_characters.is_empty():
-		return
-	if player != null and player.has_method("apply_character_by_id"):
-		player.call("apply_character_by_id", selectable_characters[selected_character_index])
-		print("Selected character (placeholder): %s" % selectable_characters[selected_character_index])
+	var applied_character_id := MainGameStartRuntime.apply_selected_character(
+		player,
+		selectable_characters,
+		selected_character_index
+	)
+	if applied_character_id != "":
+		print("Selected character (placeholder): %s" % applied_character_id)
 
 func _new_run_seed() -> void:
-	var run_rng := get_node_or_null("/root/RunRng")
-	if run_rng != null and run_rng.has_method("new_run"):
-		run_rng.call("new_run")
+	MainGameStartRuntime.new_run_seed(get_node_or_null("/root/RunRng"))
 
 func _on_start_pressed() -> void:
 	if run_started:
@@ -175,34 +170,22 @@ func _on_start_pressed() -> void:
 
 func _apply_debug_quick_shop_preset() -> void:
 	var preset := _get_effective_debug_preset()
-	var starting_gold := 0
-	match preset:
-		"shop_test":
-			starting_gold = debug_starting_gold
-		"combat_test":
-			starting_gold = debug_combat_starting_gold
-		_:
-			starting_gold = 0
-	if player != null and starting_gold > 0 and player.has_method("add_gold"):
-		player.call("add_gold", starting_gold)
+	var starting_gold := _get_current_starting_gold_for_preset()
+	MainGameStartRuntime.apply_debug_quick_shop_preset(player, preset, starting_gold)
 	_apply_debug_wave_duration()
 	print("DEBUG PRESET APPLIED: %s | Gold: %d | Wave Duration: %.1fs" % [preset, starting_gold, _get_debug_wave_duration_for_preset(preset)])
 
 func _apply_debug_wave_duration() -> void:
-	if enemy_spawner == null:
-		return
 	var preset := _get_effective_debug_preset()
-	if preset == "normal":
-		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
-	else:
-		enemy_spawner.set("wave_duration_seconds", _get_debug_wave_duration_for_preset(preset))
+	MainGameStartRuntime.set_wave_duration_for_preset(
+		enemy_spawner,
+		preset,
+		default_wave_duration_seconds,
+		_get_debug_wave_duration_for_preset(preset)
+	)
 
 func _cycle_debug_run_preset() -> void:
-	var modes: Array[String] = ["normal", "shop_test", "combat_test"]
-	var current_index := modes.find(debug_run_preset)
-	if current_index == -1:
-		current_index = 0
-	debug_run_preset = modes[(current_index + 1) % modes.size()]
+	debug_run_preset = DebugRunPresetRuntime.next_preset(debug_run_preset)
 	debug_quick_shop_mode = debug_run_preset != "normal"
 	_apply_debug_wave_duration()
 	print("DEBUG PRESET: %s | Wave Duration %.1fs | Start Gold %d on run start" % [debug_run_preset, _get_current_wave_duration(), _get_current_starting_gold_for_preset()])
@@ -211,29 +194,22 @@ func get_debug_preset_label() -> String:
 	return "DebugPreset: %s" % _get_effective_debug_preset()
 
 func _get_effective_debug_preset() -> String:
-	if not debug_quick_shop_mode:
-		return "normal"
-	if debug_run_preset == "normal":
-		return "shop_test"
-	return debug_run_preset
+	return DebugRunPresetRuntime.effective_preset(debug_quick_shop_mode, debug_run_preset)
 
 func _get_debug_wave_duration_for_preset(preset: String) -> float:
-	match preset:
-		"shop_test":
-			return maxf(debug_wave_duration_seconds, 1.0)
-		"combat_test":
-			return maxf(debug_combat_wave_duration_seconds, 1.0)
-		_:
-			return default_wave_duration_seconds
+	return DebugRunPresetRuntime.wave_duration_for_preset(
+		preset,
+		default_wave_duration_seconds,
+		debug_wave_duration_seconds,
+		debug_combat_wave_duration_seconds
+	)
 
 func _get_current_starting_gold_for_preset() -> int:
-	match _get_effective_debug_preset():
-		"shop_test":
-			return debug_starting_gold
-		"combat_test":
-			return debug_combat_starting_gold
-		_:
-			return 0
+	return DebugRunPresetRuntime.starting_gold_for_preset(
+		_get_effective_debug_preset(),
+		debug_starting_gold,
+		debug_combat_starting_gold
+	)
 
 func _get_current_wave_duration() -> float:
 	if enemy_spawner != null:
@@ -241,56 +217,35 @@ func _get_current_wave_duration() -> float:
 	return default_wave_duration_seconds
 
 func _set_gameplay_active(active: bool) -> void:
-	_set_combat_active(active)
-	var shop_mode := Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	var shop_node := get_node_or_null("ShopController")
-	if shop_node != null:
-		shop_node.process_mode = shop_mode
-	if not active:
-		_hide_run_overlays()
-	if character_select_layer != null:
-		character_select_layer.visible = not active
+	MainGameActivationRuntime.set_gameplay_active(
+		self,
+		character_select_layer,
+		get_node_or_null("ShopController"),
+		active
+	)
 
 func _hide_run_overlays() -> void:
-	_hide_control_if_present("WaveIntermission/Panel")
-	_hide_control_if_present("ShopUI/Panel")
-	_hide_control_if_present("LevelUpUI/Panel")
-	_hide_control_if_present("RunEndUI/Panel")
-
-func _hide_control_if_present(path: NodePath) -> void:
-	var node := get_node_or_null(path)
-	if node is Control:
-		(node as Control).visible = false
+	MainGameActivationRuntime.hide_run_overlays(self)
 
 func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	if data_registry == null:
-		_ensure_fallback_character_selection()
 		return
-	var ids_variant: Variant
-	if data_registry.has_method("get_selectable_character_ids"):
-		ids_variant = data_registry.call("get_selectable_character_ids")
-	elif data_registry.has_method("get_character_ids"):
-		ids_variant = data_registry.call("get_character_ids")
-	else:
+	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	if selection_state.is_empty():
 		return
-	if ids_variant is Array:
-		var ids: Array = ids_variant
-		if ids.is_empty():
-			_ensure_fallback_character_selection()
-			return
-		var normalized: Array[String] = []
-		for id_value in ids:
-			var id_string := str(id_value)
-			if id_string != "":
-				normalized.append(id_string)
-		if not normalized.is_empty():
-			selectable_characters = normalized
-			selected_character_index = 0
-			_refresh_character_display_names(data_registry)
-			print("Character selection list: " + str(selectable_characters))
-			return
-	_ensure_fallback_character_selection()
+	var ids_variant: Variant = selection_state.get("ids", [])
+	if not (ids_variant is Array):
+		return
+	var ids: Array = ids_variant
+	var normalized := CharacterSelectionRuntime.normalize_character_ids(ids)
+	if normalized.is_empty():
+		return
+	selectable_characters = normalized
+	selected_character_index = 0
+	var display_names_variant: Variant = selection_state.get("display_names", {})
+	character_display_names = display_names_variant if display_names_variant is Dictionary else {}
+	print("Character selection list: " + str(selectable_characters))
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
@@ -298,33 +253,6 @@ func _update_character_debug_label() -> void:
 	var selected_id := selectable_characters[selected_character_index]
 	var display_name := str(character_display_names.get(selected_id, selected_id))
 	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
-
-func _refresh_character_display_names(data_registry: Node) -> void:
-	character_display_names.clear()
-	for character_id in selectable_characters:
-		var default_name := str(character_id)
-		var display_name := default_name
-		if data_registry.has_method("get_character"):
-			var character_variant: Variant = data_registry.call("get_character", character_id)
-			if character_variant is Dictionary:
-				display_name = str(character_variant.get("display_name", default_name))
-		character_display_names[character_id] = display_name
-
-func _ensure_fallback_character_selection() -> void:
-	if not selectable_characters.is_empty():
-		return
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	if data_registry == null or not data_registry.has_method("get_default_selectable_character_id"):
-		return
-	var fallback_character_id := str(data_registry.call("get_default_selectable_character_id"))
-	if fallback_character_id == "":
-		return
-	selectable_characters = [fallback_character_id]
-	selected_character_index = 0
-	var fallback_display_name := fallback_character_id
-	if data_registry.has_method("get_character_display_name"):
-		fallback_display_name = str(data_registry.call("get_character_display_name", fallback_character_id))
-	character_display_names = {fallback_character_id: fallback_display_name}
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)
@@ -340,83 +268,58 @@ func _on_wave_continue_pressed() -> void:
 
 func _enter_intermission_phase(wave_index: int) -> void:
 	waiting_for_wave_continue = true
-	_set_combat_active(false)
-	_clear_combat_entities()
-	if _is_shop_enabled():
-		_hide_control_if_present("WaveIntermission/Panel")
-		_hide_control_if_present("LevelUpUI/Panel")
-	else:
-		_hide_run_overlays()
-	if not _is_shop_enabled() and wave_panel != null:
-		wave_panel.visible = true
+	IntermissionRuntime.begin_intermission(self, wave_panel, level_up_panel, _is_shop_enabled())
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
 func _exit_intermission_phase() -> void:
 	waiting_for_wave_continue = false
-	_hide_run_overlays()
+	IntermissionRuntime.end_intermission(self)
 
 func _finish_intermission_or_open_levelup() -> void:
-	if player != null and player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
+	if RunFlowRuntime.has_pending_level_up(player):
 		_open_level_up_screen()
 	else:
 		_start_next_wave_after_intermission()
 
 func _start_next_wave_after_intermission() -> void:
-	_heal_player_to_full()
-	_set_combat_active(true)
+	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
-	if enemy_spawner != null and enemy_spawner.has_method("start_next_wave"):
-		enemy_spawner.call("start_next_wave")
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	for path in ["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"]:
-		var node := get_node_or_null(path)
-		if node != null:
-			node.process_mode = mode
-	_set_group_process_mode("enemies", mode)
-	_set_group_process_mode("projectiles", mode)
+	RunFlowRuntime.set_process_mode_for_paths(
+		self,
+		["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"],
+		mode
+	)
+	RunFlowRuntime.set_group_process_mode(get_tree(), "enemies", mode)
+	RunFlowRuntime.set_group_process_mode(get_tree(), "projectiles", mode)
 
 func _enter_run_end_state(state: String) -> void:
-	if run_end_state == state:
+	var transition := RunEndRuntime.enter_run_end_state(
+		run_end_state,
+		state
+	)
+	if transition.get("changed", false) != true:
 		return
-	run_end_state = state
-	waiting_for_restart = state == "game_over" or state == "victory"
-	waiting_for_wave_continue = false
-	waiting_for_level_up_choice = false
+	run_end_state = str(transition.get("run_end_state", run_end_state))
+	waiting_for_restart = transition.get("waiting_for_restart", false) == true
+	waiting_for_wave_continue = transition.get("waiting_for_wave_continue", false) == true
+	waiting_for_level_up_choice = transition.get("waiting_for_level_up_choice", false) == true
 	_set_combat_active(false)
 	_hide_run_overlays()
-	if run_end_panel != null:
-		run_end_panel.visible = true
-	if run_end_title != null:
-		run_end_title.text = "Game Over" if state == "game_over" else "Victory"
-	if run_end_body != null:
-		run_end_body.text = "You were overwhelmed. Press R or Restart to try again." if state == "game_over" else "The arena is clear. Press R or Restart to run it back."
+	RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
 
 func _restart_run() -> void:
 	print("Restarting current scene...")
-	_new_run_seed()
-	get_tree().reload_current_scene()
+	RunEndRuntime.restart_run(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _return_to_main_menu() -> void:
-	_new_run_seed()
-	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
-
-func _set_group_process_mode(group_name: StringName, mode: Node.ProcessMode) -> void:
-	var nodes := get_tree().get_nodes_in_group(group_name)
-	for group_node in nodes:
-		if group_node is Node:
-			(group_node as Node).process_mode = mode
+	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
-	_clear_group_nodes("enemies")
-	_clear_group_nodes("projectiles")
-
-func _clear_group_nodes(group_name: StringName) -> void:
-	var nodes := get_tree().get_nodes_in_group(group_name)
-	for group_node in nodes:
-		if group_node is Node:
-			(group_node as Node).queue_free()
+	RunFlowRuntime.clear_group_nodes(get_tree(), "enemies")
+	RunFlowRuntime.clear_group_nodes(get_tree(), "projectiles")
 
 func _heal_player_to_full() -> void:
 	if player != null and player.has_method("heal_to_full"):
@@ -435,48 +338,34 @@ func _open_level_up_screen() -> void:
 	level_up_reroll_count = 0
 	_set_combat_active(false)
 	_roll_level_up_choices()
-	if level_up_title != null:
-		level_up_title.text = "Level Up! Pick 1 of 4"
-	_update_level_up_reroll_button()
-	if level_up_panel != null:
-		level_up_panel.visible = true
+	MainGameLevelUpStateRuntime.open_level_up_screen(
+		level_up_panel,
+		level_up_title,
+		level_up_reroll_button,
+		_current_level_up_reroll_cost()
+	)
 	print("Level-up choices shown.")
 
 func _roll_level_up_choices() -> void:
-	active_level_up_choices.clear()
-	for _slot in 4:
-		var stat_index := levelup_rng.randi_range(0, level_up_stat_ids.size() - 1)
-		var stat_id := level_up_stat_ids[stat_index]
-		active_level_up_choices.append(_build_level_up_choice(stat_id))
+	active_level_up_choices = LevelUpRuntime.build_choices(levelup_rng)
 	_refresh_levelup_buttons()
 
 func _refresh_levelup_buttons() -> void:
-	for index in level_up_choice_buttons.size():
-		var button := level_up_choice_buttons[index]
-		if index < active_level_up_choices.size():
-			var choice := active_level_up_choices[index]
-			button.text = str(choice.get("label", "Upgrade"))
-			button.disabled = false
-		else:
-			button.text = "N/A"
-			button.disabled = true
+	LevelUpPanelRuntime.refresh_choice_buttons(level_up_choice_buttons, active_level_up_choices)
 
 func _on_level_up_choice_pressed(index: int) -> void:
 	if not waiting_for_level_up_choice:
 		return
 	if index < 0 or index >= active_level_up_choices.size():
 		return
-	if player == null:
-		return
 	var choice := active_level_up_choices[index]
-	if player.has_method("apply_level_up_bonus"):
-		player.call("apply_level_up_bonus", str(choice.get("id", "")), float(choice.get("value", 0.0)))
-	if player.has_method("consume_pending_level_up"):
-		player.call("consume_pending_level_up")
+	var result := MainGameLevelUpStateRuntime.apply_choice_and_close(
+		player,
+		choice,
+		level_up_panel
+	)
 	waiting_for_level_up_choice = false
-	if level_up_panel != null:
-		level_up_panel.visible = false
-	if player.has_method("has_pending_level_up") and player.call("has_pending_level_up") == true:
+	if result.get("reopen", false) == true:
 		_open_level_up_screen()
 		return
 	_start_next_wave_after_intermission()
@@ -484,14 +373,16 @@ func _on_level_up_choice_pressed(index: int) -> void:
 func _on_level_up_reroll_pressed() -> void:
 	if not waiting_for_level_up_choice:
 		return
-	if player == null or not player.has_method("spend_gold"):
-		return
 	var reroll_cost := _current_level_up_reroll_cost()
-	var paid: bool = player.call("spend_gold", reroll_cost) == true
-	if not paid:
+	var result := MainGameLevelUpStateRuntime.try_reroll_choices(
+		player,
+		reroll_cost,
+		level_up_reroll_count
+	)
+	if result.get("success", false) != true:
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return
-	level_up_reroll_count += 1
+	level_up_reroll_count = int(result.get("reroll_count", level_up_reroll_count))
 	_roll_level_up_choices()
 	_update_level_up_reroll_button()
 	print("Level-up choices rerolled for %d gold." % reroll_cost)
@@ -500,39 +391,12 @@ func _current_level_up_reroll_cost() -> int:
 	return level_up_base_reroll_cost + level_up_reroll_count
 
 func _update_level_up_reroll_button() -> void:
-	if level_up_reroll_button == null:
-		return
-	level_up_reroll_button.text = "Reroll (%dG)" % _current_level_up_reroll_cost()
-
-func _build_level_up_choice(stat_id: String) -> Dictionary:
-	var rarity := _roll_rarity_name()
-	var value := _get_rarity_value(stat_id, rarity)
-	var display_name := str(stat_display_names.get(stat_id, stat_id))
-	var formatted_value := "%+.0f" % value
-	if stat_id == "damage" or stat_id == "attack_speed":
-		formatted_value = "%+.0f%%" % (value * 100.0)
-	return {
-		"id": stat_id,
-		"value": value,
-		"rarity": rarity,
-		"label": "[%s] %s %s" % [rarity, display_name, formatted_value]
-	}
-
-func _roll_rarity_name() -> String:
-	var roll := levelup_rng.randf()
-	var threshold := 0.0
-	for rarity_name in ["Common", "Rare", "Epic", "Legendary"]:
-		threshold += float(rarity_weights.get(rarity_name, 0.0))
-		if roll <= threshold:
-			return rarity_name
-	return "Common"
-
-func _get_rarity_value(stat_id: String, rarity_name: String) -> float:
-	var stat_entry_variant: Variant = rarity_values_by_stat.get(stat_id, {})
-	if stat_entry_variant is Dictionary:
-		var stat_entry: Dictionary = stat_entry_variant
-		return float(stat_entry.get(rarity_name, 0.0))
-	return 0.0
+	LevelUpPanelRuntime.show_panel(
+		null,
+		null,
+		level_up_reroll_button,
+		_current_level_up_reroll_cost()
+	)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
