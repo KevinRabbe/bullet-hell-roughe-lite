@@ -8,6 +8,7 @@ const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd"
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
+const MainGameCombatRuntime = preload("res://scripts/game/main_game_combat_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
@@ -286,14 +287,7 @@ func _start_next_wave_after_intermission() -> void:
 	run_end_state = "inactive"
 
 func _set_combat_active(active: bool) -> void:
-	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
-	RunFlowRuntime.set_process_mode_for_paths(
-		self,
-		["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"],
-		mode
-	)
-	RunFlowRuntime.set_group_process_mode(get_tree(), "enemies", mode)
-	RunFlowRuntime.set_group_process_mode(get_tree(), "projectiles", mode)
+	MainGameCombatRuntime.set_combat_active(self, active)
 
 func _enter_run_end_state(state: String) -> void:
 	var transition := RunEndRuntime.enter_run_end_state(
@@ -318,17 +312,13 @@ func _return_to_main_menu() -> void:
 	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
-	RunFlowRuntime.clear_group_nodes(get_tree(), "enemies")
-	RunFlowRuntime.clear_group_nodes(get_tree(), "projectiles")
+	MainGameCombatRuntime.clear_combat_entities(get_tree())
 
 func _heal_player_to_full() -> void:
-	if player != null and player.has_method("heal_to_full"):
-		player.call("heal_to_full")
+	MainGameCombatRuntime.heal_player_to_full(player)
 
 func _is_shop_enabled() -> bool:
-	if shop_controller == null:
-		return false
-	return shop_controller.get("enabled") == true
+	return MainGameCombatRuntime.is_shop_enabled(shop_controller)
 
 func _on_level_up_pending_changed() -> void:
 	print("Level-up pending. Will show after wave.")
