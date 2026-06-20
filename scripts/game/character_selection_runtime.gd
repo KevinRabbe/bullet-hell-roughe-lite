@@ -32,6 +32,35 @@ static func normalize_character_ids(ids: Array) -> Array[String]:
 			normalized.append(id_string)
 	return normalized
 
+static func extract_ids(selection_state: Dictionary) -> Array[String]:
+	var ids_variant: Variant = selection_state.get("ids", [])
+	if ids_variant is Array:
+		return normalize_character_ids(ids_variant as Array)
+	return []
+
+static func extract_display_names(selection_state: Dictionary) -> Dictionary:
+	var display_names_variant: Variant = selection_state.get("display_names", {})
+	if display_names_variant is Dictionary:
+		return display_names_variant as Dictionary
+	return {}
+
+static func next_character_index(character_ids: Array[String], current_index: int) -> int:
+	if character_ids.is_empty():
+		return current_index
+	return (current_index + 1) % character_ids.size()
+
+static func build_selection_label(
+	character_ids: Array[String],
+	display_names: Dictionary,
+	selected_index: int
+) -> String:
+	if character_ids.is_empty():
+		return ""
+	var clamped_index := clampi(selected_index, 0, character_ids.size() - 1)
+	var selected_id := character_ids[clamped_index]
+	var display_name := str(display_names.get(selected_id, selected_id))
+	return "Selected: %s (C to cycle, Enter to start)" % display_name
+
 static func build_display_names(data_registry: Node, character_ids: Array[String]) -> Dictionary:
 	var display_names: Dictionary = {}
 	for character_id in character_ids:

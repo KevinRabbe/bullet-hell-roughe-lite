@@ -141,9 +141,10 @@ func _toggle_pause() -> void:
 		print("GAME RESUMED")
 
 func _cycle_character() -> void:
-	if selectable_characters.is_empty():
-		return
-	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
+	selected_character_index = CharacterSelectionRuntime.next_character_index(
+		selectable_characters,
+		selected_character_index
+	)
 
 func _apply_selected_character() -> void:
 	var applied_character_id := MainGameStartRuntime.apply_selected_character(
@@ -234,25 +235,22 @@ func _load_selectable_characters() -> void:
 	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
 	if selection_state.is_empty():
 		return
-	var ids_variant: Variant = selection_state.get("ids", [])
-	if not (ids_variant is Array):
-		return
-	var ids: Array = ids_variant
-	var normalized := CharacterSelectionRuntime.normalize_character_ids(ids)
+	var normalized := CharacterSelectionRuntime.extract_ids(selection_state)
 	if normalized.is_empty():
 		return
 	selectable_characters = normalized
 	selected_character_index = 0
-	var display_names_variant: Variant = selection_state.get("display_names", {})
-	character_display_names = display_names_variant if display_names_variant is Dictionary else {}
+	character_display_names = CharacterSelectionRuntime.extract_display_names(selection_state)
 	print("Character selection list: " + str(selectable_characters))
 
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
 		return
-	var selected_id := selectable_characters[selected_character_index]
-	var display_name := str(character_display_names.get(selected_id, selected_id))
-	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
+	character_label.text = CharacterSelectionRuntime.build_selection_label(
+		selectable_characters,
+		character_display_names,
+		selected_character_index
+	)
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)
