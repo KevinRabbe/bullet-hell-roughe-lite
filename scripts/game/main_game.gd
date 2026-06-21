@@ -2,12 +2,12 @@ extends Node2D
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
-const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
+const MainGameDebugStateRuntime = preload("res://scripts/game/main_game_debug_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
@@ -169,52 +169,50 @@ func _on_start_pressed() -> void:
 		character_select_layer.visible = false
 
 func _apply_debug_quick_shop_preset() -> void:
-	var preset := _get_effective_debug_preset()
-	var starting_gold := _get_current_starting_gold_for_preset()
-	MainGameStartRuntime.apply_debug_quick_shop_preset(player, preset, starting_gold)
-	_apply_debug_wave_duration()
-	print("DEBUG PRESET APPLIED: %s | Gold: %d | Wave Duration: %.1fs" % [preset, starting_gold, _get_debug_wave_duration_for_preset(preset)])
+	var preset_state := MainGameDebugStateRuntime.apply_debug_quick_shop_preset(
+		player,
+		enemy_spawner,
+		debug_quick_shop_mode,
+		debug_run_preset,
+		default_wave_duration_seconds,
+		debug_wave_duration_seconds,
+		debug_combat_wave_duration_seconds,
+		debug_starting_gold,
+		debug_combat_starting_gold
+	)
+	print("DEBUG PRESET APPLIED: %s | Gold: %d | Wave Duration: %.1fs" % [
+		str(preset_state.get("preset", "")),
+		int(preset_state.get("starting_gold", 0)),
+		float(preset_state.get("wave_duration", default_wave_duration_seconds))
+	])
 
 func _apply_debug_wave_duration() -> void:
-	var preset := _get_effective_debug_preset()
-	MainGameStartRuntime.set_wave_duration_for_preset(
+	MainGameDebugStateRuntime.apply_debug_wave_duration(
 		enemy_spawner,
-		preset,
-		default_wave_duration_seconds,
-		_get_debug_wave_duration_for_preset(preset)
-	)
-
-func _cycle_debug_run_preset() -> void:
-	debug_run_preset = DebugRunPresetRuntime.next_preset(debug_run_preset)
-	debug_quick_shop_mode = debug_run_preset != "normal"
-	_apply_debug_wave_duration()
-	print("DEBUG PRESET: %s | Wave Duration %.1fs | Start Gold %d on run start" % [debug_run_preset, _get_current_wave_duration(), _get_current_starting_gold_for_preset()])
-
-func get_debug_preset_label() -> String:
-	return "DebugPreset: %s" % _get_effective_debug_preset()
-
-func _get_effective_debug_preset() -> String:
-	return DebugRunPresetRuntime.effective_preset(debug_quick_shop_mode, debug_run_preset)
-
-func _get_debug_wave_duration_for_preset(preset: String) -> float:
-	return DebugRunPresetRuntime.wave_duration_for_preset(
-		preset,
+		debug_quick_shop_mode,
+		debug_run_preset,
 		default_wave_duration_seconds,
 		debug_wave_duration_seconds,
 		debug_combat_wave_duration_seconds
 	)
 
-func _get_current_starting_gold_for_preset() -> int:
-	return DebugRunPresetRuntime.starting_gold_for_preset(
-		_get_effective_debug_preset(),
-		debug_starting_gold,
-		debug_combat_starting_gold
-	)
+func _cycle_debug_run_preset() -> void:
+	var preset_state := MainGameDebugStateRuntime.cycle_debug_run_preset(debug_run_preset)
+	debug_run_preset = str(preset_state.get("debug_run_preset", debug_run_preset))
+	debug_quick_shop_mode = preset_state.get("debug_quick_shop_mode", debug_quick_shop_mode) == true
+	_apply_debug_wave_duration()
+	print("DEBUG PRESET: %s | Wave Duration %.1fs | Start Gold %d on run start" % [
+		debug_run_preset,
+		MainGameDebugStateRuntime.get_current_wave_duration(enemy_spawner, default_wave_duration_seconds),
+		MainGameDebugStateRuntime.get_starting_gold_for_preset(
+			MainGameDebugStateRuntime.get_effective_debug_preset(debug_quick_shop_mode, debug_run_preset),
+			debug_starting_gold,
+			debug_combat_starting_gold
+		)
+	])
 
-func _get_current_wave_duration() -> float:
-	if enemy_spawner != null:
-		return float(enemy_spawner.get("wave_duration_seconds"))
-	return default_wave_duration_seconds
+func get_debug_preset_label() -> String:
+	return MainGameDebugStateRuntime.get_debug_preset_label(debug_quick_shop_mode, debug_run_preset)
 
 func _set_gameplay_active(active: bool) -> void:
 	MainGameActivationRuntime.set_gameplay_active(
