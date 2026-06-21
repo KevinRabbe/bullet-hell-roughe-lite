@@ -141,9 +141,10 @@ func _toggle_pause() -> void:
 		print("GAME RESUMED")
 
 func _cycle_character() -> void:
-	if selectable_characters.is_empty():
-		return
-	selected_character_index = (selected_character_index + 1) % selectable_characters.size()
+	selected_character_index = CharacterSelectionRuntime.next_character_index(
+		selectable_characters,
+		selected_character_index
+	)
 
 func _apply_selected_character() -> void:
 	var applied_character_id := MainGameStartRuntime.apply_selected_character(
@@ -250,9 +251,11 @@ func _load_selectable_characters() -> void:
 func _update_character_debug_label() -> void:
 	if character_label == null or selectable_characters.is_empty():
 		return
-	var selected_id := selectable_characters[selected_character_index]
-	var display_name := str(character_display_names.get(selected_id, selected_id))
-	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
+	character_label.text = CharacterSelectionRuntime.build_selected_character_label(
+		selectable_characters,
+		selected_character_index,
+		character_display_names
+	)
 
 func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)

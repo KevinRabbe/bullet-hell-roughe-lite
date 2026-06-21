@@ -57,3 +57,19 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 		"ids": [fallback_character_id],
 		"display_names": {fallback_character_id: fallback_display_name}
 	}
+
+static func next_character_index(selectable_characters: Array[String], selected_character_index: int) -> int:
+	if selectable_characters.is_empty():
+		return selected_character_index
+	return (selected_character_index + 1) % selectable_characters.size()
+
+static func build_selected_character_label(
+	selectable_characters: Array[String],
+	selected_character_index: int,
+	character_display_names: Dictionary
+) -> String:
+	if selectable_characters.is_empty():
+		return ""
+	var selected_id := selectable_characters[selected_character_index]
+	var display_name := str(character_display_names.get(selected_id, selected_id))
+	return "Selected: %s (C to cycle, Enter to start)" % display_name
