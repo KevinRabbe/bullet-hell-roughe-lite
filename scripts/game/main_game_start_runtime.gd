@@ -12,6 +12,33 @@ static func new_run_seed(run_rng: Node) -> void:
 	if run_rng != null and run_rng.has_method("new_run"):
 		run_rng.call("new_run")
 
+static func begin_run(
+	player: Node,
+	selectable_characters: Array[String],
+	selected_character_index: int,
+	character_select_layer: CanvasLayer,
+	apply_debug_quick_shop_preset_callback: Callable,
+	hide_run_overlays_callback: Callable,
+	set_gameplay_active_callback: Callable
+) -> Dictionary:
+	var applied_character_id := apply_selected_character(
+		player,
+		selectable_characters,
+		selected_character_index
+	)
+	if apply_debug_quick_shop_preset_callback.is_valid():
+		apply_debug_quick_shop_preset_callback.call()
+	if hide_run_overlays_callback.is_valid():
+		hide_run_overlays_callback.call()
+	if set_gameplay_active_callback.is_valid():
+		set_gameplay_active_callback.call(true)
+	if character_select_layer != null:
+		character_select_layer.visible = false
+	return {
+		"run_started": true,
+		"applied_character_id": applied_character_id
+	}
+
 static func apply_debug_quick_shop_preset(
 	player: Node,
 	effective_preset: String,

@@ -160,13 +160,19 @@ func _new_run_seed() -> void:
 func _on_start_pressed() -> void:
 	if run_started:
 		return
-	run_started = true
-	_apply_selected_character()
-	_apply_debug_quick_shop_preset()
-	_hide_run_overlays()
-	_set_gameplay_active(true)
-	if character_select_layer != null:
-		character_select_layer.visible = false
+	var start_state := MainGameStartRuntime.begin_run(
+		player,
+		selectable_characters,
+		selected_character_index,
+		character_select_layer,
+		Callable(self, "_apply_debug_quick_shop_preset"),
+		Callable(self, "_hide_run_overlays"),
+		Callable(self, "_set_gameplay_active")
+	)
+	run_started = start_state.get("run_started", false) == true
+	var applied_character_id := str(start_state.get("applied_character_id", ""))
+	if applied_character_id != "":
+		print("Selected character (placeholder): %s" % applied_character_id)
 
 func _apply_debug_quick_shop_preset() -> void:
 	var preset := _get_effective_debug_preset()
