@@ -9,6 +9,7 @@ const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const MainGamePauseRuntime = preload("res://scripts/game/main_game_pause_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -133,12 +134,7 @@ func _on_player_died() -> void:
 	_enter_run_end_state("game_over")
 
 func _toggle_pause() -> void:
-	var should_pause := not get_tree().paused
-	get_tree().paused = should_pause
-	if should_pause:
-		print("GAME PAUSED")
-	else:
-		print("GAME RESUMED")
+	print(MainGamePauseRuntime.toggle_pause(get_tree()))
 
 func _cycle_character() -> void:
 	if selectable_characters.is_empty():
