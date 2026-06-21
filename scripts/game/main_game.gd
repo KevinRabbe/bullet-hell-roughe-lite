@@ -9,6 +9,7 @@ const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const MainGameReadyRuntime = preload("res://scripts/game/main_game_ready_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -65,32 +66,21 @@ func _ready() -> void:
 		push_error("Main scene is missing a Player node.")
 		return
 
-	if player.has_signal("player_died"):
-		player.player_died.connect(_on_player_died)
-	if player.has_signal("level_up_pending_changed"):
-		player.level_up_pending_changed.connect(_on_level_up_pending_changed)
-	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
-		enemy_spawner.connect("wave_completed", _on_wave_completed)
-	if boss_manager != null and boss_manager.has_signal("boss_defeated_signal"):
-		boss_manager.connect("boss_defeated_signal", _on_boss_defeated)
-	if start_button != null:
-		start_button.pressed.connect(_on_start_pressed)
-	if wave_continue_button != null:
-		wave_continue_button.pressed.connect(_on_wave_continue_pressed)
-	if shop_controller != null and shop_controller.has_signal("continue_requested"):
-		shop_controller.connect("continue_requested", _on_wave_continue_pressed)
-	for index in level_up_choice_buttons.size():
-		level_up_choice_buttons[index].pressed.connect(_on_level_up_choice_pressed.bind(index))
-	if level_up_reroll_button != null:
-		level_up_reroll_button.pressed.connect(_on_level_up_reroll_pressed)
-	if run_end_restart_button != null:
-		run_end_restart_button.pressed.connect(_restart_run)
-	if run_end_menu_button != null:
-		run_end_menu_button.pressed.connect(_return_to_main_menu)
+	MainGameReadyRuntime.connect_runtime_signals(
+		self,
+		player,
+		enemy_spawner,
+		boss_manager,
+		start_button,
+		wave_continue_button,
+		shop_controller,
+		level_up_choice_buttons,
+		level_up_reroll_button,
+		run_end_restart_button,
+		run_end_menu_button
+	)
 	levelup_rng = _resolve_rng("levelup")
-	if enemy_spawner != null:
-		default_wave_duration_seconds = float(enemy_spawner.get("wave_duration_seconds"))
-		_apply_debug_wave_duration()
+	default_wave_duration_seconds = MainGameReadyRuntime.configure_initial_wave_duration(self, enemy_spawner)
 	_load_selectable_characters()
 	_update_character_debug_label()
 	_hide_run_overlays()
