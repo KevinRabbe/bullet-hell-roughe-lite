@@ -2,6 +2,7 @@ extends Node2D
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const MainGameInputRuntime = preload("res://scripts/game/main_game_input_runtime.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
@@ -97,37 +98,31 @@ func _ready() -> void:
 	_set_gameplay_active(false)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey):
-		return
-	var key_event := event as InputEventKey
-	if not key_event.pressed or key_event.echo:
-		return
-	if key_event.keycode == KEY_PLUS or key_event.keycode == KEY_KP_ADD:
-		_cycle_debug_run_preset()
-		return
-	if not run_started:
-		if event.is_action_pressed("cycle_character") or key_event.keycode == KEY_C:
+	var action := MainGameInputRuntime.resolve_input_action(
+		event,
+		run_started,
+		waiting_for_restart,
+		waiting_for_wave_continue,
+		waiting_for_level_up_choice
+	)
+	match action:
+		"cycle_debug_preset":
+			_cycle_debug_run_preset()
+		"cycle_character":
 			_cycle_character()
 			_update_character_debug_label()
-		if key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE:
+		"start_run":
 			_on_start_pressed()
-		return
-
-	if waiting_for_restart and key_event.keycode == KEY_R:
-		_restart_run()
-		return
-	if waiting_for_wave_continue and (key_event.keycode == KEY_ENTER or key_event.keycode == KEY_SPACE):
-		_on_wave_continue_pressed()
-		return
-	if waiting_for_level_up_choice:
-		return
-	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
-		_toggle_pause()
-		return
-
-	if key_event.keycode == KEY_Q:
-		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
-		return
+		"restart_run":
+			_restart_run()
+		"continue_wave":
+			_on_wave_continue_pressed()
+		"toggle_pause":
+			_toggle_pause()
+		"debug_quit":
+			print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
+		_:
+			return
 
 func _on_player_died() -> void:
 	_enter_run_end_state("game_over")
