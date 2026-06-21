@@ -311,11 +311,10 @@ func _enter_run_end_state(state: String) -> void:
 	RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
 
 func _restart_run() -> void:
-	print("Restarting current scene...")
-	RunEndRuntime.restart_run(get_tree(), get_node_or_null("/root/RunRng"))
+	print(RunEndRuntime.perform_restart(get_tree(), get_node_or_null("/root/RunRng")))
 
 func _return_to_main_menu() -> void:
-	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
+	RunEndRuntime.perform_return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
 	RunFlowRuntime.clear_group_nodes(get_tree(), "enemies")

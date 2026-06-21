@@ -49,3 +49,10 @@ static func return_to_main_menu(tree: SceneTree, run_rng: Node) -> void:
 	if run_rng != null and run_rng.has_method("randomize_seed"):
 		run_rng.call("randomize_seed")
 	tree.change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+static func perform_restart(tree: SceneTree, run_rng: Node) -> String:
+	restart_run(tree, run_rng)
+	return "Restarting current scene..."
+
+static func perform_return_to_main_menu(tree: SceneTree, run_rng: Node) -> void:
+	return_to_main_menu(tree, run_rng)
