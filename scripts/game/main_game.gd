@@ -3,6 +3,7 @@ extends Node2D
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
+const MainGameEventBridgeRuntime = preload("res://scripts/game/main_game_event_bridge_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
@@ -130,7 +131,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 func _on_player_died() -> void:
-	_enter_run_end_state("game_over")
+	MainGameEventBridgeRuntime.on_player_died(self)
 
 func _toggle_pause() -> void:
 	var should_pause := not get_tree().paused
@@ -258,28 +259,35 @@ func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)
 
 func _on_boss_defeated() -> void:
-	_enter_run_end_state("victory")
+	MainGameEventBridgeRuntime.on_boss_defeated(self)
 
 func _on_wave_continue_pressed() -> void:
-	if not waiting_for_wave_continue:
+	if not MainGameEventBridgeRuntime.can_continue_wave(waiting_for_wave_continue):
 		return
 	_exit_intermission_phase()
 	_finish_intermission_or_open_levelup()
 
 func _enter_intermission_phase(wave_index: int) -> void:
-	waiting_for_wave_continue = true
-	IntermissionRuntime.begin_intermission(self, wave_panel, level_up_panel, _is_shop_enabled())
-	print("Wave %d complete. Press Continue to start next wave." % wave_index)
+	print(
+		MainGameEventBridgeRuntime.begin_intermission(
+			self,
+			wave_panel,
+			level_up_panel,
+			_is_shop_enabled(),
+			wave_index
+		)
+	)
 
 func _exit_intermission_phase() -> void:
 	waiting_for_wave_continue = false
 	IntermissionRuntime.end_intermission(self)
 
 func _finish_intermission_or_open_levelup() -> void:
-	if RunFlowRuntime.has_pending_level_up(player):
-		_open_level_up_screen()
-	else:
-		_start_next_wave_after_intermission()
+	match MainGameEventBridgeRuntime.finish_intermission_action(player):
+		"open_level_up":
+			_open_level_up_screen()
+		_:
+			_start_next_wave_after_intermission()
 
 func _start_next_wave_after_intermission() -> void:
 	IntermissionRuntime.start_next_wave(self, enemy_spawner)
