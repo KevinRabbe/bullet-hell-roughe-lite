@@ -7,6 +7,7 @@ const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd"
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
+const MainGameLevelUpActionsRuntime = preload("res://scripts/game/main_game_levelup_actions_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
@@ -347,8 +348,10 @@ func _open_level_up_screen() -> void:
 	print("Level-up choices shown.")
 
 func _roll_level_up_choices() -> void:
-	active_level_up_choices = LevelUpRuntime.build_choices(levelup_rng)
-	_refresh_levelup_buttons()
+	active_level_up_choices = MainGameLevelUpActionsRuntime.roll_level_up_choices(
+		levelup_rng,
+		level_up_choice_buttons
+	)
 
 func _refresh_levelup_buttons() -> void:
 	LevelUpPanelRuntime.refresh_choice_buttons(level_up_choice_buttons, active_level_up_choices)
@@ -356,14 +359,14 @@ func _refresh_levelup_buttons() -> void:
 func _on_level_up_choice_pressed(index: int) -> void:
 	if not waiting_for_level_up_choice:
 		return
-	if index < 0 or index >= active_level_up_choices.size():
-		return
-	var choice := active_level_up_choices[index]
-	var result := MainGameLevelUpStateRuntime.apply_choice_and_close(
+	var result := MainGameLevelUpActionsRuntime.apply_level_up_choice(
 		player,
-		choice,
-		level_up_panel
+		level_up_panel,
+		active_level_up_choices,
+		index
 	)
+	if result.get("valid", false) != true:
+		return
 	waiting_for_level_up_choice = false
 	if result.get("reopen", false) == true:
 		_open_level_up_screen()
@@ -373,27 +376,31 @@ func _on_level_up_choice_pressed(index: int) -> void:
 func _on_level_up_reroll_pressed() -> void:
 	if not waiting_for_level_up_choice:
 		return
-	var reroll_cost := _current_level_up_reroll_cost()
-	var result := MainGameLevelUpStateRuntime.try_reroll_choices(
+	var result := MainGameLevelUpActionsRuntime.try_level_up_reroll(
 		player,
-		reroll_cost,
-		level_up_reroll_count
+		level_up_base_reroll_cost,
+		level_up_reroll_count,
+		levelup_rng,
+		level_up_choice_buttons,
+		level_up_reroll_button
 	)
+	var reroll_cost := int(result.get("reroll_cost", _current_level_up_reroll_cost()))
 	if result.get("success", false) != true:
 		print("Not enough gold for level-up reroll. Need %d." % reroll_cost)
 		return
 	level_up_reroll_count = int(result.get("reroll_count", level_up_reroll_count))
-	_roll_level_up_choices()
-	_update_level_up_reroll_button()
+	var choices_variant: Variant = result.get("choices", [])
+	active_level_up_choices = choices_variant if choices_variant is Array[Dictionary] else active_level_up_choices
 	print("Level-up choices rerolled for %d gold." % reroll_cost)
 
 func _current_level_up_reroll_cost() -> int:
-	return level_up_base_reroll_cost + level_up_reroll_count
+	return MainGameLevelUpActionsRuntime.current_level_up_reroll_cost(
+		level_up_base_reroll_cost,
+		level_up_reroll_count
+	)
 
 func _update_level_up_reroll_button() -> void:
-	LevelUpPanelRuntime.show_panel(
-		null,
-		null,
+	MainGameLevelUpActionsRuntime.update_level_up_reroll_button(
 		level_up_reroll_button,
 		_current_level_up_reroll_cost()
 	)
