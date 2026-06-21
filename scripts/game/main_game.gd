@@ -4,6 +4,7 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
+const MainGameIntermissionExitRuntime = preload("res://scripts/game/main_game_intermission_exit_runtime.gd")
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
 const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
@@ -272,8 +273,7 @@ func _enter_intermission_phase(wave_index: int) -> void:
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 
 func _exit_intermission_phase() -> void:
-	waiting_for_wave_continue = false
-	IntermissionRuntime.end_intermission(self)
+	MainGameIntermissionExitRuntime.exit_intermission(self)
 
 func _finish_intermission_or_open_levelup() -> void:
 	if RunFlowRuntime.has_pending_level_up(player):
@@ -282,8 +282,7 @@ func _finish_intermission_or_open_levelup() -> void:
 		_start_next_wave_after_intermission()
 
 func _start_next_wave_after_intermission() -> void:
-	IntermissionRuntime.start_next_wave(self, enemy_spawner)
-	run_end_state = "inactive"
+	MainGameIntermissionExitRuntime.start_next_wave_after_intermission(self, enemy_spawner)
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
