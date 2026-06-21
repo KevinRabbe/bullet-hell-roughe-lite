@@ -1,7 +1,6 @@
 extends Node2D
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
-const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
 const LevelUpFlowRuntime = preload("res://scripts/game/level_up_flow_runtime.gd")
@@ -9,6 +8,7 @@ const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const MainGameRngRuntime = preload("res://scripts/game/main_game_rng_runtime.gd")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -399,9 +399,4 @@ func _update_level_up_reroll_button() -> void:
 	)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
-	var run_rng := get_node_or_null("/root/RunRng")
-	if run_rng != null and run_rng.has_method("get_rng"):
-		var resolved: Variant = run_rng.call("get_rng", stream_name)
-		if resolved is RandomNumberGenerator:
-			return resolved
-	return DeterministicRng.create_fallback_rng(stream_name, "MainGame")
+	return MainGameRngRuntime.resolve_rng(self, stream_name)
