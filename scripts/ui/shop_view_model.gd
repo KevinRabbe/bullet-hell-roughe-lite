@@ -143,34 +143,47 @@ func _get_weapon_entries(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 func _build_offer_cards(offers: Array[Dictionary]) -> Array[Dictionary]:
 	var cards: Array[Dictionary] = []
 	for offer in offers:
-		var card: Dictionary = {
-			"title": str(offer.get("label", "Offer")),
-			"type_label": str(offer.get("type", "")).capitalize(),
-			"description": "",
-			"button_text": "%dG" % int(offer.get("price", 0)),
-			"button_disabled": false,
-			"kind": str(offer.get("type", "")),
-			"block_reason": ""
-		}
+		var card := _create_offer_card_base(offer)
 		var offer_type := str(offer.get("type", ""))
 		if offer_type == "sold_out":
-			card["type_label"] = "Sold Out"
-			card["description"] = "[color=gray]Already purchased.[/color]"
-			card["button_text"] = "Sold Out"
-			card["button_disabled"] = true
+			_apply_sold_out_card(card)
 		elif offer_type == "weapon":
 			var weapon_id := str(offer.get("id", ""))
 			var weapon_data := _load_weapon_data(weapon_id)
-			card["description"] = _build_weapon_offer_description(offer, weapon_data)
-			var can_buy := _can_buy_weapon_offer(offer)
-			if not can_buy:
-				card["button_text"] = "Blocked"
-				card["button_disabled"] = true
-				card["block_reason"] = _get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
+			_apply_weapon_offer_card(card, offer, weapon_data)
 		elif offer_type == "item":
-			card["description"] = _build_item_offer_description(str(offer.get("id", "")))
+			_apply_item_offer_card(card, offer)
 		cards.append(card)
 	return cards
+
+func _create_offer_card_base(offer: Dictionary) -> Dictionary:
+	return {
+		"title": str(offer.get("label", "Offer")),
+		"type_label": str(offer.get("type", "")).capitalize(),
+		"description": "",
+		"button_text": "%dG" % int(offer.get("price", 0)),
+		"button_disabled": false,
+		"kind": str(offer.get("type", "")),
+		"block_reason": ""
+	}
+
+func _apply_sold_out_card(card: Dictionary) -> void:
+	card["type_label"] = "Sold Out"
+	card["description"] = "[color=gray]Already purchased.[/color]"
+	card["button_text"] = "Sold Out"
+	card["button_disabled"] = true
+
+func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData) -> void:
+	var weapon_id := str(offer.get("id", ""))
+	card["description"] = _build_weapon_offer_description(offer, weapon_data)
+	if _can_buy_weapon_offer(offer):
+		return
+	card["button_text"] = "Blocked"
+	card["button_disabled"] = true
+	card["block_reason"] = _get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
+
+func _apply_item_offer_card(card: Dictionary, offer: Dictionary) -> void:
+	card["description"] = _build_item_offer_description(str(offer.get("id", "")))
 
 func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 	var entries := _get_weapon_entries(player_snapshot)
