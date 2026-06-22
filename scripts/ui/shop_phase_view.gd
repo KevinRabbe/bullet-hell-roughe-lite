@@ -108,33 +108,8 @@ func _build_layout_once() -> void:
 	if panel == null:
 		return
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.16, 0.18, 0.24, 0.94)
-	panel_style.border_width_left = 1
-	panel_style.border_width_top = 1
-	panel_style.border_width_right = 1
-	panel_style.border_width_bottom = 1
-	panel_style.border_color = Color(0.22, 0.25, 0.34, 0.95)
-	panel.add_theme_stylebox_override("panel", panel_style)
-	panel.offset_left = 8.0
-	panel.offset_top = 8.0
-	panel.offset_right = 1144.0
-	panel.offset_bottom = 640.0
-
-	if title_label != null:
-		title_label.visible = false
-
-	top_wave_label = Label.new()
-	top_wave_label.position = Vector2(16.0, 12.0)
-	top_wave_label.size = Vector2(420.0, 34.0)
-	top_wave_label.add_theme_font_size_override("font_size", 22)
-	panel.add_child(top_wave_label)
-
-	top_gold_label = Label.new()
-	top_gold_label.position = Vector2(468.0, 14.0)
-	top_gold_label.size = Vector2(220.0, 30.0)
-	top_gold_label.add_theme_font_size_override("font_size", 20)
-	panel.add_child(top_gold_label)
+	_build_panel_style()
+	_build_top_labels()
 
 	var card_width := 248.0
 	var card_height := 360.0
@@ -321,6 +296,34 @@ func _build_weapons_panel() -> void:
 	merge_selected_button.pressed.connect(_on_merge_selected_pressed)
 	weapons_panel.add_child(merge_selected_button)
 
+func _build_panel_style() -> void:
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.16, 0.18, 0.24, 0.94)
+	panel_style.border_width_left = 1
+	panel_style.border_width_top = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_bottom = 1
+	panel_style.border_color = Color(0.22, 0.25, 0.34, 0.95)
+	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.offset_left = 8.0
+	panel.offset_top = 8.0
+	panel.offset_right = 1144.0
+	panel.offset_bottom = 640.0
+
+func _build_top_labels() -> void:
+	if title_label != null:
+		title_label.visible = false
+	top_wave_label = Label.new()
+	top_wave_label.position = Vector2(16.0, 12.0)
+	top_wave_label.size = Vector2(420.0, 34.0)
+	top_wave_label.add_theme_font_size_override("font_size", 22)
+	panel.add_child(top_wave_label)
+
+	top_gold_label = Label.new()
+	top_gold_label.position = Vector2(468.0, 14.0)
+	top_gold_label.size = Vector2(220.0, 30.0)
+	top_gold_label.add_theme_font_size_override("font_size", 20)
+	panel.add_child(top_gold_label)
 func _refresh_all() -> void:
 	_snapshot = shop_view_model.get_snapshot() if shop_view_model != null else {}
 	_refresh_top_bar()
