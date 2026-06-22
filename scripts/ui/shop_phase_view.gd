@@ -68,20 +68,22 @@ func _connect_runtime_updates() -> void:
 	var state_changed_callable := Callable(self, "_on_shop_state_changed")
 	var payload_changed_callable := Callable(self, "_on_shop_payload_changed")
 	if shop_controller != null:
-		if shop_controller.has_signal("shop_opened") and not shop_controller.is_connected("shop_opened", state_changed_callable):
-			shop_controller.connect("shop_opened", state_changed_callable)
-		if shop_controller.has_signal("shop_closed") and not shop_controller.is_connected("shop_closed", state_changed_callable):
-			shop_controller.connect("shop_closed", state_changed_callable)
-		if shop_controller.has_signal("offers_changed") and not shop_controller.is_connected("offers_changed", payload_changed_callable):
-			shop_controller.connect("offers_changed", payload_changed_callable)
-		if shop_controller.has_signal("reroll_cost_changed") and not shop_controller.is_connected("reroll_cost_changed", payload_changed_callable):
-			shop_controller.connect("reroll_cost_changed", payload_changed_callable)
-		if shop_controller.has_signal("offer_purchased") and not shop_controller.is_connected("offer_purchased", payload_changed_callable):
-			shop_controller.connect("offer_purchased", payload_changed_callable)
-	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", payload_changed_callable):
-		weapon_loadout.connect("loadout_changed", payload_changed_callable)
-	if player != null and player.has_signal("ui_snapshot_changed") and not player.is_connected("ui_snapshot_changed", payload_changed_callable):
-		player.connect("ui_snapshot_changed", payload_changed_callable)
+		_connect_signal_if_needed(shop_controller, "shop_opened", state_changed_callable)
+		_connect_signal_if_needed(shop_controller, "shop_closed", state_changed_callable)
+		_connect_signal_if_needed(shop_controller, "offers_changed", payload_changed_callable)
+		_connect_signal_if_needed(shop_controller, "reroll_cost_changed", payload_changed_callable)
+		_connect_signal_if_needed(shop_controller, "offer_purchased", payload_changed_callable)
+	_connect_signal_if_needed(weapon_loadout, "loadout_changed", payload_changed_callable)
+	_connect_signal_if_needed(player, "ui_snapshot_changed", payload_changed_callable)
+
+func _connect_signal_if_needed(node: Node, signal_name: StringName, callable: Callable) -> void:
+	if node == null:
+		return
+	if not node.has_signal(signal_name):
+		return
+	if node.is_connected(signal_name, callable):
+		return
+	node.connect(signal_name, callable)
 
 func _mark_dirty() -> void:
 	_is_dirty = true
