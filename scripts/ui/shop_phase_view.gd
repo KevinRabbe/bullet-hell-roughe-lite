@@ -325,36 +325,13 @@ func _refresh_top_bar() -> void:
 		reroll_button.text = "Reroll - %dG" % int(_snapshot.get("reroll_cost", 0))
 
 func _refresh_offer_cards() -> void:
-	var cards_variant: Variant = _snapshot.get("offer_cards", [])
-	var cards: Array[Dictionary] = []
-	if cards_variant is Array:
-		for card_variant in cards_variant:
-			if card_variant is Dictionary:
-				cards.append(card_variant as Dictionary)
+	var cards := _get_snapshot_cards()
 	for i in range(4):
-		var title := card_title_labels[i]
-		var type_label := card_type_labels[i]
-		var desc := card_desc_labels[i]
 		var button := offer_buttons[i] if i < offer_buttons.size() else null
 		if i >= cards.size():
-			title.text = "N/A"
-			type_label.text = "-"
-			desc.text = ""
-			if button != null:
-				button.text = "N/A"
-				button.disabled = true
+			_clear_offer_card(i, button)
 			continue
-		var card: Dictionary = cards[i]
-		_apply_card_border(i, str(card.get("kind", "")))
-		title.text = str(card.get("title", "Offer"))
-		type_label.text = str(card.get("type_label", "-"))
-		desc.text = str(card.get("description", ""))
-		var block_reason := str(card.get("block_reason", ""))
-		if block_reason != "":
-			desc.text += "\n[color=#ff7d7d]%s[/color]" % block_reason
-		if button != null:
-			button.disabled = card.get("button_disabled", false) == true
-			button.text = str(card.get("button_text", "Buy"))
+		_apply_offer_card(i, cards[i], button)
 
 func _refresh_stats_panel() -> void:
 	if right_stats_label == null:
@@ -369,12 +346,7 @@ func _refresh_bottom_sections() -> void:
 	_refresh_weapon_slots()
 
 func _refresh_weapon_slots() -> void:
-	var slots: Array[Dictionary] = []
-	var slots_variant: Variant = _snapshot.get("weapon_slots", [])
-	if slots_variant is Array:
-		for slot_variant in slots_variant:
-			if slot_variant is Dictionary:
-				slots.append(slot_variant as Dictionary)
+	var slots := _get_snapshot_weapon_slots()
 	for index in range(weapon_slot_buttons.size()):
 		var icon_button := weapon_slot_buttons[index]
 		var slot_label := weapon_slot_labels[index]
@@ -393,6 +365,47 @@ func _refresh_weapon_slots() -> void:
 	if selected_weapon_slot >= slots.size():
 		selected_weapon_slot = -1
 	_update_merge_button_state()
+
+func _get_snapshot_cards() -> Array[Dictionary]:
+	var cards: Array[Dictionary] = []
+	var cards_variant: Variant = _snapshot.get("offer_cards", [])
+	if cards_variant is Array:
+		for card_variant in cards_variant:
+			if card_variant is Dictionary:
+				cards.append(card_variant as Dictionary)
+	return cards
+
+func _clear_offer_card(index: int, button: Button) -> void:
+	card_title_labels[index].text = "N/A"
+	card_type_labels[index].text = "-"
+	card_desc_labels[index].text = ""
+	if button != null:
+		button.text = "N/A"
+		button.disabled = true
+
+func _apply_offer_card(index: int, card: Dictionary, button: Button) -> void:
+	var title := card_title_labels[index]
+	var type_label := card_type_labels[index]
+	var desc := card_desc_labels[index]
+	_apply_card_border(index, str(card.get("kind", "")))
+	title.text = str(card.get("title", "Offer"))
+	type_label.text = str(card.get("type_label", "-"))
+	desc.text = str(card.get("description", ""))
+	var block_reason := str(card.get("block_reason", ""))
+	if block_reason != "":
+		desc.text += "\n[color=#ff7d7d]%s[/color]" % block_reason
+	if button != null:
+		button.disabled = card.get("button_disabled", false) == true
+		button.text = str(card.get("button_text", "Buy"))
+
+func _get_snapshot_weapon_slots() -> Array[Dictionary]:
+	var slots: Array[Dictionary] = []
+	var slots_variant: Variant = _snapshot.get("weapon_slots", [])
+	if slots_variant is Array:
+		for slot_variant in slots_variant:
+			if slot_variant is Dictionary:
+				slots.append(slot_variant as Dictionary)
+	return slots
 
 func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
