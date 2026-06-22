@@ -17,11 +17,15 @@ func configure(shop_controller_node: Node, player_node: Node, weapon_loadout_nod
 func get_snapshot() -> Dictionary:
 	var player_snapshot := _get_player_snapshot()
 	var offers := _get_offers()
+	return _build_snapshot(player_snapshot, offers)
+
+func _build_snapshot(player_snapshot: Dictionary, offers: Array[Dictionary]) -> Dictionary:
+	var wave_index := _get_wave_index()
 	return {
-		"wave_index": _get_wave_index(),
-		"gold": int(player_snapshot.get("gold", _get_gold())),
+		"wave_index": wave_index,
+		"gold": _get_snapshot_gold(player_snapshot),
 		"reroll_cost": _get_reroll_cost(),
-		"title": "Shop (Wave %d)" % _get_wave_index(),
+		"title": _build_shop_title(wave_index),
 		"offers": offers,
 		"offer_cards": _build_offer_cards(offers),
 		"items_text": _get_items_text(player_snapshot),
@@ -31,6 +35,12 @@ func get_snapshot() -> Dictionary:
 		"stats_text": _get_stats_text(player_snapshot),
 		"is_shop_open": _is_shop_open()
 	}
+
+func _get_snapshot_gold(player_snapshot: Dictionary) -> int:
+	return int(player_snapshot.get("gold", _get_gold()))
+
+func _build_shop_title(wave_index: int) -> String:
+	return "Shop (Wave %d)" % wave_index
 
 func get_weapon_offer_block_reason(weapon_id: String, incoming_rarity: String = "common") -> String:
 	if player == null:
