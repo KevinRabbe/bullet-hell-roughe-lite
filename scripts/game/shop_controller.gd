@@ -127,21 +127,33 @@ func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
 		var button := offer_buttons[index]
 		if index < active_offers.size():
-			var offer: Dictionary = active_offers[index]
-			var price := int(offer.get("price", 0))
-			var offer_type := str(offer.get("type", ""))
-			if offer_type == "sold_out":
-				button.text = "Sold Out"
-				button.disabled = true
-			else:
-				var rarity_badge := ""
-				if offer_type == "weapon":
-					rarity_badge = "[%s] " % str(offer.get("rolled_rarity", "common")).capitalize()
-				button.text = "%s%s (%dG)" % [rarity_badge, str(offer.get("label", "Offer")), price]
-				button.disabled = false
+			_apply_offer_button_state(button, active_offers[index])
 		else:
-			button.text = "N/A"
-			button.disabled = true
+			_apply_empty_offer_button_state(button)
+
+func _apply_offer_button_state(button: Button, offer: Dictionary) -> void:
+	var offer_type := str(offer.get("type", ""))
+	if offer_type == "sold_out":
+		button.text = "Sold Out"
+		button.disabled = true
+		return
+	button.text = _build_offer_button_text(offer)
+	button.disabled = false
+
+func _apply_empty_offer_button_state(button: Button) -> void:
+	button.text = "N/A"
+	button.disabled = true
+
+func _build_offer_button_text(offer: Dictionary) -> String:
+	var rarity_badge := ""
+	var offer_type := str(offer.get("type", ""))
+	if offer_type == "weapon":
+		rarity_badge = "[%s] " % str(offer.get("rolled_rarity", "common")).capitalize()
+	return "%s%s (%dG)" % [
+		rarity_badge,
+		str(offer.get("label", "Offer")),
+		int(offer.get("price", 0))
+	]
 
 func _on_offer_pressed(index: int) -> void:
 	if index < 0 or index >= active_offers.size():
