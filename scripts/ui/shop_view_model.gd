@@ -194,19 +194,24 @@ func _get_stats_text(player_snapshot: Dictionary) -> String:
 		player_snapshot = _get_player_snapshot()
 	if player_snapshot.is_empty():
 		return "No stats"
-	return \
-		"HP: [b]%.0f[/b]\nDamage: [b]%.2f[/b]\nAtk Speed: [b]%.2f[/b]\nMove: [b]%.1f[/b]\nRange: [b]%.2f[/b]\nArmor: [b]%.1f[/b]\nCrit: [b]%.1f[/b]\n\nPortal Luck: [b]%.2f[/b]\nPortal Freq: [b]%.2f[/b]\nPortal Instability: [b]%.2f[/b]" % [
-			float(player_snapshot.get("hp", 0.0)),
-			float(player_snapshot.get("damage", 0.0)),
-			float(player_snapshot.get("attack_speed", 0.0)),
-			float(player_snapshot.get("move_speed", 0.0)),
-			float(player_snapshot.get("attack_range", 0.0)),
-			float(player_snapshot.get("armor", 0.0)),
-			float(player_snapshot.get("crit", 0.0)),
-			float(player_snapshot.get("portal_luck", 0.0)),
-			float(player_snapshot.get("portal_frequency", 1.0)),
-			float(player_snapshot.get("portal_instability", 0.0))
-		]
+	return _build_stats_text(player_snapshot)
+
+func _build_stats_text(player_snapshot: Dictionary) -> String:
+	return "HP: [b]%.0f[/b]\nDamage: [b]%.2f[/b]\nAtk Speed: [b]%.2f[/b]\nMove: [b]%.1f[/b]\nRange: [b]%.2f[/b]\nArmor: [b]%.1f[/b]\nCrit: [b]%.1f[/b]\n\nPortal Luck: [b]%.2f[/b]\nPortal Freq: [b]%.2f[/b]\nPortal Instability: [b]%.2f[/b]" % _build_stats_format_values(player_snapshot)
+
+func _build_stats_format_values(player_snapshot: Dictionary) -> Array:
+	return [
+		float(player_snapshot.get("hp", 0.0)),
+		float(player_snapshot.get("damage", 0.0)),
+		float(player_snapshot.get("attack_speed", 0.0)),
+		float(player_snapshot.get("move_speed", 0.0)),
+		float(player_snapshot.get("attack_range", 0.0)),
+		float(player_snapshot.get("armor", 0.0)),
+		float(player_snapshot.get("crit", 0.0)),
+		float(player_snapshot.get("portal_luck", 0.0)),
+		float(player_snapshot.get("portal_frequency", 1.0)),
+		float(player_snapshot.get("portal_instability", 0.0))
+	]
 
 func _get_player_snapshot() -> Dictionary:
 	if player != null and player.has_method("get_ui_snapshot"):
