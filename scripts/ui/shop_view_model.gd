@@ -66,9 +66,7 @@ func _get_wave_index() -> int:
 	return 1
 
 func _get_gold() -> int:
-	if player != null:
-		return int(player.get("current_gold"))
-	return 0
+	return int(_get_player_property("current_gold", 0))
 
 func _get_reroll_cost() -> int:
 	if shop_controller != null and shop_controller.has_method("get_current_reroll_cost"):
@@ -89,7 +87,7 @@ func _get_offers() -> Array[Dictionary]:
 func _get_items_text(player_snapshot: Dictionary) -> String:
 	var items_variant: Variant = player_snapshot.get("items", null)
 	if items_variant == null and player != null:
-		items_variant = player.get("owned_items")
+		items_variant = _get_player_property("owned_items", null)
 	if items_variant == null:
 		return "-"
 	if not (items_variant is Array):
@@ -209,7 +207,7 @@ func _get_stats_text(player_snapshot: Dictionary) -> String:
 		]
 
 func _get_player_snapshot() -> Dictionary:
-	if player != null and player.has_method("get_ui_snapshot"):
+	if _player_has_method("get_ui_snapshot"):
 		var snapshot_variant: Variant = player.call("get_ui_snapshot")
 		if snapshot_variant is Dictionary:
 			return snapshot_variant
@@ -319,3 +317,12 @@ func _is_shop_open() -> bool:
 	if shop_controller != null and shop_controller.has_method("is_shop_open"):
 		return shop_controller.call("is_shop_open") == true
 	return false
+
+func _get_player_property(property_name: StringName, default_value: Variant) -> Variant:
+	if player == null:
+		return default_value
+	var value: Variant = player.get(property_name)
+	return default_value if value == null else value
+
+func _player_has_method(method_name: StringName) -> bool:
+	return player != null and player.has_method(method_name)
