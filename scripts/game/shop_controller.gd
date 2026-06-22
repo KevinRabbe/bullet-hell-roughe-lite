@@ -40,6 +40,11 @@ func _ready() -> void:
 	rng = _resolve_rng("shop")
 	_build_weapon_offer_pool()
 	_build_item_offer_pool()
+	_resolve_references()
+	_connect_buttons()
+	_initialize_panel_state()
+
+func _resolve_references() -> void:
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
 	if player_path != NodePath():
@@ -52,12 +57,12 @@ func _ready() -> void:
 		reroll_button = get_node_or_null(reroll_button_path)
 	if continue_button_path != NodePath():
 		continue_button = get_node_or_null(continue_button_path)
-
 	for button_path in offer_button_paths:
 		var button := get_node_or_null(button_path)
 		if button is Button:
 			offer_buttons.append(button)
 
+func _connect_buttons() -> void:
 	for index in offer_buttons.size():
 		offer_buttons[index].pressed.connect(_on_offer_pressed.bind(index))
 	if reroll_button != null:
@@ -65,6 +70,7 @@ func _ready() -> void:
 	if continue_button != null:
 		continue_button.pressed.connect(_on_continue_pressed)
 
+func _initialize_panel_state() -> void:
 	if panel != null:
 		panel.visible = false
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
