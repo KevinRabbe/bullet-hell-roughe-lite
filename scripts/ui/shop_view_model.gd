@@ -90,18 +90,20 @@ func _get_items_text(player_snapshot: Dictionary) -> String:
 	var items_variant: Variant = player_snapshot.get("items", null)
 	if items_variant == null and player != null:
 		items_variant = player.get("owned_items")
-	if items_variant == null:
-		return "-"
-	if not (items_variant is Array):
-		return "-"
+	var lines := _build_item_lines(items_variant)
+	if lines.is_empty():
+		return "None"
+	return "\n".join(lines)
+
+func _build_item_lines(items_variant: Variant) -> Array[String]:
 	var lines: Array[String] = []
+	if items_variant == null or not (items_variant is Array):
+		return lines
 	for item_variant in items_variant:
 		if item_variant is ItemData:
 			var item := item_variant as ItemData
 			lines.append("- %s" % item.name)
-	if lines.is_empty():
-		return "None"
-	return "\n".join(lines)
+	return lines
 
 func _get_weapon_count() -> int:
 	var entries := _get_weapon_entries()
@@ -167,27 +169,31 @@ func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 	var slots: Array[Dictionary] = []
 	for index in range(6):
 		if index < entries.size():
-			var entry := entries[index]
-			var weapon_id := str(entry.get("id", ""))
-			var rarity := str(entry.get("rarity", "common"))
-			var weapon_data := _load_weapon_data(weapon_id)
-			var slot_label := _build_weapon_slot_label(entry, weapon_data, weapon_id, rarity)
-			slots.append({
-				"id": weapon_id,
-				"rarity": rarity,
-				"icon": weapon_data.icon if weapon_data != null else null,
-				"label": slot_label,
-				"occupied": weapon_id != ""
-			})
+			slots.append(_build_occupied_weapon_slot(entries[index]))
 		else:
-			slots.append({
-				"id": "",
-				"rarity": "",
-				"icon": null,
-				"label": "-",
-				"occupied": false
-			})
+			slots.append(_build_empty_weapon_slot())
 	return slots
+
+func _build_occupied_weapon_slot(entry: Dictionary) -> Dictionary:
+	var weapon_id := str(entry.get("id", ""))
+	var rarity := str(entry.get("rarity", "common"))
+	var weapon_data := _load_weapon_data(weapon_id)
+	return {
+		"id": weapon_id,
+		"rarity": rarity,
+		"icon": weapon_data.icon if weapon_data != null else null,
+		"label": _build_weapon_slot_label(entry, weapon_data, weapon_id, rarity),
+		"occupied": weapon_id != ""
+	}
+
+func _build_empty_weapon_slot() -> Dictionary:
+	return {
+		"id": "",
+		"rarity": "",
+		"icon": null,
+		"label": "-",
+		"occupied": false
+	}
 
 func _get_stats_text(player_snapshot: Dictionary) -> String:
 	if player_snapshot.is_empty():
