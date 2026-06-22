@@ -140,64 +140,86 @@ func _build_layout_once() -> void:
 	var gap := 8.0
 	var start_y := 74.0
 	for i in range(4):
-		var card := Panel.new()
-		card.position = Vector2(start_x + (card_width + gap) * i, start_y)
-		card.size = Vector2(card_width, card_height)
-		var card_style := StyleBoxFlat.new()
-		card_style.bg_color = Color(0.03, 0.06, 0.1, 0.95)
-		card_style.border_width_left = 1
-		card_style.border_width_top = 1
-		card_style.border_width_right = 1
-		card_style.border_width_bottom = 1
-		card_style.border_color = Color(0.08, 0.18, 0.3, 0.95)
-		card.add_theme_stylebox_override("panel", card_style)
-		card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(card)
-		card_panels.append(card)
+		_build_offer_card_panel(i, card_width, card_height, start_x, gap, start_y)
 
-		var title := Label.new()
-		title.position = Vector2(12.0, 10.0)
-		title.size = Vector2(card_width - 24.0, 48.0)
-		title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		title.add_theme_font_size_override("font_size", 18)
-		card.add_child(title)
-		card_title_labels.append(title)
+	_build_stats_panel()
+	_build_items_panel()
+	_build_weapons_panel()
 
-		var type_label := Label.new()
-		type_label.position = Vector2(12.0, 62.0)
-		type_label.size = Vector2(180.0, 30.0)
-		type_label.add_theme_font_size_override("font_size", 15)
-		card.add_child(type_label)
-		card_type_labels.append(type_label)
+	if reroll_button != null:
+		reroll_button.position = Vector2(588.0, 18.0)
+		reroll_button.size = Vector2(220.0, 44.0)
+		panel.move_child(reroll_button, panel.get_child_count() - 1)
 
-		var desc := RichTextLabel.new()
-		desc.position = Vector2(12.0, 92.0)
-		desc.size = Vector2(card_width - 24.0, 170.0)
-		desc.bbcode_enabled = true
-		desc.scroll_active = false
-		desc.fit_content = false
-		desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		desc.add_theme_font_size_override("normal_font_size", 12)
-		card.add_child(desc)
-		card_desc_labels.append(desc)
+	if continue_button != null:
+		continue_button.position = Vector2(1018.0, 560.0)
+		continue_button.size = Vector2(122.0, 50.0)
+		continue_button.text = "Next Wave"
+		panel.move_child(continue_button, panel.get_child_count() - 1)
 
-		var lock_button := Button.new()
-		lock_button.position = Vector2(12.0, 315.0)
-		lock_button.size = Vector2(card_width - 24.0, 32.0)
-		lock_button.text = "Lock (soon)"
-		lock_button.disabled = true
-		lock_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		card.add_child(lock_button)
-		card_lock_buttons.append(lock_button)
+	for button in offer_buttons:
+		panel.move_child(button, panel.get_child_count() - 1)
 
-		if i < offer_buttons.size():
-			var price_button := offer_buttons[i]
-			price_button.position = Vector2(card.position.x + 72.0, card.position.y + 270.0)
-			price_button.size = Vector2(card_width - 144.0, 42.0)
-			price_button.text = "Buy"
-			price_button.mouse_filter = Control.MOUSE_FILTER_STOP
-			panel.move_child(price_button, panel.get_child_count() - 1)
+func _build_offer_card_panel(index: int, card_width: float, card_height: float, start_x: float, gap: float, start_y: float) -> void:
+	var card := Panel.new()
+	card.position = Vector2(start_x + (card_width + gap) * index, start_y)
+	card.size = Vector2(card_width, card_height)
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.03, 0.06, 0.1, 0.95)
+	card_style.border_width_left = 1
+	card_style.border_width_top = 1
+	card_style.border_width_right = 1
+	card_style.border_width_bottom = 1
+	card_style.border_color = Color(0.08, 0.18, 0.3, 0.95)
+	card.add_theme_stylebox_override("panel", card_style)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(card)
+	card_panels.append(card)
 
+	var title := Label.new()
+	title.position = Vector2(12.0, 10.0)
+	title.size = Vector2(card_width - 24.0, 48.0)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.add_theme_font_size_override("font_size", 18)
+	card.add_child(title)
+	card_title_labels.append(title)
+
+	var type_label := Label.new()
+	type_label.position = Vector2(12.0, 62.0)
+	type_label.size = Vector2(180.0, 30.0)
+	type_label.add_theme_font_size_override("font_size", 15)
+	card.add_child(type_label)
+	card_type_labels.append(type_label)
+
+	var desc := RichTextLabel.new()
+	desc.position = Vector2(12.0, 92.0)
+	desc.size = Vector2(card_width - 24.0, 170.0)
+	desc.bbcode_enabled = true
+	desc.scroll_active = false
+	desc.fit_content = false
+	desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	desc.add_theme_font_size_override("normal_font_size", 12)
+	card.add_child(desc)
+	card_desc_labels.append(desc)
+
+	var lock_button := Button.new()
+	lock_button.position = Vector2(12.0, 315.0)
+	lock_button.size = Vector2(card_width - 24.0, 32.0)
+	lock_button.text = "Lock (soon)"
+	lock_button.disabled = true
+	lock_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(lock_button)
+	card_lock_buttons.append(lock_button)
+
+	if index < offer_buttons.size():
+		var price_button := offer_buttons[index]
+		price_button.position = Vector2(card.position.x + 72.0, card.position.y + 270.0)
+		price_button.size = Vector2(card_width - 144.0, 42.0)
+		price_button.text = "Buy"
+		price_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		panel.move_child(price_button, panel.get_child_count() - 1)
+
+func _build_stats_panel() -> void:
 	var stats_panel := Panel.new()
 	stats_panel.position = Vector2(1020.0, 12.0)
 	stats_panel.size = Vector2(112.0, 520.0)
@@ -221,6 +243,7 @@ func _build_layout_once() -> void:
 	right_stats_label.add_theme_font_size_override("normal_font_size", 13)
 	stats_panel.add_child(right_stats_label)
 
+func _build_items_panel() -> void:
 	var items_panel := Panel.new()
 	items_panel.position = Vector2(12.0, 446.0)
 	items_panel.size = Vector2(620.0, 168.0)
@@ -242,6 +265,7 @@ func _build_layout_once() -> void:
 	bottom_items_label.add_theme_font_size_override("normal_font_size", 17)
 	items_panel.add_child(bottom_items_label)
 
+func _build_weapons_panel() -> void:
 	var weapons_panel := Panel.new()
 	weapons_panel.position = Vector2(640.0, 446.0)
 	weapons_panel.size = Vector2(368.0, 168.0)
@@ -294,20 +318,6 @@ func _build_layout_once() -> void:
 	merge_selected_button.disabled = true
 	merge_selected_button.pressed.connect(_on_merge_selected_pressed)
 	weapons_panel.add_child(merge_selected_button)
-
-	if reroll_button != null:
-		reroll_button.position = Vector2(588.0, 18.0)
-		reroll_button.size = Vector2(220.0, 44.0)
-		panel.move_child(reroll_button, panel.get_child_count() - 1)
-
-	if continue_button != null:
-		continue_button.position = Vector2(1018.0, 560.0)
-		continue_button.size = Vector2(122.0, 50.0)
-		continue_button.text = "Next Wave"
-		panel.move_child(continue_button, panel.get_child_count() - 1)
-
-	for button in offer_buttons:
-		panel.move_child(button, panel.get_child_count() - 1)
 
 func _refresh_all() -> void:
 	_snapshot = shop_view_model.get_snapshot() if shop_view_model != null else {}
