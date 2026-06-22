@@ -155,47 +155,66 @@ func _on_offer_pressed(index: int) -> void:
 	var offer_type := str(offer.get("type", ""))
 	var offer_id := str(offer.get("id", ""))
 
-	if offer_type == "weapon":
-		var loadout: Node = player.get_node_or_null("WeaponLoadout")
-		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
-		if loadout != null:
-			if loadout.has_method("can_grant_weapon"):
-				if loadout.call("can_grant_weapon", offer_id, rolled_rarity) != true:
-					print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
-					return
-			elif loadout.has_method("has_space") and loadout.call("has_space") != true:
-				print("Cannot buy weapon. Weapon loadout is full.")
-				return
+	if not _can_purchase_offer(offer_type, offer_id, offer):
+		return
 
 	if player.has_method("spend_gold"):
 		var paid: bool = player.call("spend_gold", offer_price) == true
 		if not paid:
 			return
 
-	if offer_type == "weapon":
-		var rolled_rarity := str(offer.get("rolled_rarity", "common"))
-		if player.has_method("grant_weapon"):
-			var granted: bool = player.call("grant_weapon", offer_id, rolled_rarity) == true
-			if not granted:
-				if player.has_method("add_gold"):
-					player.call("add_gold", offer_price)
-				print("Weapon purchase rejected: %s" % offer_id)
-				return
-	elif offer_type == "item":
-		var item_data := _find_item_data(offer_id)
-		if item_data != null and player.has_method("grant_item"):
-			player.call("grant_item", item_data)
-		else:
-			if player.has_method("add_gold"):
-				player.call("add_gold", offer_price)
-			print("Item purchase failed: %s" % offer_id)
-			return
+	if not _grant_purchased_offer(offer_type, offer_id, offer, offer_price):
+		return
 
 	print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
 	active_offers[index] = ShopOfferRuntime.sold_out_offer()
 	_refresh_offer_buttons()
 	offer_purchased.emit(index, offer.duplicate(true))
 	offers_changed.emit()
+
+func _can_purchase_offer(offer_type: String, offer_id: String, offer: Dictionary) -> bool:
+	if offer_type != "weapon":
+		return true
+	var loadout: Node = player.get_node_or_null("WeaponLoadout")
+	var rolled_rarity := str(offer.get("rolled_rarity", "common"))
+	if loadout == null:
+		return true
+	if loadout.has_method("can_grant_weapon"):
+		if loadout.call("can_grant_weapon", offer_id, rolled_rarity) != true:
+			print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
+			return false
+	elif loadout.has_method("has_space") and loadout.call("has_space") != true:
+		print("Cannot buy weapon. Weapon loadout is full.")
+		return false
+	return true
+
+func _grant_purchased_offer(offer_type: String, offer_id: String, offer: Dictionary, offer_price: int) -> bool:
+	if offer_type == "weapon":
+		return _grant_purchased_weapon(offer_id, str(offer.get("rolled_rarity", "common")), offer_price)
+	if offer_type == "item":
+		return _grant_purchased_item(offer_id, offer_price)
+	return true
+
+func _grant_purchased_weapon(weapon_id: String, rolled_rarity: String, offer_price: int) -> bool:
+	if not player.has_method("grant_weapon"):
+		return false
+	var granted: bool = player.call("grant_weapon", weapon_id, rolled_rarity) == true
+	if granted:
+		return true
+	if player.has_method("add_gold"):
+		player.call("add_gold", offer_price)
+	print("Weapon purchase rejected: %s" % weapon_id)
+	return false
+
+func _grant_purchased_item(item_id: String, offer_price: int) -> bool:
+	var item_data := _find_item_data(item_id)
+	if item_data != null and player.has_method("grant_item"):
+		player.call("grant_item", item_data)
+		return true
+	if player.has_method("add_gold"):
+		player.call("add_gold", offer_price)
+	print("Item purchase failed: %s" % item_id)
+	return false
 
 func _on_reroll_pressed() -> void:
 	var total_cost := _current_reroll_cost()
