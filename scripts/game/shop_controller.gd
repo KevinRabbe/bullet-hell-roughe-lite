@@ -85,16 +85,7 @@ func _on_wave_completed(wave_index: int) -> void:
 		return
 	_current_wave_index = maxi(wave_index, 1)
 	reroll_count = 0
-	_roll_offers()
-	_refresh_offer_buttons()
-	_update_reroll_button_text()
-	if title_label != null:
-		title_label.text = "Shop - Pick one"
-	if panel != null:
-		panel.visible = true
-	shop_opened.emit(_current_wave_index)
-	offers_changed.emit()
-	reroll_cost_changed.emit(_current_reroll_cost())
+	_open_shop_for_wave()
 	print("Shop opened with %d offers." % active_offers.size())
 
 func get_active_offers() -> Array[Dictionary]:
@@ -236,11 +227,7 @@ func _on_reroll_pressed() -> void:
 			return
 	reroll_count += 1
 	print("Reroll shop. Cost: %d" % total_cost)
-	_roll_offers()
-	_refresh_offer_buttons()
-	_update_reroll_button_text()
-	offers_changed.emit()
-	reroll_cost_changed.emit(_current_reroll_cost())
+	_refresh_shop_offers()
 
 func _update_reroll_button_text() -> void:
 	if reroll_button == null:
@@ -249,6 +236,21 @@ func _update_reroll_button_text() -> void:
 
 func _current_reroll_cost() -> int:
 	return reroll_cost + reroll_count
+
+func _open_shop_for_wave() -> void:
+	_refresh_shop_offers()
+	if title_label != null:
+		title_label.text = "Shop - Pick one"
+	if panel != null:
+		panel.visible = true
+	shop_opened.emit(_current_wave_index)
+
+func _refresh_shop_offers() -> void:
+	_roll_offers()
+	_refresh_offer_buttons()
+	_update_reroll_button_text()
+	offers_changed.emit()
+	reroll_cost_changed.emit(_current_reroll_cost())
 
 func _get_preferred_weapon_family() -> String:
 	if player != null and player.has_method("get_preferred_weapon_family_id"):
