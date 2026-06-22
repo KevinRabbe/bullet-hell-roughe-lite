@@ -259,20 +259,26 @@ func _refresh_shop_offers() -> void:
 	reroll_cost_changed.emit(_current_reroll_cost())
 
 func _get_preferred_weapon_family() -> String:
-	if player != null and player.has_method("get_preferred_weapon_family_id"):
+	if _player_has_method("get_preferred_weapon_family_id"):
 		return str(player.call("get_preferred_weapon_family_id"))
 	return ""
 
 func _get_preferred_weapon_family_bias() -> float:
-	if player != null and player.has_method("get_shop_weapon_family_bias"):
+	if _player_has_method("get_shop_weapon_family_bias"):
 		return maxf(float(player.call("get_shop_weapon_family_bias")), 0.0)
 	return 0.0
 
 func _find_item_data(item_id: String) -> ItemData:
-	for item in ItemDatabase.get_prototype_items():
+	return _find_item_data_in_pool(ItemDatabase.get_prototype_items(), item_id)
+
+func _find_item_data_in_pool(items: Array, item_id: String) -> ItemData:
+	for item in items:
 		if item != null and item.id == item_id:
 			return item
 	return null
+
+func _player_has_method(method_name: StringName) -> bool:
+	return player != null and player.has_method(method_name)
 
 func _on_continue_pressed() -> void:
 	if panel != null:
