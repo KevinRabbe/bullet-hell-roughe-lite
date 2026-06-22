@@ -310,11 +310,16 @@ func _build_layout_once() -> void:
 		panel.move_child(button, panel.get_child_count() - 1)
 
 func _refresh_all() -> void:
-	_snapshot = shop_view_model.get_snapshot() if shop_view_model != null else {}
+	_snapshot = _build_view_snapshot()
 	_refresh_top_bar()
 	_refresh_offer_cards()
 	_refresh_stats_panel()
 	_refresh_bottom_sections()
+
+func _build_view_snapshot() -> Dictionary:
+	if shop_view_model == null:
+		return {}
+	return shop_view_model.get_snapshot()
 
 func _refresh_top_bar() -> void:
 	if top_wave_label != null:
