@@ -325,11 +325,16 @@ func _build_top_labels() -> void:
 	top_gold_label.add_theme_font_size_override("font_size", 20)
 	panel.add_child(top_gold_label)
 func _refresh_all() -> void:
-	_snapshot = shop_view_model.get_snapshot() if shop_view_model != null else {}
+	_snapshot = _build_view_snapshot()
 	_refresh_top_bar()
 	_refresh_offer_cards()
 	_refresh_stats_panel()
 	_refresh_bottom_sections()
+
+func _build_view_snapshot() -> Dictionary:
+	if shop_view_model == null:
+		return {}
+	return shop_view_model.get_snapshot()
 
 func _refresh_top_bar() -> void:
 	if top_wave_label != null:
