@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const PlayerPassiveRuntime = preload("res://scripts/player/player_passive_runtime.gd")
 
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
@@ -24,6 +25,7 @@ var active_character_data: Dictionary = {}
 var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
 var _weapon_resource_cache: Dictionary = {}
+var _passive_runtime: RefCounted = PlayerPassiveRuntime.new()
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
 var _regen_tick_accumulator: float = 0.0
@@ -56,6 +58,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_process_hp_regen(delta)
 	_process_passive_status_rules(delta)
+	_process_passive_runtime(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -106,6 +109,7 @@ func grant_item(item: ItemData) -> void:
 	_print_debug_stats()
 
 func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
+	_apply_passive_runtime_trigger("on_enemy_kill")
 	if weapon_loadout == null or not weapon_loadout.has_method("register_weapon_kill"):
 		return
 	if weapon_id == "" or slot_index < 0:
@@ -325,6 +329,7 @@ func _apply_character_rules(character_data: Dictionary = {}) -> void:
 	_apply_stat_multipliers(character_data.get("stat_multipliers", {}))
 	_apply_stat_bonuses(character_data.get("stat_bonuses", {}))
 	_reset_passive_rule_timers(character_data)
+	_configure_passive_runtime(character_data)
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
 		if weapons_variant is Array:
@@ -605,6 +610,38 @@ func _reset_passive_rule_timers(character_data: Dictionary) -> void:
 		if str(rule.get("trigger", "")) != "proximity_tick":
 			continue
 		_passive_rule_timers[index] = 0.0
+
+func _configure_passive_runtime(character_data: Dictionary) -> void:
+	if _passive_runtime != null and _passive_runtime.has_method("configure"):
+		_passive_runtime.call("configure", character_data)
+
+func _process_passive_runtime(delta: float) -> void:
+	if _passive_runtime == null or not _passive_runtime.has_method("tick"):
+		return
+	var adjustments_variant: Variant = _passive_runtime.call("tick", delta)
+	_apply_passive_runtime_adjustments(adjustments_variant)
+
+func _apply_passive_runtime_trigger(trigger_id: String) -> void:
+	if trigger_id == "" or _passive_runtime == null or not _passive_runtime.has_method("trigger"):
+		return
+	var adjustments_variant: Variant = _passive_runtime.call("trigger", trigger_id)
+	_apply_passive_runtime_adjustments(adjustments_variant)
+
+func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
+	if not (adjustments_variant is Array):
+		return
+	var adjustments: Array = adjustments_variant
+	for adjustment_variant in adjustments:
+		if not (adjustment_variant is Dictionary):
+			continue
+		var adjustment: Dictionary = adjustment_variant
+		var stat_id := str(adjustment.get("stat_id", ""))
+		if stat_id == "":
+			continue
+		var value := float(adjustment.get("value", 0.0))
+		if is_zero_approx(value):
+			continue
+		_apply_runtime_stat_bonus(stat_id, value, str(adjustment.get("label", "Passive")))
 
 func _process_passive_status_rules(delta: float) -> void:
 	var passive_rules_variant: Variant = active_character_data.get("passive_status_rules", [])
