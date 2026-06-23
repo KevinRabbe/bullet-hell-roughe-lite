@@ -2,8 +2,7 @@ extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
-const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
-const PortalRunProfile = preload("res://scripts/portal/portal_run_profile.gd")
+const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
 
 @export var player_path: NodePath
 @export var portal_event_manager_path: NodePath
@@ -40,7 +39,7 @@ func _grant_random_item(source: String) -> void:
 	player.call("grant_item", item)
 
 func _roll_reward_tier(source: String) -> int:
-	var reward_result := PortalEventResolver.roll_reward_tier(rng, source, _build_portal_profile())
+	var reward_result := PortalRiskRewardRuntime.roll_reward_tier_result(rng, source, player)
 	var tier := int(reward_result.get("tier", 1))
 	print(
 		"Portal reward roll | luck=%.2f risk=%.2f tier2=%.2f tier3=%.2f bias2=%.2f bias3=%.2f roll=%.2f -> tier=%d"
@@ -56,9 +55,6 @@ func _roll_reward_tier(source: String) -> int:
 		]
 	)
 	return tier
-
-func _build_portal_profile() -> PortalRunProfile:
-	return PortalRunProfile.from_player(player)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")

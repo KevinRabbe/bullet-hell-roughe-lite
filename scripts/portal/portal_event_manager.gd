@@ -5,7 +5,7 @@ signal portal_event_completed
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
 const PortalEventManagerRuntime = preload("res://scripts/portal/portal_event_manager_runtime.gd")
-const PortalRunProfile = preload("res://scripts/portal/portal_run_profile.gd")
+const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
 
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
@@ -68,7 +68,7 @@ func _try_spawn_portal_for_wave(wave_index: int) -> void:
 		_spawn_first_portal()
 
 func _compute_portal_spawn_chance() -> float:
-	return _build_portal_profile().compute_spawn_chance()
+	return PortalRiskRewardRuntime.build_profile(player).compute_spawn_chance()
 
 func _active_portal_count() -> int:
 	return PortalEventManagerRuntime.count_active_portals(get_tree())
@@ -79,7 +79,8 @@ func _try_activate_nearest_portal() -> void:
 		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
-	var event_id := _pick_portal_event_id()
+	var event_result := PortalRiskRewardRuntime.pick_event_result(rng, player)
+	var event_id := str(event_result.get("event_id", "double_elite"))
 	if log_portal_events:
 		print("Portal activated. Event: %s" % event_id)
 	match event_id:
@@ -162,13 +163,10 @@ func _on_event_elite_exited(enemy: Node) -> void:
 		portal_event_completed.emit()
 
 func _pick_portal_event_id() -> String:
-	return PortalEventResolver.pick_event_id(rng, _build_portal_profile())
+	return PortalEventResolver.pick_event_id(rng, PortalRiskRewardRuntime.build_profile(player))
 
 func _pick_elite_role() -> String:
 	return PortalEventManagerRuntime.pick_elite_role(rng)
-
-func _build_portal_profile() -> PortalRunProfile:
-	return PortalRunProfile.from_player(player)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
