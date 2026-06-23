@@ -1,6 +1,76 @@
 class_name EnemyStatusRuntime
 extends RefCounted
 
+var _owner: Node2D
+var _status_rng: RandomNumberGenerator
+var _load_weapon_data_callback: Callable
+var _tick_damage_callback: Callable
+var _active_statuses: Dictionary = {}
+
+func configure(
+	owner: Node2D,
+	status_rng: RandomNumberGenerator,
+	load_weapon_data_callback: Callable,
+	tick_damage_callback: Callable
+) -> void:
+	_owner = owner
+	_status_rng = status_rng
+	_load_weapon_data_callback = load_weapon_data_callback
+	_tick_damage_callback = tick_damage_callback
+
+func tick(delta: float) -> void:
+	tick_statuses(_active_statuses, delta, _tick_damage_callback)
+
+func apply_weapon_status_effect(source: Node, source_weapon_id: String, source_slot_index: int = -1) -> bool:
+	if source_weapon_id == "":
+		return false
+	if not _load_weapon_data_callback.is_valid():
+		return false
+	var weapon_data_variant: Variant = _load_weapon_data_callback.call(source_weapon_id)
+	if not (weapon_data_variant is WeaponData):
+		return false
+	var weapon_data := weapon_data_variant as WeaponData
+	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
+		return false
+	var status_power_multiplier := compute_status_power_multiplier(source, weapon_data)
+	var status_payload := build_status_payload(weapon_data, source, status_power_multiplier)
+	return apply_status_payload(
+		status_payload,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		status_power_multiplier
+	)
+
+func apply_status_payload(
+	status_payload: Dictionary,
+	source: Node = null,
+	source_weapon_id: String = "",
+	source_slot_index: int = -1,
+	status_power_multiplier: float = 1.0
+) -> bool:
+	var applied := EnemyStatusRuntime.apply_status_payload_to_dict(_active_statuses, status_payload)
+	if not applied:
+		return false
+	EnemyStatusRuntime.try_spread_status(
+		_owner,
+		_status_rng,
+		status_payload,
+		source,
+		source_weapon_id,
+		source_slot_index,
+		status_power_multiplier
+	)
+	return true
+
+func get_status_stack_count(status_id: String) -> int:
+	if status_id == "":
+		return 0
+	var status_variant: Variant = _active_statuses.get(status_id, {})
+	if not (status_variant is Dictionary):
+		return 0
+	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
+
 static func compute_status_power_multiplier(source: Node, weapon_data: WeaponData) -> float:
 	var status_power_multiplier := 1.0
 	if source != null and source.has_method("get_status_power_multiplier"):
@@ -38,7 +108,7 @@ static func build_status_payload(
 	status_payload["max_hp_fraction"] = float(status_payload.get("max_hp_fraction", 0.0)) * status_power_multiplier
 	return status_payload
 
-static func apply_status_payload(
+static func apply_status_payload_to_dict(
 	active_statuses: Dictionary,
 	status_payload: Dictionary
 ) -> bool:

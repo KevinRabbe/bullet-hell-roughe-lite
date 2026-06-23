@@ -2,7 +2,6 @@ extends CharacterBody2D
 
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
-const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
@@ -29,11 +28,10 @@ var ranged_cooldown_left: float = 0.0
 var last_hit_player: Node
 var last_hit_weapon_id: String = ""
 var last_hit_slot_index: int = -1
-var active_statuses: Dictionary = {}
-var status_rng: RandomNumberGenerator
 var _enemy_data_cache: Dictionary = {}
 var _weapon_data_cache: Dictionary = {}
 var _texture_cache: Dictionary = {}
+var _status_runtime: EnemyStatusRuntime
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -49,7 +47,13 @@ const ENEMY_PROJECTILE_SCENE: PackedScene = preload("res://scenes/enemies/EnemyP
 const ENEMY_DATA_DIR: String = "res://data/enemies"
 
 func _ready() -> void:
-	status_rng = _resolve_rng("status_effects")
+	_status_runtime = EnemyStatusRuntime.new()
+	_status_runtime.configure(
+		self,
+		_resolve_rng("status_effects"),
+		Callable(self, "_load_weapon_data"),
+		Callable(self, "_apply_status_tick_damage")
+	)
 	_apply_variant_stats()
 	current_hp = max_hp
 	add_to_group("enemies")
@@ -287,43 +291,34 @@ func _apply_enemy_data(data: EnemyData) -> void:
 		visual_sprite.scale = Vector2.ONE * data.visual_scale
 
 func _tick_status_effects(delta: float) -> void:
-	EnemyStatusRuntimeUtil.tick_statuses(active_statuses, delta, _apply_status_tick_damage)
+	if _status_runtime != null:
+		_status_runtime.tick(delta)
 
 func _apply_weapon_status_effect(source: Node, source_weapon_id: String) -> void:
-	if source_weapon_id == "":
+	if _status_runtime == null:
 		return
-	var weapon_data := _load_weapon_data(source_weapon_id)
-	if weapon_data == null:
-		return
-	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_duration <= 0.0:
-		return
-	var status_power_multiplier := EnemyStatusRuntimeUtil.compute_status_power_multiplier(source, weapon_data)
-	_apply_status_from_weapon(weapon_data, source, source_weapon_id, -1, status_power_multiplier)
-
-func _apply_status_from_weapon(weapon_data: WeaponData, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
-	var status_payload := EnemyStatusRuntimeUtil.build_status_payload(weapon_data, source, status_power_multiplier)
-	apply_status_payload(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
-
-func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
-	var applied := EnemyStatusRuntimeUtil.apply_status_payload(active_statuses, status_payload)
-	if not applied:
-		return
-	if source != null and source.is_in_group("players"):
+	var applied := _status_runtime.apply_weapon_status_effect(source, source_weapon_id, -1)
+	if applied and source != null and source.is_in_group("players"):
 		last_hit_player = source
 		last_hit_weapon_id = source_weapon_id
-		last_hit_slot_index = source_slot_index
-	_try_spread_status(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
+		last_hit_slot_index = -1
 
-func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
-	EnemyStatusRuntimeUtil.try_spread_status(
-		self,
-		status_rng,
+func apply_status_payload(status_payload: Dictionary, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1, status_power_multiplier: float = 1.0) -> void:
+	if _status_runtime == null:
+		return
+	var applied := _status_runtime.apply_status_payload(
 		status_payload,
 		source,
 		source_weapon_id,
 		source_slot_index,
 		status_power_multiplier
 	)
+	if not applied:
+		return
+	if source != null and source.is_in_group("players"):
+		last_hit_player = source
+		last_hit_weapon_id = source_weapon_id
+		last_hit_slot_index = source_slot_index
 
 func _apply_status_tick_damage(status: Dictionary) -> void:
 	var stacks := maxi(int(status.get("stacks", 1)), 1)
@@ -369,12 +364,9 @@ func _load_texture(resource_path: String) -> Texture2D:
 	return loaded
 
 func get_status_stack_count(status_id: String) -> int:
-	if status_id == "":
+	if _status_runtime == null:
 		return 0
-	var status_variant: Variant = active_statuses.get(status_id, {})
-	if not (status_variant is Dictionary):
-		return 0
-	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
+	return _status_runtime.get_status_stack_count(status_id)
 
 func _spawn_enemy_hit_flash() -> void:
 	if visual == null:
