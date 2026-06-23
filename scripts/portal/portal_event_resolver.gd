@@ -4,6 +4,9 @@ extends RefCounted
 const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
 
 static func pick_event_id(rng: RandomNumberGenerator, profile: PortalRunProfile) -> String:
+	return str(build_event_roll(rng, profile).get("event_id", "double_elite"))
+
+static func build_event_roll(rng: RandomNumberGenerator, profile: PortalRunProfile) -> Dictionary:
 	var safe_profile := profile if profile != null else PortalRunProfile.new()
 	var event_ids: Array = []
 	var weights: Array[float] = []
@@ -26,8 +29,18 @@ static func pick_event_id(rng: RandomNumberGenerator, profile: PortalRunProfile)
 		(1.0 + (safe_profile.portal_instability * 1.5)) * safe_profile.get_event_bias("enemy_flood_20s")
 	)
 	if event_ids.is_empty():
-		return "double_elite"
-	return str(WeightedPicker.pick_value(rng, event_ids, weights))
+		return {
+			"event_id": "double_elite",
+			"event_ids": [],
+			"weights": [],
+			"portal_instability": safe_profile.portal_instability
+		}
+	return {
+		"event_id": str(WeightedPicker.pick_value(rng, event_ids, weights)),
+		"event_ids": event_ids,
+		"weights": weights,
+		"portal_instability": safe_profile.portal_instability
+	}
 
 static func roll_reward_tier(rng: RandomNumberGenerator, source: String, profile: PortalRunProfile) -> Dictionary:
 	if source != "portal_event":
