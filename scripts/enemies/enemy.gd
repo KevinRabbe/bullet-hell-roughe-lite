@@ -3,6 +3,7 @@ extends CharacterBody2D
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
+const EnemyMotionVisualRuntimeUtil = preload("res://scripts/enemies/enemy_motion_visual_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
@@ -64,27 +65,20 @@ func _physics_process(delta: float) -> void:
 	damage_cooldown_left = maxf(damage_cooldown_left - delta, 0.0)
 	ranged_cooldown_left = maxf(ranged_cooldown_left - delta, 0.0)
 	_tick_status_effects(delta)
-	_find_player_if_needed()
+	target = EnemyMotionVisualRuntimeUtil.resolve_target(target, self)
 
 	if target == null or not is_instance_valid(target):
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
 
-	var direction := (target.global_position - global_position).normalized()
-	velocity = direction * move_speed
-	if enemy_variant == "spit_fiend":
-		var distance_to_player := global_position.distance_to(target.global_position)
-		if distance_to_player <= ranged_attack_range:
-			velocity *= 0.25
-	elif enemy_variant == "skeleton_rifleman":
-		var skeleton_distance := global_position.distance_to(target.global_position)
-		var keep_distance_min := ranged_attack_range * 0.58
-		var keep_distance_max := ranged_attack_range * 0.92
-		if skeleton_distance < keep_distance_min:
-			velocity = -direction * move_speed
-		elif skeleton_distance <= keep_distance_max:
-			velocity = Vector2.ZERO
+	velocity = EnemyMotionVisualRuntimeUtil.compute_movement_velocity(
+		global_position,
+		target,
+		enemy_variant,
+		move_speed,
+		ranged_attack_range
+	)
 	move_and_slide()
 	_try_damage_player()
 	_try_ranged_damage_player()
@@ -117,15 +111,6 @@ func _grant_kill_rewards() -> void:
 		player_node.call("add_xp", granted_xp)
 	if player_node != null and player_node.has_method("notify_enemy_killed"):
 		player_node.call("notify_enemy_killed", last_hit_weapon_id, last_hit_slot_index)
-
-func _find_player_if_needed() -> void:
-	if target != null and is_instance_valid(target):
-		return
-	var players := get_tree().get_nodes_in_group("players")
-	if players.is_empty():
-		return
-	if players[0] is Node2D:
-		target = players[0] as Node2D
 
 func _try_damage_player() -> void:
 	if enemy_variant == "spit_fiend":
@@ -205,22 +190,14 @@ func _apply_variant_stats() -> void:
 				max_hp = 16.0
 				contact_damage = 5.0
 				damage_interval_seconds = 0.65
-				if visual != null:
-					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-				if visual_sprite != null:
-					visual_sprite.texture = IMP_RUNNER_TEXTURE
-					visual_sprite.scale = Vector2(0.085, 0.085)
+				_apply_fallback_variant_visuals()
 		"husk_brute":
 			if not has_data:
 				move_speed = 95.0
 				max_hp = 40.0
 				contact_damage = 10.0
 				damage_interval_seconds = 1.0
-				if visual != null:
-					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-				if visual_sprite != null:
-					visual_sprite.texture = HUSK_BRUTE_TEXTURE
-					visual_sprite.scale = Vector2(0.1, 0.1)
+				_apply_fallback_variant_visuals()
 		"spit_fiend":
 			if not has_data:
 				move_speed = 120.0
@@ -230,14 +207,7 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 4.0
 				ranged_interval_seconds = 1.1
 				ranged_attack_range = 230.0
-				if visual != null:
-					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-				if visual_sprite != null:
-					if elite_role == "rift_caller":
-						visual_sprite.texture = ARCHMAGE_TEXTURE
-					else:
-						visual_sprite.texture = SPIT_FIEND_TEXTURE
-					visual_sprite.scale = Vector2(0.09, 0.09)
+				_apply_fallback_variant_visuals()
 		"skeleton_rifleman":
 			if not has_data:
 				move_speed = 130.0
@@ -247,14 +217,7 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 6.0
 				ranged_interval_seconds = 1.35
 				ranged_attack_range = 290.0
-				if visual != null:
-					visual.modulate = Color(1.0, 1.0, 1.0, 1.0)
-				if visual_sprite != null:
-					if elite_role == "marksman":
-						visual_sprite.texture = MARKSMAN_TEXTURE
-					else:
-						visual_sprite.texture = SKELETON_RIFLEMAN_TEXTURE
-					visual_sprite.scale = Vector2(0.09, 0.09)
+				_apply_fallback_variant_visuals()
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
 	if variant_id == "":
@@ -282,9 +245,11 @@ func _apply_enemy_data(data: EnemyData) -> void:
 	is_boss = data.is_boss
 	reward_gold = data.reward_gold
 	reward_xp = data.reward_xp
-	if visual_sprite != null and data.visual_texture_path != "" and ResourceLoader.exists(data.visual_texture_path):
-		visual_sprite.texture = _load_texture(data.visual_texture_path)
-		visual_sprite.scale = Vector2.ONE * data.visual_scale
+	EnemyMotionVisualRuntimeUtil.apply_enemy_data_visual(
+		data,
+		visual_sprite,
+		Callable(self, "_load_texture")
+	)
 
 func _tick_status_effects(delta: float) -> void:
 	EnemyStatusRuntimeUtil.tick_statuses(active_statuses, delta, _apply_status_tick_damage)
@@ -377,31 +342,10 @@ func get_status_stack_count(status_id: String) -> int:
 	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
 
 func _spawn_enemy_hit_flash() -> void:
-	if visual == null:
-		return
-	visual.modulate = Color(1.35, 1.35, 1.35, 1.0)
-	var tween := create_tween()
-	tween.tween_property(visual, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.12)
+	EnemyMotionVisualRuntimeUtil.spawn_hit_flash(visual, self)
 
 func _spawn_death_puff() -> void:
-	if get_tree() == null or get_tree().current_scene == null:
-		return
-	var puff := Sprite2D.new()
-	puff.global_position = global_position
-	puff.z_index = z_index + 1
-	if visual_sprite != null and visual_sprite.texture != null:
-		puff.texture = visual_sprite.texture
-		puff.scale = visual_sprite.scale * 0.85
-	else:
-		puff.self_modulate = Color(1.0, 0.45, 0.35, 0.9)
-	get_tree().current_scene.add_child(puff)
-	var tween := create_tween()
-	tween.tween_property(puff, "scale", puff.scale * 1.35, 0.18)
-	tween.parallel().tween_property(puff, "modulate", Color(1.0, 0.45, 0.35, 0.0), 0.18)
-	tween.finished.connect(func() -> void:
-		if is_instance_valid(puff):
-			puff.queue_free()
-	)
+	EnemyMotionVisualRuntimeUtil.spawn_death_puff(self, visual_sprite)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
@@ -410,3 +354,19 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		if resolved is RandomNumberGenerator:
 			return resolved
 	return DeterministicRng.create_fallback_rng(stream_name, "Enemy")
+
+func _apply_fallback_variant_visuals() -> void:
+	EnemyMotionVisualRuntimeUtil.apply_fallback_variant_visuals(
+		enemy_variant,
+		elite_role,
+		visual,
+		visual_sprite,
+		{
+			"imp_runner": IMP_RUNNER_TEXTURE,
+			"husk_brute": HUSK_BRUTE_TEXTURE,
+			"spit_fiend": SPIT_FIEND_TEXTURE,
+			"skeleton_rifleman": SKELETON_RIFLEMAN_TEXTURE,
+			"archmage": ARCHMAGE_TEXTURE,
+			"marksman": MARKSMAN_TEXTURE
+		}
+	)
