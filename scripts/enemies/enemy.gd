@@ -3,6 +3,7 @@ extends CharacterBody2D
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const EnemyStatusRuntimeUtil = preload("res://scripts/enemies/enemy_status_runtime.gd")
+const EnemyLifecycleRuntimeUtil = preload("res://scripts/enemies/enemy_lifecycle_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var move_speed: float = 140.0
@@ -26,14 +27,12 @@ var target: Node2D
 var current_hp: float
 var damage_cooldown_left: float = 0.0
 var ranged_cooldown_left: float = 0.0
-var last_hit_player: Node
-var last_hit_weapon_id: String = ""
-var last_hit_slot_index: int = -1
 var active_statuses: Dictionary = {}
 var status_rng: RandomNumberGenerator
 var _enemy_data_cache: Dictionary = {}
 var _weapon_data_cache: Dictionary = {}
 var _texture_cache: Dictionary = {}
+var _lifecycle_runtime: EnemyLifecycleRuntime
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -50,6 +49,8 @@ const ENEMY_DATA_DIR: String = "res://data/enemies"
 
 func _ready() -> void:
 	status_rng = _resolve_rng("status_effects")
+	_lifecycle_runtime = EnemyLifecycleRuntime.new()
+	_lifecycle_runtime.configure(self, Callable(self, "_spawn_death_puff"))
 	_apply_variant_stats()
 	current_hp = max_hp
 	add_to_group("enemies")
@@ -90,33 +91,13 @@ func _physics_process(delta: float) -> void:
 	_try_ranged_damage_player()
 
 func take_damage(amount: float, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
-	if source != null and source.is_in_group("players"):
-		last_hit_player = source
-		last_hit_weapon_id = source_weapon_id
-		last_hit_slot_index = source_slot_index
+	if _lifecycle_runtime != null:
+		_lifecycle_runtime.register_damage_source(source, source_weapon_id, source_slot_index)
 	current_hp = maxf(current_hp - amount, 0.0)
 	_apply_weapon_status_effect(source, source_weapon_id)
 	_spawn_enemy_hit_flash()
 	if current_hp <= 0.0:
-		_spawn_death_puff()
-		_grant_kill_rewards()
-		queue_free()
-
-func _grant_kill_rewards() -> void:
-	var players := get_tree().get_nodes_in_group("players")
-	if players.is_empty() and (last_hit_player == null or not is_instance_valid(last_hit_player)):
-		return
-	var granted_gold := reward_gold
-	var granted_xp := reward_xp
-	var player_node: Node = last_hit_player
-	if player_node == null or not is_instance_valid(player_node):
-		player_node = players[0]
-	if player_node != null and player_node.has_method("add_gold"):
-		player_node.call("add_gold", granted_gold)
-	if player_node != null and player_node.has_method("add_xp"):
-		player_node.call("add_xp", granted_xp)
-	if player_node != null and player_node.has_method("notify_enemy_killed"):
-		player_node.call("notify_enemy_killed", last_hit_weapon_id, last_hit_slot_index)
+		_handle_death()
 
 func _find_player_if_needed() -> void:
 	if target != null and is_instance_valid(target):
@@ -308,10 +289,8 @@ func apply_status_payload(status_payload: Dictionary, source: Node = null, sourc
 	var applied := EnemyStatusRuntimeUtil.apply_status_payload(active_statuses, status_payload)
 	if not applied:
 		return
-	if source != null and source.is_in_group("players"):
-		last_hit_player = source
-		last_hit_weapon_id = source_weapon_id
-		last_hit_slot_index = source_slot_index
+	if _lifecycle_runtime != null:
+		_lifecycle_runtime.register_damage_source(source, source_weapon_id, source_slot_index)
 	_try_spread_status(status_payload, source, source_weapon_id, source_slot_index, status_power_multiplier)
 
 func _try_spread_status(status_payload: Dictionary, source: Node, source_weapon_id: String, source_slot_index: int, status_power_multiplier: float) -> void:
@@ -335,9 +314,7 @@ func _apply_status_tick_damage(status: Dictionary) -> void:
 	current_hp = maxf(current_hp - tick_damage, 0.0)
 	_spawn_enemy_hit_flash()
 	if current_hp <= 0.0:
-		_spawn_death_puff()
-		_grant_kill_rewards()
-		queue_free()
+		_handle_death()
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
@@ -410,3 +387,10 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		if resolved is RandomNumberGenerator:
 			return resolved
 	return DeterministicRng.create_fallback_rng(stream_name, "Enemy")
+
+func _handle_death() -> void:
+	if _lifecycle_runtime != null:
+		_lifecycle_runtime.handle_death(reward_gold, reward_xp)
+	else:
+		_spawn_death_puff()
+		queue_free()
