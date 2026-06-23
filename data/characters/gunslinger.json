@@ -27,6 +27,18 @@
       "debug_label": "GUNSLINGER PASSIVE: +35% damage vs priority target"
     }
   ],
+  "passive_runtime_rules": [
+    {
+      "id": "quickdraw",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "stat_id": "attack_speed",
+      "amount": 0.12,
+      "duration": 2.0,
+      "max_stacks": 1,
+      "debug_label": "QUICKDRAW"
+    }
+  ],
   "portal_event_biases": {
     "double_elite": 1.3,
     "power_for_hp_loss": 1.15,
