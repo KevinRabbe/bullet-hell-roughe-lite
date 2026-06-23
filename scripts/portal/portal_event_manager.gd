@@ -4,6 +4,7 @@ signal portal_event_completed
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
+const PortalEventManagerRuntime = preload("res://scripts/portal/portal_event_manager_runtime.gd")
 const PortalRunProfile = preload("res://scripts/portal/portal_run_profile.gd")
 
 @export var portal_scene: PackedScene
@@ -27,10 +28,8 @@ var flood_original_max_alive: int = 25
 
 func _ready() -> void:
 	rng = _resolve_rng("portal")
-	if player_path != NodePath():
-		player = get_node_or_null(player_path)
-	if enemy_spawner_path != NodePath():
-		enemy_spawner = get_node_or_null(enemy_spawner_path)
+	player = PortalEventManagerRuntime.resolve_player(self, player_path)
+	enemy_spawner = PortalEventManagerRuntime.resolve_enemy_spawner(self, enemy_spawner_path)
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
 		enemy_spawner.connect("wave_completed", _on_wave_completed)
 	flood_timer = Timer.new()
@@ -46,15 +45,12 @@ func _unhandled_input(event: InputEvent) -> void:
 func _spawn_first_portal() -> void:
 	if _active_portal_count() >= 1:
 		return
-	if portal_scene == null:
-		return
-	var portal_instance := portal_scene.instantiate()
-	if portal_instance is Node2D:
-		var portal := portal_instance as Node2D
-		portal.global_position = first_portal_position
-		if portal.has_signal("activated"):
-			portal.connect("activated", _on_portal_activated)
-		add_child(portal)
+	PortalEventManagerRuntime.instantiate_portal(
+		self,
+		portal_scene,
+		first_portal_position,
+		Callable(self, "_on_portal_activated")
+	)
 
 func _on_wave_completed(wave_index: int) -> void:
 	_try_spawn_portal_for_wave(wave_index + 1)
@@ -75,26 +71,10 @@ func _compute_portal_spawn_chance() -> float:
 	return _build_portal_profile().compute_spawn_chance()
 
 func _active_portal_count() -> int:
-	var count := 0
-	for portal in get_tree().get_nodes_in_group("portals"):
-		if portal is Node and is_instance_valid(portal):
-			count += 1
-	return count
+	return PortalEventManagerRuntime.count_active_portals(get_tree())
 
 func _try_activate_nearest_portal() -> void:
-	if player == null or not is_instance_valid(player):
-		return
-
-	var nearest_portal: Node
-	var nearest_distance_sq := INF
-	for portal in get_tree().get_nodes_in_group("portals"):
-		if portal is Node2D and is_instance_valid(portal):
-			var portal_node := portal as Node2D
-			var distance_sq := player.global_position.distance_squared_to(portal_node.global_position)
-			if distance_sq < nearest_distance_sq:
-				nearest_distance_sq = distance_sq
-				nearest_portal = portal_node
-
+	var nearest_portal := PortalEventManagerRuntime.find_nearest_portal(get_tree(), player)
 	if nearest_portal != null and nearest_portal.has_method("try_activate"):
 		nearest_portal.call("try_activate", player)
 
@@ -124,16 +104,9 @@ func _start_double_elite_event(portal_position: Vector2) -> void:
 func _start_power_for_hp_loss_event() -> void:
 	if log_portal_events:
 		print("Portal event started: Power for Max HP loss")
-	if player != null and is_instance_valid(player):
-		var stats_variant: Variant = player.get("stats")
-		if stats_variant != null and stats_variant is Object:
-			stats_variant.set("damage", float(stats_variant.get("damage")) + 0.35)
-			stats_variant.set("max_hp", maxf(float(stats_variant.get("max_hp")) - 20.0, 20.0))
-			player.set("current_hp", minf(float(player.get("current_hp")), float(stats_variant.get("max_hp"))))
-			if player.has_method("_update_hp_label"):
-				player.call("_update_hp_label")
-			if log_portal_events:
-				print("Power trade applied: +0.35 damage, -20 max HP")
+	var result := PortalEventManagerRuntime.apply_power_for_hp_loss(player)
+	if log_portal_events and result.get("applied", false) == true:
+		print("Power trade applied: +0.35 damage, -20 max HP")
 	if log_portal_events:
 		print("Portal event completed: Power for Max HP loss")
 	portal_event_completed.emit()
@@ -141,49 +114,43 @@ func _start_power_for_hp_loss_event() -> void:
 func _start_enemy_flood_event() -> void:
 	if log_portal_events:
 		print("Portal event started: 20-second enemy flood")
-	if enemy_spawner != null and is_instance_valid(enemy_spawner):
-		flood_original_spawn_interval = float(enemy_spawner.get("spawn_interval_seconds"))
-		flood_original_max_alive = int(enemy_spawner.get("max_alive_enemies"))
-		enemy_spawner.set("spawn_interval_seconds", maxf(flood_original_spawn_interval * 0.45, 0.25))
-		enemy_spawner.set("max_alive_enemies", flood_original_max_alive + 20)
+	var result := PortalEventManagerRuntime.apply_enemy_flood(enemy_spawner)
+	if result.get("applied", false) == true:
+		flood_original_spawn_interval = float(result.get("original_spawn_interval", flood_original_spawn_interval))
+		flood_original_max_alive = int(result.get("original_max_alive", flood_original_max_alive))
 	flood_timer.start(20.0)
 
 func _on_flood_event_finished() -> void:
-	if enemy_spawner != null and is_instance_valid(enemy_spawner):
-		enemy_spawner.set("spawn_interval_seconds", flood_original_spawn_interval)
-		enemy_spawner.set("max_alive_enemies", flood_original_max_alive)
+	PortalEventManagerRuntime.restore_enemy_flood(
+		enemy_spawner,
+		flood_original_spawn_interval,
+		flood_original_max_alive
+	)
 	if log_portal_events:
 		print("Portal event completed: enemy flood survived.")
 	portal_event_completed.emit()
 
 func _spawn_elite(spawn_position: Vector2) -> Node:
-	if elite_enemy_scene == null:
-		return null
-
-	var enemy_instance := elite_enemy_scene.instantiate()
-	if enemy_instance is Node2D:
-		var enemy_node := enemy_instance as Node2D
-		enemy_node.global_position = spawn_position
-		if enemy_node.has_method("set_target"):
-			enemy_node.call("set_target", player)
-		if enemy_node.has_method("set"):
-			enemy_node.set("move_speed", elite_move_speed)
-			enemy_node.set("max_hp", elite_max_hp)
-			enemy_node.set("current_hp", elite_max_hp)
-			enemy_node.set("is_elite", true)
-			var elite_role := _pick_elite_role()
-			enemy_node.set("elite_role", elite_role)
-			if log_portal_events:
-				print("Spawned elite variant: %s" % elite_role)
-		add_child(enemy_node)
-		return enemy_node
-	return null
+	var elite_role := _pick_elite_role()
+	var enemy_node := PortalEventManagerRuntime.spawn_elite(
+		self,
+		elite_enemy_scene,
+		player,
+		spawn_position,
+		elite_move_speed,
+		elite_max_hp,
+		elite_role
+	)
+	if enemy_node != null and log_portal_events:
+		print("Spawned elite variant: %s" % elite_role)
+	return enemy_node
 
 func _track_event_elite(enemy: Node) -> void:
-	if enemy == null:
-		return
-	active_event_elites.append(enemy)
-	enemy.tree_exited.connect(_on_event_elite_exited.bind(enemy))
+	PortalEventManagerRuntime.track_event_elite(
+		active_event_elites,
+		enemy,
+		Callable(self, "_on_event_elite_exited")
+	)
 
 func _on_event_elite_exited(enemy: Node) -> void:
 	active_event_elites.erase(enemy)
@@ -198,9 +165,7 @@ func _pick_portal_event_id() -> String:
 	return PortalEventResolver.pick_event_id(rng, _build_portal_profile())
 
 func _pick_elite_role() -> String:
-	if rng.randf() < 0.5:
-		return "horned_bruiser"
-	return "rift_caller"
+	return PortalEventManagerRuntime.pick_elite_role(rng)
 
 func _build_portal_profile() -> PortalRunProfile:
 	return PortalRunProfile.from_player(player)
