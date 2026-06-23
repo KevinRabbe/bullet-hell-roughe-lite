@@ -22,6 +22,18 @@
   "family_kill_requirement_multipliers": {
     "harvester": 0.8
   },
+  "passive_runtime_rules": [
+    {
+      "id": "soul_harvest",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "stat_id": "damage",
+      "amount": 0.04,
+      "duration": 5.0,
+      "max_stacks": 5,
+      "debug_label": "SOUL HARVEST"
+    }
+  ],
   "portal_event_biases": {
     "enemy_flood_20s": 1.45,
     "power_for_hp_loss": 1.15,
@@ -31,5 +43,5 @@
     "2": 0.02,
     "3": 0.03
   },
-  "passive_tags": ["efficient_harvest", "weak_start"]
+  "passive_tags": ["efficient_harvest", "weak_start", "soul_harvest"]
 }
