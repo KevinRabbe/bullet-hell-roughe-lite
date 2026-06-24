@@ -24,6 +24,26 @@
     "portal_luck": 0.1,
     "portal_instability": 0.15
   },
+  "passive_runtime_rules": [
+    {
+      "id": "phase_echo",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "movement_speed",
+          "amount": 0.08
+        },
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.03
+        }
+      ],
+      "duration": 3.0,
+      "max_stacks": 3,
+      "debug_label": "PHASE ECHO"
+    }
+  ],
   "portal_event_biases": {
     "double_elite": 1.25,
     "power_for_hp_loss": 1.2,
@@ -33,5 +53,5 @@
     "2": 0.04,
     "3": 0.06
   },
-  "passive_tags": ["rift_sense", "unstable_path"]
+  "passive_tags": ["rift_sense", "unstable_path", "phase_echo"]
 }
