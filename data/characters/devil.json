@@ -49,25 +49,29 @@
     "2": 0.03,
     "3": 0.04
   },
-  "passive_status_rules": [
+  "passive_runtime_rules": [
     {
-      "trigger": "on_enemy_hit",
-      "status_id": "devils_debt",
-      "duration": 4.0,
-      "tick_interval": 1.0,
-      "max_hp_fraction": 0.008,
-      "max_stacks": 4
-    },
-    {
-      "trigger": "proximity_tick",
-      "status_id": "devils_debt",
-      "radius": 92.0,
-      "interval": 1.0,
+      "id": "devils_bargain",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.08
+        },
+        {
+          "stat_id": "damage",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "armor",
+          "amount": -0.03
+        }
+      ],
       "duration": 3.5,
-      "tick_interval": 1.0,
-      "max_hp_fraction": 0.004,
-      "max_stacks": 4
+      "max_stacks": 3,
+      "debug_label": "DEVIL'S BARGAIN"
     }
   ],
-  "passive_tags": ["unbreakable_pact", "low_direct_damage"]
+  "passive_tags": ["unbreakable_pact", "low_direct_damage", "devils_bargain"]
 }
