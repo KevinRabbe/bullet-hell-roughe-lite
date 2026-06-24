@@ -37,9 +37,29 @@
       "spread_max_targets_per_marked_enemy": 0.15
     }
   },
+  "passive_runtime_rules": [
+    {
+      "id": "infernal_tribute",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "damage",
+          "amount": 0.06
+        },
+        {
+          "stat_id": "armor",
+          "amount": -0.02
+        }
+      ],
+      "duration": 4.0,
+      "max_stacks": 4,
+      "debug_label": "INFERNAL TRIBUTE"
+    }
+  ],
   "portal_event_biases": {
     "enemy_flood_20s": 1.35,
     "power_for_hp_loss": 1.15
   },
-  "passive_tags": ["infernal_flame", "no_sustain"]
+  "passive_tags": ["infernal_flame", "no_sustain", "infernal_tribute"]
 }
