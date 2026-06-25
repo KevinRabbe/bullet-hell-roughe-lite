@@ -17,5 +17,17 @@
   ],
   "preferred_weapon_family": "ritual",
   "shop_weapon_family_bias": 0.2,
-  "passive_tags": ["ritual_master", "blood_rite_pending"]
+  "passive_runtime_rules": [
+    {
+      "id": "blood_rite",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "stat_id": "damage",
+      "amount": 0.03,
+      "duration": 6.0,
+      "max_stacks": 6,
+      "debug_label": "BLOOD RITE"
+    }
+  ],
+  "passive_tags": ["ritual_master", "blood_rite"]
 }
