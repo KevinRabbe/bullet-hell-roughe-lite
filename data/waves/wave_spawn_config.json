@@ -18,34 +18,34 @@
     {
       "max_wave": 2,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.78},
+        {"id": "husk_brute", "weight": 0.22}
       ]
     },
     {
       "max_wave": 3,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.58},
+        {"id": "husk_brute", "weight": 0.24},
+        {"id": "spit_fiend", "weight": 0.18}
       ]
     },
     {
       "max_wave": 4,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0},
-        {"id": "skeleton_rifleman", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.44},
+        {"id": "husk_brute", "weight": 0.24},
+        {"id": "spit_fiend", "weight": 0.18},
+        {"id": "skeleton_rifleman", "weight": 0.14}
       ]
     },
     {
       "max_wave": 999,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0},
-        {"id": "skeleton_rifleman", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.34},
+        {"id": "husk_brute", "weight": 0.27},
+        {"id": "spit_fiend", "weight": 0.21},
+        {"id": "skeleton_rifleman", "weight": 0.18}
       ]
     }
   ]
