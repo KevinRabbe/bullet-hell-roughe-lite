@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "rift_caller"
+display_name = "Rift Caller"
+description = "Elite caster that maintains distance and launches dangerous shard volleys."
+archetype = "elite_caster"
+tags = Array[String](["elite", "cultist", "caster", "ranged"])
+max_hp = 68.0
+move_speed = 135.0
+contact_damage = 4.0
+contact_range = 52.0
+damage_interval_seconds = 1.1
+ranged_damage = 7.0
+ranged_interval_seconds = 1.0
+ranged_attack_range = 270.0
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/demon_archmage.png"
+visual_scale = 0.098
+projectile_texture_path = "res://assets/sprites/projectiles/enemies/hell_arcane_shot.png"
+projectile_rotation_offset = 3.14159
+is_elite = true
+is_boss = false
+threat_tier = 4
+reward_gold = 3
+reward_xp = 4

@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1")
 id = "spit_fiend"
-display_name = "Spit Fiend"
-description = "Ranged pressure enemy with short retreat behavior."
+display_name = "Rift Cultist"
+description = "Ranged harasser that kites just outside melee range and hurls cursed skulls."
 archetype = "ranged_harasser"
-tags = Array[String](["fiend", "ranged"])
+tags = Array[String](["cultist", "ranged", "harasser"])
 max_hp = 24.0
 move_speed = 120.0
 contact_damage = 3.0

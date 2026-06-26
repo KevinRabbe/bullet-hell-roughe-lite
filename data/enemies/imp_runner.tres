@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1")
 id = "imp_runner"
-display_name = "Imp Runner"
-description = "Fast melee chaser."
+display_name = "Dust Imp"
+description = "Fast melee chaser that rushes the player and pressures early waves."
 archetype = "melee_chaser"
-tags = Array[String](["demon", "runner"])
+tags = Array[String](["demon", "imp", "chaser"])
 max_hp = 16.0
 move_speed = 190.0
 contact_damage = 5.0

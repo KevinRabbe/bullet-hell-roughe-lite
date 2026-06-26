@@ -162,7 +162,7 @@ func _try_ranged_damage_player() -> void:
 	ranged_cooldown_left = ranged_interval_seconds
 
 func _apply_variant_stats() -> void:
-	var data := _load_enemy_data(enemy_variant)
+	var data := _load_identity_data()
 	var has_data := data != null
 	if has_data:
 		_apply_enemy_data(data)
@@ -201,6 +201,13 @@ func _apply_variant_stats() -> void:
 				ranged_interval_seconds = 1.35
 				ranged_attack_range = 290.0
 				_apply_fallback_variant_visuals()
+
+func _load_identity_data() -> EnemyData:
+	if is_elite and elite_role != "":
+		var elite_data := _load_enemy_data(elite_role)
+		if elite_data != null:
+			return elite_data
+	return _load_enemy_data(enemy_variant)
 
 func _load_enemy_data(variant_id: String) -> EnemyData:
 	if variant_id == "":
@@ -276,7 +283,7 @@ func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)
 
 func _resolve_projectile_texture() -> Texture2D:
-	var data := _load_enemy_data(enemy_variant)
+	var data := _load_identity_data()
 	if data != null and data.projectile_texture_path != "" and ResourceLoader.exists(data.projectile_texture_path):
 		return _load_texture(data.projectile_texture_path)
 	if enemy_variant == "skeleton_rifleman" or elite_role == "rift_caller":
@@ -284,7 +291,7 @@ func _resolve_projectile_texture() -> Texture2D:
 	return SKULL_FIREBALL_TEXTURE
 
 func _resolve_projectile_rotation_offset() -> float:
-	var data := _load_enemy_data(enemy_variant)
+	var data := _load_identity_data()
 	if data != null:
 		return data.projectile_rotation_offset
 	return PI
