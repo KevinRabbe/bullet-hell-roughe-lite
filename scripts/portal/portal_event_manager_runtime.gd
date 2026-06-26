@@ -71,6 +71,25 @@ static func apply_power_for_hp_loss(player: Node) -> Dictionary:
 		"max_hp": updated_max_hp
 	}
 
+static func apply_attack_speed_for_damage_loss(player: Node) -> Dictionary:
+	if player == null or not is_instance_valid(player):
+		return {"applied": false}
+	var stats_variant: Variant = player.get("stats")
+	if not (stats_variant is Object):
+		return {"applied": false}
+	var stats_object := stats_variant as Object
+	var updated_attack_speed := maxf(float(stats_object.get("attack_speed")) + 0.22, 0.1)
+	var updated_damage := maxf(float(stats_object.get("damage")) - 0.18, 0.2)
+	stats_object.set("attack_speed", updated_attack_speed)
+	stats_object.set("damage", updated_damage)
+	if player.has_method("_emit_ui_snapshot_changed"):
+		player.call("_emit_ui_snapshot_changed")
+	return {
+		"applied": true,
+		"attack_speed": updated_attack_speed,
+		"damage": updated_damage
+	}
+
 static func apply_enemy_flood(enemy_spawner: Node) -> Dictionary:
 	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
 		return {"applied": false}
@@ -89,6 +108,23 @@ static func restore_enemy_flood(enemy_spawner: Node, original_spawn_interval: fl
 		return
 	enemy_spawner.set("spawn_interval_seconds", original_spawn_interval)
 	enemy_spawner.set("max_alive_enemies", original_max_alive)
+
+static func apply_enemy_speed_pressure(enemy_spawner: Node, speed_multiplier: float) -> Dictionary:
+	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
+		return {"applied": false}
+	var original_multiplier := float(enemy_spawner.get("external_move_speed_multiplier"))
+	var safe_multiplier := maxf(speed_multiplier, 1.0)
+	enemy_spawner.set("external_move_speed_multiplier", safe_multiplier)
+	return {
+		"applied": true,
+		"original_move_speed_multiplier": original_multiplier,
+		"move_speed_multiplier": safe_multiplier
+	}
+
+static func restore_enemy_speed_pressure(enemy_spawner: Node, original_multiplier: float) -> void:
+	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
+		return
+	enemy_spawner.set("external_move_speed_multiplier", original_multiplier)
 
 static func spawn_elite(
 	owner: Node,
