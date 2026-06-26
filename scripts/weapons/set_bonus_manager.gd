@@ -29,41 +29,47 @@ func evaluate_and_debug_print() -> Dictionary:
 
 func get_damage_multiplier_bonus() -> float:
 	var total_bonus := 0.0
-	for family_id in _read_family_counts().keys():
-		for effect in _active_effects_for_family(str(family_id)):
-			if str(effect.get("type", "")) == "damage_multiplier_bonus":
-				total_bonus += float(effect.get("value", 0.0))
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) == "damage_multiplier_bonus":
+			total_bonus += float(effect.get("value", 0.0))
+	return total_bonus
+
+func get_player_stat_bonus(stat_id: String) -> float:
+	var total_bonus := 0.0
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) != "player_stat_bonus":
+			continue
+		if str(effect.get("stat_id", "")) != stat_id:
+			continue
+		total_bonus += float(effect.get("value", 0.0))
 	return total_bonus
 
 func can_pierce_shot() -> bool:
-	for family_id in _read_family_counts().keys():
-		for effect in _active_effects_for_family(str(family_id)):
-			if str(effect.get("type", "")) != "pierce_proc":
-				continue
-			if rng.randf() <= float(effect.get("chance", 0.0)):
-				return true
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) != "pierce_proc":
+			continue
+		if rng.randf() <= float(effect.get("chance", 0.0)):
+			return true
 	return false
 
 func should_fire_execution_shot() -> bool:
-	for family_id in _read_family_counts().keys():
-		for effect in _active_effects_for_family(str(family_id)):
-			if str(effect.get("type", "")) != "execution_cadence":
-				continue
-			var cadence_key := "%s:%s" % [str(family_id), str(effect.get("type", ""))]
-			var next_count := int(cadence_counters.get(cadence_key, 0)) + 1
-			var cadence := maxi(int(effect.get("every_shots", 0)), 1)
-			if next_count >= cadence:
-				cadence_counters[cadence_key] = 0
-				return true
-			cadence_counters[cadence_key] = next_count
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) != "execution_cadence":
+			continue
+		var cadence_key := "%s:%s" % [str(effect.get("family_id", "")), str(effect.get("type", ""))]
+		var next_count := int(cadence_counters.get(cadence_key, 0)) + 1
+		var cadence := maxi(int(effect.get("every_shots", 0)), 1)
+		if next_count >= cadence:
+			cadence_counters[cadence_key] = 0
+			return true
+		cadence_counters[cadence_key] = next_count
 	return false
 
 func get_execution_damage_multiplier() -> float:
 	var multiplier := 1.0
-	for family_id in _read_family_counts().keys():
-		for effect in _active_effects_for_family(str(family_id)):
-			if str(effect.get("type", "")) == "execution_damage_multiplier":
-				multiplier = maxf(multiplier, float(effect.get("value", 1.0)))
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) == "execution_damage_multiplier":
+			multiplier = maxf(multiplier, float(effect.get("value", 1.0)))
 	return multiplier
 
 func debug_evaluate_from_weapon_ids(weapon_ids: Array[String]) -> Dictionary:
@@ -118,6 +124,18 @@ func _thresholds_for_family(family_id: String) -> Array:
 
 func _active_effects_for_family(family_id: String) -> Array[Dictionary]:
 	var count := int(_read_family_counts().get(family_id, 0))
+	return _active_effects_for_family_count(family_id, count)
+
+func _active_effects_for_all_families() -> Array[Dictionary]:
+	var family_counts := _read_family_counts()
+	var effects: Array[Dictionary] = []
+	for family_id_variant in family_counts.keys():
+		var family_id := str(family_id_variant)
+		var count := int(family_counts.get(family_id, 0))
+		effects.append_array(_active_effects_for_family_count(family_id, count))
+	return effects
+
+func _active_effects_for_family_count(family_id: String, count: int) -> Array[Dictionary]:
 	var effects: Array[Dictionary] = []
 	for threshold_variant in _thresholds_for_family(family_id):
 		if not (threshold_variant is Dictionary):
@@ -129,7 +147,9 @@ func _active_effects_for_family(family_id: String) -> Array[Dictionary]:
 		if threshold_effects_variant is Array:
 			for effect_variant in threshold_effects_variant:
 				if effect_variant is Dictionary:
-					effects.append((effect_variant as Dictionary).duplicate(true))
+					var effect_copy: Dictionary = (effect_variant as Dictionary).duplicate(true)
+					effect_copy["family_id"] = family_id
+					effects.append(effect_copy)
 	return effects
 
 func _get_set_bonus_definition(family_id: String) -> Dictionary:
