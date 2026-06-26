@@ -14,6 +14,7 @@ const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spaw
 @export var min_spawn_interval_seconds: float = 0.7
 @export var wave_config_path: String = "res://data/waves/wave_spawn_config.json"
 @export var log_wave_countdown: bool = false
+@export var external_move_speed_multiplier: float = 1.0
 
 var target: Node2D
 var rng: RandomNumberGenerator
@@ -75,10 +76,14 @@ func _on_spawn_timer_timeout() -> void:
 		return
 
 	var enemy_node := enemy_instance as Node2D
-	var variant := _pick_enemy_variant()
+	var spawn_entry := _resolve_spawn_entry()
+	var variant := str(spawn_entry.get("variant", "imp_runner"))
 	if enemy_node.has_method("set"):
 		enemy_node.set("enemy_variant", variant)
-	_apply_wave_enemy_overrides(enemy_node, variant)
+	_apply_wave_enemy_overrides(enemy_node, spawn_entry)
+	if enemy_node.has_method("set") and external_move_speed_multiplier != 1.0:
+		var adjusted_move_speed := float(enemy_node.get("move_speed")) * external_move_speed_multiplier
+		enemy_node.set("move_speed", adjusted_move_speed)
 	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
 	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
 	add_child(enemy_node)
@@ -93,17 +98,31 @@ func _pick_enemy_variant() -> String:
 func _variant_pool_for_wave(wave_index: int) -> Array:
 	return EnemySpawnWavePoolRuntimeUtil.build_variant_pool_for_wave(_wave_variant_pools, wave_index)
 
-func _apply_wave_enemy_overrides(enemy_node: Node2D, variant: String) -> void:
+func _resolve_spawn_entry() -> Dictionary:
+	var base_variant := _pick_enemy_variant()
+	var spawn_entry := {
+		"variant": base_variant,
+		"is_elite": false
+	}
 	if current_wave_index < int(_elite_config.get("elite_unlock_wave", 9999)):
-		return
-	if variant != str(_elite_config.get("elite_variant", "husk_brute")):
-		return
+		return spawn_entry
 	if rng.randf() > float(_elite_config.get("elite_spawn_chance", 0.0)):
+		return spawn_entry
+	var elite_variants_variant: Variant = _elite_config.get("elite_variants", [])
+	var elite_pool: Array = elite_variants_variant if elite_variants_variant is Array else []
+	var elite_variant := EnemySpawnWavePoolRuntimeUtil.pick_variant(rng, elite_pool, str(_elite_config.get("elite_variant", base_variant)))
+	spawn_entry["variant"] = elite_variant
+	spawn_entry["is_elite"] = true
+	return spawn_entry
+
+func _apply_wave_enemy_overrides(enemy_node: Node2D, spawn_entry: Dictionary) -> void:
+	if spawn_entry.get("is_elite", false) != true:
 		return
 	if enemy_node.has_method("set"):
 		var overrides: Dictionary = _elite_config.get("elite_overrides", {})
+		var elite_variant := str(spawn_entry.get("variant", str(_elite_config.get("elite_variant", "husk_brute"))))
 		enemy_node.set("is_elite", true)
-		enemy_node.set("elite_role", str(_elite_config.get("elite_role", "wave_tank")))
+		enemy_node.set("elite_role", elite_variant)
 		var base_hp := float(enemy_node.get("max_hp"))
 		var base_damage := float(enemy_node.get("contact_damage"))
 		var base_speed := float(enemy_node.get("move_speed"))

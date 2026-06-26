@@ -16,6 +16,7 @@ static func compute_final_damage(
 	final_damage = _apply_status_bonus_damage(final_damage, target, weapon_data)
 	final_damage = _apply_density_bonus_damage(final_damage, shooter, weapon_data)
 	final_damage = _apply_player_stat_bonus_damage(final_damage, shooter, weapon_data)
+	final_damage = _apply_set_bonus_damage(final_damage, shooter, target)
 	return final_damage
 
 static func _apply_status_bonus_damage(final_damage: float, target: Node, weapon_data: WeaponData) -> float:
@@ -62,6 +63,14 @@ static func _apply_player_stat_bonus_damage(final_damage: float, shooter: Node, 
 	if player_stat_value <= 0.0:
 		return final_damage
 	return final_damage * (1.0 + (weapon_data.bonus_damage_per_player_stat_amount * player_stat_value))
+
+static func _apply_set_bonus_damage(final_damage: float, shooter: Node, target: Node) -> float:
+	if shooter == null or not shooter.has_method("get_set_bonus_damage_multiplier"):
+		return final_damage
+	var multiplier := maxf(float(shooter.call("get_set_bonus_damage_multiplier", target)), 0.0)
+	if is_equal_approx(multiplier, 1.0):
+		return final_damage
+	return final_damage * multiplier
 
 static func _get_target_max_hp(target: Node) -> float:
 	if target == null:

@@ -78,7 +78,7 @@ func _physics_process(delta: float) -> void:
 	velocity = EnemyMotionVisualRuntime.compute_movement_velocity(
 		global_position,
 		target,
-		enemy_variant,
+		_get_enemy_archetype(),
 		move_speed,
 		ranged_attack_range
 	)
@@ -117,7 +117,8 @@ func _try_damage_player() -> void:
 	damage_cooldown_left = damage_interval_seconds
 
 func _try_ranged_damage_player() -> void:
-	if enemy_variant != "spit_fiend" and enemy_variant != "skeleton_rifleman":
+	var enemy_archetype := _get_enemy_archetype()
+	if enemy_archetype != "ranged_harasser" and enemy_archetype != "ranged_marksman" and enemy_archetype != "elite_caster":
 		return
 	if ranged_cooldown_left > 0.0:
 		return
@@ -128,17 +129,14 @@ func _try_ranged_damage_player() -> void:
 	var distance_to_player := global_position.distance_to(target.global_position)
 	if distance_to_player > ranged_attack_range:
 		return
-	var projectile_speed := 360.0
-	var projectile_lifetime := 2.0
-	if enemy_variant == "skeleton_rifleman":
+	var projectile_speed := 390.0
+	var projectile_lifetime := 1.9
+	if enemy_archetype == "ranged_marksman":
 		projectile_speed = 560.0
 		projectile_lifetime = 1.7
-	elif elite_role == "rift_caller":
+	elif enemy_archetype == "elite_caster":
 		projectile_speed = 300.0
 		projectile_lifetime = 2.3
-	else:
-		projectile_speed = 390.0
-		projectile_lifetime = 1.9
 	var projectile := ProjectileSpawnUtil.spawn_projectile(
 		ENEMY_PROJECTILE_SCENE,
 		get_tree().current_scene,
@@ -279,7 +277,7 @@ func _resolve_projectile_texture() -> Texture2D:
 	var data := _load_enemy_data(enemy_variant)
 	if data != null and data.projectile_texture_path != "" and ResourceLoader.exists(data.projectile_texture_path):
 		return _load_texture(data.projectile_texture_path)
-	if enemy_variant == "skeleton_rifleman" or elite_role == "rift_caller":
+	if _get_enemy_archetype() == "ranged_marksman":
 		return RIFT_SHARD_TEXTURE
 	return SKULL_FIREBALL_TEXTURE
 
@@ -326,6 +324,20 @@ func _handle_death() -> void:
 	else:
 		_spawn_death_puff()
 		queue_free()
+
+func _get_enemy_archetype() -> String:
+	var data := _load_enemy_data(enemy_variant)
+	if data != null and data.archetype != "":
+		return data.archetype
+	match enemy_variant:
+		"spit_fiend":
+			return "ranged_harasser"
+		"skeleton_rifleman":
+			return "ranged_marksman"
+		"husk_brute":
+			return "melee_brute"
+		_:
+			return "melee_chaser"
 
 func _apply_fallback_variant_visuals() -> void:
 	EnemyMotionVisualRuntime.apply_fallback_variant_visuals(

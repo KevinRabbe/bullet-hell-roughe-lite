@@ -1,0 +1,13 @@
+{
+  "id": "enemy_flood_20s",
+  "title": "20-Second Enemy Flood",
+  "description": "Survive a dense enemy flood for twenty seconds.",
+  "category": "swarm",
+  "base_weight": 1.0,
+  "instability_weight_scale": 1.5,
+  "reward_count": 1,
+  "reward_tier_biases": {
+    "2": 0.05,
+    "3": 0.02
+  }
+}

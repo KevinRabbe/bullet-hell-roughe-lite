@@ -18,6 +18,9 @@ const WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
 	"epic": 4,
 	"legendary": 8,
 }
+const DEFAULT_EARLY_GUARANTEED_WEAPON_SLOTS: int = 2
+const DEFAULT_EARLY_RANDOM_SLOTS: int = 2
+const DEFAULT_STANDARD_OFFER_SLOTS: int = 4
 
 static func build_weapon_offer_pool(data_registry: Node, weapon_loader: Callable) -> Array[Dictionary]:
 	var weapon_offer_pool: Array[Dictionary] = []
@@ -114,39 +117,58 @@ static func roll_offers(
 	wave_index: int,
 	rng: RandomNumberGenerator,
 	preferred_family: String,
-	preferred_family_bias: float
+	preferred_family_bias: float,
+	shop_config: Dictionary = {}
 ) -> Array[Dictionary]:
 	var active_offers: Array[Dictionary] = []
 	var combined_pool: Array = weapon_offer_pool.duplicate(true)
 	for item_offer in item_offer_pool:
 		combined_pool.append(item_offer)
+	var guaranteed_weapon_slots := _configured_int(
+		shop_config,
+		["offer_layout", "early_wave_guaranteed_weapon_slots"],
+		DEFAULT_EARLY_GUARANTEED_WEAPON_SLOTS
+	)
+	var early_random_slots := _configured_int(
+		shop_config,
+		["offer_layout", "early_wave_random_slots"],
+		DEFAULT_EARLY_RANDOM_SLOTS
+	)
+	var standard_offer_slots := _configured_int(
+		shop_config,
+		["offer_layout", "standard_offer_slots"],
+		DEFAULT_STANDARD_OFFER_SLOTS
+	)
 	if wave_index <= 2:
-		for _slot in 2:
+		for _slot in guaranteed_weapon_slots:
 			var guaranteed_weapon_offer := pick_random_offer(
 				weapon_offer_pool,
 				rng,
 				preferred_family,
 				preferred_family_bias,
-				wave_index
+				wave_index,
+				shop_config
 			)
 			active_offers.append(guaranteed_weapon_offer if not guaranteed_weapon_offer.is_empty() else sold_out_offer())
-		for _slot in 2:
+		for _slot in early_random_slots:
 			var early_random_offer := pick_random_offer(
 				combined_pool,
 				rng,
 				preferred_family,
 				preferred_family_bias,
-				wave_index
+				wave_index,
+				shop_config
 			)
 			active_offers.append(early_random_offer if not early_random_offer.is_empty() else sold_out_offer())
 	else:
-		for _slot in 4:
+		for _slot in standard_offer_slots:
 			var random_offer := pick_random_offer(
 				combined_pool,
 				rng,
 				preferred_family,
 				preferred_family_bias,
-				wave_index
+				wave_index,
+				shop_config
 			)
 			active_offers.append(random_offer if not random_offer.is_empty() else sold_out_offer())
 	return active_offers
@@ -156,7 +178,8 @@ static func pick_random_offer(
 	rng: RandomNumberGenerator,
 	preferred_family: String,
 	preferred_family_bias: float,
-	wave_index: int
+	wave_index: int,
+	shop_config: Dictionary = {}
 ) -> Dictionary:
 	if pool.is_empty():
 		return {}
@@ -180,9 +203,9 @@ static func pick_random_offer(
 		return {}
 	var offer := (selected as Dictionary).duplicate(true)
 	if str(offer.get("type", "")) == "weapon":
-		var rolled_rarity := roll_weapon_rarity_for_wave(rng, wave_index)
+		var rolled_rarity := roll_weapon_rarity_for_wave(rng, wave_index, shop_config)
 		var base_price := int(offer.get("base_price", int(offer.get("price", 0))))
-		var scaled_price := scaled_weapon_price(base_price, rolled_rarity)
+		var scaled_price := scaled_weapon_price(base_price, rolled_rarity, shop_config)
 		offer["rolled_rarity"] = rolled_rarity
 		offer["final_price"] = scaled_price
 		offer["price"] = scaled_price
@@ -191,8 +214,8 @@ static func pick_random_offer(
 static func sold_out_offer() -> Dictionary:
 	return {"type": "sold_out", "id": "", "label": "Sold Out", "price": 0}
 
-static func roll_weapon_rarity_for_wave(rng: RandomNumberGenerator, wave_index: int) -> String:
-	var weights := rarity_weights_for_wave(wave_index)
+static func roll_weapon_rarity_for_wave(rng: RandomNumberGenerator, wave_index: int, shop_config: Dictionary = {}) -> String:
+	var weights := rarity_weights_for_wave(wave_index, shop_config)
 	var total_weight := 0.0
 	for rarity_name in RARITY_ORDER:
 		total_weight += float(weights.get(rarity_name, 0.0))
@@ -206,8 +229,10 @@ static func roll_weapon_rarity_for_wave(rng: RandomNumberGenerator, wave_index: 
 			return rarity_name
 	return "common"
 
-static func rarity_weights_for_wave(wave_index: int) -> Dictionary:
-	for band_variant in WEAPON_RARITY_WEIGHTS_BY_WAVE:
+static func rarity_weights_for_wave(wave_index: int, shop_config: Dictionary = {}) -> Dictionary:
+	var configured_bands := _configured_array(shop_config, ["weapon_rarity_weights_by_wave"])
+	var weight_bands := configured_bands if not configured_bands.is_empty() else WEAPON_RARITY_WEIGHTS_BY_WAVE
+	for band_variant in weight_bands:
 		if not (band_variant is Dictionary):
 			continue
 		var band: Dictionary = band_variant
@@ -217,7 +242,37 @@ static func rarity_weights_for_wave(wave_index: int) -> Dictionary:
 				return resolved
 	return {"common": 100.0}
 
-static func scaled_weapon_price(base_price: int, rolled_rarity: String) -> int:
+static func scaled_weapon_price(base_price: int, rolled_rarity: String, shop_config: Dictionary = {}) -> int:
 	var safe_base := maxi(base_price, 1)
-	var multiplier := int(WEAPON_RARITY_PRICE_MULTIPLIER.get(rolled_rarity, 1))
+	var configured_multipliers := _configured_dictionary(shop_config, ["weapon_rarity_price_multiplier"])
+	var multiplier_source := configured_multipliers if not configured_multipliers.is_empty() else WEAPON_RARITY_PRICE_MULTIPLIER
+	var multiplier := int(multiplier_source.get(rolled_rarity, 1))
 	return safe_base * multiplier
+
+static func _configured_dictionary(config: Dictionary, path: Array[String]) -> Dictionary:
+	var resolved: Variant = _configured_value(config, path, {})
+	if resolved is Dictionary:
+		return resolved
+	return {}
+
+static func _configured_array(config: Dictionary, path: Array[String]) -> Array:
+	var resolved: Variant = _configured_value(config, path, [])
+	if resolved is Array:
+		return resolved
+	return []
+
+static func _configured_int(config: Dictionary, path: Array[String], fallback: int) -> int:
+	return int(_configured_value(config, path, fallback))
+
+static func _configured_value(config: Dictionary, path: Array[String], fallback: Variant) -> Variant:
+	if config.is_empty():
+		return fallback
+	var current: Variant = config
+	for key in path:
+		if not (current is Dictionary):
+			return fallback
+		var current_dict: Dictionary = current
+		if not current_dict.has(key):
+			return fallback
+		current = current_dict.get(key)
+	return current

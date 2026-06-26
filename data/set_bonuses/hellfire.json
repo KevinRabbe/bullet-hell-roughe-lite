@@ -1,0 +1,39 @@
+{
+  "id": "hellfire",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "burn_damage",
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "damage_vs_status_bonus",
+          "status_id": "hellfire_burn",
+          "value": 0.12
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "damage_per_enemy_with_status_bonus",
+          "status_id": "hellfire_burn",
+          "value": 0.03,
+          "max_enemies": 6
+        }
+      ]
+    }
+  ]
+}

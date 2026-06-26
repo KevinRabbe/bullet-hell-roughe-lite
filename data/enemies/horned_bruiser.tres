@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "horned_bruiser"
+display_name = "Horned Bruiser"
+description = "Elite melee demon that closes space and hits hard."
+archetype = "melee_brute"
+tags = Array[String](["elite", "demon", "brute", "fast"])
+max_hp = 84.0
+move_speed = 176.0
+contact_damage = 16.0
+contact_range = 64.0
+damage_interval_seconds = 0.85
+ranged_damage = 0.0
+ranged_interval_seconds = 0.0
+ranged_attack_range = 0.0
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/final_boss_shadow_assassin.png"
+visual_scale = 0.115
+projectile_texture_path = ""
+projectile_rotation_offset = 3.14159
+is_elite = true
+is_boss = false
+threat_tier = 3
+reward_gold = 4
+reward_xp = 5

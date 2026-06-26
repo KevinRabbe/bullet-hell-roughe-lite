@@ -1,0 +1,48 @@
+{
+  "id": "portal",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "portal_frequency",
+          "value": 0.2
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "portal_reward_multiplier",
+          "value": 0.15
+        },
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "portal_instability",
+          "value": 0.08
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "attack_speed",
+          "value": 0.08
+        },
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "projectile_speed",
+          "value": 0.12
+        }
+      ]
+    }
+  ]
+}

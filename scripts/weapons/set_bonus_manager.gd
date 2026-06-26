@@ -7,15 +7,34 @@ const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 var weapon_loadout: Node
 var data_registry: Node
+var owner_player: Node
 var last_reported_bonuses: Dictionary = {}
 var cadence_counters: Dictionary = {}
+var temporary_stat_bonuses: Array[Dictionary] = []
 var rng: RandomNumberGenerator
 
 func _ready() -> void:
 	rng = _resolve_rng("set_bonus")
+	owner_player = get_parent()
 	data_registry = get_node_or_null("/root/DataRegistry")
 	if weapon_loadout_path != NodePath():
 		weapon_loadout = get_node_or_null(weapon_loadout_path)
+	set_process(true)
+
+func _process(delta: float) -> void:
+	if delta <= 0.0 or temporary_stat_bonuses.is_empty():
+		return
+	var bonuses_changed := false
+	for index in range(temporary_stat_bonuses.size() - 1, -1, -1):
+		var effect := temporary_stat_bonuses[index]
+		effect["time_left"] = maxf(float(effect.get("time_left", 0.0)) - delta, 0.0)
+		if float(effect.get("time_left", 0.0)) <= 0.0:
+			temporary_stat_bonuses.remove_at(index)
+			bonuses_changed = true
+			continue
+		temporary_stat_bonuses[index] = effect
+	if bonuses_changed:
+		_emit_snapshot_if_available()
 
 func evaluate_and_debug_print() -> Dictionary:
 	var family_counts := _read_family_counts()
@@ -34,6 +53,104 @@ func get_damage_multiplier_bonus() -> float:
 			if str(effect.get("type", "")) == "damage_multiplier_bonus":
 				total_bonus += float(effect.get("value", 0.0))
 	return total_bonus
+
+func get_player_stat_bonus(stat_id: String) -> float:
+	if stat_id == "":
+		return 0.0
+	var total_bonus := 0.0
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			if str(effect.get("type", "")) != "player_stat_bonus":
+				continue
+			if str(effect.get("stat_id", "")) != stat_id:
+				continue
+			total_bonus += float(effect.get("value", 0.0))
+	for bonus in temporary_stat_bonuses:
+		if str(bonus.get("stat_id", "")) != stat_id:
+			continue
+		total_bonus += float(bonus.get("value", 0.0))
+	return total_bonus
+
+func get_family_kill_requirement_multiplier(family_id: String) -> float:
+	if family_id == "":
+		return 1.0
+	var multiplier := 1.0
+	for effect in _active_effects_for_family(family_id):
+		if str(effect.get("type", "")) != "family_kill_requirement_multiplier":
+			continue
+		multiplier *= maxf(float(effect.get("value", 1.0)), 0.01)
+	return multiplier
+
+func get_elite_kill_bonus_credit(family_id: String, enemy: Node) -> int:
+	if family_id == "" or enemy == null or not is_instance_valid(enemy):
+		return 0
+	var is_elite_or_boss: bool = enemy.get("is_elite") == true or enemy.get("is_boss") == true
+	if not is_elite_or_boss:
+		return 0
+	var total_bonus := 0
+	for effect in _active_effects_for_family(family_id):
+		if str(effect.get("type", "")) != "elite_kill_bonus_credit":
+			continue
+		total_bonus += maxi(int(effect.get("value", 0)), 0)
+	return total_bonus
+
+func notify_weapon_milestone(family_id: String) -> void:
+	if family_id == "":
+		return
+	var applied_bonus := false
+	for effect in _active_effects_for_family(family_id):
+		if str(effect.get("type", "")) != "milestone_temporary_stat_bonus":
+			continue
+		var duration := maxf(float(effect.get("duration", 0.0)), 0.0)
+		if duration <= 0.0:
+			continue
+		var modifiers_variant: Variant = effect.get("modifiers", [])
+		if not (modifiers_variant is Array):
+			continue
+		var modifiers: Array = modifiers_variant
+		for modifier_variant in modifiers:
+			if not (modifier_variant is Dictionary):
+				continue
+			var modifier: Dictionary = modifier_variant
+			var stat_id := str(modifier.get("stat_id", ""))
+			var value := float(modifier.get("amount", 0.0))
+			if stat_id == "" or is_zero_approx(value):
+				continue
+			temporary_stat_bonuses.append({
+				"stat_id": stat_id,
+				"value": value,
+				"time_left": duration,
+				"source_family": family_id
+			})
+			applied_bonus = true
+	if applied_bonus:
+		_emit_snapshot_if_available()
+
+func get_conditional_damage_multiplier(target: Node) -> float:
+	if target == null or not is_instance_valid(target):
+		return 1.0
+	var multiplier := 1.0
+	for family_id in _read_family_counts().keys():
+		for effect in _active_effects_for_family(str(family_id)):
+			var effect_type := str(effect.get("type", ""))
+			match effect_type:
+				"damage_vs_status_bonus":
+					var status_id := str(effect.get("status_id", ""))
+					if status_id == "":
+						continue
+					if target.has_method("get_status_stack_count") and int(target.call("get_status_stack_count", status_id)) > 0:
+						multiplier += float(effect.get("value", 0.0))
+				"damage_per_enemy_with_status_bonus":
+					var status_id := str(effect.get("status_id", ""))
+					if status_id == "" or owner_player == null or not owner_player.has_method("count_enemies_with_status"):
+						continue
+					var enemy_count := int(owner_player.call("count_enemies_with_status", status_id))
+					var max_enemies := maxi(int(effect.get("max_enemies", enemy_count)), 0)
+					if max_enemies > 0:
+						enemy_count = mini(enemy_count, max_enemies)
+					if enemy_count > 0:
+						multiplier += float(effect.get("value", 0.0)) * float(enemy_count)
+	return multiplier
 
 func can_pierce_shot() -> bool:
 	for family_id in _read_family_counts().keys():
@@ -131,6 +248,10 @@ func _active_effects_for_family(family_id: String) -> Array[Dictionary]:
 				if effect_variant is Dictionary:
 					effects.append((effect_variant as Dictionary).duplicate(true))
 	return effects
+
+func _emit_snapshot_if_available() -> void:
+	if owner_player != null and owner_player.has_method("_emit_ui_snapshot_changed"):
+		owner_player.call("_emit_ui_snapshot_changed")
 
 func _get_set_bonus_definition(family_id: String) -> Dictionary:
 	if data_registry == null or not data_registry.has_method("get_set_bonus"):

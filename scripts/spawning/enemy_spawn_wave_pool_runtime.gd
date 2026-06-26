@@ -71,7 +71,7 @@ static func _normalize_wave_variant_pools(pools_variant: Variant) -> Array[Dicti
 static func _normalize_elite_config(config: Dictionary) -> Dictionary:
 	var elite_variant: Variant = config.get("elite", null)
 	if elite_variant is Dictionary:
-		return (elite_variant as Dictionary).duplicate(true)
+		return _normalize_elite_dictionary(elite_variant as Dictionary)
 	var elite_overrides_variant: Variant = config.get("elite_overrides", {})
 	var elite_overrides: Dictionary = elite_overrides_variant if elite_overrides_variant is Dictionary else {}
 	return {
@@ -79,6 +79,12 @@ static func _normalize_elite_config(config: Dictionary) -> Dictionary:
 		"elite_spawn_chance": float(config.get("elite_spawn_chance", 0.14)),
 		"elite_variant": str(config.get("elite_variant", "husk_brute")),
 		"elite_role": str(config.get("elite_role", "wave_tank")),
+		"elite_variants": [
+			{
+				"id": str(config.get("elite_variant", "husk_brute")),
+				"weight": 1.0
+			}
+		],
 		"elite_overrides": elite_overrides
 	}
 
@@ -95,6 +101,9 @@ static func _build_default_config() -> Dictionary:
 			"elite_spawn_chance": 0.14,
 			"elite_variant": "husk_brute",
 			"elite_role": "wave_tank",
+			"elite_variants": [
+				{"id": "horned_bruiser", "weight": 1.0}
+			],
 			"elite_overrides": {
 				"hp_multiplier": 2.0,
 				"damage_multiplier": 1.35,
@@ -102,6 +111,30 @@ static func _build_default_config() -> Dictionary:
 			}
 		}
 	}
+
+static func _normalize_elite_dictionary(elite_dictionary: Dictionary) -> Dictionary:
+	var normalized := elite_dictionary.duplicate(true)
+	var configured_variants := _normalize_elite_variants(normalized.get("elite_variants", []))
+	if configured_variants.is_empty():
+		var fallback_variant := str(normalized.get("elite_variant", "husk_brute"))
+		configured_variants = [{"id": fallback_variant, "weight": 1.0}]
+	normalized["elite_variant"] = str(configured_variants[0].get("id", "husk_brute"))
+	normalized["elite_variants"] = configured_variants
+	return normalized
+
+static func _normalize_elite_variants(variants_variant: Variant) -> Array[Dictionary]:
+	var variants: Array[Dictionary] = []
+	if variants_variant is Array:
+		for variant_entry in variants_variant:
+			if variant_entry is Dictionary:
+				var entry := (variant_entry as Dictionary).duplicate(true)
+				if str(entry.get("id", "")) != "":
+					variants.append(entry)
+			else:
+				var variant_id := str(variant_entry)
+				if variant_id != "":
+					variants.append({"id": variant_id, "weight": 1.0})
+	return variants
 
 static func _sort_wave_band_order(a: Dictionary, b: Dictionary) -> bool:
 	return int(a.get("max_wave", 9999)) < int(b.get("max_wave", 9999))

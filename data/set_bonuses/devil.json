@@ -1,0 +1,39 @@
+{
+  "id": "devil",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "hp_regen",
+          "value": 1.0
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "damage_vs_status_bonus",
+          "status_id": "devils_debt",
+          "value": 0.15
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "damage_per_enemy_with_status_bonus",
+          "status_id": "devils_debt",
+          "value": 0.04,
+          "max_enemies": 6
+        }
+      ]
+    }
+  ]
+}

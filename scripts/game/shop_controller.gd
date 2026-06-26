@@ -38,6 +38,7 @@ var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
+	_apply_shop_config()
 	_build_weapon_offer_pool()
 	_build_item_offer_pool()
 	_resolve_references()
@@ -117,7 +118,8 @@ func _roll_offers() -> void:
 		_current_wave_index,
 		rng,
 		_get_preferred_weapon_family(),
-		_get_preferred_weapon_family_bias()
+		_get_preferred_weapon_family_bias(),
+		_get_shop_config()
 	)
 
 func _refresh_offer_buttons() -> void:
@@ -243,6 +245,13 @@ func _update_reroll_button_text() -> void:
 func _current_reroll_cost() -> int:
 	return reroll_cost + reroll_count
 
+func _apply_shop_config() -> void:
+	var config := _get_shop_config()
+	if config.is_empty():
+		return
+	var base_reroll_cost_variant: Variant = config.get("base_reroll_cost", reroll_cost)
+	reroll_cost = maxi(int(base_reroll_cost_variant), 0)
+
 func _open_shop_for_wave() -> void:
 	_refresh_shop_offers()
 	if title_label != null:
@@ -293,6 +302,15 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		if resolved is RandomNumberGenerator:
 			return resolved
 	return DeterministicRng.create_fallback_rng(stream_name, "ShopController")
+
+func _get_shop_config() -> Dictionary:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		return {}
+	var config_variant: Variant = data_registry.get("shop_config")
+	if config_variant is Dictionary:
+		return config_variant
+	return {}
 
 func _load_weapon_data(resource_path: String) -> WeaponData:
 	if _weapon_data_cache.has(resource_path):

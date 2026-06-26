@@ -40,7 +40,7 @@ func _grant_kill_rewards(reward_gold: int, reward_xp: int) -> void:
 	if player_node != null and player_node.has_method("add_xp"):
 		player_node.call("add_xp", reward_xp)
 	if player_node != null and player_node.has_method("notify_enemy_killed"):
-		player_node.call("notify_enemy_killed", _last_hit_weapon_id, _last_hit_slot_index)
+		player_node.call("notify_enemy_killed", _last_hit_weapon_id, _last_hit_slot_index, _owner)
 
 func _resolve_reward_player(players: Array) -> Node:
 	if _last_hit_player != null and is_instance_valid(_last_hit_player):

@@ -1,12 +1,18 @@
 {
-  "elite_unlock_wave": 5,
-  "elite_spawn_chance": 0.14,
-  "elite_variant": "husk_brute",
-  "elite_role": "wave_tank",
-  "elite_overrides": {
-    "max_hp_multiplier": 2.0,
-    "contact_damage_multiplier": 1.35,
-    "move_speed_multiplier": 0.88
+  "elite": {
+    "elite_unlock_wave": 5,
+    "elite_spawn_chance": 0.14,
+    "elite_variant": "horned_bruiser",
+    "elite_variants": [
+      {"id": "horned_bruiser", "weight": 0.6},
+      {"id": "rift_caller", "weight": 0.4}
+    ],
+    "elite_role": "wave_tank",
+    "elite_overrides": {
+      "max_hp_multiplier": 1.0,
+      "contact_damage_multiplier": 1.0,
+      "move_speed_multiplier": 1.0
+    }
   },
   "waves": [
     {
@@ -18,34 +24,34 @@
     {
       "max_wave": 2,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.7},
+        {"id": "husk_brute", "weight": 0.3}
       ]
     },
     {
       "max_wave": 3,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.55},
+        {"id": "husk_brute", "weight": 0.25},
+        {"id": "spit_fiend", "weight": 0.2}
       ]
     },
     {
       "max_wave": 4,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0},
-        {"id": "skeleton_rifleman", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.45},
+        {"id": "husk_brute", "weight": 0.2},
+        {"id": "spit_fiend", "weight": 0.2},
+        {"id": "skeleton_rifleman", "weight": 0.15}
       ]
     },
     {
       "max_wave": 999,
       "variants": [
-        {"id": "imp_runner", "weight": 1.0},
-        {"id": "husk_brute", "weight": 1.0},
-        {"id": "spit_fiend", "weight": 1.0},
-        {"id": "skeleton_rifleman", "weight": 1.0}
+        {"id": "imp_runner", "weight": 0.35},
+        {"id": "husk_brute", "weight": 0.22},
+        {"id": "spit_fiend", "weight": 0.22},
+        {"id": "skeleton_rifleman", "weight": 0.21}
       ]
     }
   ]

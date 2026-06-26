@@ -12,7 +12,7 @@ static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 static func compute_movement_velocity(
 	owner_position: Vector2,
 	target: Node2D,
-	enemy_variant: String,
+	enemy_archetype: String,
 	move_speed: float,
 	ranged_attack_range: float
 ) -> Vector2:
@@ -20,11 +20,11 @@ static func compute_movement_velocity(
 		return Vector2.ZERO
 	var direction := (target.global_position - owner_position).normalized()
 	var velocity := direction * move_speed
-	if enemy_variant == "spit_fiend":
+	if enemy_archetype == "ranged_harasser":
 		var distance_to_player := owner_position.distance_to(target.global_position)
 		if distance_to_player <= ranged_attack_range:
 			velocity *= 0.25
-	elif enemy_variant == "skeleton_rifleman":
+	elif enemy_archetype == "ranged_marksman" or enemy_archetype == "elite_caster":
 		var skeleton_distance := owner_position.distance_to(target.global_position)
 		var keep_distance_min := ranged_attack_range * 0.58
 		var keep_distance_max := ranged_attack_range * 0.92

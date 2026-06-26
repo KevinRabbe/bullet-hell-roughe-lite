@@ -1,0 +1,13 @@
+{
+  "id": "attack_speed_for_damage_loss",
+  "title": "Attack Speed for Damage Loss",
+  "description": "Fire faster, but permanently lose a little direct damage.",
+  "category": "trade",
+  "base_weight": 0.9,
+  "instability_weight_scale": 0.0,
+  "reward_count": 1,
+  "reward_tier_biases": {
+    "2": 0.03,
+    "3": 0.0
+  }
+}

@@ -71,6 +71,25 @@ static func apply_power_for_hp_loss(player: Node) -> Dictionary:
 		"max_hp": updated_max_hp
 	}
 
+static func apply_attack_speed_for_damage_loss(player: Node) -> Dictionary:
+	if player == null or not is_instance_valid(player):
+		return {"applied": false}
+	var stats_variant: Variant = player.get("stats")
+	if not (stats_variant is Object):
+		return {"applied": false}
+	var stats_object := stats_variant as Object
+	var updated_attack_speed := maxf(float(stats_object.get("attack_speed")) + 0.22, 0.1)
+	var updated_damage := maxf(float(stats_object.get("damage")) - 0.18, 0.2)
+	stats_object.set("attack_speed", updated_attack_speed)
+	stats_object.set("damage", updated_damage)
+	if player.has_method("_emit_ui_snapshot_changed"):
+		player.call("_emit_ui_snapshot_changed")
+	return {
+		"applied": true,
+		"attack_speed": updated_attack_speed,
+		"damage": updated_damage
+	}
+
 static func apply_enemy_flood(enemy_spawner: Node) -> Dictionary:
 	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
 		return {"applied": false}
@@ -90,6 +109,23 @@ static func restore_enemy_flood(enemy_spawner: Node, original_spawn_interval: fl
 	enemy_spawner.set("spawn_interval_seconds", original_spawn_interval)
 	enemy_spawner.set("max_alive_enemies", original_max_alive)
 
+static func apply_enemy_speed_pressure(enemy_spawner: Node, speed_multiplier: float) -> Dictionary:
+	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
+		return {"applied": false}
+	var original_multiplier := float(enemy_spawner.get("external_move_speed_multiplier"))
+	var safe_multiplier := maxf(speed_multiplier, 1.0)
+	enemy_spawner.set("external_move_speed_multiplier", safe_multiplier)
+	return {
+		"applied": true,
+		"original_move_speed_multiplier": original_multiplier,
+		"move_speed_multiplier": safe_multiplier
+	}
+
+static func restore_enemy_speed_pressure(enemy_spawner: Node, original_multiplier: float) -> void:
+	if enemy_spawner == null or not is_instance_valid(enemy_spawner):
+		return
+	enemy_spawner.set("external_move_speed_multiplier", original_multiplier)
+
 static func spawn_elite(
 	owner: Node,
 	elite_enemy_scene: PackedScene,
@@ -97,7 +133,7 @@ static func spawn_elite(
 	spawn_position: Vector2,
 	elite_move_speed: float,
 	elite_max_hp: float,
-	elite_role: String
+	elite_variant: String
 ) -> Node:
 	if elite_enemy_scene == null:
 		return null
@@ -109,11 +145,12 @@ static func spawn_elite(
 	if enemy_node.has_method("set_target"):
 		enemy_node.call("set_target", player)
 	if enemy_node.has_method("set"):
+		enemy_node.set("enemy_variant", elite_variant)
 		enemy_node.set("move_speed", elite_move_speed)
 		enemy_node.set("max_hp", elite_max_hp)
 		enemy_node.set("current_hp", elite_max_hp)
 		enemy_node.set("is_elite", true)
-		enemy_node.set("elite_role", elite_role)
+		enemy_node.set("elite_role", elite_variant)
 	owner.add_child(enemy_node)
 	return enemy_node
 
@@ -124,7 +161,7 @@ static func track_event_elite(active_event_elites: Array[Node], enemy: Node, exi
 	if exited_callback.is_valid():
 		enemy.tree_exited.connect(exited_callback.bind(enemy))
 
-static func pick_elite_role(rng: RandomNumberGenerator) -> String:
-	if rng != null and rng.randf() < 0.5:
+static func pick_elite_variant(rng: RandomNumberGenerator) -> String:
+	if rng != null and rng.randf() < 0.55:
 		return "horned_bruiser"
 	return "rift_caller"

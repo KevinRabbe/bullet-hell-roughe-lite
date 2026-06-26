@@ -32,6 +32,7 @@ var _regen_tick_accumulator: float = 0.0
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
+@onready var set_bonus_manager: Node = get_node_or_null("SetBonusManager")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -54,7 +55,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_direction * stats.movement_speed
+	velocity = input_direction * get_effective_stat_value("movement_speed", stats.movement_speed)
 	move_and_slide()
 	_process_hp_regen(delta)
 	_process_passive_status_rules(delta)
@@ -108,7 +109,7 @@ func grant_item(item: ItemData) -> void:
 	print("Gained item: %s" % item.name)
 	_print_debug_stats()
 
-func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
+func notify_enemy_killed(weapon_id: String, slot_index: int, enemy: Node = null) -> void:
 	_apply_passive_runtime_trigger("on_enemy_kill")
 	if weapon_loadout == null or not weapon_loadout.has_method("register_weapon_kill"):
 		return
@@ -118,27 +119,12 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	if weapon_resource == null:
 		return
 	var family_id := _resolve_weapon_family_id(weapon_resource)
-	var result_variant: Variant = weapon_loadout.call(
-		"register_weapon_kill",
-		slot_index,
-		weapon_resource,
-		get_family_kill_requirement_multiplier(family_id)
-	)
-	if not (result_variant is Dictionary):
-		return
-	var result: Dictionary = result_variant
-	if result.get("triggered", false) != true:
-		return
-	var stat_id := str(result.get("stat_id", ""))
-	var amount := float(result.get("amount", 0.0))
-	var scope := str(result.get("scope", "player"))
-	if stat_id == "":
-		return
-	var weapon_name := weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
-	if scope == "player":
-		_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
-	elif log_runtime_events:
-		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
+	_register_weapon_kill_result(slot_index, weapon_id, family_id, weapon_resource)
+	var extra_kill_credit := 0
+	if set_bonus_manager != null and set_bonus_manager.has_method("get_elite_kill_bonus_credit"):
+		extra_kill_credit = maxi(int(set_bonus_manager.call("get_elite_kill_bonus_credit", family_id, enemy)), 0)
+	for _bonus_index in range(extra_kill_credit):
+		_register_weapon_kill_result(slot_index, weapon_id, family_id, weapon_resource)
 
 func _apply_item_effects(item: ItemData) -> void:
 	for stat_name in item.stat_modifiers.keys():
@@ -213,7 +199,8 @@ func _emit_ui_snapshot_changed() -> void:
 func _process_hp_regen(delta: float) -> void:
 	if delta <= 0.0 or is_dead:
 		return
-	if stats.hp_regen <= 0.0 or current_hp >= stats.max_hp:
+	var effective_regen := get_effective_stat_value("hp_regen", stats.hp_regen)
+	if effective_regen <= 0.0 or current_hp >= stats.max_hp:
 		_regen_tick_accumulator = 0.0
 		return
 	_regen_tick_accumulator += delta
@@ -222,7 +209,7 @@ func _process_hp_regen(delta: float) -> void:
 		return
 	var elapsed := _regen_tick_accumulator
 	_regen_tick_accumulator = 0.0
-	var heal_amount := stats.hp_regen * elapsed
+	var heal_amount := effective_regen * elapsed
 	if heal_amount <= 0.0:
 		return
 	current_hp = minf(current_hp + heal_amount, stats.max_hp)
@@ -357,10 +344,13 @@ func get_damage_multiplier_for_target(target: Node) -> float:
 
 func get_family_kill_requirement_multiplier(family_id: String) -> float:
 	var family_multipliers_variant: Variant = active_character_data.get("family_kill_requirement_multipliers", {})
-	if not (family_multipliers_variant is Dictionary):
-		return 1.0
-	var family_multipliers: Dictionary = family_multipliers_variant
-	return float(family_multipliers.get(family_id, 1.0))
+	var multiplier := 1.0
+	if family_multipliers_variant is Dictionary:
+		var family_multipliers: Dictionary = family_multipliers_variant
+		multiplier *= float(family_multipliers.get(family_id, 1.0))
+	if set_bonus_manager != null and set_bonus_manager.has_method("get_family_kill_requirement_multiplier"):
+		multiplier *= maxf(float(set_bonus_manager.call("get_family_kill_requirement_multiplier", family_id)), 0.01)
+	return multiplier
 
 func get_status_power_multiplier(status_id: String) -> float:
 	var status_multipliers_variant: Variant = active_character_data.get("status_power_multipliers", {})
@@ -370,7 +360,7 @@ func get_status_power_multiplier(status_id: String) -> float:
 	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
 
 func get_status_power_stat_multiplier(stat_name: String, fallback: float = 1.0) -> float:
-	return maxf(_get_stat_value(stat_name, fallback), 0.0)
+	return maxf(get_effective_stat_value(stat_name, fallback), 0.0)
 
 func get_status_propagation_rule(status_id: String) -> Dictionary:
 	var propagation_rules_variant: Variant = active_character_data.get("status_propagation_rules", {})
@@ -436,19 +426,33 @@ func count_nearby_enemies(max_distance: float) -> int:
 	return count
 
 func get_damage_stat_multiplier() -> float:
-	return stats.damage
+	return maxf(get_effective_stat_value("damage", stats.damage), 0.0)
 
 func get_attack_speed_multiplier() -> float:
-	return stats.attack_speed
+	return maxf(get_effective_stat_value("attack_speed", stats.attack_speed), 0.01)
 
 func get_attack_range_multiplier() -> float:
-	return stats.attack_range
+	return maxf(get_effective_stat_value("attack_range", stats.attack_range), 0.01)
 
 func get_projectile_speed_multiplier() -> float:
-	return stats.projectile_speed
+	return maxf(get_effective_stat_value("projectile_speed", stats.projectile_speed), 0.01)
 
 func get_stat_value_for_weapon_bonus(stat_name: String, fallback: float = 0.0) -> float:
-	return _get_stat_value(stat_name, fallback)
+	return get_effective_stat_value(stat_name, fallback)
+
+func get_set_bonus_damage_multiplier(target: Node) -> float:
+	if set_bonus_manager != null and set_bonus_manager.has_method("get_conditional_damage_multiplier"):
+		return maxf(float(set_bonus_manager.call("get_conditional_damage_multiplier", target)), 0.0)
+	return 1.0
+
+func get_effective_stat_value(stat_name: String, fallback: float = 0.0) -> float:
+	var base_value := fallback
+	if _has_stat_property(stat_name):
+		base_value = float(stats.get(stat_name))
+	var set_bonus_value := 0.0
+	if set_bonus_manager != null and set_bonus_manager.has_method("get_player_stat_bonus"):
+		set_bonus_value = float(set_bonus_manager.call("get_player_stat_bonus", stat_name))
+	return base_value + set_bonus_value
 
 func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
 	if weapon_resource == null:
@@ -827,15 +831,15 @@ func get_ui_snapshot() -> Dictionary:
 		"level": int(current_level),
 		"xp": int(current_xp),
 		"xp_to_next": int(xp_to_next_level),
-		"damage": float(stats.damage),
-		"attack_speed": float(stats.attack_speed),
-		"move_speed": float(stats.movement_speed),
-		"attack_range": float(stats.attack_range),
-		"armor": float(stats.armor),
-		"crit": float(stats.crit_chance),
-		"portal_luck": float(stats.portal_luck),
-		"portal_frequency": float(stats.portal_frequency),
-		"portal_instability": float(stats.portal_instability),
+		"damage": get_effective_stat_value("damage", stats.damage),
+		"attack_speed": get_effective_stat_value("attack_speed", stats.attack_speed),
+		"move_speed": get_effective_stat_value("movement_speed", stats.movement_speed),
+		"attack_range": get_effective_stat_value("attack_range", stats.attack_range),
+		"armor": get_effective_stat_value("armor", stats.armor),
+		"crit": get_effective_stat_value("crit_chance", stats.crit_chance),
+		"portal_luck": get_effective_stat_value("portal_luck", stats.portal_luck),
+		"portal_frequency": get_effective_stat_value("portal_frequency", stats.portal_frequency),
+		"portal_instability": get_effective_stat_value("portal_instability", stats.portal_instability),
 		"items": owned_items.duplicate(),
 		"weapon_entries": get_weapon_ui_entries()
 	}
@@ -926,3 +930,28 @@ func _apply_status_density_scaling_to_propagation_rule(status_id: String, rule: 
 		int(round(float(rule.get("max_targets", 1)) + (float(rule.get("spread_max_targets_per_marked_enemy", 0.0)) * effective_marked_enemy_count))),
 		1
 	)
+
+func _register_weapon_kill_result(slot_index: int, weapon_id: String, family_id: String, weapon_resource: WeaponData) -> void:
+	var result_variant: Variant = weapon_loadout.call(
+		"register_weapon_kill",
+		slot_index,
+		weapon_resource,
+		get_family_kill_requirement_multiplier(family_id)
+	)
+	if not (result_variant is Dictionary):
+		return
+	var result: Dictionary = result_variant
+	if result.get("triggered", false) != true:
+		return
+	var stat_id := str(result.get("stat_id", ""))
+	var amount := float(result.get("amount", 0.0))
+	var scope := str(result.get("scope", "player"))
+	if stat_id == "":
+		return
+	var weapon_name := weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
+	if scope == "player":
+		_apply_runtime_stat_bonus(stat_id, amount, "%s milestone" % weapon_name)
+	if set_bonus_manager != null and set_bonus_manager.has_method("notify_weapon_milestone"):
+		set_bonus_manager.call("notify_weapon_milestone", family_id)
+	elif log_runtime_events and scope != "player":
+		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])

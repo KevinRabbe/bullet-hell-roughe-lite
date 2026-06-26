@@ -1,0 +1,45 @@
+{
+  "id": "harvester",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "family_kill_requirement_multiplier",
+          "value": 0.8
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "elite_kill_bonus_credit",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "milestone_temporary_stat_bonus",
+          "duration": 4.0,
+          "modifiers": [
+            {
+              "stat_id": "damage",
+              "amount": 0.12
+            },
+            {
+              "stat_id": "attack_speed",
+              "amount": 0.08
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

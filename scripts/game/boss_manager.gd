@@ -7,6 +7,7 @@ signal boss_defeated_signal
 
 @export var boss_scene: PackedScene
 @export var player_path: NodePath
+@export var boss_variant_id: String = "gate_beast"
 @export var spawn_after_seconds: float = 45.0
 @export var debug_spawn_key: Key = KEY_B
 
@@ -28,7 +29,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_spawn_gate_beast()
 
 func _spawn_gate_beast() -> void:
-	var boss := BossManagerRuntime.instantiate_boss(self, boss_scene, player)
+	var boss := BossManagerRuntime.instantiate_boss(self, boss_scene, player, boss_variant_id)
 	if boss == null:
 		return
 	active_boss = boss
