@@ -4,20 +4,33 @@ extends RefCounted
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
 
-const DEFAULT_ITEM_PRICE: int = 3
+const CONFIG_PATH := "res://data/shop/shop_config.json"
 const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
-const WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
+const DEFAULT_WEAPON_RARITY_WEIGHTS_BY_WAVE: Array[Dictionary] = [
 	{"max_wave": 2, "weights": {"common": 95.0, "rare": 5.0}},
 	{"max_wave": 5, "weights": {"common": 80.0, "rare": 18.0, "epic": 2.0}},
 	{"max_wave": 9, "weights": {"common": 60.0, "rare": 32.0, "epic": 8.0}},
 	{"max_wave": 9999, "weights": {"common": 45.0, "rare": 38.0, "epic": 15.0, "legendary": 2.0}},
 ]
-const WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
+const DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER: Dictionary = {
 	"common": 1,
 	"rare": 2,
 	"epic": 4,
 	"legendary": 8,
 }
+const DEFAULT_CONFIG: Dictionary = {
+	"default_item_price": 3,
+	"base_reroll_cost": 2,
+	"reroll_cost_step": 1,
+	"early_wave_max": 2,
+	"early_guaranteed_weapon_slots": 2,
+	"early_random_slots": 2,
+	"standard_offer_slots": 4,
+	"weapon_rarity_weights_by_wave": DEFAULT_WEAPON_RARITY_WEIGHTS_BY_WAVE,
+	"weapon_rarity_price_multiplier": DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER
+}
+
+static var _cached_shop_config: Dictionary = {}
 
 static func build_weapon_offer_pool(data_registry: Node, weapon_loader: Callable) -> Array[Dictionary]:
 	var weapon_offer_pool: Array[Dictionary] = []
@@ -91,6 +104,8 @@ static func make_weapon_offer(weapon_id: String, weapon_loader: Callable) -> Dic
 
 static func build_item_offer_pool() -> Array[Dictionary]:
 	var item_offer_pool: Array[Dictionary] = []
+	var config := get_shop_config()
+	var default_item_price := int(config.get("default_item_price", int(DEFAULT_CONFIG.get("default_item_price", 3))))
 	for item in ItemDatabase.get_prototype_items():
 		if item == null:
 			continue
@@ -104,7 +119,7 @@ static func build_item_offer_pool() -> Array[Dictionary]:
 			"type": "item",
 			"id": item_id,
 			"label": item_name,
-			"price": DEFAULT_ITEM_PRICE
+			"price": default_item_price
 		})
 	return item_offer_pool
 
@@ -118,10 +133,15 @@ static func roll_offers(
 ) -> Array[Dictionary]:
 	var active_offers: Array[Dictionary] = []
 	var combined_pool: Array = weapon_offer_pool.duplicate(true)
+	var config := get_shop_config()
+	var early_wave_max := int(config.get("early_wave_max", int(DEFAULT_CONFIG.get("early_wave_max", 2))))
+	var early_guaranteed_weapon_slots := maxi(int(config.get("early_guaranteed_weapon_slots", int(DEFAULT_CONFIG.get("early_guaranteed_weapon_slots", 2)))), 0)
+	var early_random_slots := maxi(int(config.get("early_random_slots", int(DEFAULT_CONFIG.get("early_random_slots", 2)))), 0)
+	var standard_offer_slots := maxi(int(config.get("standard_offer_slots", int(DEFAULT_CONFIG.get("standard_offer_slots", 4)))), 1)
 	for item_offer in item_offer_pool:
 		combined_pool.append(item_offer)
-	if wave_index <= 2:
-		for _slot in 2:
+	if wave_index <= early_wave_max:
+		for _slot in early_guaranteed_weapon_slots:
 			var guaranteed_weapon_offer := pick_random_offer(
 				weapon_offer_pool,
 				rng,
@@ -130,7 +150,7 @@ static func roll_offers(
 				wave_index
 			)
 			active_offers.append(guaranteed_weapon_offer if not guaranteed_weapon_offer.is_empty() else sold_out_offer())
-		for _slot in 2:
+		for _slot in early_random_slots:
 			var early_random_offer := pick_random_offer(
 				combined_pool,
 				rng,
@@ -140,7 +160,7 @@ static func roll_offers(
 			)
 			active_offers.append(early_random_offer if not early_random_offer.is_empty() else sold_out_offer())
 	else:
-		for _slot in 4:
+		for _slot in standard_offer_slots:
 			var random_offer := pick_random_offer(
 				combined_pool,
 				rng,
@@ -207,7 +227,11 @@ static func roll_weapon_rarity_for_wave(rng: RandomNumberGenerator, wave_index: 
 	return "common"
 
 static func rarity_weights_for_wave(wave_index: int) -> Dictionary:
-	for band_variant in WEAPON_RARITY_WEIGHTS_BY_WAVE:
+	var config := get_shop_config()
+	var bands_variant: Variant = config.get("weapon_rarity_weights_by_wave", DEFAULT_WEAPON_RARITY_WEIGHTS_BY_WAVE)
+	if not (bands_variant is Array):
+		return {"common": 100.0}
+	for band_variant in bands_variant:
 		if not (band_variant is Dictionary):
 			continue
 		var band: Dictionary = band_variant
@@ -219,5 +243,31 @@ static func rarity_weights_for_wave(wave_index: int) -> Dictionary:
 
 static func scaled_weapon_price(base_price: int, rolled_rarity: String) -> int:
 	var safe_base := maxi(base_price, 1)
-	var multiplier := int(WEAPON_RARITY_PRICE_MULTIPLIER.get(rolled_rarity, 1))
+	var config := get_shop_config()
+	var multipliers_variant: Variant = config.get("weapon_rarity_price_multiplier", DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER)
+	var multipliers: Dictionary = multipliers_variant if multipliers_variant is Dictionary else DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER
+	var multiplier := int(multipliers.get(rolled_rarity, 1))
 	return safe_base * multiplier
+
+static func get_shop_config() -> Dictionary:
+	if not _cached_shop_config.is_empty():
+		return _cached_shop_config
+	if not FileAccess.file_exists(CONFIG_PATH):
+		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+		return _cached_shop_config
+	var file := FileAccess.open(CONFIG_PATH, FileAccess.READ)
+	if file == null:
+		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+		return _cached_shop_config
+	var parsed := JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+		_merge_shop_config(_cached_shop_config, parsed as Dictionary)
+		return _cached_shop_config
+	_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+	return _cached_shop_config
+
+static func _merge_shop_config(target: Dictionary, source: Dictionary) -> void:
+	for key_variant in source.keys():
+		var key := str(key_variant)
+		target[key] = source[key]
