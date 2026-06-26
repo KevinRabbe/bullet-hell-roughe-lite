@@ -4,6 +4,7 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
+const PORTAL_EVENT_DIR: String = "res://data/portal_events"
 const SET_BONUS_DIR: String = "res://data/set_bonuses"
 
 var characters: Dictionary = {}
@@ -31,6 +32,7 @@ func _register_defaults() -> void:
 	if items.is_empty():
 		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
+	_load_json_directory_into(portal_events, PORTAL_EVENT_DIR)
 	_load_json_directory_into(set_bonuses, SET_BONUS_DIR)
 	_validate_registry_entries()
 
@@ -165,6 +167,16 @@ func _validate_registry_entries() -> void:
 				push_warning("Enemy '%s' has invalid max_hp." % str(enemy_id))
 		else:
 			push_warning("Enemy entry '%s' has unsupported type." % str(enemy_id))
+	for portal_event_id in portal_events.keys():
+		var portal_event_variant: Variant = portal_events[portal_event_id]
+		if not (portal_event_variant is Dictionary):
+			push_warning("Portal event entry '%s' is invalid." % str(portal_event_id))
+			continue
+		var portal_event: Dictionary = portal_event_variant
+		if str(portal_event.get("title", "")) == "":
+			push_warning("Portal event '%s' is missing title." % str(portal_event_id))
+		if float(portal_event.get("base_weight", 0.0)) <= 0.0:
+			push_warning("Portal event '%s' has non-positive base_weight." % str(portal_event_id))
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():

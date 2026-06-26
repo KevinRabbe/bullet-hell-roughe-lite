@@ -1,0 +1,13 @@
+{
+  "id": "triple_reward_for_enemy_speed",
+  "title": "Triple Reward for Enemy Speed",
+  "description": "Survive the next wave with faster enemies to claim three rewards.",
+  "category": "greed",
+  "base_weight": 0.7,
+  "instability_weight_scale": 1.0,
+  "reward_count": 3,
+  "reward_tier_biases": {
+    "2": 0.08,
+    "3": 0.04
+  }
+}

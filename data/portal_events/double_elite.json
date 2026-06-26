@@ -1,0 +1,13 @@
+{
+  "id": "double_elite",
+  "title": "Double Elite",
+  "description": "Spawns two elite enemies when activated.",
+  "category": "boss",
+  "base_weight": 1.0,
+  "instability_weight_scale": 1.2,
+  "reward_count": 1,
+  "reward_tier_biases": {
+    "2": 0.04,
+    "3": 0.01
+  }
+}

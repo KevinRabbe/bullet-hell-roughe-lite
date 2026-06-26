@@ -1,0 +1,13 @@
+{
+  "id": "power_for_hp_loss",
+  "title": "Power for Max HP Loss",
+  "description": "Gain damage, but permanently lose max HP.",
+  "category": "trade",
+  "base_weight": 1.0,
+  "instability_weight_scale": 0.0,
+  "reward_count": 1,
+  "reward_tier_biases": {
+    "2": 0.02,
+    "3": 0.0
+  }
+}

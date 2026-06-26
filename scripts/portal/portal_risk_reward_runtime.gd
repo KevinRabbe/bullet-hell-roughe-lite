@@ -16,6 +16,7 @@ static func pick_event_result(rng: RandomNumberGenerator, player: Node) -> Dicti
 static func roll_reward_tier_result(
 	rng: RandomNumberGenerator,
 	source: String,
-	player: Node
+	player: Node,
+	event_result: Dictionary = {}
 ) -> Dictionary:
-	return PortalEventResolver.roll_reward_tier(rng, source, build_profile(player))
+	return PortalEventResolver.roll_reward_tier(rng, source, build_profile(player), event_result)

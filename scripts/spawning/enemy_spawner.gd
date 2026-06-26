@@ -14,6 +14,7 @@ const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spaw
 @export var min_spawn_interval_seconds: float = 0.7
 @export var wave_config_path: String = "res://data/waves/wave_spawn_config.json"
 @export var log_wave_countdown: bool = false
+@export var external_move_speed_multiplier: float = 1.0
 
 var target: Node2D
 var rng: RandomNumberGenerator
@@ -79,6 +80,9 @@ func _on_spawn_timer_timeout() -> void:
 	if enemy_node.has_method("set"):
 		enemy_node.set("enemy_variant", variant)
 	_apply_wave_enemy_overrides(enemy_node, variant)
+	if enemy_node.has_method("set") and external_move_speed_multiplier != 1.0:
+		var adjusted_move_speed := float(enemy_node.get("move_speed")) * external_move_speed_multiplier
+		enemy_node.set("move_speed", adjusted_move_speed)
 	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
 	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
 	add_child(enemy_node)
