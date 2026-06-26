@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "gate_beast"
+display_name = "Gate Beast"
+description = "A hulking boss beast that crashes through the arena with brutal contact pressure."
+archetype = "boss_bruiser"
+tags = Array[String](["boss", "bruiser", "beast"])
+max_hp = 320.0
+move_speed = 150.0
+contact_damage = 22.0
+contact_range = 70.0
+damage_interval_seconds = 0.7
+ranged_damage = 0.0
+ranged_interval_seconds = 0.0
+ranged_attack_range = 0.0
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/final_boss_shadow_assassin.png"
+visual_scale = 0.14
+projectile_texture_path = ""
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = true
+threat_tier = 5
+reward_gold = 10
+reward_xp = 15

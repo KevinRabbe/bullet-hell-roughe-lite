@@ -13,7 +13,7 @@ const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 @export var is_elite: bool = false
 @export var is_boss: bool = false
 @export var elite_role: String = ""
-@export_enum("imp_runner", "husk_brute", "spit_fiend", "skeleton_rifleman") var enemy_variant: String = "imp_runner"
+@export_enum("imp_runner", "husk_brute", "spit_fiend", "skeleton_rifleman", "gate_beast") var enemy_variant: String = "imp_runner"
 @export var ranged_damage: float = 4.0
 @export var ranged_interval_seconds: float = 1.2
 @export var ranged_attack_range: float = 210.0
@@ -200,6 +200,16 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 6.0
 				ranged_interval_seconds = 1.35
 				ranged_attack_range = 290.0
+				_apply_fallback_variant_visuals()
+		"gate_beast":
+			if not has_data:
+				move_speed = 150.0
+				max_hp = 320.0
+				contact_damage = 22.0
+				contact_range = 70.0
+				damage_interval_seconds = 0.7
+				reward_gold = 10
+				reward_xp = 15
 				_apply_fallback_variant_visuals()
 
 func _load_identity_data() -> EnemyData:
