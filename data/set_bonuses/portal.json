@@ -1,0 +1,37 @@
+{
+  "id": "portal",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "movement_speed",
+          "value": 20.0
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "projectile_speed",
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "pierce_proc",
+          "chance": 0.18
+        }
+      ]
+    }
+  ]
+}

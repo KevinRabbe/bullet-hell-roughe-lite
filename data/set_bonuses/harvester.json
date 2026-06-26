@@ -1,0 +1,37 @@
+{
+  "id": "harvester",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "damage",
+          "value": 0.06
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "attack_range",
+          "value": 0.08
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "damage_multiplier_bonus",
+          "value": 0.12
+        }
+      ]
+    }
+  ]
+}
