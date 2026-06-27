@@ -26,6 +26,7 @@ offset_bottom = 2000.0
 color = Color(0.08, 0.08, 0.09, 1.0)
 
 [node name="MarkerA" type="ColorRect" parent="."]
+visible = false
 offset_left = 300.0
 offset_top = -40.0
 offset_right = 380.0
@@ -33,6 +34,7 @@ offset_bottom = 40.0
 color = Color(0.5, 0.1, 0.1, 1.0)
 
 [node name="MarkerB" type="ColorRect" parent="."]
+visible = false
 offset_left = -380.0
 offset_top = -40.0
 offset_right = -300.0
@@ -40,6 +42,7 @@ offset_bottom = 40.0
 color = Color(0.1, 0.4, 0.1, 1.0)
 
 [node name="MarkerC" type="ColorRect" parent="."]
+visible = false
 offset_left = -40.0
 offset_top = -380.0
 offset_right = 40.0
@@ -47,6 +50,7 @@ offset_bottom = -300.0
 color = Color(0.1, 0.1, 0.5, 1.0)
 
 [node name="MarkerD" type="ColorRect" parent="."]
+visible = false
 offset_left = -40.0
 offset_top = 300.0
 offset_right = 40.0

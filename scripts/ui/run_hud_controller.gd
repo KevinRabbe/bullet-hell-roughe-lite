@@ -61,7 +61,11 @@ func _update_hud() -> void:
 		var wave := int(enemy_spawner.get("current_wave_index"))
 		stats_label.text = "Wave %d  HP %.0f  Gold %d  Lv %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
-		state_label.text = "State: %s  |  %s" % [_get_run_state(), _get_debug_preset_label()]
+		var debug_label := _get_debug_preset_label()
+		if debug_label == "" or debug_label == "DebugPreset: normal":
+			state_label.text = "State: %s" % _get_run_state()
+		else:
+			state_label.text = "State: %s  |  %s" % [_get_run_state(), debug_label]
 	if wave_progress_bar != null:
 		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
