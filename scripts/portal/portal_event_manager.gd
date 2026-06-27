@@ -155,8 +155,15 @@ func _start_triple_reward_for_enemy_speed_event(event_result: Dictionary) -> voi
 	speed_pressure_original_multiplier = float(result.get("original_move_speed_multiplier", 1.0))
 	speed_pressure_reward_result = event_result.merged(result, true)
 	speed_pressure_reward_result["reward_count"] = max(int(speed_pressure_reward_result.get("reward_count", 3)), 3)
-	if log_portal_events and speed_pressure_active:
-		print("Greed pressure applied: enemy move speed x%.2f until wave end" % float(result.get("move_speed_multiplier", 1.25)))
+	if speed_pressure_active:
+		if log_portal_events:
+			print("Greed pressure applied: enemy move speed x%.2f until wave end" % float(result.get("move_speed_multiplier", 1.25)))
+		return
+	if log_portal_events:
+		print("Greed pressure could not be applied. Completing portal event immediately.")
+	_emit_portal_event_completed(speed_pressure_reward_result)
+	speed_pressure_reward_result = {}
+	speed_pressure_original_multiplier = 1.0
 
 func _on_flood_event_finished() -> void:
 	PortalEventManagerRuntime.restore_enemy_flood(
