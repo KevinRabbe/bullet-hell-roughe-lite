@@ -32,6 +32,7 @@ var _regen_tick_accumulator: float = 0.0
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
+@onready var set_bonus_manager: Node = get_node_or_null("SetBonusManager")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -54,7 +55,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		return
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
-	velocity = input_direction * stats.movement_speed
+	velocity = input_direction * get_movement_speed_value()
 	move_and_slide()
 	_process_hp_regen(delta)
 	_process_passive_status_rules(delta)
@@ -165,16 +166,15 @@ func _has_stat_property(stat_name: String) -> bool:
 func _print_debug_stats() -> void:
 	if not log_runtime_events:
 		return
-	var attack_range_value: float = _get_stat_value("attack_range", _get_stat_value("range", 1.0))
 	print(
 		"Stats | HP %.1f/%.1f | DMG %.2f | AS %.2f | MS %.1f | AR %.2f | Portal(Luck %.2f, Freq %.2f, Instability %.2f, Reward %.2f)"
 		% [
 			current_hp,
 			stats.max_hp,
-			stats.damage,
-			stats.attack_speed,
-			stats.movement_speed,
-			attack_range_value,
+			get_damage_stat_multiplier(),
+			get_attack_speed_multiplier(),
+			get_movement_speed_value(),
+			get_attack_range_multiplier(),
 			stats.portal_luck,
 			stats.portal_frequency,
 			stats.portal_instability,
@@ -203,6 +203,14 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 	if _has_stat_property(stat_name):
 		return float(stats.get(stat_name))
 	return fallback
+
+func _get_runtime_stat_value(stat_name: String, fallback: float) -> float:
+	return _get_stat_value(stat_name, fallback) + _get_set_bonus_stat_bonus(stat_name)
+
+func _get_set_bonus_stat_bonus(stat_name: String) -> float:
+	if set_bonus_manager == null or not set_bonus_manager.has_method("get_player_stat_bonus"):
+		return 0.0
+	return float(set_bonus_manager.call("get_player_stat_bonus", stat_name))
 
 func _update_hp_label() -> void:
 	pass
@@ -436,19 +444,22 @@ func count_nearby_enemies(max_distance: float) -> int:
 	return count
 
 func get_damage_stat_multiplier() -> float:
-	return stats.damage
+	return _get_runtime_stat_value("damage", 1.0)
 
 func get_attack_speed_multiplier() -> float:
-	return stats.attack_speed
+	return _get_runtime_stat_value("attack_speed", 1.0)
 
 func get_attack_range_multiplier() -> float:
-	return stats.attack_range
+	return _get_runtime_stat_value("attack_range", 1.0)
 
 func get_projectile_speed_multiplier() -> float:
-	return stats.projectile_speed
+	return _get_runtime_stat_value("projectile_speed", 1.0)
+
+func get_movement_speed_value() -> float:
+	return _get_runtime_stat_value("movement_speed", debug_move_speed)
 
 func get_stat_value_for_weapon_bonus(stat_name: String, fallback: float = 0.0) -> float:
-	return _get_stat_value(stat_name, fallback)
+	return _get_runtime_stat_value(stat_name, fallback)
 
 func _resolve_weapon_family_id(weapon_resource: WeaponData) -> String:
 	if weapon_resource == null:
@@ -827,11 +838,11 @@ func get_ui_snapshot() -> Dictionary:
 		"level": int(current_level),
 		"xp": int(current_xp),
 		"xp_to_next": int(xp_to_next_level),
-		"damage": float(stats.damage),
-		"attack_speed": float(stats.attack_speed),
-		"move_speed": float(stats.movement_speed),
-		"attack_range": float(stats.attack_range),
-		"armor": float(stats.armor),
+		"damage": get_damage_stat_multiplier(),
+		"attack_speed": get_attack_speed_multiplier(),
+		"move_speed": get_movement_speed_value(),
+		"attack_range": get_attack_range_multiplier(),
+		"armor": _get_runtime_stat_value("armor", 0.0),
 		"crit": float(stats.crit_chance),
 		"portal_luck": float(stats.portal_luck),
 		"portal_frequency": float(stats.portal_frequency),
