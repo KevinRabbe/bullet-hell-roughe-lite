@@ -53,7 +53,18 @@ func can_pierce_shot() -> bool:
 	return false
 
 func should_fire_execution_shot() -> bool:
-	for effect in _active_effects_for_all_families():
+	var active_effects := _active_effects_for_all_families()
+	var active_cadence_keys: Dictionary = {}
+	for effect in active_effects:
+		if str(effect.get("type", "")) != "execution_cadence":
+			continue
+		var active_key := "%s:%s" % [str(effect.get("family_id", "")), str(effect.get("type", ""))]
+		active_cadence_keys[active_key] = true
+	for cadence_key_variant in cadence_counters.keys():
+		var cadence_key := str(cadence_key_variant)
+		if active_cadence_keys.get(cadence_key, false) != true:
+			cadence_counters.erase(cadence_key)
+	for effect in active_effects:
 		if str(effect.get("type", "")) != "execution_cadence":
 			continue
 		var cadence_key := "%s:%s" % [str(effect.get("family_id", "")), str(effect.get("type", ""))]
