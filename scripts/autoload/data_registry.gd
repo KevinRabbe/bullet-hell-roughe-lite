@@ -42,6 +42,7 @@ func _load_enemy_resources() -> Array:
 func _load_character_json_data(directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
+		push_warning("Character data directory missing: %s" % directory_path)
 		return
 
 	directory.list_dir_begin()
@@ -53,12 +54,15 @@ func _load_character_json_data(directory_path: String) -> void:
 			var character_id := str(data.get("id", ""))
 			if character_id != "":
 				characters[character_id] = data
+			else:
+				push_warning("Character data file is missing id and was skipped: %s" % full_path)
 		file_name = directory.get_next()
 	directory.list_dir_end()
 
 func _load_json_directory_into(target: Dictionary, directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
+		push_warning("JSON data directory missing: %s" % directory_path)
 		return
 	directory.list_dir_begin()
 	var file_name := directory.get_next()
@@ -69,16 +73,20 @@ func _load_json_directory_into(target: Dictionary, directory_path: String) -> vo
 			var entry_id := str(data.get("id", ""))
 			if entry_id != "":
 				target[entry_id] = data
+			else:
+				push_warning("JSON data file is missing id and was skipped: %s" % full_path)
 		file_name = directory.get_next()
 	directory.list_dir_end()
 
 func _load_json_dictionary(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
+		push_warning("JSON data file missing: %s" % path)
 		return {}
 	var json_text := FileAccess.get_file_as_string(path)
 	var parsed: Variant = JSON.parse_string(json_text)
 	if parsed is Dictionary:
 		return parsed
+	push_warning("JSON data file is invalid or not a dictionary: %s" % path)
 	return {}
 
 func _register_by_id(target: Dictionary, entries: Array) -> void:

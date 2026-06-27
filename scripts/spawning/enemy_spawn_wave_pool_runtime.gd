@@ -3,10 +3,12 @@ extends RefCounted
 
 static func load_wave_config(config_path: String) -> Dictionary:
 	if not FileAccess.file_exists(config_path):
+		push_warning("Wave config missing, using defaults: %s" % config_path)
 		return _build_default_config()
 	var config_text := FileAccess.get_file_as_string(config_path)
 	var parsed: Variant = JSON.parse_string(config_text)
 	if not (parsed is Dictionary):
+		push_warning("Wave config invalid, using defaults: %s" % config_path)
 		return _build_default_config()
 	return normalize_wave_config(parsed as Dictionary)
 
@@ -14,6 +16,7 @@ static func normalize_wave_config(config: Dictionary) -> Dictionary:
 	var wave_variant_pools := _normalize_wave_variant_pools(config.get("wave_variant_pools", config.get("waves", [])))
 	var elite_config := _normalize_elite_config(config)
 	if wave_variant_pools.is_empty():
+		push_warning("Wave config produced no valid wave pools, using defaults.")
 		return _build_default_config()
 	return {
 		"wave_variant_pools": wave_variant_pools,
