@@ -177,6 +177,7 @@ func _validate_registry_entries() -> void:
 			push_warning("Portal event '%s' is missing title." % str(portal_event_id))
 		if float(portal_event.get("base_weight", 0.0)) <= 0.0:
 			push_warning("Portal event '%s' has non-positive base_weight." % str(portal_event_id))
+	_validate_set_bonus_entries()
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():
@@ -212,6 +213,63 @@ func _validate_character_weapon_list(character_id: String, field_name: String, w
 		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
 		if not ResourceLoader.exists(resource_path):
 			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
+
+func _validate_set_bonus_entries() -> void:
+	var required_thresholds: Array[int] = [2, 4, 6]
+	for family_id in set_bonuses.keys():
+		var definition_variant: Variant = set_bonuses[family_id]
+		if not (definition_variant is Dictionary):
+			push_warning("Set bonus entry '%s' is invalid." % str(family_id))
+			continue
+		var definition: Dictionary = definition_variant
+		var thresholds_variant: Variant = definition.get("thresholds", [])
+		if not (thresholds_variant is Array):
+			push_warning("Set bonus '%s' has invalid thresholds payload." % str(family_id))
+			continue
+		var thresholds: Array = thresholds_variant
+		if thresholds.is_empty():
+			push_warning("Set bonus '%s' has no thresholds." % str(family_id))
+			continue
+		var pieces_present: Dictionary = {}
+		for threshold_variant in thresholds:
+			if not (threshold_variant is Dictionary):
+				push_warning("Set bonus '%s' contains a non-dictionary threshold." % str(family_id))
+				continue
+			var threshold: Dictionary = threshold_variant
+			var pieces := int(threshold.get("pieces", 0))
+			if pieces <= 0:
+				push_warning("Set bonus '%s' contains a threshold with invalid pieces." % str(family_id))
+				continue
+			pieces_present[pieces] = true
+			var effects_variant: Variant = threshold.get("effects", [])
+			if not (effects_variant is Array):
+				push_warning("Set bonus '%s' threshold %d has invalid effects payload." % [str(family_id), pieces])
+				continue
+			var effects: Array = effects_variant
+			if effects.is_empty():
+				push_warning("Set bonus '%s' threshold %d has no effects." % [str(family_id), pieces])
+				continue
+			for effect_variant in effects:
+				if not (effect_variant is Dictionary):
+					push_warning("Set bonus '%s' threshold %d contains a non-dictionary effect." % [str(family_id), pieces])
+					continue
+				var effect: Dictionary = effect_variant
+				if str(effect.get("type", "")) == "":
+					push_warning("Set bonus '%s' threshold %d contains an effect with no type." % [str(family_id), pieces])
+		for required_pieces in required_thresholds:
+			if pieces_present.get(required_pieces, false) != true:
+				push_warning("Set bonus '%s' is missing the %d-piece threshold." % [str(family_id), required_pieces])
+	for character_id in get_selectable_character_ids():
+		var character_variant: Variant = characters.get(character_id, {})
+		if not (character_variant is Dictionary):
+			continue
+		var character_data: Dictionary = character_variant
+		var family_id := str(character_data.get("preferred_weapon_family", ""))
+		if family_id == "":
+			push_warning("Character '%s' is missing preferred_weapon_family for set bonus coverage." % character_id)
+			continue
+		if not set_bonuses.has(family_id):
+			push_warning("Character '%s' preferred family '%s' has no set bonus definition." % [character_id, family_id])
 
 func _is_placeholder_weapon(weapon: Variant) -> bool:
 	if weapon == null or not weapon.has_method("get"):
