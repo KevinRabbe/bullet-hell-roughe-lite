@@ -261,13 +261,46 @@ static func get_shop_config() -> Dictionary:
 		return _cached_shop_config
 	var parsed := JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary:
-		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
-		_merge_shop_config(_cached_shop_config, parsed as Dictionary)
+		_cached_shop_config = _normalize_shop_config(parsed as Dictionary)
 		return _cached_shop_config
 	_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
 	return _cached_shop_config
 
-static func _merge_shop_config(target: Dictionary, source: Dictionary) -> void:
-	for key_variant in source.keys():
-		var key := str(key_variant)
-		target[key] = source[key]
+static func _normalize_shop_config(source: Dictionary) -> Dictionary:
+	var normalized := DEFAULT_CONFIG.duplicate(true)
+	for int_key in ["default_item_price", "base_reroll_cost", "reroll_cost_step", "early_wave_max", "early_guaranteed_weapon_slots", "early_random_slots", "standard_offer_slots"]:
+		if source.has(int_key):
+			normalized[int_key] = int(source.get(int_key, normalized[int_key]))
+	var bands_variant: Variant = source.get("weapon_rarity_weights_by_wave", DEFAULT_WEAPON_RARITY_WEIGHTS_BY_WAVE)
+	if bands_variant is Array:
+		var bands: Array = bands_variant
+		var normalized_bands: Array[Dictionary] = []
+		for band_variant in bands:
+			if not (band_variant is Dictionary):
+				continue
+			var band: Dictionary = band_variant
+			var weights_variant: Variant = band.get("weights", {})
+			if not (weights_variant is Dictionary):
+				continue
+			var weights_dict: Dictionary = weights_variant
+			var normalized_weights: Dictionary = {}
+			for rarity_name in RARITY_ORDER:
+				if weights_dict.has(rarity_name):
+					normalized_weights[rarity_name] = float(weights_dict.get(rarity_name, 0.0))
+			if normalized_weights.is_empty():
+				continue
+			normalized_bands.append({
+				"max_wave": int(band.get("max_wave", 9999)),
+				"weights": normalized_weights
+			})
+		if not normalized_bands.is_empty():
+			normalized["weapon_rarity_weights_by_wave"] = normalized_bands
+	var multipliers_variant: Variant = source.get("weapon_rarity_price_multiplier", DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER)
+	if multipliers_variant is Dictionary:
+		var multipliers_dict: Dictionary = multipliers_variant
+		var normalized_multipliers := DEFAULT_WEAPON_RARITY_PRICE_MULTIPLIER.duplicate(true)
+		for rarity_name in RARITY_ORDER:
+			if multipliers_dict.has(rarity_name):
+				normalized_multipliers[rarity_name] = maxi(int(multipliers_dict.get(rarity_name, 1)), 1)
+		normalized["weapon_rarity_price_multiplier"] = normalized_multipliers
+	return normalized
