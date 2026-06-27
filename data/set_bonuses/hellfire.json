@@ -1,0 +1,40 @@
+{
+  "id": "hellfire",
+  "thresholds": [
+    {
+      "pieces": 2,
+      "state_key": "2_piece",
+      "effects": [
+        {
+          "type": "player_stat_bonus",
+          "stat_id": "projectile_speed",
+          "value": 0.12
+        }
+      ]
+    },
+    {
+      "pieces": 4,
+      "state_key": "4_piece",
+      "effects": [
+        {
+          "type": "damage_multiplier_bonus",
+          "value": 0.1
+        }
+      ]
+    },
+    {
+      "pieces": 6,
+      "state_key": "6_piece",
+      "effects": [
+        {
+          "type": "execution_cadence",
+          "every_shots": 7
+        },
+        {
+          "type": "execution_damage_multiplier",
+          "value": 1.8
+        }
+      ]
+    }
+  ]
+}
