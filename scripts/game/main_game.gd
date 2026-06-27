@@ -13,8 +13,8 @@ const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
 
-@export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "shop_test"
-@export var debug_quick_shop_mode: bool = true
+@export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "normal"
+@export var debug_quick_shop_mode: bool = false
 @export var debug_wave_duration_seconds: float = 3.0
 @export var debug_starting_gold: int = 50
 @export var debug_combat_wave_duration_seconds: float = 20.0
