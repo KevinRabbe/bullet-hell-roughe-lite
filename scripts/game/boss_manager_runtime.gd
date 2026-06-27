@@ -57,12 +57,7 @@ static func evaluate_boss_exit(active_boss: Node2D, exiting_boss: Node2D) -> Dic
 	}
 
 static func _configure_boss_instance(boss: Node2D, player: Node2D) -> void:
+	boss.set("enemy_variant", "gate_beast")
 	boss.set("is_boss", true)
-	boss.set("move_speed", 150.0)
-	boss.set("max_hp", 320.0)
-	boss.set("current_hp", 320.0)
-	boss.set("contact_damage", 22.0)
-	boss.set("contact_range", 70.0)
-	boss.set("damage_interval_seconds", 0.7)
 	if boss.has_method("set_target"):
 		boss.call("set_target", player)
