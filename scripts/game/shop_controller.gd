@@ -241,7 +241,10 @@ func _update_reroll_button_text() -> void:
 	reroll_button.text = "Reroll (%dG)" % _current_reroll_cost()
 
 func _current_reroll_cost() -> int:
-	return reroll_cost + reroll_count
+	var config := ShopOfferRuntime.get_shop_config()
+	var base_cost := int(config.get("base_reroll_cost", reroll_cost))
+	var reroll_step := int(config.get("reroll_cost_step", 1))
+	return base_cost + (reroll_count * reroll_step)
 
 func _open_shop_for_wave() -> void:
 	_refresh_shop_offers()
