@@ -254,20 +254,38 @@ static func get_shop_config() -> Dictionary:
 		return _cached_shop_config
 	if not FileAccess.file_exists(CONFIG_PATH):
 		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+		push_warning("Shop config missing, using defaults: %s" % CONFIG_PATH)
 		return _cached_shop_config
 	var file := FileAccess.open(CONFIG_PATH, FileAccess.READ)
 	if file == null:
 		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+		push_warning("Shop config could not be opened, using defaults: %s" % CONFIG_PATH)
 		return _cached_shop_config
-	var parsed := JSON.parse_string(file.get_as_text())
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary:
-		_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
-		_merge_shop_config(_cached_shop_config, parsed as Dictionary)
+		_cached_shop_config = _normalize_shop_config(parsed as Dictionary)
 		return _cached_shop_config
 	_cached_shop_config = DEFAULT_CONFIG.duplicate(true)
+	push_warning("Shop config invalid, using defaults: %s" % CONFIG_PATH)
 	return _cached_shop_config
 
-static func _merge_shop_config(target: Dictionary, source: Dictionary) -> void:
+static func _normalize_shop_config(source: Dictionary) -> Dictionary:
+	var normalized := DEFAULT_CONFIG.duplicate(true)
 	for key_variant in source.keys():
 		var key := str(key_variant)
-		target[key] = source[key]
+		match key:
+			"default_item_price", "base_reroll_cost", "reroll_cost_step", "early_wave_max", "early_guaranteed_weapon_slots", "early_random_slots", "standard_offer_slots":
+				normalized[key] = int(source.get(key, normalized[key]))
+			"weapon_rarity_weights_by_wave":
+				var bands_variant: Variant = source.get(key, normalized[key])
+				if bands_variant is Array:
+					normalized[key] = bands_variant
+				else:
+					push_warning("Shop config has invalid rarity weight bands; using defaults.")
+			"weapon_rarity_price_multiplier":
+				var multipliers_variant: Variant = source.get(key, normalized[key])
+				if multipliers_variant is Dictionary:
+					normalized[key] = multipliers_variant
+				else:
+					push_warning("Shop config has invalid rarity price multipliers; using defaults.")
+	return normalized
