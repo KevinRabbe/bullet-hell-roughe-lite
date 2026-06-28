@@ -255,6 +255,9 @@ func _update_character_debug_label() -> void:
 	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
 
 func _on_wave_completed(wave_index: int) -> void:
+	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
+		print("Wave %d timer ended, but boss is still active. Waiting for boss resolution." % wave_index)
+		return
 	_enter_intermission_phase(wave_index)
 
 func _on_boss_defeated() -> void:

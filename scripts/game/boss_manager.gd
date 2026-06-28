@@ -52,3 +52,6 @@ func _on_gate_beast_exiting(boss: Node2D) -> void:
 func _on_gate_beast_defeated() -> void:
 	boss_defeated_signal.emit()
 	print("Boss defeated: Gate Beast")
+
+func has_active_boss() -> bool:
+	return active_boss != null and is_instance_valid(active_boss)
