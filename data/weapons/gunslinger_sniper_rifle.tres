@@ -17,6 +17,7 @@ projectile_lifetime = 2.4
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "gunslinger"
 price = 7
+shop_enabled = true
 tags = Array[String](["gun", "bullet", "precision", "sniper"])
 stat_scaling = {
 "attack_speed": 0.4,
