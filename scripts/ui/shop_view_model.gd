@@ -184,7 +184,7 @@ func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: 
 		return
 	card["button_text"] = "Blocked"
 	card["button_disabled"] = true
-	card["block_reason"] = _get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
+	card["block_reason"] = get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
 
 func _apply_item_offer_card(card: Dictionary, offer: Dictionary) -> void:
 	card["description"] = _build_item_offer_description(str(offer.get("id", "")))

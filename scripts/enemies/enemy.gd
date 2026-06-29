@@ -59,7 +59,7 @@ func _ready() -> void:
 	add_to_group("enemies")
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
-	_find_player_if_needed()
+	target = EnemyMotionVisualRuntime.resolve_target(target, self)
 
 func set_target(new_target: Node2D) -> void:
 	target = new_target

@@ -22,11 +22,11 @@ func configure(character_data: Dictionary) -> void:
 			continue
 		if maxf(float(rule.get("duration", 0.0)), 0.0) <= 0.0:
 			continue
-		var modifiers := _resolve_rule_modifiers(rule)
+		var modifiers: Array[Dictionary] = _resolve_rule_modifiers(rule)
 		if modifiers.is_empty():
 			continue
 		rule["resolved_modifiers"] = modifiers
-		var rule_index := _rules.size()
+		var rule_index: int = _rules.size()
 		_rules.append(rule)
 		_state_by_rule_index[rule_index] = {
 			"stacks": 0,
@@ -38,16 +38,16 @@ func trigger(trigger_id: String) -> Array[Dictionary]:
 	if trigger_id == "":
 		return adjustments
 	for rule_index in range(_rules.size()):
-		var rule := _rules[rule_index]
+		var rule: Dictionary = _rules[rule_index]
 		if str(rule.get("trigger", "")) != trigger_id:
 			continue
 		var state_variant: Variant = _state_by_rule_index.get(rule_index, {})
 		if not (state_variant is Dictionary):
 			continue
 		var state: Dictionary = state_variant
-		var stacks := max(int(state.get("stacks", 0)), 0)
-		var max_stacks := max(int(rule.get("max_stacks", 1)), 1)
-		var duration := maxf(float(rule.get("duration", 0.0)), 0.0)
+		var stacks: int = maxi(int(state.get("stacks", 0)), 0)
+		var max_stacks: int = maxi(int(rule.get("max_stacks", 1)), 1)
+		var duration: float = maxf(float(rule.get("duration", 0.0)), 0.0)
 		if duration <= 0.0:
 			continue
 		if stacks < max_stacks:
@@ -68,17 +68,17 @@ func tick(delta: float) -> Array[Dictionary]:
 		if not (state_variant is Dictionary):
 			continue
 		var state: Dictionary = state_variant
-		var stacks := max(int(state.get("stacks", 0)), 0)
+		var stacks: int = maxi(int(state.get("stacks", 0)), 0)
 		if stacks <= 0:
 			continue
-		var remaining := float(state.get("remaining", 0.0)) - delta
+		var remaining: float = float(state.get("remaining", 0.0)) - delta
 		if remaining > 0.0:
 			state["remaining"] = remaining
 			_state_by_rule_index[rule_index] = state
 			continue
-		var rule := _rules[rule_index]
+		var rule: Dictionary = _rules[rule_index]
 		for modifier in _get_rule_modifiers(rule):
-			var amount := float(modifier.get("amount", 0.0)) * float(stacks)
+			var amount: float = float(modifier.get("amount", 0.0)) * float(stacks)
 			adjustments.append(_build_adjustment(rule, modifier, -amount, true))
 		state["stacks"] = 0
 		state["remaining"] = 0.0

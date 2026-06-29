@@ -80,7 +80,7 @@ func _build_weapon_offer_pool() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	_weapon_offer_pool = ShopOfferRuntime.build_weapon_offer_pool(
 		data_registry,
-		Callable(self, "_load_weapon_data_by_id")
+		Callable(self, "_load_weapon_data")
 	)
 
 func _build_item_offer_pool() -> void:
