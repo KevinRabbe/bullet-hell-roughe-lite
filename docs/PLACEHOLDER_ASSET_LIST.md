@@ -71,7 +71,6 @@ Visual direction:
 Needed files:
 
 ```text
-portal_idle.png
 portal_active.png
 portal_complete_burst.png
 ```
@@ -98,7 +97,6 @@ Visual direction:
 Needed files:
 
 ```text
-imp_runner_idle.png
 imp_runner_move_1.png
 imp_runner_move_2.png
 imp_runner_death.png
@@ -128,7 +126,6 @@ Visual direction:
 Needed files:
 
 ```text
-player_demon_idle.png
 player_demon_move_1.png
 player_demon_move_2.png
 player_demon_hurt.png
@@ -155,7 +152,6 @@ Visual direction:
 Needed files:
 
 ```text
-bullet_heavy_pistol.png
 bullet_impact.png
 ```
 
@@ -180,7 +176,6 @@ Visual direction:
 Needed files:
 
 ```text
-projectile_hellfire.png
 impact_hellfire.png
 ```
 
@@ -206,7 +201,6 @@ Visual direction:
 Needed files:
 
 ```text
-projectile_sand_swirl.png
 sand_erosion_cloud.png
 ```
 
@@ -407,9 +401,6 @@ assets/sprites/placeholders/ui/
 Example:
 
 ```text
-assets/sprites/placeholders/portals/portal_idle.png
-assets/sprites/placeholders/enemies/imp_runner_idle.png
-assets/sprites/placeholders/player/player_demon_idle.png
 ```
 
 ---
