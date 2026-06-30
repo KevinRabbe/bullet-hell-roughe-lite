@@ -137,6 +137,7 @@ script = ExtResource("6")
 portal_scene = ExtResource("5")
 elite_enemy_scene = ExtResource("3")
 player_path = NodePath("../Player")
+enemy_spawner_path = NodePath("../EnemySpawner")
 first_portal_position = Vector2(240, 0)
 elite_spawn_distance = 180.0
 elite_move_speed = 240.0
