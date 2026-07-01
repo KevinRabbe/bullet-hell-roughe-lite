@@ -30,6 +30,7 @@ offset_left = -2000.0
 offset_top = -2000.0
 offset_right = 2000.0
 offset_bottom = 2000.0
+z_index = -100
 color = Color(0.08, 0.08, 0.09, 1.0)
 
 [node name="ArenaArt" type="Node2D" parent="."]

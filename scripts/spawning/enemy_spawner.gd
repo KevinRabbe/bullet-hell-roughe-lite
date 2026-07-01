@@ -135,6 +135,12 @@ func start_next_wave() -> void:
 	spawn_timer.start()
 	print("Wave %d started." % current_wave_index)
 
+func stop_spawning_for_victory() -> void:
+	wave_elapsed_seconds = maxf(wave_elapsed_seconds, wave_duration_seconds)
+	completion_emitted = true
+	if spawn_timer != null:
+		spawn_timer.stop()
+
 func _load_wave_config() -> void:
 	var config := EnemySpawnWavePoolRuntimeUtil.load_wave_config(wave_config_path)
 	_wave_variant_pools = config.get("wave_variant_pools", [])
