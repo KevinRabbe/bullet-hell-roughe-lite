@@ -6,6 +6,7 @@ var _death_vfx_callback: Callable
 var _last_hit_player: Node
 var _last_hit_weapon_id: String = ""
 var _last_hit_slot_index: int = -1
+var _death_started: bool = false
 
 func configure(owner: Node, death_vfx_callback: Callable) -> void:
 	_owner = owner
@@ -19,11 +20,17 @@ func register_damage_source(source: Node, source_weapon_id: String = "", source_
 	_last_hit_slot_index = source_slot_index
 
 func handle_death(reward_gold: int, reward_xp: int) -> void:
+	if _death_started:
+		return
+	_death_started = true
 	if _death_vfx_callback.is_valid():
 		_death_vfx_callback.call()
 	_grant_kill_rewards(reward_gold, reward_xp)
 	if _owner != null and is_instance_valid(_owner):
 		_owner.queue_free()
+
+func has_started_death() -> bool:
+	return _death_started
 
 func _grant_kill_rewards(reward_gold: int, reward_xp: int) -> void:
 	if _owner == null or not is_instance_valid(_owner):

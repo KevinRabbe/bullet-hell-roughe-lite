@@ -88,7 +88,8 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 	else:
 		puff.self_modulate = Color(1.0, 0.45, 0.35, 0.9)
 	owner.get_tree().current_scene.add_child(puff)
-	var tween := owner.create_tween()
+	puff.modulate = Color(1.0, 1.0, 1.0, 0.9)
+	var tween := puff.create_tween()
 	tween.tween_property(puff, "scale", puff.scale * 1.35, 0.18)
 	tween.parallel().tween_property(puff, "modulate", Color(1.0, 0.45, 0.35, 0.0), 0.18)
 	tween.finished.connect(func() -> void:

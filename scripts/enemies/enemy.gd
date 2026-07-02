@@ -87,6 +87,8 @@ func _physics_process(delta: float) -> void:
 	_try_ranged_damage_player()
 
 func take_damage(amount: float, source: Node = null, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
+	if _lifecycle_runtime != null and _lifecycle_runtime.has_started_death():
+		return
 	if _lifecycle_runtime != null:
 		_lifecycle_runtime.register_damage_source(source, source_weapon_id, source_slot_index)
 	current_hp = maxf(current_hp - amount, 0.0)
@@ -278,6 +280,8 @@ func apply_status_payload(status_payload: Dictionary, source: Node = null, sourc
 		_lifecycle_runtime.register_damage_source(source, source_weapon_id, source_slot_index)
 
 func _apply_status_tick_damage(status: Dictionary) -> void:
+	if _lifecycle_runtime != null and _lifecycle_runtime.has_started_death():
+		return
 	var stacks := maxi(int(status.get("stacks", 1)), 1)
 	var tick_damage := float(status.get("flat_damage", 0.0))
 	tick_damage += max_hp * float(status.get("max_hp_fraction", 0.0))
@@ -338,6 +342,8 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	return DeterministicRng.create_fallback_rng(stream_name, "Enemy")
 
 func _handle_death() -> void:
+	if _lifecycle_runtime != null and _lifecycle_runtime.has_started_death():
+		return
 	if _lifecycle_runtime != null:
 		_lifecycle_runtime.handle_death(reward_gold, reward_xp)
 	else:
