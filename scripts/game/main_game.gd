@@ -48,6 +48,7 @@ var waiting_for_restart: bool = false
 var waiting_for_wave_continue: bool = false
 var waiting_for_level_up_choice: bool = false
 var run_end_state: String = "inactive"
+var boss_victory_pending: bool = false
 var selectable_characters: Array[String] = []
 var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
@@ -129,7 +130,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
 		return
 
+func _process(_delta: float) -> void:
+	_try_finish_pending_victory()
+
 func _on_player_died() -> void:
+	boss_victory_pending = false
 	_enter_run_end_state("game_over")
 
 func _toggle_pause() -> void:
@@ -255,13 +260,19 @@ func _update_character_debug_label() -> void:
 	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
 
 func _on_wave_completed(wave_index: int) -> void:
+	if boss_victory_pending:
+		print("Wave %d timer ended after boss defeat. Waiting for the arena to clear before victory." % wave_index)
+		return
 	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
 		print("Wave %d timer ended, but boss is still active. Waiting for boss resolution." % wave_index)
 		return
 	_enter_intermission_phase(wave_index)
 
 func _on_boss_defeated() -> void:
-	_enter_run_end_state("victory")
+	boss_victory_pending = true
+	if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
+		enemy_spawner.call("stop_spawning_for_victory")
+	_try_finish_pending_victory()
 
 func _on_wave_continue_pressed() -> void:
 	if not waiting_for_wave_continue:
@@ -287,6 +298,7 @@ func _finish_intermission_or_open_levelup() -> void:
 func _start_next_wave_after_intermission() -> void:
 	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
+	boss_victory_pending = false
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
@@ -408,3 +420,21 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		if resolved is RandomNumberGenerator:
 			return resolved
 	return DeterministicRng.create_fallback_rng(stream_name, "MainGame")
+
+func _try_finish_pending_victory() -> void:
+	if not boss_victory_pending:
+		return
+	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
+		return
+	if _has_live_group_members("enemies"):
+		return
+	if _has_live_group_members("projectiles"):
+		return
+	boss_victory_pending = false
+	_enter_run_end_state("victory")
+
+func _has_live_group_members(group_name: String) -> bool:
+	for node in get_tree().get_nodes_in_group(group_name):
+		if node != null and is_instance_valid(node):
+			return true
+	return false
