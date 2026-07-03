@@ -16,7 +16,7 @@ const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward
 @export var elite_move_speed: float = 240.0
 @export var elite_max_hp: float = 80.0
 @export var log_portal_spawns: bool = false
-@export var log_portal_events: bool = true
+@export var log_portal_events: bool = false
 
 var player: Node2D
 var enemy_spawner: Node
