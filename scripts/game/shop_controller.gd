@@ -20,6 +20,7 @@ const ShopOfferRuntime = preload("res://scripts/game/shop_offer_runtime.gd")
 @export var continue_button_path: NodePath
 @export var reroll_cost: int = 2
 @export var enabled: bool = false
+@export var log_shop_events: bool = false
 
 var enemy_spawner: Node
 var player: Node
@@ -92,7 +93,8 @@ func _on_wave_completed(wave_index: int) -> void:
 	_current_wave_index = maxi(wave_index, 1)
 	reroll_count = 0
 	_open_shop_for_wave()
-	print("Shop opened with %d offers." % active_offers.size())
+	if log_shop_events:
+		print("Shop opened with %d offers." % active_offers.size())
 
 func get_active_offers() -> Array[Dictionary]:
 	var copied: Array[Dictionary] = []
@@ -175,7 +177,8 @@ func _on_offer_pressed(index: int) -> void:
 	if not _grant_purchased_offer(offer_type, offer_id, offer, offer_price):
 		return
 
-	print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
+	if log_shop_events:
+		print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
 	active_offers[index] = ShopOfferRuntime.sold_out_offer()
 	_refresh_offer_buttons()
 	offer_purchased.emit(index, offer.duplicate(true))
@@ -190,10 +193,12 @@ func _can_purchase_offer(offer_type: String, offer_id: String, offer: Dictionary
 		return true
 	if loadout.has_method("can_grant_weapon"):
 		if loadout.call("can_grant_weapon", offer_id, rolled_rarity) != true:
-			print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
+			if log_shop_events:
+				print("Cannot buy weapon. No loadout slot or combine upgrade available for %s." % offer_id)
 			return false
 	elif loadout.has_method("has_space") and loadout.call("has_space") != true:
-		print("Cannot buy weapon. Weapon loadout is full.")
+		if log_shop_events:
+			print("Cannot buy weapon. Weapon loadout is full.")
 		return false
 	return true
 
@@ -212,7 +217,8 @@ func _grant_purchased_weapon(weapon_id: String, rolled_rarity: String, offer_pri
 		return true
 	if player.has_method("add_gold"):
 		player.call("add_gold", offer_price)
-	print("Weapon purchase rejected: %s" % weapon_id)
+	if log_shop_events:
+		print("Weapon purchase rejected: %s" % weapon_id)
 	return false
 
 func _grant_purchased_item(item_id: String, offer_price: int) -> bool:
@@ -222,7 +228,8 @@ func _grant_purchased_item(item_id: String, offer_price: int) -> bool:
 		return true
 	if player.has_method("add_gold"):
 		player.call("add_gold", offer_price)
-	print("Item purchase failed: %s" % item_id)
+	if log_shop_events:
+		print("Item purchase failed: %s" % item_id)
 	return false
 
 func _on_reroll_pressed() -> void:
@@ -232,7 +239,8 @@ func _on_reroll_pressed() -> void:
 		if not paid:
 			return
 	reroll_count += 1
-	print("Reroll shop. Cost: %d" % total_cost)
+	if log_shop_events:
+		print("Reroll shop. Cost: %d" % total_cost)
 	_refresh_shop_offers()
 
 func _update_reroll_button_text() -> void:
