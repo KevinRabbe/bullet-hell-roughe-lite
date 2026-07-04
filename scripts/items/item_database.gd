@@ -36,6 +36,14 @@ static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> I
 		return get_random_item(rng)
 	return pool[rng.randi_range(0, pool.size() - 1)]
 
+static func get_item_by_id(item_id: String) -> ItemData:
+	if item_id == "":
+		return null
+	for item in get_prototype_items():
+		if item != null and item.id == item_id:
+			return item
+	return null
+
 static func _list_item_resource_paths() -> Array[String]:
 	var paths: Array[String] = []
 	var directory := DirAccess.open(ITEM_RESOURCE_DIR)

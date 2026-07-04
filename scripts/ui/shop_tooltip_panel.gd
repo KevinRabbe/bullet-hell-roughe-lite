@@ -1,6 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 @export var shop_controller_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
@@ -83,10 +84,46 @@ func _build_weapon_tooltip(weapon_id: String) -> String:
 	return "Family: %s\nTags: %s\n%s" % [family, tags_text, weapon_data.description]
 
 func _build_item_tooltip(item_id: String) -> String:
-	for item in ItemDatabase.get_prototype_items():
-		if item != null and item.id == item_id:
-			return item.description
+	var item := ItemDatabase.get_item_by_id(item_id)
+	if item != null:
+		return _format_item_tooltip(item)
 	return "No ItemData found."
+
+func _format_item_tooltip(item: ItemData) -> String:
+	var sections: Array[String] = []
+	var item_tags := WeaponTagRuntime.item_tags(item)
+	var tags_text := ", ".join(item_tags)
+	if tags_text == "":
+		tags_text = "-"
+	sections.append("Tags: %s" % tags_text)
+	sections.append(item.description)
+	var bonus_lines := _build_item_weapon_tag_bonus_lines(item)
+	if not bonus_lines.is_empty():
+		sections.append("Weapon Tag Bonuses:\n%s" % "\n".join(bonus_lines))
+	return "\n".join(sections)
+
+func _build_item_weapon_tag_bonus_lines(item: ItemData) -> Array[String]:
+	var lines: Array[String] = []
+	for rule_variant in item.weapon_tag_stat_bonuses:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+		var stat_id := str(rule.get("stat_id", ""))
+		if tag == "" or stat_id == "":
+			continue
+		var amount := float(rule.get("amount", 0.0))
+		if is_zero_approx(amount):
+			continue
+		lines.append("- %s: %s" % [tag, _format_stat_bonus(stat_id, amount)])
+	return lines
+
+func _format_stat_bonus(stat_id: String, amount: float) -> String:
+	match stat_id:
+		"attack_speed", "attack_range", "projectile_speed", "damage":
+			return "%+.0f%% %s" % [amount * 100.0, stat_id.replace("_", " ")]
+		_:
+			return "%+.2f %s" % [amount, stat_id.replace("_", " ")]
 
 func _hide_tooltip() -> void:
 	if tooltip_panel != null:
