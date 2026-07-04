@@ -292,6 +292,10 @@ func _build_weapon_offer_synergy_lines(weapon_data: WeaponData, player_snapshot:
 	if not passive_bonus_lines.is_empty():
 		lines.append("[color=#ff9af1]Passive synergy:[/color]")
 		lines.append_array(passive_bonus_lines)
+	var set_bonus_lines := _build_set_bonus_weapon_synergy_lines(weapon_data, player_snapshot)
+	if not set_bonus_lines.is_empty():
+		lines.append("[color=#8fd1ff]Set bonus synergy:[/color]")
+		lines.append_array(set_bonus_lines)
 	var item_bonus_lines := _build_owned_item_weapon_bonus_lines(weapon_data, player_snapshot)
 	if not item_bonus_lines.is_empty():
 		lines.append("[color=#9affae]Boosted by owned items:[/color]")
@@ -377,6 +381,33 @@ func _build_passive_weapon_synergy_lines(weapon_data: WeaponData, player_snapsho
 			"- %s: %s via %s"
 			% [
 				str(passive_rule.get("label", "Passive")),
+				_format_tag_stat_bonus(stat_id, amount),
+				", ".join(effect_tags)
+			]
+		)
+	return lines
+
+func _build_set_bonus_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var set_bonus_rules_variant: Variant = player_snapshot.get("set_bonus_weapon_synergies", [])
+	if not (set_bonus_rules_variant is Array):
+		return lines
+	var set_bonus_rules: Array = set_bonus_rules_variant
+	for set_bonus_rule_variant in set_bonus_rules:
+		if not (set_bonus_rule_variant is Dictionary):
+			continue
+		var set_bonus_rule: Dictionary = set_bonus_rule_variant
+		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, set_bonus_rule):
+			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(set_bonus_rule.get("effect_tags", []))
+		var stat_id := str(set_bonus_rule.get("stat_id", ""))
+		var amount := float(set_bonus_rule.get("amount", 0.0))
+		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
+			continue
+		lines.append(
+			"- %s: %s via %s"
+			% [
+				str(set_bonus_rule.get("label", "Set bonus")),
 				_format_tag_stat_bonus(stat_id, amount),
 				", ".join(effect_tags)
 			]

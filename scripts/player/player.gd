@@ -883,7 +883,8 @@ func get_ui_snapshot() -> Dictionary:
 		"active_weapon_tags": get_active_weapon_tags(),
 		"weapon_tag_counts": get_weapon_tag_counts(),
 		"item_tag_counts": get_owned_item_tag_counts(),
-		"passive_weapon_synergies": get_passive_weapon_synergy_entries()
+		"passive_weapon_synergies": get_passive_weapon_synergy_entries(),
+		"set_bonus_weapon_synergies": get_set_bonus_weapon_synergy_entries()
 	}
 
 func get_weapon_tag_counts() -> Dictionary:
@@ -966,6 +967,32 @@ func get_passive_weapon_synergy_entries() -> Array[Dictionary]:
 			"effect_tags": legacy_tags,
 			"stat_id": legacy_stat_id,
 			"amount": legacy_amount
+		})
+	return entries
+
+func get_set_bonus_weapon_synergy_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	if set_bonus_manager == null or not set_bonus_manager.has_method("get_active_weapon_bonus_rules"):
+		return entries
+	var rules_variant: Variant = set_bonus_manager.call("get_active_weapon_bonus_rules")
+	if not (rules_variant is Array):
+		return entries
+	var rules: Array = rules_variant
+	for rule_variant in rules:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var stat_id := str(rule.get("stat_id", ""))
+		var amount := float(rule.get("value", 0.0))
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(rule.get("effect_tags", []))
+		if stat_id == "" or effect_tags.is_empty() or is_zero_approx(amount):
+			continue
+		entries.append({
+			"family_id": str(rule.get("family_id", "")),
+			"label": "%s set" % str(rule.get("family_id", "")).capitalize(),
+			"effect_tags": effect_tags,
+			"stat_id": stat_id,
+			"amount": amount
 		})
 	return entries
 

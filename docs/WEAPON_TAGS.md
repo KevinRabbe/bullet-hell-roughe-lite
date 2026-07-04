@@ -170,6 +170,7 @@ Tags now drive a first real cross-build layer in the current repo:
 - shop offer card synergy hints
 - passive runtime modifiers that optionally target matching weapon tags
 - optional set-bonus weapon stat targeting via `effect_tags`
+- shop discoverability for active set-bonus weapon tag synergies
 - low-noise registry validation for gameplay tag drift
 
 The active roster now also uses this selectively for passive identity:
