@@ -1,6 +1,7 @@
 extends CharacterBody2D
 
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const PlayerPassiveRuntime = preload("res://scripts/player/player_passive_runtime.gd")
 
 @export var debug_starting_hp: float = 100.0
@@ -848,8 +849,39 @@ func get_ui_snapshot() -> Dictionary:
 		"portal_frequency": float(stats.portal_frequency),
 		"portal_instability": float(stats.portal_instability),
 		"items": owned_items.duplicate(),
-		"weapon_entries": get_weapon_ui_entries()
+		"weapon_entries": get_weapon_ui_entries(),
+		"active_weapon_tags": get_active_weapon_tags(),
+		"weapon_tag_counts": get_weapon_tag_counts(),
+		"item_tag_counts": get_owned_item_tag_counts()
 	}
+
+func get_weapon_tag_counts() -> Dictionary:
+	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_tag_counts"):
+		var counts_variant: Variant = weapon_loadout.call("get_weapon_tag_counts")
+		if counts_variant is Dictionary:
+			return (counts_variant as Dictionary).duplicate(true)
+	return WeaponTagRuntime.build_weapon_tag_counts(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
+
+func get_active_weapon_tags() -> Array[String]:
+	if weapon_loadout != null and weapon_loadout.has_method("get_active_weapon_tags"):
+		var tags_variant: Variant = weapon_loadout.call("get_active_weapon_tags")
+		if tags_variant is Array:
+			var tags: Array[String] = []
+			for tag_variant in tags_variant:
+				tags.append(str(tag_variant))
+			return tags
+	return WeaponTagRuntime.build_active_weapon_tags(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
+
+func count_weapons_with_tag(tag: String) -> int:
+	if weapon_loadout != null and weapon_loadout.has_method("count_weapons_with_tag"):
+		return int(weapon_loadout.call("count_weapons_with_tag", tag))
+	return WeaponTagRuntime.count_equipped_weapons_with_tag(_get_loadout_entries(), Callable(self, "_load_weapon_resource"), tag)
+
+func get_owned_item_tag_counts() -> Dictionary:
+	return WeaponTagRuntime.build_item_tag_counts(owned_items)
+
+func count_owned_items_with_tag(tag: String) -> int:
+	return WeaponTagRuntime.count_owned_items_with_tag(owned_items, tag)
 
 func get_weapon_ui_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -882,6 +914,14 @@ func get_weapon_ui_entries() -> Array[Dictionary]:
 		entry["milestone_amount"] = weapon_resource.kill_milestone_amount
 		entries.append(entry)
 	return entries
+
+func _get_loadout_entries() -> Array:
+	if weapon_loadout == null or not weapon_loadout.has_method("get_weapon_entries"):
+		return []
+	var entries_variant: Variant = weapon_loadout.call("get_weapon_entries")
+	if entries_variant is Array:
+		return entries_variant
+	return []
 
 func _get_effective_kill_requirement(weapon_resource: WeaponData, family_id: String) -> int:
 	if weapon_resource == null or weapon_resource.kill_milestone_base_kills <= 0:

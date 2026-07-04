@@ -1,6 +1,7 @@
 extends Node
 
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 signal loadout_changed
 
@@ -181,6 +182,15 @@ func get_family_counts() -> Dictionary:
 		var family_id := _get_family_id_from_weapon_id(weapon_id)
 		family_counts[family_id] = int(family_counts.get(family_id, 0)) + 1
 	return family_counts
+
+func get_weapon_tag_counts() -> Dictionary:
+	return WeaponTagRuntime.build_weapon_tag_counts(equipped_weapons, Callable(self, "_load_weapon_data"))
+
+func get_active_weapon_tags() -> Array[String]:
+	return WeaponTagRuntime.build_active_weapon_tags(equipped_weapons, Callable(self, "_load_weapon_data"))
+
+func count_weapons_with_tag(tag: String) -> int:
+	return WeaponTagRuntime.count_equipped_weapons_with_tag(equipped_weapons, Callable(self, "_load_weapon_data"), tag)
 
 func debug_equip_duplicate_weapons(weapon_id: String, count: int) -> void:
 	var requested_count := maxi(count, 0)
