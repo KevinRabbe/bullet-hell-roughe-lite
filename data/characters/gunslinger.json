@@ -32,8 +32,13 @@
       "id": "quickdraw",
       "effect": "temporary_stat_bonus",
       "trigger": "on_enemy_kill",
-      "stat_id": "attack_speed",
-      "amount": 0.12,
+      "modifiers": [
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.12,
+          "effect_tags": ["gun"]
+        }
+      ],
       "duration": 2.0,
       "max_stacks": 1,
       "debug_label": "QUICKDRAW"

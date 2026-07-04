@@ -172,6 +172,15 @@ Tags now drive a first real cross-build layer in the current repo:
 - optional set-bonus weapon stat targeting via `effect_tags`
 - low-noise registry validation for gameplay tag drift
 
+The active roster now also uses this selectively for passive identity:
+
+- Gunslinger `Quickdraw` targets `gun`
+- Harvester `Soul Harvest` targets `necromancy` / `curse`
+- Demon Lord `Infernal Tribute` damage targets `hellfire` / `burn`
+- Riftwalker `Phase Echo` extra attack-speed targets `portal`
+- Devil `Devil's Bargain` offensive bonuses target `melee` / `thrown`
+- Ritualist `Blood Rite` targets `ritual` / `blood`
+
 Families still remain the primary source for:
 
 - starter identity
