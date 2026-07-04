@@ -199,9 +199,10 @@ Completed phases:
 2. add shared runtime tag queries
 3. add first item/passive synergies that consume tags
 4. broaden item coverage so portal and ritual builds have non-family tag hooks too
+5. broaden item coverage further for ranged, thrown, and magic crossover builds
 
 Next phases should be:
 
-5. expand tag-driven item and passive interactions carefully
-6. use tags for broader build discoverability before using them for heavy shop steering
-7. keep families as a soft identity layer rather than replacing them
+6. expand tag-driven item and passive interactions carefully
+7. use tags for broader build discoverability before using them for heavy shop steering
+8. keep families as a soft identity layer rather than replacing them

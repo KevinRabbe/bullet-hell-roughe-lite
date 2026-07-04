@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = "swift_boots"
 name = "Swift Boots"
-description = "Move faster. Close-range and rapid weapons stay aggressive for longer."
+description = "Move faster. Close-range and rapid weapons stay aggressive for longer, and thrown weapons travel faster."
 category = "utility"
 rarity = "common"
 tags = Array[String](["mobility"])
@@ -23,4 +23,8 @@ weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.08,
 "stat_id": "attack_speed",
 "tag": "rapid"
+}, {
+"amount": 0.1,
+"stat_id": "projectile_speed",
+"tag": "thrown"
 }])
