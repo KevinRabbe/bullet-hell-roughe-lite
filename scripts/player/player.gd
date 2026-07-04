@@ -27,6 +27,7 @@ var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
 var _weapon_resource_cache: Dictionary = {}
 var _passive_runtime: RefCounted = PlayerPassiveRuntime.new()
+var _passive_weapon_tag_bonus_state: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
 var _regen_tick_accumulator: float = 0.0
@@ -338,6 +339,7 @@ func _apply_character_rules(character_data: Dictionary = {}) -> void:
 	_apply_stat_multipliers(character_data.get("stat_multipliers", {}))
 	_apply_stat_bonuses(character_data.get("stat_bonuses", {}))
 	_reset_passive_rule_timers(character_data)
+	_reset_passive_weapon_tag_bonus_state()
 	_configure_passive_runtime(character_data)
 	if player_build != null:
 		var weapons_variant: Variant = player_build.get("equipped_weapon_ids")
@@ -653,7 +655,35 @@ func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
 		var value := float(adjustment.get("value", 0.0))
 		if is_zero_approx(value):
 			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(adjustment.get("effect_tags", []))
+		if not effect_tags.is_empty():
+			_apply_passive_weapon_tag_bonus(stat_id, value, effect_tags)
+			continue
 		_apply_runtime_stat_bonus(stat_id, value, str(adjustment.get("label", "Passive")))
+
+func _reset_passive_weapon_tag_bonus_state() -> void:
+	_passive_weapon_tag_bonus_state.clear()
+	_emit_ui_snapshot_changed()
+
+func _apply_passive_weapon_tag_bonus(stat_id: String, value: float, effect_tags: Array[String]) -> void:
+	if stat_id == "" or effect_tags.is_empty() or is_zero_approx(value):
+		return
+	var normalized_tags := WeaponTagRuntime.normalize_tags(effect_tags)
+	if normalized_tags.is_empty():
+		return
+	var state_key := "%s|%s" % ["|".join(normalized_tags), stat_id]
+	var state_entry_variant: Variant = _passive_weapon_tag_bonus_state.get(state_key, {})
+	var state_entry: Dictionary = {}
+	if state_entry_variant is Dictionary:
+		state_entry = (state_entry_variant as Dictionary).duplicate(true)
+	state_entry["effect_tags"] = normalized_tags
+	state_entry["stat_id"] = stat_id
+	state_entry["amount"] = float(state_entry.get("amount", 0.0)) + value
+	if is_zero_approx(float(state_entry.get("amount", 0.0))):
+		_passive_weapon_tag_bonus_state.erase(state_key)
+	else:
+		_passive_weapon_tag_bonus_state[state_key] = state_entry
+	_emit_ui_snapshot_changed()
 
 func _process_passive_status_rules(delta: float) -> void:
 	var passive_rules_variant: Variant = active_character_data.get("passive_status_rules", [])
@@ -852,7 +882,8 @@ func get_ui_snapshot() -> Dictionary:
 		"weapon_entries": get_weapon_ui_entries(),
 		"active_weapon_tags": get_active_weapon_tags(),
 		"weapon_tag_counts": get_weapon_tag_counts(),
-		"item_tag_counts": get_owned_item_tag_counts()
+		"item_tag_counts": get_owned_item_tag_counts(),
+		"passive_weapon_synergies": get_passive_weapon_synergy_entries()
 	}
 
 func get_weapon_tag_counts() -> Dictionary:
@@ -885,6 +916,58 @@ func count_owned_items_with_tag(tag: String) -> int:
 
 func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
 	return WeaponTagRuntime.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+
+func get_passive_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
+	var bonus_rules: Array[Dictionary] = []
+	for state_entry_variant in _passive_weapon_tag_bonus_state.values():
+		if state_entry_variant is Dictionary:
+			bonus_rules.append((state_entry_variant as Dictionary).duplicate(true))
+	return WeaponTagRuntime.build_matching_weapon_stat_overrides(weapon_data, bonus_rules)
+
+func get_passive_weapon_synergy_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var rules_variant: Variant = active_character_data.get("passive_runtime_rules", [])
+	if not (rules_variant is Array):
+		return entries
+	var rules: Array = rules_variant
+	for rule_variant in rules:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var rule_label := str(rule.get("debug_label", "Passive"))
+		var modifiers_variant: Variant = rule.get("modifiers", [])
+		if modifiers_variant is Array:
+			var modifiers: Array = modifiers_variant
+			for modifier_variant in modifiers:
+				if not (modifier_variant is Dictionary):
+					continue
+				var modifier: Dictionary = modifier_variant
+				var effect_tags := WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+				if effect_tags.is_empty():
+					continue
+				var stat_id := str(modifier.get("stat_id", ""))
+				var amount := float(modifier.get("amount", 0.0))
+				if stat_id == "" or is_zero_approx(amount):
+					continue
+				entries.append({
+					"label": rule_label,
+					"effect_tags": effect_tags,
+					"stat_id": stat_id,
+					"amount": amount
+				})
+			continue
+		var legacy_tags := WeaponTagRuntime.resolve_effect_tags(rule.get("effect_tags", []))
+		var legacy_stat_id := str(rule.get("stat_id", ""))
+		var legacy_amount := float(rule.get("amount", 0.0))
+		if legacy_tags.is_empty() or legacy_stat_id == "" or is_zero_approx(legacy_amount):
+			continue
+		entries.append({
+			"label": rule_label,
+			"effect_tags": legacy_tags,
+			"stat_id": legacy_stat_id,
+			"amount": legacy_amount
+		})
+	return entries
 
 func get_weapon_ui_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []

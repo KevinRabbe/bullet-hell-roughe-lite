@@ -1,6 +1,58 @@
 class_name WeaponTagRuntime
 extends RefCounted
 
+const CANONICAL_STYLE_TAGS: Array[String] = [
+	"gun",
+	"magic",
+	"thrown",
+	"melee",
+	"orbit",
+	"wave",
+	"mine"
+]
+
+const CANONICAL_FLAVOR_TAGS: Array[String] = [
+	"burn",
+	"curse",
+	"blood",
+	"portal",
+	"hellfire",
+	"ritual",
+	"necromancy"
+]
+
+const CANONICAL_FEEL_TAGS: Array[String] = [
+	"rapid",
+	"heavy",
+	"precision",
+	"spread",
+	"close_range",
+	"ranged"
+]
+
+const CANONICAL_GAMEPLAY_TAGS: Array[String] = [
+	"gun",
+	"magic",
+	"thrown",
+	"melee",
+	"orbit",
+	"wave",
+	"mine",
+	"burn",
+	"curse",
+	"blood",
+	"portal",
+	"hellfire",
+	"ritual",
+	"necromancy",
+	"rapid",
+	"heavy",
+	"precision",
+	"spread",
+	"close_range",
+	"ranged"
+]
+
 static func normalize_tag(raw_tag: String) -> String:
 	var normalized := raw_tag.strip_edges().to_lower().replace("-", "_").replace(" ", "_")
 	return normalized
@@ -16,6 +68,14 @@ static func normalize_tags(raw_tags: Array) -> Array[String]:
 		normalized_tags.append(tag)
 	return normalized_tags
 
+static func resolve_effect_tags(raw_tags_variant: Variant) -> Array[String]:
+	if raw_tags_variant is Array:
+		return normalize_tags(raw_tags_variant as Array)
+	var normalized_tag := normalize_tag(str(raw_tags_variant))
+	if normalized_tag == "":
+		return []
+	return [normalized_tag]
+
 static func weapon_tags(weapon_data: WeaponData) -> Array[String]:
 	if weapon_data == null:
 		return []
@@ -25,6 +85,19 @@ static func item_tags(item_data: ItemData) -> Array[String]:
 	if item_data == null:
 		return []
 	return normalize_tags(item_data.tags)
+
+static func is_canonical_gameplay_tag(tag: String) -> bool:
+	var normalized_tag := normalize_tag(tag)
+	if normalized_tag == "":
+		return false
+	return normalized_tag in CANONICAL_GAMEPLAY_TAGS
+
+static func list_noncanonical_gameplay_tags(raw_tags: Array) -> Array[String]:
+	var invalid_tags: Array[String] = []
+	for tag_variant in normalize_tags(raw_tags):
+		if not is_canonical_gameplay_tag(str(tag_variant)):
+			invalid_tags.append(str(tag_variant))
+	return invalid_tags
 
 static func weapon_has_tag(weapon_data: WeaponData, tag: String) -> bool:
 	var normalized_tag := normalize_tag(tag)
@@ -80,15 +153,7 @@ static func count_owned_items_with_tag(items: Array, tag: String) -> int:
 	return int(build_item_tag_counts(items).get(normalized_tag, 0))
 
 static func build_weapon_tag_bonus_overrides(weapon_data: WeaponData, items: Array) -> Dictionary:
-	var overrides: Dictionary = {}
-	if weapon_data == null:
-		return overrides
-	var active_tags := weapon_tags(weapon_data)
-	if active_tags.is_empty():
-		return overrides
-	var active_tag_set: Dictionary = {}
-	for tag in active_tags:
-		active_tag_set[tag] = true
+	var bonus_rules: Array[Dictionary] = []
 	for item_variant in items:
 		if not (item_variant is ItemData):
 			continue
@@ -98,13 +163,41 @@ static func build_weapon_tag_bonus_overrides(weapon_data: WeaponData, items: Arr
 				continue
 			var rule: Dictionary = rule_variant
 			var tag := normalize_tag(str(rule.get("tag", "")))
-			if tag == "" or active_tag_set.get(tag, false) != true:
+			if tag == "":
 				continue
-			var stat_id := str(rule.get("stat_id", ""))
-			if stat_id == "":
-				continue
-			var amount := float(rule.get("amount", 0.0))
-			if is_zero_approx(amount):
-				continue
-			overrides[stat_id] = float(overrides.get(stat_id, 0.0)) + amount
+			bonus_rules.append({
+				"effect_tags": [tag],
+				"stat_id": str(rule.get("stat_id", "")),
+				"amount": float(rule.get("amount", 0.0))
+			})
+	return build_matching_weapon_stat_overrides(weapon_data, bonus_rules)
+
+static func weapon_matches_effect_tags(weapon_data: WeaponData, rule_entry: Dictionary, tag_field: String = "effect_tags") -> bool:
+	if weapon_data == null:
+		return false
+	var effect_tags := resolve_effect_tags(rule_entry.get(tag_field, []))
+	if effect_tags.is_empty():
+		return true
+	var weapon_tag_set: Dictionary = {}
+	for tag in weapon_tags(weapon_data):
+		weapon_tag_set[tag] = true
+	for effect_tag in effect_tags:
+		if weapon_tag_set.get(effect_tag, false) == true:
+			return true
+	return false
+
+static func build_matching_weapon_stat_overrides(weapon_data: WeaponData, rule_entries: Array[Dictionary], tag_field: String = "effect_tags") -> Dictionary:
+	var overrides: Dictionary = {}
+	if weapon_data == null:
+		return overrides
+	for rule in rule_entries:
+		if rule.is_empty() or not weapon_matches_effect_tags(weapon_data, rule, tag_field):
+			continue
+		var stat_id := str(rule.get("stat_id", ""))
+		if stat_id == "":
+			continue
+		var amount := float(rule.get("amount", 0.0))
+		if is_zero_approx(amount):
+			continue
+		overrides[stat_id] = float(overrides.get(stat_id, 0.0)) + amount
 	return overrides

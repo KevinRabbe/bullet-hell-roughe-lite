@@ -1,6 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
@@ -133,6 +134,7 @@ func _validate_registry_entries() -> void:
 			var weapon_resource: WeaponData = weapon
 			if weapon_resource.display_name == "":
 				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			_validate_weapon_tags(str(weapon_id), weapon_resource.tags)
 			var shop_enabled: bool = weapon_resource.shop_enabled == true
 			if shop_enabled and not _is_placeholder_weapon(weapon_resource) and weapon_resource.price <= 0:
 				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
@@ -140,6 +142,7 @@ func _validate_registry_entries() -> void:
 			var weapon_dict: Dictionary = weapon
 			if str(weapon_dict.get("display_name", "")) == "":
 				push_warning("Weapon '%s' is missing display_name." % str(weapon_id))
+			_validate_weapon_tags(str(weapon_id), weapon_dict.get("tags", []))
 			var shop_enabled_dict: bool = weapon_dict.get("shop_enabled", false) == true
 			if shop_enabled_dict and not _is_placeholder_weapon(weapon_dict) and int(weapon_dict.get("price", 0)) <= 0:
 				push_warning("Weapon '%s' has non-positive price; shop fallback may be used." % str(weapon_id))
@@ -154,10 +157,12 @@ func _validate_registry_entries() -> void:
 			var item_resource: ItemData = item
 			if item_resource.name == "":
 				push_warning("Item '%s' is missing name." % str(item_id))
+			_validate_item_weapon_tag_bonus_rules(str(item_id), item_resource.weapon_tag_stat_bonuses)
 		elif item is Dictionary:
 			var item_dict: Dictionary = item
 			if str(item_dict.get("name", "")) == "":
 				push_warning("Item '%s' is missing name." % str(item_id))
+			_validate_item_weapon_tag_bonus_rules(str(item_id), item_dict.get("weapon_tag_stat_bonuses", []))
 		else:
 			push_warning("Item entry '%s' has unsupported type." % str(item_id))
 	for enemy_id in enemies.keys():
@@ -204,6 +209,7 @@ func _validate_character_entries() -> void:
 			continue
 		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
 		_validate_character_weapon_list(str(character_id), "family_weapon_ids", character_data.get("family_weapon_ids", []))
+		_validate_character_passive_runtime_tags(str(character_id), character_data.get("passive_runtime_rules", []))
 
 func _validate_character_weapon_list(character_id: String, field_name: String, weapon_ids_variant: Variant) -> void:
 	if not (weapon_ids_variant is Array):
@@ -221,6 +227,32 @@ func _validate_character_weapon_list(character_id: String, field_name: String, w
 		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
 		if not ResourceLoader.exists(resource_path):
 			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
+
+func _validate_character_passive_runtime_tags(character_id: String, rules_variant: Variant) -> void:
+	if not (rules_variant is Array):
+		return
+	var passive_rules: Array = rules_variant
+	for rule_variant in passive_rules:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var modifiers_variant: Variant = rule.get("modifiers", [])
+		if not (modifiers_variant is Array):
+			continue
+		var modifiers: Array = modifiers_variant
+		for modifier_variant in modifiers:
+			if not (modifier_variant is Dictionary):
+				continue
+			var modifier: Dictionary = modifier_variant
+			var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(
+				WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+			)
+			if invalid_tags.is_empty():
+				continue
+			push_warning(
+				"Character '%s' passive rule '%s' uses non-canonical gameplay tags: %s"
+				% [character_id, str(rule.get("id", "")), ", ".join(invalid_tags)]
+			)
 
 func _validate_set_bonus_entries() -> void:
 	var required_thresholds: Array[int] = [2, 4, 6]
@@ -264,6 +296,8 @@ func _validate_set_bonus_entries() -> void:
 				var effect: Dictionary = effect_variant
 				if str(effect.get("type", "")) == "":
 					push_warning("Set bonus '%s' threshold %d contains an effect with no type." % [str(family_id), pieces])
+					continue
+				_validate_set_bonus_effect_tags(str(family_id), pieces, effect)
 		for required_pieces in required_thresholds:
 			if pieces_present.get(required_pieces, false) != true:
 				push_warning("Set bonus '%s' is missing the %d-piece threshold." % [str(family_id), required_pieces])
@@ -291,6 +325,58 @@ func _is_placeholder_weapon(weapon: Variant) -> bool:
 	else:
 		family_id = str(weapon.get("family"))
 	return family_id.contains("placeholder")
+
+func _validate_weapon_tags(weapon_id: String, tags_variant: Variant) -> void:
+	if not (tags_variant is Array):
+		return
+	var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(tags_variant)
+	if invalid_tags.is_empty():
+		return
+	push_warning(
+		"Weapon '%s' has non-canonical gameplay tags: %s" % [
+			weapon_id,
+			", ".join(invalid_tags)
+		]
+	)
+
+func _validate_item_weapon_tag_bonus_rules(item_id: String, rules_variant: Variant) -> void:
+	if not (rules_variant is Array):
+		return
+	var invalid_tags: Array[String] = []
+	for rule_variant in rules_variant:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var rule_tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+		if rule_tag == "" or WeaponTagRuntime.is_canonical_gameplay_tag(rule_tag):
+			continue
+		if rule_tag in invalid_tags:
+			continue
+		invalid_tags.append(rule_tag)
+	if invalid_tags.is_empty():
+		return
+	push_warning(
+		"Item '%s' has non-canonical weapon tag bonus targets: %s" % [
+			item_id,
+			", ".join(invalid_tags)
+		]
+	)
+
+func _validate_set_bonus_effect_tags(family_id: String, pieces: int, effect: Dictionary) -> void:
+	var effect_tags_variant: Variant = effect.get("effect_tags", [])
+	if not (effect_tags_variant is Array):
+		return
+	var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(effect_tags_variant)
+	if invalid_tags.is_empty():
+		return
+	push_warning(
+		"Set bonus '%s' threshold %d effect '%s' has non-canonical effect_tags: %s" % [
+			family_id,
+			pieces,
+			str(effect.get("type", "")),
+			", ".join(invalid_tags)
+		]
+	)
 
 func get_character(id: String):
 	return characters.get(id)

@@ -6,9 +6,10 @@
       "state_key": "2_piece",
       "effects": [
         {
-          "type": "player_stat_bonus",
+          "type": "weapon_stat_bonus",
           "stat_id": "projectile_speed",
-          "value": 0.12
+          "value": 0.12,
+          "effect_tags": ["burn", "hellfire"]
         }
       ]
     },

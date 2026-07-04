@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = "trigger_core"
 name = "Trigger Core"
-description = "Fire faster and hit harder. Rapid weapons gain an extra firing boost."
+description = "Fire faster and hit harder. Rapid weapons gain an extra firing boost, while ranged weapons get a touch more reach."
 category = "offense"
 rarity = "rare"
 tags = Array[String](["weapon"])
@@ -20,4 +20,8 @@ weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.12,
 "stat_id": "attack_speed",
 "tag": "rapid"
+}, {
+"amount": 0.08,
+"stat_id": "attack_range",
+"tag": "ranged"
 }])

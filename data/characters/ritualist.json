@@ -22,8 +22,13 @@
       "id": "blood_rite",
       "effect": "temporary_stat_bonus",
       "trigger": "on_enemy_kill",
-      "stat_id": "damage",
-      "amount": 0.03,
+      "modifiers": [
+        {
+          "stat_id": "damage",
+          "amount": 0.03,
+          "effect_tags": ["ritual", "blood"]
+        }
+      ],
       "duration": 6.0,
       "max_stacks": 6,
       "debug_label": "BLOOD RITE"

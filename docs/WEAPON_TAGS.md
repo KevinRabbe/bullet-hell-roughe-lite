@@ -126,16 +126,18 @@ Examples:
   - `vitality` -> remove unless it becomes a real gameplay hook
   - `demon` / `devil` / `harvest` as tags -> keep only if they serve an actual cross-system gameplay purpose
 
-## Runtime Contract Direction
+## Runtime Contract Status
 
-The next implementation phase should add one shared query boundary for tag usage, for example support for:
+The shared tag seam is now live through `WeaponTagRuntime`, with support for:
 
 - checking whether a weapon has a tag
 - counting equipped weapons with a tag
 - listing active loadout tags
 - counting owned items that affect a tag
+- building item-driven weapon tag bonus overrides
+- validating gameplay tag usage against the canonical v1 vocabulary
 
-That runtime helper should be the single gameplay-facing tag access seam instead of repeated direct resource inspection.
+This helper should remain the single gameplay-facing tag access seam instead of repeated direct resource inspection.
 
 ## Examples
 
@@ -159,13 +161,36 @@ Demon Lord and Devil can share some overlap through:
 
 without collapsing into the same family identity.
 
+## Current Live Uses
+
+Tags now drive a first real cross-build layer in the current repo:
+
+- item-driven weapon bonuses (for example `rapid` and `precision` synergies)
+- player/loadout snapshot tag counts
+- shop offer card synergy hints
+- passive runtime modifiers that optionally target matching weapon tags
+- optional set-bonus weapon stat targeting via `effect_tags`
+- low-noise registry validation for gameplay tag drift
+
+Families still remain the primary source for:
+
+- starter identity
+- family set bonuses
+- shop family bias
+- character baseline flavor
+
 ## v1 Scope Lock
 
 This document locks only the **tag contract**, not the full tag gameplay rollout.
 
-Follow-up phases should be:
+Completed phases:
 
 1. normalize weapon tags to this vocabulary
 2. add shared runtime tag queries
 3. add first item/passive synergies that consume tags
-4. later expand into broader build and shop interactions
+
+Next phases should be:
+
+4. expand tag-driven item and passive interactions carefully
+5. use tags for broader build discoverability before using them for heavy shop steering
+6. keep families as a soft identity layer rather than replacing them

@@ -45,7 +45,8 @@
       "modifiers": [
         {
           "stat_id": "damage",
-          "amount": 0.06
+          "amount": 0.06,
+          "effect_tags": ["hellfire", "burn"]
         },
         {
           "stat_id": "armor",
