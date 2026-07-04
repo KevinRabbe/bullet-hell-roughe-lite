@@ -198,9 +198,10 @@ Completed phases:
 1. normalize weapon tags to this vocabulary
 2. add shared runtime tag queries
 3. add first item/passive synergies that consume tags
+4. broaden item coverage so portal and ritual builds have non-family tag hooks too
 
 Next phases should be:
 
-4. expand tag-driven item and passive interactions carefully
-5. use tags for broader build discoverability before using them for heavy shop steering
-6. keep families as a soft identity layer rather than replacing them
+5. expand tag-driven item and passive interactions carefully
+6. use tags for broader build discoverability before using them for heavy shop steering
+7. keep families as a soft identity layer rather than replacing them
