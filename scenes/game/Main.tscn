@@ -274,6 +274,7 @@ enabled = true
 [node name="ShopTooltipController" type="Node" parent="."]
 script = ExtResource("12")
 shop_controller_path = NodePath("../ShopController")
+player_path = NodePath("../Player")
 offer_button_paths = [NodePath("../ShopUI/Panel/Offer1"), NodePath("../ShopUI/Panel/Offer2"), NodePath("../ShopUI/Panel/Offer3"), NodePath("../ShopUI/Panel/Offer4")]
 tooltip_panel_path = NodePath("../ShopUI/TooltipPanel")
 tooltip_title_path = NodePath("../ShopUI/TooltipPanel/TooltipTitle")
