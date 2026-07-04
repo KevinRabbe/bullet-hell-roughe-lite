@@ -20,4 +20,4 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "ritual"
 price = 5
 shop_enabled = true
-tags = Array[String](["ritual", "needle", "blood", "precision"])
+tags = Array[String](["ritual", "blood", "precision", "ranged"])

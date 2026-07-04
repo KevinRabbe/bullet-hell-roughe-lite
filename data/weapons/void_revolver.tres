@@ -18,3 +18,4 @@ projectile_speed = 840.0
 range = 1.08
 projectile_lifetime = 1.9
 price = 6
+tags = Array[String](["gun", "portal", "precision", "ranged"])
