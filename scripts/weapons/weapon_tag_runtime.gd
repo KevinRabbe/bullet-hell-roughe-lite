@@ -78,3 +78,33 @@ static func count_owned_items_with_tag(items: Array, tag: String) -> int:
 	if normalized_tag == "":
 		return 0
 	return int(build_item_tag_counts(items).get(normalized_tag, 0))
+
+static func build_weapon_tag_bonus_overrides(weapon_data: WeaponData, items: Array) -> Dictionary:
+	var overrides: Dictionary = {}
+	if weapon_data == null:
+		return overrides
+	var active_tags := weapon_tags(weapon_data)
+	if active_tags.is_empty():
+		return overrides
+	var active_tag_set: Dictionary = {}
+	for tag in active_tags:
+		active_tag_set[tag] = true
+	for item_variant in items:
+		if not (item_variant is ItemData):
+			continue
+		var item := item_variant as ItemData
+		for rule_variant in item.weapon_tag_stat_bonuses:
+			if not (rule_variant is Dictionary):
+				continue
+			var rule: Dictionary = rule_variant
+			var tag := normalize_tag(str(rule.get("tag", "")))
+			if tag == "" or active_tag_set.get(tag, false) != true:
+				continue
+			var stat_id := str(rule.get("stat_id", ""))
+			if stat_id == "":
+				continue
+			var amount := float(rule.get("amount", 0.0))
+			if is_zero_approx(amount):
+				continue
+			overrides[stat_id] = float(overrides.get(stat_id, 0.0)) + amount
+	return overrides

@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = "glass_scope"
 name = "Glass Scope"
-description = "Projectiles travel farther and faster."
+description = "Projectiles travel farther and faster. Precision weapons gain extra reach and velocity."
 category = "offense"
 rarity = "common"
 tags = Array[String](["projectile"])
@@ -16,3 +16,12 @@ stat_modifiers = {
 "attack_range": 0.2,
 "projectile_speed": 0.25
 }
+weapon_tag_stat_bonuses = Array[Dictionary]([{
+"amount": 0.12,
+"stat_id": "attack_range",
+"tag": "precision"
+}, {
+"amount": 0.12,
+"stat_id": "projectile_speed",
+"tag": "precision"
+}])

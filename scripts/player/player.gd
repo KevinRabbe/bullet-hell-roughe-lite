@@ -883,6 +883,9 @@ func get_owned_item_tag_counts() -> Dictionary:
 func count_owned_items_with_tag(tag: String) -> int:
 	return WeaponTagRuntime.count_owned_items_with_tag(owned_items, tag)
 
+func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
+	return WeaponTagRuntime.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+
 func get_weapon_ui_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
 	if weapon_loadout == null or not weapon_loadout.has_method("get_weapon_entries"):
