@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = "steel_heart"
 name = "Steel Heart"
-description = "Gain max HP and armor."
+description = "Gain max HP and armor. Heavy weapons also gain steadier pressure."
 category = "defense"
 rarity = "rare"
 tags = Array[String](["survivability"])
@@ -16,3 +16,12 @@ stat_modifiers = {
 "armor": 2.0,
 "max_hp": 25.0
 }
+weapon_tag_stat_bonuses = Array[Dictionary]([{
+"amount": 0.12,
+"stat_id": "projectile_speed",
+"tag": "heavy"
+}, {
+"amount": 0.08,
+"stat_id": "attack_range",
+"tag": "heavy"
+}])

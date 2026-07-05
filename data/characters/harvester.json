@@ -27,8 +27,13 @@
       "id": "soul_harvest",
       "effect": "temporary_stat_bonus",
       "trigger": "on_enemy_kill",
-      "stat_id": "damage",
-      "amount": 0.04,
+      "modifiers": [
+        {
+          "stat_id": "damage",
+          "amount": 0.04,
+          "effect_tags": ["necromancy", "curse"]
+        }
+      ],
       "duration": 5.0,
       "max_stacks": 5,
       "debug_label": "SOUL HARVEST"

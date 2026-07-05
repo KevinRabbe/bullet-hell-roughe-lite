@@ -1,5 +1,7 @@
 extends RefCounted
 
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+
 const DEFAULT_EFFECT := "temporary_stat_bonus"
 
 var _rules: Array[Dictionary] = []
@@ -88,11 +90,15 @@ func tick(delta: float) -> Array[Dictionary]:
 func _build_adjustment(rule: Dictionary, modifier: Dictionary, value: float, expired: bool = false) -> Dictionary:
 	var base_label := str(rule.get("debug_label", "Passive"))
 	var label := "%s expired" % base_label if expired else base_label
-	return {
+	var adjustment := {
 		"stat_id": str(modifier.get("stat_id", "")),
 		"value": value,
 		"label": label
 	}
+	var effect_tags := WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+	if not effect_tags.is_empty():
+		adjustment["effect_tags"] = effect_tags
+	return adjustment
 
 func _resolve_rule_modifiers(rule: Dictionary) -> Array[Dictionary]:
 	var modifiers: Array[Dictionary] = []

@@ -36,7 +36,8 @@
         },
         {
           "stat_id": "attack_speed",
-          "amount": 0.03
+          "amount": 0.03,
+          "effect_tags": ["portal"]
         }
       ],
       "duration": 3.0,

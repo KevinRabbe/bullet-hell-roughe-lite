@@ -55,7 +55,16 @@ func _physics_process(delta: float) -> void:
 		var entry_data := _load_weapon_data(weapon_id)
 		if entry_data == null:
 			continue
-		var weapon_bonus_overrides := _get_entry_weapon_bonus_overrides(entry)
+		var weapon_bonus_overrides := _merge_weapon_bonus_overrides(
+			_merge_weapon_bonus_overrides(
+				_get_entry_weapon_bonus_overrides(entry),
+				_get_player_weapon_tag_bonus_overrides(entry_data)
+			),
+			_merge_weapon_bonus_overrides(
+				_get_player_passive_weapon_tag_bonus_overrides(entry_data),
+				_get_set_bonus_weapon_overrides(entry_data)
+			)
+		)
 		var weapon_range := _get_weapon_range(entry_data)
 		weapon_range += float(weapon_bonus_overrides.get("attack_range", 0.0)) * 900.0
 		var muzzle_position := _get_slot_muzzle_position(index)
@@ -296,6 +305,39 @@ func _get_entry_weapon_bonus_overrides(entry: Dictionary) -> Dictionary:
 	if overrides_variant is Dictionary:
 		return (overrides_variant as Dictionary).duplicate(true)
 	return {}
+
+func _get_player_weapon_tag_bonus_overrides(entry_data: WeaponData) -> Dictionary:
+	if owner_player == null or not owner_player.has_method("get_weapon_tag_bonus_overrides"):
+		return {}
+	var overrides_variant: Variant = owner_player.call("get_weapon_tag_bonus_overrides", entry_data)
+	if overrides_variant is Dictionary:
+		return (overrides_variant as Dictionary).duplicate(true)
+	return {}
+
+func _get_set_bonus_weapon_overrides(entry_data: WeaponData) -> Dictionary:
+	if set_bonus_manager == null or not set_bonus_manager.has_method("get_weapon_bonus_overrides"):
+		return {}
+	var overrides_variant: Variant = set_bonus_manager.call("get_weapon_bonus_overrides", entry_data)
+	if overrides_variant is Dictionary:
+		return (overrides_variant as Dictionary).duplicate(true)
+	return {}
+
+func _get_player_passive_weapon_tag_bonus_overrides(entry_data: WeaponData) -> Dictionary:
+	if owner_player == null or not owner_player.has_method("get_passive_weapon_tag_bonus_overrides"):
+		return {}
+	var overrides_variant: Variant = owner_player.call("get_passive_weapon_tag_bonus_overrides", entry_data)
+	if overrides_variant is Dictionary:
+		return (overrides_variant as Dictionary).duplicate(true)
+	return {}
+
+func _merge_weapon_bonus_overrides(base_overrides: Dictionary, bonus_overrides: Dictionary) -> Dictionary:
+	if bonus_overrides.is_empty():
+		return base_overrides
+	var merged := base_overrides.duplicate(true)
+	for stat_id_variant in bonus_overrides.keys():
+		var stat_id := str(stat_id_variant)
+		merged[stat_id] = float(merged.get(stat_id, 0.0)) + float(bonus_overrides.get(stat_id, 0.0))
+	return merged
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	return WeaponRuntimeUtil.load_weapon_data(_weapon_data_cache, weapon_id)

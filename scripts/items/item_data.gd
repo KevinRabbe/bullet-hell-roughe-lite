@@ -10,6 +10,7 @@ extends Resource
 @export var price: int = 3
 @export var stack_limit: int = 1
 @export var stat_modifiers: Dictionary = {}
+@export var weapon_tag_stat_bonuses: Array[Dictionary] = []
 
 func _init(
 	new_id: String = "",
@@ -20,7 +21,8 @@ func _init(
 	new_tags: Array[String] = [],
 	new_price: int = 3,
 	new_stack_limit: int = 1,
-	new_stat_modifiers: Dictionary = {}
+	new_stat_modifiers: Dictionary = {},
+	new_weapon_tag_stat_bonuses: Array[Dictionary] = []
 ) -> void:
 	id = new_id
 	name = new_name
@@ -31,3 +33,4 @@ func _init(
 	price = new_price
 	stack_limit = new_stack_limit
 	stat_modifiers = new_stat_modifiers.duplicate(true)
+	weapon_tag_stat_bonuses = new_weapon_tag_stat_bonuses.duplicate(true)

@@ -1,14 +1,17 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 @export var shop_controller_path: NodePath
+@export var player_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
 @export var tooltip_panel_path: NodePath
 @export var tooltip_title_path: NodePath
 @export var tooltip_body_path: NodePath
 
 var shop_controller: Node
+var player: Node
 var offer_buttons: Array[Button] = []
 var tooltip_panel: Panel
 var tooltip_title: Label
@@ -18,6 +21,8 @@ var _weapon_data_cache: Dictionary = {}
 func _ready() -> void:
 	if shop_controller_path != NodePath():
 		shop_controller = get_node_or_null(shop_controller_path)
+	if player_path != NodePath():
+		player = get_node_or_null(player_path)
 	if tooltip_panel_path != NodePath():
 		tooltip_panel = get_node_or_null(tooltip_panel_path)
 	if tooltip_title_path != NodePath():
@@ -80,17 +85,146 @@ func _build_weapon_tooltip(weapon_id: String) -> String:
 	var tags_text := ", ".join(weapon_data.tags)
 	if tags_text == "":
 		tags_text = "-"
-	return "Family: %s\nTags: %s\n%s" % [family, tags_text, weapon_data.description]
+	var sections: Array[String] = [
+		"Family: %s" % family,
+		"Tags: %s" % tags_text,
+		weapon_data.description
+	]
+	var player_snapshot := _get_player_snapshot()
+	var passive_lines := _build_passive_weapon_synergy_lines(weapon_data, player_snapshot)
+	if not passive_lines.is_empty():
+		sections.append("Passive Synergy:\n%s" % "\n".join(passive_lines))
+	var set_bonus_lines := _build_set_bonus_weapon_synergy_lines(weapon_data, player_snapshot)
+	if not set_bonus_lines.is_empty():
+		sections.append("Set Bonus Synergy:\n%s" % "\n".join(set_bonus_lines))
+	var item_bonus_lines := _build_owned_item_weapon_bonus_lines(weapon_data, player_snapshot)
+	if not item_bonus_lines.is_empty():
+		sections.append("Owned Item Synergy:\n%s" % "\n".join(item_bonus_lines))
+	return "\n".join(sections)
 
 func _build_item_tooltip(item_id: String) -> String:
-	for item in ItemDatabase.get_prototype_items():
-		if item != null and item.id == item_id:
-			return item.description
+	var item := ItemDatabase.get_item_by_id(item_id)
+	if item != null:
+		return _format_item_tooltip(item)
 	return "No ItemData found."
+
+func _format_item_tooltip(item: ItemData) -> String:
+	var sections: Array[String] = []
+	var item_tags := WeaponTagRuntime.item_tags(item)
+	var tags_text := ", ".join(item_tags)
+	if tags_text == "":
+		tags_text = "-"
+	sections.append("Tags: %s" % tags_text)
+	sections.append(item.description)
+	var bonus_lines := _build_item_weapon_tag_bonus_lines(item)
+	if not bonus_lines.is_empty():
+		sections.append("Weapon Tag Bonuses:\n%s" % "\n".join(bonus_lines))
+	return "\n".join(sections)
+
+func _build_item_weapon_tag_bonus_lines(item: ItemData) -> Array[String]:
+	var lines: Array[String] = []
+	for rule_variant in item.weapon_tag_stat_bonuses:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+		var stat_id := str(rule.get("stat_id", ""))
+		if tag == "" or stat_id == "":
+			continue
+		var amount := float(rule.get("amount", 0.0))
+		if is_zero_approx(amount):
+			continue
+		lines.append("- %s: %s" % [tag, _format_stat_bonus(stat_id, amount)])
+	return lines
+
+func _build_owned_item_weapon_bonus_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var items_variant: Variant = player_snapshot.get("items", [])
+	if not (items_variant is Array):
+		return lines
+	var weapon_tag_set: Dictionary = {}
+	for tag in WeaponTagRuntime.weapon_tags(weapon_data):
+		weapon_tag_set[tag] = true
+	for item_variant in items_variant:
+		if not (item_variant is ItemData):
+			continue
+		var item := item_variant as ItemData
+		var matched_bonus_parts: Array[String] = []
+		for rule_variant in item.weapon_tag_stat_bonuses:
+			if not (rule_variant is Dictionary):
+				continue
+			var rule: Dictionary = rule_variant
+			var rule_tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+			if rule_tag == "" or weapon_tag_set.get(rule_tag, false) != true:
+				continue
+			var stat_id := str(rule.get("stat_id", ""))
+			if stat_id == "":
+				continue
+			var amount := float(rule.get("amount", 0.0))
+			if is_zero_approx(amount):
+				continue
+			matched_bonus_parts.append("%s %s" % [rule_tag, _format_stat_bonus(stat_id, amount)])
+		if not matched_bonus_parts.is_empty():
+			lines.append("- %s: %s" % [item.name, ", ".join(matched_bonus_parts)])
+	return lines
+
+func _build_passive_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var passive_rules_variant: Variant = player_snapshot.get("passive_weapon_synergies", [])
+	if not (passive_rules_variant is Array):
+		return lines
+	var passive_rules: Array = passive_rules_variant
+	for passive_rule_variant in passive_rules:
+		if not (passive_rule_variant is Dictionary):
+			continue
+		var passive_rule: Dictionary = passive_rule_variant
+		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, passive_rule):
+			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(passive_rule.get("effect_tags", []))
+		var stat_id := str(passive_rule.get("stat_id", ""))
+		var amount := float(passive_rule.get("amount", 0.0))
+		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
+			continue
+		lines.append("- %s: %s via %s" % [str(passive_rule.get("label", "Passive")), _format_stat_bonus(stat_id, amount), ", ".join(effect_tags)])
+	return lines
+
+func _build_set_bonus_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var set_bonus_rules_variant: Variant = player_snapshot.get("set_bonus_weapon_synergies", [])
+	if not (set_bonus_rules_variant is Array):
+		return lines
+	var set_bonus_rules: Array = set_bonus_rules_variant
+	for set_bonus_rule_variant in set_bonus_rules:
+		if not (set_bonus_rule_variant is Dictionary):
+			continue
+		var set_bonus_rule: Dictionary = set_bonus_rule_variant
+		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, set_bonus_rule):
+			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(set_bonus_rule.get("effect_tags", []))
+		var stat_id := str(set_bonus_rule.get("stat_id", ""))
+		var amount := float(set_bonus_rule.get("amount", 0.0))
+		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
+			continue
+		lines.append("- %s: %s via %s" % [str(set_bonus_rule.get("label", "Set bonus")), _format_stat_bonus(stat_id, amount), ", ".join(effect_tags)])
+	return lines
+
+func _format_stat_bonus(stat_id: String, amount: float) -> String:
+	match stat_id:
+		"attack_speed", "attack_range", "projectile_speed", "damage":
+			return "%+.0f%% %s" % [amount * 100.0, stat_id.replace("_", " ")]
+		_:
+			return "%+.2f %s" % [amount, stat_id.replace("_", " ")]
 
 func _hide_tooltip() -> void:
 	if tooltip_panel != null:
 		tooltip_panel.visible = false
+
+func _get_player_snapshot() -> Dictionary:
+	if player != null and player.has_method("get_ui_snapshot"):
+		var snapshot_variant: Variant = player.call("get_ui_snapshot")
+		if snapshot_variant is Dictionary:
+			return snapshot_variant
+	return {}
 
 func _load_weapon_data(weapon_id: String) -> WeaponData:
 	if weapon_id == "":

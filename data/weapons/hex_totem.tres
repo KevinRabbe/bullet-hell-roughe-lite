@@ -20,6 +20,6 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "ritual"
 price = 7
 shop_enabled = true
-tags = Array[String](["ritual", "totem", "hex", "heavy"])
+tags = Array[String](["ritual", "mine", "heavy", "magic"])
 orbit_radius_multiplier = 1.1
 orbit_scale_multiplier = 1.0

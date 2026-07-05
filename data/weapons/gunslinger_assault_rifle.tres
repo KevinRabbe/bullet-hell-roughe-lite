@@ -18,7 +18,7 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 family = "gunslinger"
 price = 6
 shop_enabled = true
-tags = Array[String](["gun", "bullet", "rifle", "rift"])
+tags = Array[String](["gun", "rapid", "precision", "ranged"])
 stat_scaling = {
 "attack_speed": 1.0,
 "crit_chance": 0.8,

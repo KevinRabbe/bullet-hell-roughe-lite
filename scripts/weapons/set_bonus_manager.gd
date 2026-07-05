@@ -1,6 +1,7 @@
 extends Node
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 @export var weapon_loadout_path: NodePath
 @export var log_set_bonus_changes: bool = false
@@ -43,6 +44,29 @@ func get_player_stat_bonus(stat_id: String) -> float:
 			continue
 		total_bonus += float(effect.get("value", 0.0))
 	return total_bonus
+
+func get_weapon_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
+	var overrides: Dictionary = {}
+	if weapon_data == null:
+		return overrides
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) != "weapon_stat_bonus":
+			continue
+		if not _effect_applies_to_weapon(effect, weapon_data):
+			continue
+		var stat_id := str(effect.get("stat_id", ""))
+		if stat_id == "":
+			continue
+		overrides[stat_id] = float(overrides.get(stat_id, 0.0)) + float(effect.get("value", 0.0))
+	return overrides
+
+func get_active_weapon_bonus_rules() -> Array[Dictionary]:
+	var rules: Array[Dictionary] = []
+	for effect in _active_effects_for_all_families():
+		if str(effect.get("type", "")) != "weapon_stat_bonus":
+			continue
+		rules.append(effect.duplicate(true))
+	return rules
 
 func can_pierce_shot() -> bool:
 	for effect in _active_effects_for_all_families():
@@ -170,6 +194,9 @@ func _get_set_bonus_definition(family_id: String) -> Dictionary:
 	if definition_variant is Dictionary:
 		return definition_variant
 	return {}
+
+func _effect_applies_to_weapon(effect: Dictionary, weapon_data: WeaponData) -> bool:
+	return WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, effect)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")

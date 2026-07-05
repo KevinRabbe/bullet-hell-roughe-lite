@@ -17,9 +17,10 @@
       "state_key": "4_piece",
       "effects": [
         {
-          "type": "player_stat_bonus",
+          "type": "weapon_stat_bonus",
           "stat_id": "projectile_speed",
-          "value": 0.1
+          "value": 0.1,
+          "effect_tags": ["portal"]
         }
       ]
     },

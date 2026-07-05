@@ -3,6 +3,7 @@ extends RefCounted
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const WeightedPicker = preload("res://scripts/core/weighted_picker.gd")
+const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 const CONFIG_PATH := "res://data/shop/shop_config.json"
 const RARITY_ORDER: Array[String] = ["common", "rare", "epic", "legendary"]
@@ -89,7 +90,7 @@ static func make_weapon_offer(weapon_id: String, weapon_loader: Callable) -> Dic
 	if data.price > 0:
 		price = data.price
 	family = data.get_family_value() if data.has_method("get_family_value") else data.family
-	tags = data.tags.duplicate()
+	tags = WeaponTagRuntime.weapon_tags(data)
 	rarity_name = data.rarity
 	return {
 		"type": "weapon",
@@ -119,7 +120,8 @@ static func build_item_offer_pool() -> Array[Dictionary]:
 			"type": "item",
 			"id": item_id,
 			"label": item_name,
-			"price": default_item_price
+			"price": default_item_price,
+			"tags": WeaponTagRuntime.item_tags(item)
 		})
 	return item_offer_pool
 

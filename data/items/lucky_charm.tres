@@ -6,7 +6,7 @@
 script = ExtResource("1")
 id = "lucky_charm"
 name = "Lucky Charm"
-description = "Improve luck and dodge chance."
+description = "Improve luck and dodge chance. Portal and ritual weapons gain a little extra reach."
 category = "utility"
 rarity = "common"
 tags = Array[String](["luck"])
@@ -16,3 +16,12 @@ stat_modifiers = {
 "dodge": 0.05,
 "luck": 1.0
 }
+weapon_tag_stat_bonuses = Array[Dictionary]([{
+"amount": 0.08,
+"stat_id": "attack_range",
+"tag": "portal"
+}, {
+"amount": 0.08,
+"stat_id": "attack_range",
+"tag": "ritual"
+}])

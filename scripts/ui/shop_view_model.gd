@@ -146,6 +146,7 @@ func _get_weapon_entries(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 
 func _build_offer_cards(offers: Array[Dictionary]) -> Array[Dictionary]:
 	var cards: Array[Dictionary] = []
+	var player_snapshot := _get_player_snapshot()
 	for offer in offers:
 		var card := _create_offer_card_base(offer)
 		var offer_type := str(offer.get("type", ""))
@@ -154,9 +155,9 @@ func _build_offer_cards(offers: Array[Dictionary]) -> Array[Dictionary]:
 		elif offer_type == "weapon":
 			var weapon_id := str(offer.get("id", ""))
 			var weapon_data := _load_weapon_data(weapon_id)
-			_apply_weapon_offer_card(card, offer, weapon_data)
+			_apply_weapon_offer_card(card, offer, weapon_data, player_snapshot)
 		elif offer_type == "item":
-			_apply_item_offer_card(card, offer)
+			_apply_item_offer_card(card, offer, player_snapshot)
 		cards.append(card)
 	return cards
 
@@ -177,17 +178,17 @@ func _apply_sold_out_card(card: Dictionary) -> void:
 	card["button_text"] = "Sold Out"
 	card["button_disabled"] = true
 
-func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData) -> void:
+func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> void:
 	var weapon_id := str(offer.get("id", ""))
-	card["description"] = _build_weapon_offer_description(offer, weapon_data)
+	card["description"] = _build_weapon_offer_description(offer, weapon_data, player_snapshot)
 	if _can_buy_weapon_offer(offer):
 		return
 	card["button_text"] = "Blocked"
 	card["button_disabled"] = true
 	card["block_reason"] = get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
 
-func _apply_item_offer_card(card: Dictionary, offer: Dictionary) -> void:
-	card["description"] = _build_item_offer_description(str(offer.get("id", "")))
+func _apply_item_offer_card(card: Dictionary, offer: Dictionary, player_snapshot: Dictionary) -> void:
+	card["description"] = _build_item_offer_description(str(offer.get("id", "")), player_snapshot)
 
 func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 	var entries := _get_weapon_entries(player_snapshot)
@@ -251,29 +252,198 @@ func _get_player_snapshot() -> Dictionary:
 			return snapshot_variant
 	return {}
 
-func _build_weapon_offer_description(offer: Dictionary, weapon_data: WeaponData) -> String:
+func _build_weapon_offer_description(offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> String:
 	if weapon_data == null:
 		return "Weapon"
 	var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
 	var desc_text := weapon_data.description
 	if desc_text == "":
 		desc_text = "No description."
-	return "[color=#7fd0ff]Rarity: %s[/color]\n%s\nDMG %.1f\nCD %.2fs\nRange x%.2f" % [
-		rarity_text,
+	var lines: Array[String] = [
+		"[color=#7fd0ff]Rarity: %s[/color]" % rarity_text,
 		desc_text,
-		weapon_data.get_damage_value(),
-		weapon_data.get_cooldown_value(),
-		weapon_data.get_attack_range_value()
+		"DMG %.1f" % weapon_data.get_damage_value(),
+		"CD %.2fs" % weapon_data.get_cooldown_value(),
+		"Range x%.2f" % weapon_data.get_attack_range_value()
 	]
+	lines.append_array(_build_weapon_offer_synergy_lines(weapon_data, player_snapshot))
+	return "\n".join(lines)
 
-func _build_item_offer_description(item_id: String) -> String:
+func _build_item_offer_description(item_id: String, player_snapshot: Dictionary) -> String:
 	var item_data := _find_item(item_id)
 	if item_data == null:
 		return "Item"
 	var item_desc := item_data.description
 	if item_desc == "":
 		item_desc = "No description."
-	return "[color=#b5ff9a]Rarity: %s[/color]\n%s" % [str(item_data.rarity).capitalize(), item_desc]
+	var lines: Array[String] = [
+		"[color=#b5ff9a]Rarity: %s[/color]" % str(item_data.rarity).capitalize(),
+		item_desc
+	]
+	lines.append_array(_build_item_offer_synergy_lines(item_data, player_snapshot))
+	return "\n".join(lines)
+
+func _build_weapon_offer_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var matched_tags := _build_matching_loadout_tags(WeaponTagRuntime.weapon_tags(weapon_data), player_snapshot)
+	if not matched_tags.is_empty():
+		lines.append("[color=#ffd36b]Matches loadout tags: %s[/color]" % ", ".join(matched_tags))
+	var passive_bonus_lines := _build_passive_weapon_synergy_lines(weapon_data, player_snapshot)
+	if not passive_bonus_lines.is_empty():
+		lines.append("[color=#ff9af1]Passive synergy:[/color]")
+		lines.append_array(passive_bonus_lines)
+	var set_bonus_lines := _build_set_bonus_weapon_synergy_lines(weapon_data, player_snapshot)
+	if not set_bonus_lines.is_empty():
+		lines.append("[color=#8fd1ff]Set bonus synergy:[/color]")
+		lines.append_array(set_bonus_lines)
+	var item_bonus_lines := _build_owned_item_weapon_bonus_lines(weapon_data, player_snapshot)
+	if not item_bonus_lines.is_empty():
+		lines.append("[color=#9affae]Boosted by owned items:[/color]")
+		lines.append_array(item_bonus_lines)
+	return lines
+
+func _build_item_offer_synergy_lines(item_data: ItemData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var active_tag_counts := _get_snapshot_dictionary(player_snapshot, "weapon_tag_counts")
+	var tag_bonus_lines := _build_item_tag_bonus_match_lines(item_data, active_tag_counts)
+	if not tag_bonus_lines.is_empty():
+		lines.append("[color=#9affae]Boosts current loadout:[/color]")
+		lines.append_array(tag_bonus_lines)
+	return lines
+
+func _build_matching_loadout_tags(offer_tags: Array[String], player_snapshot: Dictionary) -> Array[String]:
+	var active_tags_variant: Variant = player_snapshot.get("active_weapon_tags", [])
+	if not (active_tags_variant is Array):
+		return []
+	var active_tag_set: Dictionary = {}
+	for active_tag_variant in active_tags_variant:
+		var normalized_tag := WeaponTagRuntime.normalize_tag(str(active_tag_variant))
+		if normalized_tag != "":
+			active_tag_set[normalized_tag] = true
+	var matches: Array[String] = []
+	for offer_tag in offer_tags:
+		var normalized_offer_tag := WeaponTagRuntime.normalize_tag(offer_tag)
+		if normalized_offer_tag == "" or active_tag_set.get(normalized_offer_tag, false) != true:
+			continue
+		matches.append(normalized_offer_tag)
+	matches.sort()
+	return matches
+
+func _build_owned_item_weapon_bonus_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var items_variant: Variant = player_snapshot.get("items", [])
+	if not (items_variant is Array):
+		return lines
+	var weapon_tag_set: Dictionary = {}
+	for tag in WeaponTagRuntime.weapon_tags(weapon_data):
+		weapon_tag_set[tag] = true
+	for item_variant in items_variant:
+		if not (item_variant is ItemData):
+			continue
+		var item := item_variant as ItemData
+		var matched_bonus_parts: Array[String] = []
+		for rule_variant in item.weapon_tag_stat_bonuses:
+			if not (rule_variant is Dictionary):
+				continue
+			var rule: Dictionary = rule_variant
+			var rule_tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+			if rule_tag == "" or weapon_tag_set.get(rule_tag, false) != true:
+				continue
+			var stat_id := str(rule.get("stat_id", ""))
+			if stat_id == "":
+				continue
+			var amount := float(rule.get("amount", 0.0))
+			if is_zero_approx(amount):
+				continue
+			matched_bonus_parts.append("%s %s" % [rule_tag, _format_tag_stat_bonus(stat_id, amount)])
+		if not matched_bonus_parts.is_empty():
+			lines.append("- %s: %s" % [item.name, ", ".join(matched_bonus_parts)])
+	return lines
+
+func _build_passive_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var passive_rules_variant: Variant = player_snapshot.get("passive_weapon_synergies", [])
+	if not (passive_rules_variant is Array):
+		return lines
+	var passive_rules: Array = passive_rules_variant
+	for passive_rule_variant in passive_rules:
+		if not (passive_rule_variant is Dictionary):
+			continue
+		var passive_rule: Dictionary = passive_rule_variant
+		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, passive_rule):
+			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(passive_rule.get("effect_tags", []))
+		var stat_id := str(passive_rule.get("stat_id", ""))
+		var amount := float(passive_rule.get("amount", 0.0))
+		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
+			continue
+		lines.append(
+			"- %s: %s via %s"
+			% [
+				str(passive_rule.get("label", "Passive")),
+				_format_tag_stat_bonus(stat_id, amount),
+				", ".join(effect_tags)
+			]
+		)
+	return lines
+
+func _build_set_bonus_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var set_bonus_rules_variant: Variant = player_snapshot.get("set_bonus_weapon_synergies", [])
+	if not (set_bonus_rules_variant is Array):
+		return lines
+	var set_bonus_rules: Array = set_bonus_rules_variant
+	for set_bonus_rule_variant in set_bonus_rules:
+		if not (set_bonus_rule_variant is Dictionary):
+			continue
+		var set_bonus_rule: Dictionary = set_bonus_rule_variant
+		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, set_bonus_rule):
+			continue
+		var effect_tags := WeaponTagRuntime.resolve_effect_tags(set_bonus_rule.get("effect_tags", []))
+		var stat_id := str(set_bonus_rule.get("stat_id", ""))
+		var amount := float(set_bonus_rule.get("amount", 0.0))
+		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
+			continue
+		lines.append(
+			"- %s: %s via %s"
+			% [
+				str(set_bonus_rule.get("label", "Set bonus")),
+				_format_tag_stat_bonus(stat_id, amount),
+				", ".join(effect_tags)
+			]
+		)
+	return lines
+
+func _build_item_tag_bonus_match_lines(item_data: ItemData, active_tag_counts: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	for rule_variant in item_data.weapon_tag_stat_bonuses:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var rule_tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
+		if rule_tag == "" or int(active_tag_counts.get(rule_tag, 0)) <= 0:
+			continue
+		var stat_id := str(rule.get("stat_id", ""))
+		if stat_id == "":
+			continue
+		var amount := float(rule.get("amount", 0.0))
+		if is_zero_approx(amount):
+			continue
+		lines.append("- %s (%dx): %s" % [rule_tag, int(active_tag_counts.get(rule_tag, 0)), _format_tag_stat_bonus(stat_id, amount)])
+	return lines
+
+func _format_tag_stat_bonus(stat_id: String, amount: float) -> String:
+	match stat_id:
+		"damage", "attack_speed", "attack_range", "projectile_speed":
+			return "%+.0f%% %s" % [amount * 100.0, stat_id.replace("_", " ")]
+		_:
+			return "%+.2f %s" % [amount, stat_id.replace("_", " ")]
+
+func _get_snapshot_dictionary(player_snapshot: Dictionary, key: String) -> Dictionary:
+	var value: Variant = player_snapshot.get(key, {})
+	if value is Dictionary:
+		return (value as Dictionary).duplicate(true)
+	return {}
 
 func _build_weapon_slot_label(entry: Dictionary, weapon_data: WeaponData, weapon_id: String, rarity: String) -> String:
 	var base_label := ""

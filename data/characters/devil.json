@@ -57,11 +57,13 @@
       "modifiers": [
         {
           "stat_id": "attack_speed",
-          "amount": 0.08
+          "amount": 0.08,
+          "effect_tags": ["melee", "thrown"]
         },
         {
           "stat_id": "damage",
-          "amount": 0.04
+          "amount": 0.04,
+          "effect_tags": ["melee", "thrown"]
         },
         {
           "stat_id": "armor",
