@@ -1,7 +1,7 @@
 class_name CharacterSelectionRuntime
 extends RefCounted
 
-static var pending_character_id: String = ""
+static var pending_run_start_payload: Dictionary = {}
 
 static func load_selection_state(data_registry: Node) -> Dictionary:
 	if data_registry == null:
@@ -284,15 +284,50 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 	}
 
 static func set_pending_character_id(character_id: String) -> void:
-	pending_character_id = character_id
+	pending_run_start_payload = build_run_start_payload(null, character_id)
 
 static func get_pending_character_id() -> String:
-	return pending_character_id
+	return str(pending_run_start_payload.get("character_id", ""))
 
 static func consume_pending_character_id() -> String:
-	var current := pending_character_id
-	pending_character_id = ""
-	return current
+	var payload := consume_pending_run_start_payload()
+	return str(payload.get("character_id", ""))
 
 static func clear_pending_character_id() -> void:
-	pending_character_id = ""
+	clear_pending_run_start_payload()
+
+static func set_pending_run_start_payload(payload: Dictionary) -> void:
+	pending_run_start_payload = payload.duplicate(true)
+
+static func get_pending_run_start_payload() -> Dictionary:
+	return pending_run_start_payload.duplicate(true)
+
+static func consume_pending_run_start_payload() -> Dictionary:
+	var payload := pending_run_start_payload.duplicate(true)
+	pending_run_start_payload.clear()
+	return payload
+
+static func clear_pending_run_start_payload() -> void:
+	pending_run_start_payload.clear()
+
+static func build_run_start_payload(data_registry: Node, character_id: String, starting_weapon_id: String = "") -> Dictionary:
+	var resolved_character_id := character_id
+	var resolved_starting_weapon_id := starting_weapon_id
+	if resolved_character_id == "" and data_registry != null and data_registry.has_method("get_default_selectable_character_id"):
+		resolved_character_id = str(data_registry.call("get_default_selectable_character_id"))
+	if resolved_starting_weapon_id == "" and data_registry != null and data_registry.has_method("get_character"):
+		var character_variant: Variant = data_registry.call("get_character", resolved_character_id)
+		if character_variant is Dictionary:
+			var character_data: Dictionary = character_variant
+			var starting_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
+			if starting_ids_variant is Array:
+				var starting_ids: Array = starting_ids_variant
+				for starting_weapon_variant in starting_ids:
+					var candidate_id := str(starting_weapon_variant)
+					if candidate_id != "":
+						resolved_starting_weapon_id = candidate_id
+						break
+	return {
+		"character_id": resolved_character_id,
+		"starting_weapon_id": resolved_starting_weapon_id
+	}

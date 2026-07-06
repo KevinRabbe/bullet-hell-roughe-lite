@@ -183,13 +183,25 @@ func _on_start_pressed() -> void:
 		character_select_layer.visible = false
 
 func _try_auto_start_from_pending_selection() -> void:
-	var pending_character_id := CharacterSelectionRuntime.consume_pending_character_id()
+	var pending_payload := CharacterSelectionRuntime.consume_pending_run_start_payload()
+	var pending_character_id := str(pending_payload.get("character_id", ""))
 	if pending_character_id == "":
 		return
 	var pending_index := selectable_characters.find(pending_character_id)
-	if pending_index >= 0:
-		selected_character_index = pending_index
+	if pending_index < 0:
+		_on_start_pressed()
+		return
+	selected_character_index = pending_index
 	_update_character_debug_label()
+	if player != null:
+		MainGameStartRuntime.apply_run_start_payload(player, pending_payload)
+		run_started = true
+		_apply_debug_quick_shop_preset()
+		_hide_run_overlays()
+		_set_gameplay_active(true)
+		if character_select_layer != null:
+			character_select_layer.visible = false
+		return
 	_on_start_pressed()
 
 func _apply_debug_quick_shop_preset() -> void:
