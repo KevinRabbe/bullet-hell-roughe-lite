@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_2a3b4"]
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_fm4st"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_t4p0v"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -9,40 +10,236 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_2a3b4")
+mouse_filter = 1
+script = ExtResource("1_fm4st")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -68.0
-offset_right = 100.0
-offset_bottom = 68.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 10
+color = Color(0.0470588, 0.0509804, 0.0823529, 1)
 
-[node name="StartButton" type="Button" parent="VBoxContainer"]
+[node name="ArenaTexture" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_t4p0v")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.55, 0.42, 0.46, 0.52)
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0392157, 0.0431373, 0.0745098, 0.76)
+
+[node name="TopGlow" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 188.0
+grow_horizontal = 2
+color = Color(0.384314, 0.0862745, 0.164706, 0.22)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 48.0
+offset_top = 40.0
+offset_right = -48.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
 layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="HeroColumn" type="VBoxContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="Eyebrow" type="Label" parent="RootMargin/MainHBox/HeroColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "Hellshot Frontier Prototype"
+
+[node name="Title" type="Label" parent="RootMargin/MainHBox/HeroColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 46
+text = "Bullet Hell Roughe Lite"
+
+[node name="Subtitle" type="Label" parent="RootMargin/MainHBox/HeroColumn"]
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.92)
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+text = "Fast arena runs, evolving builds, portal choices, and a growing roster. Phase 1 keeps the front door clean while we move character prep and loadout selection into dedicated screens."
+
+[node name="ActionPanel" type="PanelContainer" parent="RootMargin/MainHBox/HeroColumn"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ActionMargin" type="MarginContainer" parent="RootMargin/MainHBox/HeroColumn/ActionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ActionVBox" type="VBoxContainer" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StartButton" type="Button" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
 text = "Start Run"
 
-[node name="OptionsButton" type="Button" parent="VBoxContainer"]
+[node name="OptionsButton" type="Button" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "Options"
 
-[node name="CreditsButton" type="Button" parent="VBoxContainer"]
+[node name="CreditsButton" type="Button" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "Credits"
 
-[node name="QuitButton" type="Button" parent="VBoxContainer"]
+[node name="QuitButton" type="Button" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 text = "Quit"
 
-[node name="OptionsPanel" type="Panel" parent="."]
+[node name="ActionHint" type="Label" parent="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.760784, 0.784314, 0.835294, 0.85)
+autowrap_mode = 3
+text = "Current run prep still opens inside the gameplay scene. Proper character selection, detail panels, and starting weapon choice land in the next menu phases."
+
+[node name="FooterLabel" type="Label" parent="RootMargin/MainHBox/HeroColumn"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.603922, 0.631373, 0.705882, 0.95)
+autowrap_mode = 3
+text = "Tip: this foundation intentionally keeps flow stable while we move selection and loadout logic out of combat one phase at a time."
+
+[node name="InfoColumn" type="VBoxContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BuildPanel" type="PanelContainer" parent="RootMargin/MainHBox/InfoColumn"]
+layout_mode = 2
+
+[node name="BuildMargin" type="MarginContainer" parent="RootMargin/MainHBox/InfoColumn/BuildPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="BuildVBox" type="VBoxContainer" parent="RootMargin/MainHBox/InfoColumn/BuildPanel/BuildMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BuildTitle" type="Label" parent="RootMargin/MainHBox/InfoColumn/BuildPanel/BuildMargin/BuildVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Current Build"
+
+[node name="BuildBody" type="Label" parent="RootMargin/MainHBox/InfoColumn/BuildPanel/BuildMargin/BuildVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
+autowrap_mode = 3
+text = "Six active characters are online with baseline passives, tag-driven item hooks, portal content phase A, and recent runtime cleanup already on main."
+
+[node name="FlowPanel" type="PanelContainer" parent="RootMargin/MainHBox/InfoColumn"]
+layout_mode = 2
+
+[node name="FlowMargin" type="MarginContainer" parent="RootMargin/MainHBox/InfoColumn/FlowPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="FlowVBox" type="VBoxContainer" parent="RootMargin/MainHBox/InfoColumn/FlowPanel/FlowMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FlowTitle" type="Label" parent="RootMargin/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Next Menu Phases"
+
+[node name="FlowBody" type="Label" parent="RootMargin/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
+autowrap_mode = 3
+text = "Phase 2 locks thin character presentation data. Phase 3 moves selection out of combat. Later phases add character detail, starting weapon selection, and scalable character templates."
+
+[node name="InputPanel" type="PanelContainer" parent="RootMargin/MainHBox/InfoColumn"]
+layout_mode = 2
+
+[node name="InputMargin" type="MarginContainer" parent="RootMargin/MainHBox/InfoColumn/InputPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="InputVBox" type="VBoxContainer" parent="RootMargin/MainHBox/InfoColumn/InputPanel/InputMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InputTitle" type="Label" parent="RootMargin/MainHBox/InfoColumn/InputPanel/InputMargin/InputVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Quick Notes"
+
+[node name="InputBody" type="Label" parent="RootMargin/MainHBox/InfoColumn/InputPanel/InputMargin/InputVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
+autowrap_mode = 3
+text = "Start Run enters the existing run-prep flow. Options and Credits stay lightweight placeholders for now so we can keep one PR = one phase."
+
+[node name="ModalScrim" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0.0196078, 0.0235294, 0.0392157, 0.72)
+
+[node name="DialogPanel" type="PanelContainer" parent="."]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -50,83 +247,44 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-offset_bottom = 100.0
+offset_left = -240.0
+offset_top = -140.0
+offset_right = 240.0
+offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="OptionsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Options Placeholder"
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="DialogMargin" type="MarginContainer" parent="DialogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="CloseButton" type="Button" parent="OptionsPanel"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -25.0
-offset_top = -35.0
-offset_right = 25.0
-offset_bottom = -4.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="DialogVBox" type="VBoxContainer" parent="DialogPanel/DialogMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DialogTitle" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "Info"
+
+[node name="DialogBody" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
+autowrap_mode = 3
+text = "Placeholder body."
+
+[node name="DialogCloseButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
 text = "Close"
 
-[node name="CreditsPanel" type="Panel" parent="."]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-offset_bottom = 100.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="CreditsPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-text = "Credits Placeholder"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="CloseButton" type="Button" parent="CreditsPanel"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -25.0
-offset_top = -35.0
-offset_right = 25.0
-offset_bottom = -4.0
-grow_horizontal = 2
-grow_vertical = 0
-text = "Close"
-
-[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/OptionsButton" to="." method="_on_options_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/CreditsButton" to="." method="_on_credits_button_pressed"]
-[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
-[connection signal="pressed" from="OptionsPanel/CloseButton" to="." method="_on_options_button_pressed"]
-[connection signal="pressed" from="CreditsPanel/CloseButton" to="." method="_on_credits_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/OptionsButton" to="." method="_on_options_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/CreditsButton" to="." method="_on_credits_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="DialogPanel/DialogMargin/DialogVBox/DialogCloseButton" to="." method="_hide_dialog"]
