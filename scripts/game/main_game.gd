@@ -96,6 +96,7 @@ func _ready() -> void:
 	_update_character_debug_label()
 	_hide_run_overlays()
 	_set_gameplay_active(false)
+	_try_auto_start_from_pending_selection()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -172,6 +173,16 @@ func _on_start_pressed() -> void:
 	_set_gameplay_active(true)
 	if character_select_layer != null:
 		character_select_layer.visible = false
+
+func _try_auto_start_from_pending_selection() -> void:
+	var pending_character_id := CharacterSelectionRuntime.consume_pending_character_id()
+	if pending_character_id == "":
+		return
+	var pending_index := selectable_characters.find(pending_character_id)
+	if pending_index >= 0:
+		selected_character_index = pending_index
+	_update_character_debug_label()
+	_on_start_pressed()
 
 func _apply_debug_quick_shop_preset() -> void:
 	var preset := _get_effective_debug_preset()

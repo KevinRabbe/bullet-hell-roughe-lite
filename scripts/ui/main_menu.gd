@@ -1,9 +1,9 @@
 extends Control
 
-const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
+const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
-const OPTIONS_COPY := "Phase 1 keeps the front door stable on purpose. Options stay lightweight until the new menu flow, character detail screen, and start-loadout contract are in place."
-const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelite prototype. Current focus: stronger front door, better character discovery, and cleaner run-start flow."
+const OPTIONS_COPY := "The front door is stable now. Options stay lightweight until the new menu flow, character detail screen, and start-loadout contract are in place."
+const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelite prototype. Current focus: better character discovery, stronger run-start flow, and cleaner menu architecture."
 
 @onready var start_button: Button = $RootMargin/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
 @onready var modal_scrim: ColorRect = $ModalScrim
@@ -27,7 +27,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_hide_dialog()
 
 func _on_start_button_pressed() -> void:
-	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_options_button_pressed() -> void:
 	_show_dialog("Options", OPTIONS_COPY)
