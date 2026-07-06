@@ -21,11 +21,13 @@ static func load_selection_state(data_registry: Node) -> Dictionary:
 	var normalized_ids := normalize_character_ids(ids)
 	if normalized_ids.is_empty():
 		return build_fallback_state(data_registry)
+	var entries := build_character_entries(data_registry, normalized_ids)
 	return {
 		"ids": normalized_ids,
-		"display_names": build_display_names(data_registry, normalized_ids),
-		"presentations": build_presentations(data_registry, normalized_ids),
-		"details": build_details(data_registry, normalized_ids)
+		"entries": entries,
+		"display_names": _map_entry_field(entries, "display_name"),
+		"presentations": _map_nested_entry_field(entries, "presentation"),
+		"details": _map_nested_entry_field(entries, "detail")
 	}
 
 static func normalize_character_ids(ids: Array) -> Array[String]:
@@ -35,6 +37,12 @@ static func normalize_character_ids(ids: Array) -> Array[String]:
 		if id_string != "":
 			normalized.append(id_string)
 	return normalized
+
+static func build_character_entries(data_registry: Node, character_ids: Array[String]) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for character_id in character_ids:
+		entries.append(_build_character_entry(data_registry, character_id))
+	return entries
 
 static func build_display_names(data_registry: Node, character_ids: Array[String]) -> Dictionary:
 	var display_names: Dictionary = {}
@@ -51,29 +59,12 @@ static func build_display_names(data_registry: Node, character_ids: Array[String
 static func build_presentations(data_registry: Node, character_ids: Array[String]) -> Dictionary:
 	var presentations: Dictionary = {}
 	for character_id in character_ids:
-		var default_presentation := {
-			"headline": "",
-			"identity_summary": "",
-			"passive_name": "",
-			"passive_summary": "",
-			"playstyle_tags": [],
-			"difficulty": "medium"
-		}
+		var default_presentation := _build_character_presentation({})
 		if data_registry != null and data_registry.has_method("get_character"):
 			var character_variant: Variant = data_registry.call("get_character", character_id)
 			if character_variant is Dictionary:
 				var character_data: Dictionary = character_variant
-				var presentation_variant: Variant = character_data.get("presentation", {})
-				if presentation_variant is Dictionary:
-					var presentation: Dictionary = presentation_variant
-					default_presentation["headline"] = str(presentation.get("headline", ""))
-					default_presentation["identity_summary"] = str(presentation.get("identity_summary", ""))
-					default_presentation["passive_name"] = str(presentation.get("passive_name", ""))
-					default_presentation["passive_summary"] = str(presentation.get("passive_summary", ""))
-					default_presentation["difficulty"] = str(presentation.get("difficulty", "medium"))
-					var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
-					if playstyle_tags_variant is Array:
-						default_presentation["playstyle_tags"] = playstyle_tags_variant
+				default_presentation = _build_character_presentation(character_data)
 		presentations[character_id] = default_presentation
 	return presentations
 
@@ -82,6 +73,93 @@ static func build_details(data_registry: Node, character_ids: Array[String]) -> 
 	for character_id in character_ids:
 		details[character_id] = _build_character_detail(data_registry, character_id)
 	return details
+
+static func _map_entry_field(entries: Array[Dictionary], field_name: String) -> Dictionary:
+	var mapped: Dictionary = {}
+	for entry in entries:
+		var character_id := str(entry.get("id", ""))
+		if character_id == "":
+			continue
+		mapped[character_id] = entry.get(field_name)
+	return mapped
+
+static func _map_nested_entry_field(entries: Array[Dictionary], field_name: String) -> Dictionary:
+	var mapped: Dictionary = {}
+	for entry in entries:
+		var character_id := str(entry.get("id", ""))
+		if character_id == "":
+			continue
+		var nested_variant: Variant = entry.get(field_name, {})
+		mapped[character_id] = nested_variant if nested_variant is Dictionary else {}
+	return mapped
+
+static func _build_character_entry(data_registry: Node, character_id: String) -> Dictionary:
+	var character_data: Dictionary = {}
+	if data_registry != null and data_registry.has_method("get_character"):
+		var character_variant: Variant = data_registry.call("get_character", character_id)
+		if character_variant is Dictionary:
+			character_data = character_variant
+	var display_name := str(character_data.get("display_name", character_id))
+	var starting_weapon_ids := _normalize_string_array(character_data.get("starting_weapon_ids", []))
+	var family_weapon_ids := _normalize_string_array(character_data.get("family_weapon_ids", []))
+	var presentation := _build_character_presentation(character_data)
+	var detail := _build_character_detail(data_registry, character_id)
+	var readiness := _build_character_readiness(character_data, starting_weapon_ids, family_weapon_ids)
+	return {
+		"id": character_id,
+		"display_name": display_name,
+		"roster_order": int(character_data.get("roster_order", 9999)),
+		"selectable": character_data.get("selectable", true) != false,
+		"visual_path": str(character_data.get("visual_path", "")),
+		"visual_scale": float(character_data.get("visual_scale", 1.0)),
+		"preferred_weapon_family": str(character_data.get("preferred_weapon_family", "")),
+		"starting_weapon_ids": starting_weapon_ids,
+		"family_weapon_ids": family_weapon_ids,
+		"starting_weapon_count": starting_weapon_ids.size(),
+		"family_weapon_count": family_weapon_ids.size(),
+		"is_ready_for_run_start": readiness.get("is_ready", false) == true,
+		"readiness_reason": str(readiness.get("reason", "")),
+		"presentation": presentation,
+		"detail": detail
+	}
+
+static func _build_character_readiness(character_data: Dictionary, starting_weapon_ids: Array[String], family_weapon_ids: Array[String]) -> Dictionary:
+	if str(character_data.get("visual_path", "")) == "":
+		return {"is_ready": false, "reason": "Missing visual path"}
+	if starting_weapon_ids.is_empty():
+		return {"is_ready": false, "reason": "Missing starting weapon"}
+	if family_weapon_ids.is_empty():
+		return {"is_ready": false, "reason": "Missing family arsenal"}
+	var presentation_variant: Variant = character_data.get("presentation", {})
+	if not (presentation_variant is Dictionary):
+		return {"is_ready": false, "reason": "Missing presentation block"}
+	var presentation: Dictionary = presentation_variant
+	if str(presentation.get("headline", "")) == "" or str(presentation.get("identity_summary", "")) == "":
+		return {"is_ready": false, "reason": "Incomplete presentation copy"}
+	return {"is_ready": true, "reason": ""}
+
+static func _build_character_presentation(character_data: Dictionary) -> Dictionary:
+	var result := {
+		"headline": "",
+		"identity_summary": "",
+		"passive_name": "",
+		"passive_summary": "",
+		"playstyle_tags": [],
+		"difficulty": "medium"
+	}
+	var presentation_variant: Variant = character_data.get("presentation", {})
+	if not (presentation_variant is Dictionary):
+		return result
+	var presentation: Dictionary = presentation_variant
+	result["headline"] = str(presentation.get("headline", ""))
+	result["identity_summary"] = str(presentation.get("identity_summary", ""))
+	result["passive_name"] = str(presentation.get("passive_name", ""))
+	result["passive_summary"] = str(presentation.get("passive_summary", ""))
+	result["difficulty"] = str(presentation.get("difficulty", "medium"))
+	var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
+	if playstyle_tags_variant is Array:
+		result["playstyle_tags"] = playstyle_tags_variant
+	return result
 
 static func _build_character_detail(data_registry: Node, character_id: String) -> Dictionary:
 	var detail := {
@@ -257,6 +335,40 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 		fallback_display_name = str(data_registry.call("get_character_display_name", fallback_character_id))
 	return {
 		"ids": [fallback_character_id],
+		"entries": [{
+			"id": fallback_character_id,
+			"display_name": fallback_display_name,
+			"roster_order": 9999,
+			"selectable": true,
+			"visual_path": "",
+			"visual_scale": 1.0,
+			"preferred_weapon_family": "",
+			"starting_weapon_ids": [],
+			"family_weapon_ids": [],
+			"starting_weapon_count": 0,
+			"family_weapon_count": 0,
+			"is_ready_for_run_start": false,
+			"readiness_reason": "Fallback character data only",
+			"presentation": {
+				"headline": "",
+				"identity_summary": "",
+				"passive_name": "",
+				"passive_summary": "",
+				"playstyle_tags": [],
+				"difficulty": "medium"
+			},
+			"detail": {
+				"visual_path": "",
+				"visual_scale": 1.0,
+				"family_label": "Unknown",
+				"starter_weapon_names": [],
+				"starter_weapon_summary": "",
+				"arsenal_names": [],
+				"passive_tags": [],
+				"strengths": [],
+				"tradeoffs": []
+			}
+		}],
 		"display_names": {fallback_character_id: fallback_display_name},
 		"presentations": {
 			fallback_character_id: {
@@ -337,16 +449,19 @@ static func build_starting_weapon_selection_state(data_registry: Node, character
 		"character_id": character_id,
 		"display_name": character_id,
 		"headline": "",
-		"weapon_options": []
+		"weapon_options": [],
+		"character_entry": {}
 	}
 	if data_registry == null or not data_registry.has_method("get_character"):
 		return state
+	var character_entry := _build_character_entry(data_registry, character_id)
+	state["character_entry"] = character_entry
 	var character_variant: Variant = data_registry.call("get_character", character_id)
 	if not (character_variant is Dictionary):
 		return state
 	var character_data: Dictionary = character_variant
-	state["display_name"] = str(character_data.get("display_name", character_id))
-	var presentation_variant: Variant = character_data.get("presentation", {})
+	state["display_name"] = str(character_entry.get("display_name", character_id))
+	var presentation_variant: Variant = character_entry.get("presentation", {})
 	if presentation_variant is Dictionary:
 		var presentation: Dictionary = presentation_variant
 		state["headline"] = str(presentation.get("headline", ""))
