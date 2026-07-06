@@ -55,7 +55,14 @@ func _load_state() -> void:
 	var selection_state := CharacterSelectionRuntime.build_starting_weapon_selection_state(data_registry, current_character_id)
 	title_label.text = "Starting Weapon"
 	var display_name := str(selection_state.get("display_name", current_character_id))
+	var character_entry_variant: Variant = selection_state.get("character_entry", {})
+	var family_count := 0
+	if character_entry_variant is Dictionary:
+		var character_entry: Dictionary = character_entry_variant
+		family_count = int(character_entry.get("family_weapon_count", 0))
 	headline_label.text = "%s - choose the weapon that opens this run." % display_name
+	if family_count > 0:
+		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
 		for option_variant in options_variant:

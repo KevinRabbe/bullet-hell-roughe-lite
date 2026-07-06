@@ -22,6 +22,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var back_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
 
 var selectable_ids: Array[String] = []
+var character_entries: Array[Dictionary] = []
 var display_names: Dictionary = {}
 var presentations: Dictionary = {}
 var details: Dictionary = {}
@@ -60,6 +61,11 @@ func _load_selection_state() -> void:
 	var ids_variant: Variant = selection_state.get("ids", [])
 	if ids_variant is Array:
 		selectable_ids = CharacterSelectionRuntime.normalize_character_ids(ids_variant)
+	var entries_variant: Variant = selection_state.get("entries", [])
+	if entries_variant is Array:
+		for entry_variant in entries_variant:
+			if entry_variant is Dictionary:
+				character_entries.append(entry_variant)
 	var display_names_variant: Variant = selection_state.get("display_names", {})
 	display_names = display_names_variant if display_names_variant is Dictionary else {}
 	var presentations_variant: Variant = selection_state.get("presentations", {})
@@ -118,10 +124,15 @@ func _refresh_selection_details() -> void:
 			confirm_button.disabled = true
 		return
 	var character_id := selectable_ids[selected_index]
+	var current_entry := _find_character_entry(character_id)
 	var presentation_variant: Variant = presentations.get(character_id, {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	if current_entry.get("presentation", null) is Dictionary:
+		presentation = current_entry.get("presentation", {})
 	var detail_variant: Variant = details.get(character_id, {})
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	if current_entry.get("detail", null) is Dictionary:
+		detail = current_entry.get("detail", {})
 	heading_label.text = str(presentation.get("headline", "Choose your fighter."))
 	_apply_portrait(detail)
 	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
@@ -146,8 +157,12 @@ func _refresh_selection_details() -> void:
 	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
 	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
 	if confirm_button != null:
-		confirm_button.disabled = false
-		confirm_button.text = "Choose %s Loadout" % str(display_names.get(character_id, character_id))
+		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
+		confirm_button.disabled = not run_ready
+		if run_ready:
+			confirm_button.text = "Choose %s Loadout" % str(display_names.get(character_id, character_id))
+		else:
+			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
 
 func _apply_portrait(detail: Dictionary) -> void:
 	if portrait_rect == null:
@@ -169,6 +184,12 @@ func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
 		if value != "":
 			parts.append(value)
 	return ", ".join(parts) if not parts.is_empty() else empty_text
+
+func _find_character_entry(character_id: String) -> Dictionary:
+	for entry in character_entries:
+		if str(entry.get("id", "")) == character_id:
+			return entry
+	return {}
 
 func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():
