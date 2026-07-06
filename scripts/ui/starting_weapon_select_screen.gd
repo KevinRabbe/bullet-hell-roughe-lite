@@ -43,6 +43,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_index(min(selected_index + 1, weapon_options.size() - 1))
 		KEY_ENTER, KEY_SPACE:
 			_on_confirm_pressed()
+		KEY_R:
+			_on_random_pressed()
+		KEY_T:
+			_select_default_weapon(true)
 		KEY_ESCAPE:
 			_on_back_pressed()
 
@@ -68,11 +72,7 @@ func _load_state() -> void:
 		for option_variant in options_variant:
 			if option_variant is Dictionary:
 				weapon_options.append(option_variant)
-	for option_index in weapon_options.size():
-		var option: Dictionary = weapon_options[option_index]
-		if option.get("default_selected", false) == true:
-			selected_index = option_index
-			break
+	_select_default_weapon()
 
 func _rebuild_weapon_buttons() -> void:
 	for child in weapon_list.get_children():
@@ -136,6 +136,33 @@ func _on_confirm_pressed() -> void:
 	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
 	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+
+func _on_random_pressed() -> void:
+	if weapon_options.is_empty():
+		return
+	selected_index = randi_range(0, weapon_options.size() - 1)
+	_refresh_selection()
+	var selected_button := weapon_list.get_child(selected_index) as Button
+	if selected_button != null:
+		selected_button.grab_focus()
+
+func _select_default_weapon(should_refresh: bool = false) -> void:
+	for option_index in weapon_options.size():
+		var option: Dictionary = weapon_options[option_index]
+		if option.get("default_selected", false) == true:
+			selected_index = option_index
+			if should_refresh:
+				_refresh_selection()
+				var selected_button := weapon_list.get_child(selected_index) as Button
+				if selected_button != null:
+					selected_button.grab_focus()
+			return
+	selected_index = 0
+	if should_refresh:
+		_refresh_selection()
+		var selected_button := weapon_list.get_child(selected_index) as Button
+		if selected_button != null:
+			selected_button.grab_focus()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
