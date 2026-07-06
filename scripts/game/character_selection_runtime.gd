@@ -293,3 +293,6 @@ static func consume_pending_character_id() -> String:
 	var current := pending_character_id
 	pending_character_id = ""
 	return current
+
+static func clear_pending_character_id() -> void:
+	pending_character_id = ""
