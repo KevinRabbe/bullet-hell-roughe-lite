@@ -82,7 +82,7 @@ text = "Character Select"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Choose who enters the arena. Phase 4 expands this screen with a stronger identity read: art, family, starter loadout, strengths, and tradeoffs."
+text = "Choose who enters the arena. The next step lets you lock the starting weapon before the run begins."
 
 [node name="RosterList" type="VBoxContainer" parent="RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
@@ -214,7 +214,7 @@ theme_override_constants/separation = 14
 custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Enter Arena"
+text = "Choose Starting Weapon"
 
 [node name="BackButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(160, 50)

@@ -1,7 +1,7 @@
 extends Control
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
-const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
+const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var roster_list: VBoxContainer = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
@@ -175,7 +175,7 @@ func _on_confirm_pressed() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, selectable_ids[selected_index])
 	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
-	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)

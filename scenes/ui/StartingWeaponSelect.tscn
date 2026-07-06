@@ -1,0 +1,150 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/starting_weapon_select_screen.gd" id="1_j2jhn"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_6w72s"]
+
+[node name="StartingWeaponSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_j2jhn")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0431373, 0.0470588, 0.0784314, 1)
+
+[node name="ArenaTexture" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_6w72s")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.52, 0.42, 0.45, 0.46)
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0196078, 0.0235294, 0.0431373, 0.8)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 36.0
+offset_right = -40.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="WeaponPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+
+[node name="WeaponMargin" type="MarginContainer" parent="RootMargin/MainHBox/WeaponPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="WeaponVBox" type="VBoxContainer" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="WeaponTitle" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Choose Your Opener"
+
+[node name="WeaponBody" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Phase 7 adds a clean run-start seam: pick the first weapon from the selected character's family before entering combat."
+
+[node name="WeaponList" type="VBoxContainer" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="DetailPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DetailMargin" type="MarginContainer" parent="RootMargin/MainHBox/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "Starting Weapon"
+
+[node name="Headline" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Pick the opener that defines this run's first decisions."
+
+[node name="SelectedName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Weapon"
+
+[node name="SelectedDescription" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Description"
+
+[node name="SelectedTags" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+autowrap_mode = 3
+text = "Tags: None"
+
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ConfirmButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+custom_minimum_size = Vector2(220, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Enter Arena"
+
+[node name="BackButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+custom_minimum_size = Vector2(160, 50)
+layout_mode = 2
+text = "Back"
