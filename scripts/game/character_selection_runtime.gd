@@ -350,17 +350,14 @@ static func build_starting_weapon_selection_state(data_registry: Node, character
 	if presentation_variant is Dictionary:
 		var presentation: Dictionary = presentation_variant
 		state["headline"] = str(presentation.get("headline", ""))
-	var family_weapon_ids_variant: Variant = character_data.get("family_weapon_ids", [])
-	if not (family_weapon_ids_variant is Array):
-		return state
-	var family_weapon_ids: Array = family_weapon_ids_variant
 	var starting_weapon_ids := _normalize_string_array(character_data.get("starting_weapon_ids", []))
+	if starting_weapon_ids.is_empty():
+		return state
 	var options: Array[Dictionary] = []
-	for weapon_id_variant in family_weapon_ids:
-		var weapon_id := str(weapon_id_variant)
+	for weapon_id in starting_weapon_ids:
 		if weapon_id == "":
 			continue
-		options.append(_build_weapon_option(data_registry, weapon_id, weapon_id in starting_weapon_ids))
+		options.append(_build_weapon_option(data_registry, weapon_id, weapon_id == starting_weapon_ids[0]))
 	state["weapon_options"] = options
 	return state
 
