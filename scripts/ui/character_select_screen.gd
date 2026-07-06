@@ -172,7 +172,9 @@ func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
 func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():
 		return
-	CharacterSelectionRuntime.set_pending_character_id(selectable_ids[selected_index])
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, selectable_ids[selected_index])
+	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
 func _on_back_pressed() -> void:

@@ -304,6 +304,9 @@ func apply_level_up_bonus(stat_id: String, value: float) -> void:
 	print("LEVEL-UP BONUS: %s %+0.2f" % [stat_id, value])
 
 func apply_character_by_id(character_id: String) -> void:
+	apply_character_loadout(character_id, "")
+
+func apply_character_loadout(character_id: String, starting_weapon_override: String = "") -> void:
 	if character_id == "":
 		return
 	active_character_id = character_id
@@ -311,7 +314,7 @@ func apply_character_by_id(character_id: String) -> void:
 	_reset_character_stats()
 	_apply_character_rules(active_character_data)
 	_apply_character_visual(active_character_data)
-	_apply_character_starting_weapon(active_character_data)
+	_apply_character_starting_weapon(active_character_data, starting_weapon_override)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
 	_emit_ui_snapshot_changed()
@@ -331,8 +334,8 @@ func _reset_character_stats() -> void:
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
 
-func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
-	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
+func _apply_character_starting_weapon(character_data: Dictionary = {}, starting_weapon_override: String = "") -> void:
+	var starting_weapon_id := starting_weapon_override if _weapon_resource_exists(starting_weapon_override) else _resolve_starting_weapon_id(character_data)
 	_grant_starting_weapon_by_id(starting_weapon_id)
 
 func _apply_character_rules(character_data: Dictionary = {}) -> void:

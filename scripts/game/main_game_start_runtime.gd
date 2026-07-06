@@ -8,6 +8,19 @@ static func apply_selected_character(player: Node, selectable_characters: Array[
 	player.call("apply_character_by_id", character_id)
 	return character_id
 
+static func apply_run_start_payload(player: Node, payload: Dictionary) -> String:
+	if player == null:
+		return ""
+	var character_id := str(payload.get("character_id", ""))
+	if character_id == "":
+		return ""
+	var starting_weapon_id := str(payload.get("starting_weapon_id", ""))
+	if player.has_method("apply_character_loadout"):
+		player.call("apply_character_loadout", character_id, starting_weapon_id)
+	elif player.has_method("apply_character_by_id"):
+		player.call("apply_character_by_id", character_id)
+	return character_id
+
 static func new_run_seed(run_rng: Node) -> void:
 	if run_rng != null and run_rng.has_method("new_run"):
 		run_rng.call("new_run")
