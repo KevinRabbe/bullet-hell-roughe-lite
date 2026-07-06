@@ -148,3 +148,9 @@ text = "Enter Arena"
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Back"
+
+[node name="HintLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
+autowrap_mode = 3
+text = "Shortcuts: Up/Down to browse, Enter to start, R for random, T for default starter, Esc to return."

@@ -19,6 +19,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var strengths_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
 @onready var tradeoffs_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
 @onready var confirm_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
+@onready var random_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/RandomButton
 @onready var back_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
 
 var selectable_ids: Array[String] = []
@@ -34,6 +35,8 @@ func _ready() -> void:
 	_refresh_selection_details()
 	if confirm_button != null:
 		confirm_button.pressed.connect(_on_confirm_pressed)
+	if random_button != null:
+		random_button.pressed.connect(_on_random_pressed)
 	if back_button != null:
 		back_button.pressed.connect(_on_back_pressed)
 
@@ -52,6 +55,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_select_index(min(selected_index + 1, selectable_ids.size() - 1))
 		KEY_ENTER, KEY_SPACE:
 			_on_confirm_pressed()
+		KEY_R:
+			_on_random_pressed()
 		KEY_ESCAPE:
 			_on_back_pressed()
 
@@ -198,6 +203,15 @@ func _on_confirm_pressed() -> void:
 	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, selectable_ids[selected_index])
 	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
+
+func _on_random_pressed() -> void:
+	if selectable_ids.is_empty():
+		return
+	selected_index = randi_range(0, selectable_ids.size() - 1)
+	_refresh_selection_details()
+	var selected_button := roster_list.get_child(selected_index) as Button
+	if selected_button != null:
+		selected_button.grab_focus()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)

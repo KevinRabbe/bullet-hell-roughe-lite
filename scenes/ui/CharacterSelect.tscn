@@ -216,7 +216,18 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Choose Starting Weapon"
 
+[node name="RandomButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+custom_minimum_size = Vector2(140, 50)
+layout_mode = 2
+text = "Random"
+
 [node name="BackButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Back"
+
+[node name="HintLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
+autowrap_mode = 3
+text = "Shortcuts: Up/Down to browse, Enter to continue, R for random, Esc to return."
