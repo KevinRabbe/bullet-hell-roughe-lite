@@ -331,3 +331,59 @@ static func build_run_start_payload(data_registry: Node, character_id: String, s
 		"character_id": resolved_character_id,
 		"starting_weapon_id": resolved_starting_weapon_id
 	}
+
+static func build_starting_weapon_selection_state(data_registry: Node, character_id: String) -> Dictionary:
+	var state := {
+		"character_id": character_id,
+		"display_name": character_id,
+		"headline": "",
+		"weapon_options": []
+	}
+	if data_registry == null or not data_registry.has_method("get_character"):
+		return state
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if not (character_variant is Dictionary):
+		return state
+	var character_data: Dictionary = character_variant
+	state["display_name"] = str(character_data.get("display_name", character_id))
+	var presentation_variant: Variant = character_data.get("presentation", {})
+	if presentation_variant is Dictionary:
+		var presentation: Dictionary = presentation_variant
+		state["headline"] = str(presentation.get("headline", ""))
+	var family_weapon_ids_variant: Variant = character_data.get("family_weapon_ids", [])
+	if not (family_weapon_ids_variant is Array):
+		return state
+	var family_weapon_ids: Array = family_weapon_ids_variant
+	var starting_weapon_ids := _normalize_string_array(character_data.get("starting_weapon_ids", []))
+	var options: Array[Dictionary] = []
+	for weapon_id_variant in family_weapon_ids:
+		var weapon_id := str(weapon_id_variant)
+		if weapon_id == "":
+			continue
+		options.append(_build_weapon_option(data_registry, weapon_id, weapon_id in starting_weapon_ids))
+	state["weapon_options"] = options
+	return state
+
+static func _build_weapon_option(data_registry: Node, weapon_id: String, default_selected: bool) -> Dictionary:
+	var option := {
+		"id": weapon_id,
+		"display_name": weapon_id,
+		"description": "",
+		"tags": [],
+		"default_selected": default_selected
+	}
+	if data_registry == null or not data_registry.has_method("get_weapon"):
+		return option
+	var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+	if weapon_variant is WeaponData:
+		var weapon_resource: WeaponData = weapon_variant
+		if weapon_resource.display_name != "":
+			option["display_name"] = weapon_resource.display_name
+		option["description"] = weapon_resource.description
+		option["tags"] = _normalize_string_array(weapon_resource.tags)
+	elif weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		option["display_name"] = str(weapon_data.get("display_name", weapon_id))
+		option["description"] = str(weapon_data.get("description", ""))
+		option["tags"] = _normalize_string_array(weapon_data.get("tags", []))
+	return option
