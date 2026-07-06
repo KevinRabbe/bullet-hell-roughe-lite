@@ -450,7 +450,9 @@ static func build_starting_weapon_selection_state(data_registry: Node, character
 		"display_name": character_id,
 		"headline": "",
 		"weapon_options": [],
-		"character_entry": {}
+		"character_entry": {},
+		"selected_weapon_id": "",
+		"selection_source": "default_starter"
 	}
 	if data_registry == null or not data_registry.has_method("get_character"):
 		return state
@@ -470,14 +472,39 @@ static func build_starting_weapon_selection_state(data_registry: Node, character
 		return state
 	var family_weapon_ids: Array = family_weapon_ids_variant
 	var starting_weapon_ids := _normalize_string_array(character_data.get("starting_weapon_ids", []))
+	var remembered_weapon_id := _resolve_pending_starting_weapon_for_character(character_id)
+	if remembered_weapon_id != "":
+		state["selected_weapon_id"] = remembered_weapon_id
+		state["selection_source"] = "remembered_choice"
+	elif not starting_weapon_ids.is_empty():
+		state["selected_weapon_id"] = starting_weapon_ids[0]
 	var options: Array[Dictionary] = []
 	for weapon_id_variant in family_weapon_ids:
 		var weapon_id := str(weapon_id_variant)
 		if weapon_id == "":
 			continue
-		options.append(_build_weapon_option(data_registry, weapon_id, weapon_id in starting_weapon_ids))
+		var is_default_selected := false
+		if remembered_weapon_id != "":
+			is_default_selected = weapon_id == remembered_weapon_id
+		else:
+			is_default_selected = weapon_id in starting_weapon_ids
+		options.append(_build_weapon_option(data_registry, weapon_id, is_default_selected))
 	state["weapon_options"] = options
+	if remembered_weapon_id != "" and not _weapon_options_contain(options, remembered_weapon_id):
+		state["selected_weapon_id"] = ""
+		state["selection_source"] = "default_starter"
 	return state
+
+static func _resolve_pending_starting_weapon_for_character(character_id: String) -> String:
+	if str(pending_run_start_payload.get("character_id", "")) != character_id:
+		return ""
+	return str(pending_run_start_payload.get("starting_weapon_id", ""))
+
+static func _weapon_options_contain(options: Array[Dictionary], weapon_id: String) -> bool:
+	for option in options:
+		if str(option.get("id", "")) == weapon_id:
+			return true
+	return false
 
 static func _build_weapon_option(data_registry: Node, weapon_id: String, default_selected: bool) -> Dictionary:
 	var option := {

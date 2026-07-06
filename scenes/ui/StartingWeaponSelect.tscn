@@ -116,6 +116,12 @@ theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Pick the opener that defines this run's first decisions."
 
+[node name="SelectionState" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+autowrap_mode = 3
+text = "Default starter selected."
+
 [node name="SelectedName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36

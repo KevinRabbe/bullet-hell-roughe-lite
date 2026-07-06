@@ -6,6 +6,7 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 @onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
 @onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
+@onready var selection_state_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
 @onready var weapon_list: VBoxContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
 @onready var selected_name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
@@ -67,6 +68,11 @@ func _load_state() -> void:
 	headline_label.text = "%s - choose the weapon that opens this run." % display_name
 	if family_count > 0:
 		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
+	var selection_source := str(selection_state.get("selection_source", "default_starter"))
+	if selection_state_label != null:
+		selection_state_label.text = "Default starter selected."
+		if selection_source == "remembered_choice":
+			selection_state_label.text = "Restored your previous weapon choice."
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
 		for option_variant in options_variant:
