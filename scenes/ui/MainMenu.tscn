@@ -95,7 +95,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.92)
 theme_override_font_sizes/font_size = 18
 autowrap_mode = 3
-text = "Fast arena runs, evolving builds, portal choices, and a growing roster. Phase 1 keeps the front door clean while we move character prep and loadout selection into dedicated screens."
+text = "Fast arena runs, evolving builds, portal choices, and a growing roster. Character selection now moves out of combat while later phases add richer detail and starting loadout choice."
 
 [node name="ActionPanel" type="PanelContainer" parent="RootMargin/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -226,7 +226,7 @@ text = "Quick Notes"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "Start Run enters the existing run-prep flow. Options and Credits stay lightweight placeholders for now so we can keep one PR = one phase."
+text = "Start Run now enters dedicated character selection. Options and Credits stay lightweight placeholders so we can keep one PR = one phase."
 
 [node name="ModalScrim" type="ColorRect" parent="."]
 visible = false
