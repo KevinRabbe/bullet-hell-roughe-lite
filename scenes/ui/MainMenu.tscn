@@ -95,7 +95,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.92)
 theme_override_font_sizes/font_size = 18
 autowrap_mode = 3
-text = "Fast arena runs, evolving builds, portal choices, and a growing roster. Character selection now moves out of combat while later phases add richer detail and starting loadout choice."
+text = "Fast arena runs, evolving builds, portal choices, and a growing roster. Character selection, detail panels, and starting weapon choice now all happen before combat begins."
 
 [node name="ActionPanel" type="PanelContainer" parent="RootMargin/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -137,7 +137,7 @@ text = "Quit"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.760784, 0.784314, 0.835294, 0.85)
 autowrap_mode = 3
-text = "Current run prep still opens inside the gameplay scene. Proper character selection, detail panels, and starting weapon choice land in the next menu phases."
+text = "Start Run now opens the full pre-run flow: main menu, character selection, and starting weapon choice before the arena begins."
 
 [node name="FooterLabel" type="Label" parent="RootMargin/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -194,13 +194,13 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 24
-text = "Next Menu Phases"
+text = "Current Menu Flow"
 
 [node name="FlowBody" type="Label" parent="RootMargin/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "Phase 2 locks thin character presentation data. Phase 3 moves selection out of combat. Later phases add character detail, starting weapon selection, and scalable character templates."
+text = "The current stack already supports dedicated character discovery, starter weapon choice, roster readiness checks, and scalable character templates for future additions."
 
 [node name="InputPanel" type="PanelContainer" parent="RootMargin/MainHBox/InfoColumn"]
 layout_mode = 2
