@@ -205,6 +205,7 @@ func _validate_character_entries() -> void:
 		if visual_path != "" and not ResourceLoader.exists(visual_path):
 			push_warning("Character '%s' is missing visual resource: %s" % [str(character_id), visual_path])
 		var selectable: bool = character_data.get("selectable", true) != false
+		_validate_character_presentation(str(character_id), character_data.get("presentation", {}), selectable)
 		if not selectable:
 			continue
 		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
@@ -253,6 +254,27 @@ func _validate_character_passive_runtime_tags(character_id: String, rules_varian
 				"Character '%s' passive rule '%s' uses non-canonical gameplay tags: %s"
 				% [character_id, str(rule.get("id", "")), ", ".join(invalid_tags)]
 			)
+
+func _validate_character_presentation(character_id: String, presentation_variant: Variant, selectable: bool) -> void:
+	if not (presentation_variant is Dictionary):
+		if selectable:
+			push_warning("Character '%s' is missing presentation metadata." % character_id)
+		return
+	var presentation: Dictionary = presentation_variant
+	if selectable and str(presentation.get("headline", "")) == "":
+		push_warning("Character '%s' presentation is missing headline." % character_id)
+	if selectable and str(presentation.get("passive_name", "")) == "":
+		push_warning("Character '%s' presentation is missing passive_name." % character_id)
+	if selectable and str(presentation.get("passive_summary", "")) == "":
+		push_warning("Character '%s' presentation is missing passive_summary." % character_id)
+	var difficulty := str(presentation.get("difficulty", "medium"))
+	if difficulty not in ["easy", "medium", "hard"]:
+		push_warning("Character '%s' presentation has invalid difficulty '%s'." % [character_id, difficulty])
+	var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
+	if playstyle_tags_variant is Array:
+		for tag_variant in playstyle_tags_variant:
+			if str(tag_variant) == "":
+				push_warning("Character '%s' presentation contains an empty playstyle tag." % character_id)
 
 func _validate_set_bonus_entries() -> void:
 	var required_thresholds: Array[int] = [2, 4, 6]
