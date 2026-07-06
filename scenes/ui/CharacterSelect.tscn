@@ -82,7 +82,7 @@ text = "Character Select"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Phase 3 moves run-start choice out of combat. Pick a character here; deeper detail and starting weapon choice land in later phases."
+text = "Choose who enters the arena. Phase 4 expands this screen with a stronger identity read: art, family, starter loadout, strengths, and tradeoffs."
 
 [node name="RosterList" type="VBoxContainer" parent="RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
@@ -102,7 +102,7 @@ theme_override_constants/margin_bottom = 24
 
 [node name="DetailVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="Heading" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
@@ -110,13 +110,46 @@ theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
 text = "Choose your fighter."
 
+[node name="HeroRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="PortraitPanel" type="PanelContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow"]
+custom_minimum_size = Vector2(260, 320)
+layout_mode = 2
+
+[node name="PortraitMargin" type="MarginContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/PortraitPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 14
+
+[node name="PortraitRect" type="TextureRect" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/PortraitPanel/PortraitMargin"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Family" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "Family: Unknown"
+
 [node name="Name" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 40
 text = "Character"
 
 [node name="Summary" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-custom_minimum_size = Vector2(0, 96)
+custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
@@ -125,10 +158,10 @@ text = "Summary"
 [node name="PassiveName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Passive: —"
+text = "Passive: -"
 
 [node name="PassiveSummary" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-custom_minimum_size = Vector2(0, 74)
+custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
@@ -138,12 +171,40 @@ text = "Passive summary"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
-text = "Tags: —"
+text = "Tags: -"
 
 [node name="Difficulty" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 text = "Difficulty: Medium"
+
+[node name="StarterWeapon" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Starting Weapon: -"
+
+[node name="Arsenal" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Arsenal: -"
+
+[node name="Strengths" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.91, 0.75, 0.95)
+autowrap_mode = 3
+text = "Strengths: -"
+
+[node name="Tradeoffs" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.71, 0.67, 0.95)
+autowrap_mode = 3
+text = "Tradeoffs: -"
 
 [node name="ActionRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2

@@ -6,18 +6,25 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var roster_list: VBoxContainer = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
 @onready var heading_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Heading
+@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/PortraitPanel/PortraitMargin/PortraitRect
+@onready var family_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/InfoVBox/Family
 @onready var name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Name
 @onready var summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
 @onready var passive_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
 @onready var passive_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
 @onready var tags_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tags
 @onready var difficulty_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Difficulty
+@onready var starter_weapon_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/StarterWeapon
+@onready var arsenal_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Arsenal
+@onready var strengths_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
+@onready var tradeoffs_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
 @onready var confirm_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
 @onready var back_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
 
 var selectable_ids: Array[String] = []
 var display_names: Dictionary = {}
 var presentations: Dictionary = {}
+var details: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
@@ -57,6 +64,8 @@ func _load_selection_state() -> void:
 	display_names = display_names_variant if display_names_variant is Dictionary else {}
 	var presentations_variant: Variant = selection_state.get("presentations", {})
 	presentations = presentations_variant if presentations_variant is Dictionary else {}
+	var details_variant: Variant = selection_state.get("details", {})
+	details = details_variant if details_variant is Dictionary else {}
 	var pending_id := CharacterSelectionRuntime.get_pending_character_id()
 	if pending_id != "":
 		var pending_index := selectable_ids.find(pending_id)
@@ -93,22 +102,32 @@ func _select_index(index: int) -> void:
 func _refresh_selection_details() -> void:
 	if selectable_ids.is_empty():
 		heading_label.text = "No selectable characters found."
+		family_label.text = "Family: -"
 		name_label.text = ""
 		summary_label.text = ""
 		passive_label.text = ""
 		passive_summary_label.text = ""
 		tags_label.text = ""
 		difficulty_label.text = ""
+		starter_weapon_label.text = "Starting Weapon: -"
+		arsenal_label.text = "Arsenal: -"
+		strengths_label.text = "Strengths: -"
+		tradeoffs_label.text = "Tradeoffs: -"
+		portrait_rect.texture = null
 		if confirm_button != null:
 			confirm_button.disabled = true
 		return
 	var character_id := selectable_ids[selected_index]
 	var presentation_variant: Variant = presentations.get(character_id, {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = details.get(character_id, {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
 	heading_label.text = str(presentation.get("headline", "Choose your fighter."))
+	_apply_portrait(detail)
+	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
 	name_label.text = str(display_names.get(character_id, character_id))
 	summary_label.text = str(presentation.get("identity_summary", ""))
-	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "—"))
+	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	passive_summary_label.text = str(presentation.get("passive_summary", ""))
 	var tags_variant: Variant = presentation.get("playstyle_tags", [])
 	var tags: Array[String] = []
@@ -119,8 +138,36 @@ func _refresh_selection_details() -> void:
 				tags.append(tag_text.capitalize())
 	tags_label.text = "Tags: %s" % (", ".join(tags) if not tags.is_empty() else "None")
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
+	starter_weapon_label.text = "Starting Weapon: %s" % _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")
+	var starter_summary := str(detail.get("starter_weapon_summary", ""))
+	if starter_summary != "":
+		starter_weapon_label.text = "%s\n%s" % [starter_weapon_label.text, starter_summary]
+	arsenal_label.text = "Arsenal: %s" % _join_detail_list(detail.get("arsenal_names", []), "Unknown")
+	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
+	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
 	if confirm_button != null:
 		confirm_button.disabled = false
+
+func _apply_portrait(detail: Dictionary) -> void:
+	if portrait_rect == null:
+		return
+	var visual_path := str(detail.get("visual_path", ""))
+	if visual_path == "":
+		portrait_rect.texture = null
+		return
+	var texture_variant: Variant = load(visual_path)
+	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
+
+func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
+	if not (values_variant is Array):
+		return empty_text
+	var values: Array = values_variant
+	var parts: Array[String] = []
+	for value_variant in values:
+		var value := str(value_variant)
+		if value != "":
+			parts.append(value)
+	return ", ".join(parts) if not parts.is_empty() else empty_text
 
 func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():

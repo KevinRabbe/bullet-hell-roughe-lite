@@ -24,7 +24,8 @@ static func load_selection_state(data_registry: Node) -> Dictionary:
 	return {
 		"ids": normalized_ids,
 		"display_names": build_display_names(data_registry, normalized_ids),
-		"presentations": build_presentations(data_registry, normalized_ids)
+		"presentations": build_presentations(data_registry, normalized_ids),
+		"details": build_details(data_registry, normalized_ids)
 	}
 
 static func normalize_character_ids(ids: Array) -> Array[String]:
@@ -76,6 +77,175 @@ static func build_presentations(data_registry: Node, character_ids: Array[String
 		presentations[character_id] = default_presentation
 	return presentations
 
+static func build_details(data_registry: Node, character_ids: Array[String]) -> Dictionary:
+	var details: Dictionary = {}
+	for character_id in character_ids:
+		details[character_id] = _build_character_detail(data_registry, character_id)
+	return details
+
+static func _build_character_detail(data_registry: Node, character_id: String) -> Dictionary:
+	var detail := {
+		"visual_path": "",
+		"visual_scale": 1.0,
+		"family_label": "",
+		"starter_weapon_names": [],
+		"starter_weapon_summary": "",
+		"arsenal_names": [],
+		"passive_tags": [],
+		"strengths": [],
+		"tradeoffs": []
+	}
+	if data_registry == null or not data_registry.has_method("get_character"):
+		return detail
+	var character_variant: Variant = data_registry.call("get_character", character_id)
+	if not (character_variant is Dictionary):
+		return detail
+	var character_data: Dictionary = character_variant
+	detail["visual_path"] = str(character_data.get("visual_path", ""))
+	detail["visual_scale"] = float(character_data.get("visual_scale", 1.0))
+	detail["family_label"] = _humanize_family_id(str(character_data.get("preferred_weapon_family", "")))
+	detail["starter_weapon_names"] = _resolve_weapon_names(data_registry, character_data.get("starting_weapon_ids", []))
+	detail["arsenal_names"] = _resolve_weapon_names(data_registry, character_data.get("family_weapon_ids", []))
+	detail["starter_weapon_summary"] = _build_starter_weapon_summary(data_registry, character_data.get("starting_weapon_ids", []))
+	detail["passive_tags"] = _normalize_string_array(character_data.get("passive_tags", []))
+	detail["strengths"] = _build_character_strengths(character_data)
+	detail["tradeoffs"] = _build_character_tradeoffs(character_data)
+	return detail
+
+static func _resolve_weapon_names(data_registry: Node, weapon_ids_variant: Variant) -> Array[String]:
+	var weapon_names: Array[String] = []
+	if not (weapon_ids_variant is Array):
+		return weapon_names
+	var weapon_ids: Array = weapon_ids_variant
+	for weapon_id_variant in weapon_ids:
+		var weapon_id := str(weapon_id_variant)
+		if weapon_id == "":
+			continue
+		var weapon_name := _resolve_weapon_name(data_registry, weapon_id)
+		if weapon_name != "":
+			weapon_names.append(weapon_name)
+	return weapon_names
+
+static func _build_starter_weapon_summary(data_registry: Node, weapon_ids_variant: Variant) -> String:
+	if not (weapon_ids_variant is Array):
+		return ""
+	var weapon_ids: Array = weapon_ids_variant
+	if weapon_ids.is_empty():
+		return ""
+	var first_weapon_id := str(weapon_ids[0])
+	if first_weapon_id == "":
+		return ""
+	var weapon_name := _resolve_weapon_name(data_registry, first_weapon_id)
+	var weapon_description := _resolve_weapon_description(data_registry, first_weapon_id)
+	if weapon_name == "":
+		return weapon_description
+	if weapon_description == "":
+		return weapon_name
+	return "%s — %s" % [weapon_name, weapon_description]
+
+static func _resolve_weapon_name(data_registry: Node, weapon_id: String) -> String:
+	if data_registry == null or not data_registry.has_method("get_weapon"):
+		return weapon_id
+	var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+	if weapon_variant == null:
+		return weapon_id
+	if weapon_variant is WeaponData:
+		var weapon_resource: WeaponData = weapon_variant
+		if weapon_resource.display_name != "":
+			return weapon_resource.display_name
+	elif weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		var display_name := str(weapon_data.get("display_name", ""))
+		if display_name != "":
+			return display_name
+	return weapon_id
+
+static func _resolve_weapon_description(data_registry: Node, weapon_id: String) -> String:
+	if data_registry == null or not data_registry.has_method("get_weapon"):
+		return ""
+	var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+	if weapon_variant == null:
+		return ""
+	if weapon_variant is WeaponData:
+		var weapon_resource: WeaponData = weapon_variant
+		return weapon_resource.description
+	if weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		return str(weapon_data.get("description", ""))
+	return ""
+
+static func _normalize_string_array(values_variant: Variant) -> Array[String]:
+	var normalized: Array[String] = []
+	if not (values_variant is Array):
+		return normalized
+	var values: Array = values_variant
+	for value_variant in values:
+		var value := str(value_variant)
+		if value != "":
+			normalized.append(value)
+	return normalized
+
+static func _build_character_strengths(character_data: Dictionary) -> Array[String]:
+	var strengths: Array[String] = []
+	var stat_multipliers_variant: Variant = character_data.get("stat_multipliers", {})
+	if stat_multipliers_variant is Dictionary:
+		var stat_multipliers: Dictionary = stat_multipliers_variant
+		for stat_id_variant in stat_multipliers.keys():
+			var stat_id := str(stat_id_variant)
+			var value := float(stat_multipliers.get(stat_id, 1.0))
+			if value > 1.0:
+				strengths.append("%s %+d%%" % [_humanize_stat_id(stat_id), int(round((value - 1.0) * 100.0))])
+	var stat_bonuses_variant: Variant = character_data.get("stat_bonuses", {})
+	if stat_bonuses_variant is Dictionary:
+		var stat_bonuses: Dictionary = stat_bonuses_variant
+		for stat_id_variant in stat_bonuses.keys():
+			var stat_id := str(stat_id_variant)
+			var value := float(stat_bonuses.get(stat_id, 0.0))
+			if value > 0.0:
+				strengths.append("%s +%s" % [_humanize_stat_id(stat_id), _format_stat_bonus(value)])
+	return strengths
+
+static func _build_character_tradeoffs(character_data: Dictionary) -> Array[String]:
+	var tradeoffs: Array[String] = []
+	var stat_multipliers_variant: Variant = character_data.get("stat_multipliers", {})
+	if stat_multipliers_variant is Dictionary:
+		var stat_multipliers: Dictionary = stat_multipliers_variant
+		for stat_id_variant in stat_multipliers.keys():
+			var stat_id := str(stat_id_variant)
+			var value := float(stat_multipliers.get(stat_id, 1.0))
+			if value < 1.0:
+				tradeoffs.append("%s %d%%" % [_humanize_stat_id(stat_id), int(round(value * 100.0))])
+	var stat_bonuses_variant: Variant = character_data.get("stat_bonuses", {})
+	if stat_bonuses_variant is Dictionary:
+		var stat_bonuses: Dictionary = stat_bonuses_variant
+		for stat_id_variant in stat_bonuses.keys():
+			var stat_id := str(stat_id_variant)
+			var value := float(stat_bonuses.get(stat_id, 0.0))
+			if value < 0.0:
+				tradeoffs.append("%s %s" % [_humanize_stat_id(stat_id), _format_stat_bonus(value)])
+	return tradeoffs
+
+static func _humanize_family_id(family_id: String) -> String:
+	if family_id == "":
+		return "Unknown"
+	var words: PackedStringArray = family_id.split("_")
+	var capitalized: Array[String] = []
+	for word in words:
+		capitalized.append(word.capitalize())
+	return " ".join(capitalized)
+
+static func _humanize_stat_id(stat_id: String) -> String:
+	var words: PackedStringArray = stat_id.split("_")
+	var capitalized: Array[String] = []
+	for word in words:
+		capitalized.append(word.capitalize())
+	return " ".join(capitalized)
+
+static func _format_stat_bonus(value: float) -> String:
+	if is_zero_approx(value - roundf(value)):
+		return str(int(roundf(value)))
+	return "%.2f" % value
+
 static func build_fallback_state(data_registry: Node) -> Dictionary:
 	if data_registry == null or not data_registry.has_method("get_default_selectable_character_id"):
 		return {}
@@ -96,6 +266,19 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 				"passive_summary": "",
 				"playstyle_tags": [],
 				"difficulty": "medium"
+			}
+		},
+		"details": {
+			fallback_character_id: {
+				"visual_path": "",
+				"visual_scale": 1.0,
+				"family_label": "Unknown",
+				"starter_weapon_names": [],
+				"starter_weapon_summary": "",
+				"arsenal_names": [],
+				"passive_tags": [],
+				"strengths": [],
+				"tradeoffs": []
 			}
 		}
 	}
