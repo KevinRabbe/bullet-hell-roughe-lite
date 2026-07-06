@@ -147,6 +147,7 @@ func _refresh_selection_details() -> void:
 	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
 	if confirm_button != null:
 		confirm_button.disabled = false
+		confirm_button.text = "Choose %s Loadout" % str(display_names.get(character_id, character_id))
 
 func _apply_portrait(detail: Dictionary) -> void:
 	if portrait_rect == null:

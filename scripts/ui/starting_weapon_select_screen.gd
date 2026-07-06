@@ -55,7 +55,7 @@ func _load_state() -> void:
 	var selection_state := CharacterSelectionRuntime.build_starting_weapon_selection_state(data_registry, current_character_id)
 	title_label.text = "Starting Weapon"
 	var display_name := str(selection_state.get("display_name", current_character_id))
-	headline_label.text = "%s — choose the weapon that opens this run." % display_name
+	headline_label.text = "%s - choose the weapon that opens this run." % display_name
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
 		for option_variant in options_variant:
@@ -100,6 +100,7 @@ func _refresh_selection() -> void:
 		selected_tags_label.text = "Tags: None"
 		if confirm_button != null:
 			confirm_button.disabled = true
+			confirm_button.text = "Enter Arena"
 		return
 	var option: Dictionary = weapon_options[selected_index]
 	selected_name_label.text = str(option.get("display_name", option.get("id", "Weapon")))
@@ -107,6 +108,7 @@ func _refresh_selection() -> void:
 	selected_tags_label.text = "Tags: %s" % _join_tags(option.get("tags", []))
 	if confirm_button != null:
 		confirm_button.disabled = false
+		confirm_button.text = "Enter Arena with %s" % str(option.get("display_name", option.get("id", "Weapon")))
 
 func _join_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
