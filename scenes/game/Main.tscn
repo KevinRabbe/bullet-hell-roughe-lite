@@ -389,21 +389,29 @@ offset_left = 28.0
 offset_top = 24.0
 offset_right = 460.0
 offset_bottom = 62.0
-text = "Character Select (Placeholder)"
+text = "Quick Start Fallback"
 
 [node name="CharacterLabel" type="Label" parent="CharacterSelect/Panel"]
 offset_left = 28.0
 offset_top = 78.0
 offset_right = 452.0
 offset_bottom = 128.0
-text = "Selected: gunslinger"
+autowrap_mode = 3
+text = "Debug Quick Start: gunslinger"
 
 [node name="StartButton" type="Button" parent="CharacterSelect/Panel"]
-offset_left = 150.0
+offset_left = 78.0
 offset_top = 146.0
-offset_right = 330.0
+offset_right = 236.0
 offset_bottom = 190.0
-text = "Start Run"
+text = "Quick Start"
+
+[node name="CharacterSelectButton" type="Button" parent="CharacterSelect/Panel"]
+offset_left = 252.0
+offset_top = 146.0
+offset_right = 410.0
+offset_bottom = 190.0
+text = "Full Select"
 
 [node name="RunHUD" type="CanvasLayer" parent="."]
 

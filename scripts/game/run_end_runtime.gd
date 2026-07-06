@@ -1,6 +1,8 @@
 class_name RunEndRuntime
 extends RefCounted
 
+const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
+
 static func enter_run_end_state(
 	current_state: String,
 	next_state: String,
@@ -48,4 +50,5 @@ static func return_to_main_menu(tree: SceneTree, run_rng: Node) -> void:
 		return
 	if run_rng != null and run_rng.has_method("randomize_seed"):
 		run_rng.call("randomize_seed")
+	CharacterSelectionRuntime.clear_pending_character_id()
 	tree.change_scene_to_file("res://scenes/ui/MainMenu.tscn")

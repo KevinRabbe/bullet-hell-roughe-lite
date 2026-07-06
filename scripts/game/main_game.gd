@@ -12,6 +12,8 @@ const MainGameActivationRuntime = preload("res://scripts/game/main_game_activati
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
+const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
+const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 @export_enum("normal", "shop_test", "combat_test") var debug_run_preset: String = "normal"
 @export var debug_quick_shop_mode: bool = false
@@ -27,6 +29,7 @@ const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime
 @onready var character_select_layer: CanvasLayer = $CharacterSelect
 @onready var character_label: Label = $CharacterSelect/Panel/CharacterLabel
 @onready var start_button: Button = $CharacterSelect/Panel/StartButton
+@onready var character_select_button: Button = $CharacterSelect/Panel/CharacterSelectButton
 @onready var shop_controller: Node = $ShopController
 @onready var level_up_panel: Control = $LevelUpUI/Panel
 @onready var level_up_title: Label = $LevelUpUI/Panel/Title
@@ -76,6 +79,8 @@ func _ready() -> void:
 		boss_manager.connect("boss_defeated_signal", _on_boss_defeated)
 	if start_button != null:
 		start_button.pressed.connect(_on_start_pressed)
+	if character_select_button != null:
+		character_select_button.pressed.connect(_open_character_select_scene)
 	if wave_continue_button != null:
 		wave_continue_button.pressed.connect(_on_wave_continue_pressed)
 	if shop_controller != null and shop_controller.has_signal("continue_requested"):
@@ -108,6 +113,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_cycle_debug_run_preset()
 		return
 	if not run_started:
+		if key_event.keycode == KEY_M:
+			_open_character_select_scene()
+			return
 		if event.is_action_pressed("cycle_character") or key_event.keycode == KEY_C:
 			_cycle_character()
 			_update_character_debug_label()
@@ -268,7 +276,11 @@ func _update_character_debug_label() -> void:
 		return
 	var selected_id := selectable_characters[selected_character_index]
 	var display_name := str(character_display_names.get(selected_id, selected_id))
-	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
+	character_label.text = "Debug Quick Start: %s (C to cycle, Enter to start, M for full select)" % display_name
+
+func _open_character_select_scene() -> void:
+	CharacterSelectionRuntime.clear_pending_character_id()
+	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_wave_completed(wave_index: int) -> void:
 	if boss_victory_pending:
