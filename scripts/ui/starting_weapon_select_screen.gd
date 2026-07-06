@@ -100,6 +100,7 @@ func _refresh_selection() -> void:
 		selected_tags_label.text = "Tags: None"
 		if confirm_button != null:
 			confirm_button.disabled = true
+			confirm_button.text = "Enter Arena"
 		return
 	var option: Dictionary = weapon_options[selected_index]
 	selected_name_label.text = str(option.get("display_name", option.get("id", "Weapon")))
@@ -107,6 +108,7 @@ func _refresh_selection() -> void:
 	selected_tags_label.text = "Tags: %s" % _join_tags(option.get("tags", []))
 	if confirm_button != null:
 		confirm_button.disabled = false
+		confirm_button.text = "Enter Arena with %s" % str(option.get("display_name", option.get("id", "Weapon")))
 
 func _join_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
