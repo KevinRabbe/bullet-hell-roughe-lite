@@ -45,6 +45,14 @@
       "debug_label": "PHASE ECHO"
     }
   ],
+  "presentation": {
+    "headline": "Dimensional skirmisher who converts kills into phase momentum.",
+    "identity_summary": "The Riftwalker bends ranged combat around void movement, unstable spacing, and portal-flavored tempo. He stays readable now, but already hints at future higher-risk dimension play.",
+    "passive_name": "Phase Echo",
+    "passive_summary": "Enemy kills grant a brief burst of movement speed and phase tempo, helping the Riftwalker reposition and keep pressure alive.",
+    "playstyle_tags": ["portal", "mobility", "precision", "dimensional"],
+    "difficulty": "medium"
+  },
   "portal_event_biases": {
     "double_elite": 1.25,
     "power_for_hp_loss": 1.2,

@@ -5,5 +5,13 @@
   "selectable": false,
   "roster_order": 99,
   "starting_weapon_ids": ["sand_burst"],
+  "presentation": {
+    "headline": "Parked control archetype for later desert-themed expansion.",
+    "identity_summary": "The Sand Lord remains a parked roster concept and should not appear as active selection content until the family, art, and gameplay are revived intentionally.",
+    "passive_name": "Placeholder",
+    "passive_summary": "No live passive. This character stays parked and non-selectable.",
+    "playstyle_tags": ["placeholder", "control", "erosion"],
+    "difficulty": "medium"
+  },
   "passive_tags": ["placeholder_passive"]
 }

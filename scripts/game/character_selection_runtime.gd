@@ -21,7 +21,8 @@ static func load_selection_state(data_registry: Node) -> Dictionary:
 		return build_fallback_state(data_registry)
 	return {
 		"ids": normalized_ids,
-		"display_names": build_display_names(data_registry, normalized_ids)
+		"display_names": build_display_names(data_registry, normalized_ids),
+		"presentations": build_presentations(data_registry, normalized_ids)
 	}
 
 static func normalize_character_ids(ids: Array) -> Array[String]:
@@ -44,6 +45,35 @@ static func build_display_names(data_registry: Node, character_ids: Array[String
 		display_names[character_id] = display_name
 	return display_names
 
+static func build_presentations(data_registry: Node, character_ids: Array[String]) -> Dictionary:
+	var presentations: Dictionary = {}
+	for character_id in character_ids:
+		var default_presentation := {
+			"headline": "",
+			"identity_summary": "",
+			"passive_name": "",
+			"passive_summary": "",
+			"playstyle_tags": [],
+			"difficulty": "medium"
+		}
+		if data_registry != null and data_registry.has_method("get_character"):
+			var character_variant: Variant = data_registry.call("get_character", character_id)
+			if character_variant is Dictionary:
+				var character_data: Dictionary = character_variant
+				var presentation_variant: Variant = character_data.get("presentation", {})
+				if presentation_variant is Dictionary:
+					var presentation: Dictionary = presentation_variant
+					default_presentation["headline"] = str(presentation.get("headline", ""))
+					default_presentation["identity_summary"] = str(presentation.get("identity_summary", ""))
+					default_presentation["passive_name"] = str(presentation.get("passive_name", ""))
+					default_presentation["passive_summary"] = str(presentation.get("passive_summary", ""))
+					default_presentation["difficulty"] = str(presentation.get("difficulty", "medium"))
+					var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
+					if playstyle_tags_variant is Array:
+						default_presentation["playstyle_tags"] = playstyle_tags_variant
+		presentations[character_id] = default_presentation
+	return presentations
+
 static func build_fallback_state(data_registry: Node) -> Dictionary:
 	if data_registry == null or not data_registry.has_method("get_default_selectable_character_id"):
 		return {}
@@ -55,5 +85,15 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 		fallback_display_name = str(data_registry.call("get_character_display_name", fallback_character_id))
 	return {
 		"ids": [fallback_character_id],
-		"display_names": {fallback_character_id: fallback_display_name}
+		"display_names": {fallback_character_id: fallback_display_name},
+		"presentations": {
+			fallback_character_id: {
+				"headline": "",
+				"identity_summary": "",
+				"passive_name": "",
+				"passive_summary": "",
+				"playstyle_tags": [],
+				"difficulty": "medium"
+			}
+		}
 	}
