@@ -1,6 +1,8 @@
 class_name CharacterSelectionRuntime
 extends RefCounted
 
+static var pending_character_id: String = ""
+
 static func load_selection_state(data_registry: Node) -> Dictionary:
 	if data_registry == null:
 		return {}
@@ -24,6 +26,15 @@ static func load_selection_state(data_registry: Node) -> Dictionary:
 		"display_names": build_display_names(data_registry, normalized_ids),
 		"presentations": build_presentations(data_registry, normalized_ids)
 	}
+
+static func set_pending_character_id(character_id: String) -> void:
+	pending_character_id = character_id
+
+static func get_pending_character_id() -> String:
+	return pending_character_id
+
+static func clear_pending_character_id() -> void:
+	pending_character_id = ""
 
 static func normalize_character_ids(ids: Array) -> Array[String]:
 	var normalized: Array[String] = []
