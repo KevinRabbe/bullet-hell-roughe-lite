@@ -41,11 +41,17 @@
   ],
   "presentation": {
     "headline": "Reaper-style caster who snowballs through kills and soul pressure.",
+    "fantasy_hook": "A grim harvest specialist that gets scarier once the wave starts feeding him kills.",
     "identity_summary": "The Harvester mixes reaping blades and grim necromantic shots into a heavier, more methodical offense. He wants kills to keep momentum up and feels strongest when waves start feeding the harvest.",
     "passive_name": "Soul Harvest",
     "passive_summary": "Enemy kills build temporary soul stacks that raise damage, rewarding clean kill chains and sustained pressure.",
     "playstyle_tags": ["necromancy", "curse", "heavy", "snowball"],
-    "difficulty": "medium"
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Relic",
+    "arsenal_label": "Harvest Arsenal",
+    "arsenal_preview": ["Harvester Scythe", "Soul Lantern", "Grave Grimoire", "Mourning Bell", "Eye Scepter", "Occult Relic"],
+    "strengths": ["Snowballs through kill chains", "Heavy occult pressure", "Distinct reaper identity"],
+    "tradeoffs": ["Starts slower than Gunslinger", "Needs kills to feel fully online"]
   },
   "portal_event_biases": {
     "enemy_flood_20s": 1.45,

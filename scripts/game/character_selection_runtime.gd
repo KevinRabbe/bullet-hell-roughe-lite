@@ -50,11 +50,17 @@ static func build_presentations(data_registry: Node, character_ids: Array[String
 	for character_id in character_ids:
 		var default_presentation := {
 			"headline": "",
+			"fantasy_hook": "",
 			"identity_summary": "",
 			"passive_name": "",
 			"passive_summary": "",
 			"playstyle_tags": [],
-			"difficulty": "medium"
+			"difficulty": "medium",
+			"starter_weapon_label": "Starting Weapon",
+			"arsenal_label": "Arsenal",
+			"arsenal_preview": [],
+			"strengths": [],
+			"tradeoffs": []
 		}
 		if data_registry != null and data_registry.has_method("get_character"):
 			var character_variant: Variant = data_registry.call("get_character", character_id)
@@ -64,13 +70,25 @@ static func build_presentations(data_registry: Node, character_ids: Array[String
 				if presentation_variant is Dictionary:
 					var presentation: Dictionary = presentation_variant
 					default_presentation["headline"] = str(presentation.get("headline", ""))
+					default_presentation["fantasy_hook"] = str(presentation.get("fantasy_hook", ""))
 					default_presentation["identity_summary"] = str(presentation.get("identity_summary", ""))
 					default_presentation["passive_name"] = str(presentation.get("passive_name", ""))
 					default_presentation["passive_summary"] = str(presentation.get("passive_summary", ""))
 					default_presentation["difficulty"] = str(presentation.get("difficulty", "medium"))
+					default_presentation["starter_weapon_label"] = str(presentation.get("starter_weapon_label", "Starting Weapon"))
+					default_presentation["arsenal_label"] = str(presentation.get("arsenal_label", "Arsenal"))
 					var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
 					if playstyle_tags_variant is Array:
 						default_presentation["playstyle_tags"] = playstyle_tags_variant
+					var arsenal_preview_variant: Variant = presentation.get("arsenal_preview", [])
+					if arsenal_preview_variant is Array:
+						default_presentation["arsenal_preview"] = arsenal_preview_variant
+					var strengths_variant: Variant = presentation.get("strengths", [])
+					if strengths_variant is Array:
+						default_presentation["strengths"] = strengths_variant
+					var tradeoffs_variant: Variant = presentation.get("tradeoffs", [])
+					if tradeoffs_variant is Array:
+						default_presentation["tradeoffs"] = tradeoffs_variant
 		presentations[character_id] = default_presentation
 	return presentations
 
@@ -89,11 +107,17 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 		"presentations": {
 			fallback_character_id: {
 				"headline": "",
+				"fantasy_hook": "",
 				"identity_summary": "",
 				"passive_name": "",
 				"passive_summary": "",
 				"playstyle_tags": [],
-				"difficulty": "medium"
+				"difficulty": "medium",
+				"starter_weapon_label": "Starting Weapon",
+				"arsenal_label": "Arsenal",
+				"arsenal_preview": [],
+				"strengths": [],
+				"tradeoffs": []
 			}
 		}
 	}

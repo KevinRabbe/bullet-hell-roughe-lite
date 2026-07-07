@@ -47,11 +47,17 @@
   ],
   "presentation": {
     "headline": "Dimensional skirmisher who converts kills into phase momentum.",
+    "fantasy_hook": "Void-touched tempo fighter built around spacing, motion, and unstable dimensional pressure.",
     "identity_summary": "The Riftwalker bends ranged combat around void movement, unstable spacing, and portal-flavored tempo. He stays readable now, but already hints at future higher-risk dimension play.",
     "passive_name": "Phase Echo",
     "passive_summary": "Enemy kills grant a brief burst of movement speed and phase tempo, helping the Riftwalker reposition and keep pressure alive.",
     "playstyle_tags": ["portal", "mobility", "precision", "dimensional"],
-    "difficulty": "medium"
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Sidearm",
+    "arsenal_label": "Rift Arsenal",
+    "arsenal_preview": ["Void Revolver", "Rift Bow", "Rift Cannon", "Void Rifle", "Rift Artifact", "Rift Staff"],
+    "strengths": ["Excellent repositioning tempo", "Portal-adjacent utility identity", "Readable precision pressure"],
+    "tradeoffs": ["Less raw toughness than bruisers", "Power comes from motion more than raw stats"]
   },
   "portal_event_biases": {
     "double_elite": 1.25,

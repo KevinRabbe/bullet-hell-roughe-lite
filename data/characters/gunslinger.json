@@ -46,11 +46,17 @@
   ],
   "presentation": {
     "headline": "Baseline precision shooter with clean ranged tempo.",
+    "fantasy_hook": "Fast, readable gunplay with crisp target priority and low gimmick overhead.",
     "identity_summary": "The Gunslinger is the readable reference character: fast bullets, crisp target focus, and a straightforward ranged build path. He rewards steady combat flow and priority target control without leaning on exotic mechanics.",
     "passive_name": "Quickdraw",
     "passive_summary": "Killing an enemy briefly boosts attack speed, helping the Gunslinger chain clean gun pressure through a wave.",
     "playstyle_tags": ["gun", "precision", "ranged", "rapid"],
-    "difficulty": "easy"
+    "difficulty": "easy",
+    "starter_weapon_label": "Opening Sidearm",
+    "arsenal_label": "Arsenal",
+    "arsenal_preview": ["Heavy Pistol", "SMG", "Shotgun", "Revolver", "Assault Rifle", "Sniper Rifle"],
+    "strengths": ["Reliable ranged tempo", "Strong priority-target pressure", "Easy to read and pilot"],
+    "tradeoffs": ["Weaker status scaling", "Less weird utility than later characters"]
   },
   "portal_event_biases": {
     "double_elite": 1.3,
