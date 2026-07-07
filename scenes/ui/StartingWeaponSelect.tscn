@@ -1,0 +1,242 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/starting_weapon_select_screen.gd" id="1_og6fl"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_t0d7v"]
+
+[node name="StartingWeaponSelect" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_og6fl")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0431373, 0.0470588, 0.0784314, 1)
+
+[node name="ArenaTexture" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_t0d7v")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.56, 0.42, 0.46, 0.36)
+
+[node name="Dimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0235294, 0.027451, 0.0470588, 0.84)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 56.0
+offset_top = 44.0
+offset_right = -56.0
+offset_bottom = -44.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="HeaderVBox" type="VBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Eyebrow" type="Label" parent="RootMargin/RootVBox/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.984314, 0.54902, 0.580392, 0.96)
+theme_override_font_sizes/font_size = 16
+text = "Run Prep / Starting Weapon"
+
+[node name="HeaderLabel" type="Label" parent="RootMargin/RootVBox/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 42
+text = "Choose your opener"
+
+[node name="SubheaderLabel" type="Label" parent="RootMargin/RootVBox/HeaderVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.847059, 0.870588, 0.913725, 0.94)
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+text = "Pick the weapon that shapes the first minutes of the run."
+
+[node name="ContentHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 22
+
+[node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="HeroMargin" type="MarginContainer" parent="RootMargin/RootVBox/ContentHBox/HeroPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="HeroVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="FamilyChip" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+
+[node name="FamilyLabel" type="Label" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin/HeroVBox/FamilyChip"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941176, 0.960784, 1, 0.96)
+theme_override_font_sizes/font_size = 16
+text = "Starter Loadout"
+horizontal_alignment = 1
+
+[node name="PortraitFrame" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin/HeroVBox"]
+custom_minimum_size = Vector2(0, 420)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PortraitMargin" type="MarginContainer" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin/HeroVBox/PortraitFrame"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/ContentHBox/HeroPanel/HeroMargin/HeroVBox/PortraitFrame/PortraitMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SelectionPanel" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SelectionMargin" type="MarginContainer" parent="RootMargin/RootVBox/ContentHBox/SelectionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="SelectionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentHBox/SelectionPanel/SelectionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SelectionTitle" type="Label" parent="RootMargin/RootVBox/ContentHBox/SelectionPanel/SelectionMargin/SelectionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Allowed Starters"
+
+[node name="SelectionBody" type="Label" parent="RootMargin/RootVBox/ContentHBox/SelectionPanel/SelectionMargin/SelectionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.9)
+autowrap_mode = 3
+text = "We keep this pool deliberately tight so your opening identity stays readable."
+
+[node name="WeaponList" type="VBoxContainer" parent="RootMargin/RootVBox/ContentHBox/SelectionPanel/SelectionMargin/SelectionVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/ContentHBox/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="WeaponName" type="Label" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 38
+text = "Starter Weapon"
+
+[node name="Description" type="Label" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.96)
+theme_override_font_sizes/font_size = 20
+autowrap_mode = 3
+text = "Weapon description."
+
+[node name="MetaPanel" type="PanelContainer" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+
+[node name="MetaMargin" type="MarginContainer" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox/MetaPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="MetaVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox/MetaPanel/MetaMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Tags" type="Label" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox/MetaPanel/MetaMargin/MetaVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.980392, 0.843137, 0.6, 0.96)
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+text = "Tags: None"
+
+[node name="Notes" type="Label" parent="RootMargin/RootVBox/ContentHBox/DetailPanel/DetailMargin/DetailVBox/MetaPanel/MetaMargin/MetaVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.780392, 0.803922, 0.858824, 0.92)
+theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+text = "Starter notes."
+
+[node name="FooterRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/FooterRow"]
+custom_minimum_size = Vector2(160, 48)
+layout_mode = 2
+text = "Back"
+
+[node name="Spacer" type="Control" parent="RootMargin/RootVBox/FooterRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/FooterRow"]
+custom_minimum_size = Vector2(280, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Start Run"
