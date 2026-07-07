@@ -36,11 +36,17 @@
   ],
   "presentation": {
     "headline": "Occult ritual master who builds pressure through rites, sigils, and cursed ceremony.",
+    "fantasy_hook": "Preparation, symbols, and blood-fed pacing make the Ritualist feel deliberate instead of merely dark.",
     "identity_summary": "The Ritualist leans into preparation, symbols, and controlled magical pressure instead of pure speed. Even before deeper ritual systems arrive, the character should read as an occult specialist rather than a generic dark caster.",
     "passive_name": "Blood Rite",
     "passive_summary": "Enemy kills build a ritual damage buff that supports steady ceremonial pressure and sets up later mark-and-pulse mechanics.",
     "playstyle_tags": ["ritual", "blood", "curse", "ceremony"],
-    "difficulty": "hard"
+    "difficulty": "hard",
+    "starter_weapon_label": "Opening Rite",
+    "arsenal_label": "Ritual Arsenal",
+    "arsenal_preview": ["Blood Needle", "Ritual Candles", "Cursed Bell", "Ash Censer", "Hex Totem", "Grand Sigil"],
+    "strengths": ["Strong ceremonial identity", "Steady occult pressure", "Future ritual systems have clear space to grow"],
+    "tradeoffs": ["Less immediate burst than direct tempo builds", "Preparation-heavy pacing asks for cleaner setup"]
   },
   "passive_tags": ["ritual_master", "blood_rite"]
 }

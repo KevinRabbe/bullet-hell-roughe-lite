@@ -141,24 +141,42 @@ static func _build_character_readiness(character_data: Dictionary, starting_weap
 static func _build_character_presentation(character_data: Dictionary) -> Dictionary:
 	var result := {
 		"headline": "",
+		"fantasy_hook": "",
 		"identity_summary": "",
 		"passive_name": "",
 		"passive_summary": "",
 		"playstyle_tags": [],
-		"difficulty": "medium"
+		"difficulty": "medium",
+		"starter_weapon_label": "Starting Weapon",
+		"arsenal_label": "Arsenal",
+		"arsenal_preview": [],
+		"strengths": [],
+		"tradeoffs": []
 	}
 	var presentation_variant: Variant = character_data.get("presentation", {})
 	if not (presentation_variant is Dictionary):
 		return result
 	var presentation: Dictionary = presentation_variant
 	result["headline"] = str(presentation.get("headline", ""))
+	result["fantasy_hook"] = str(presentation.get("fantasy_hook", ""))
 	result["identity_summary"] = str(presentation.get("identity_summary", ""))
 	result["passive_name"] = str(presentation.get("passive_name", ""))
 	result["passive_summary"] = str(presentation.get("passive_summary", ""))
 	result["difficulty"] = str(presentation.get("difficulty", "medium"))
+	result["starter_weapon_label"] = str(presentation.get("starter_weapon_label", "Starting Weapon"))
+	result["arsenal_label"] = str(presentation.get("arsenal_label", "Arsenal"))
 	var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
 	if playstyle_tags_variant is Array:
 		result["playstyle_tags"] = playstyle_tags_variant
+	var arsenal_preview_variant: Variant = presentation.get("arsenal_preview", [])
+	if arsenal_preview_variant is Array:
+		result["arsenal_preview"] = arsenal_preview_variant
+	var strengths_variant: Variant = presentation.get("strengths", [])
+	if strengths_variant is Array:
+		result["strengths"] = strengths_variant
+	var tradeoffs_variant: Variant = presentation.get("tradeoffs", [])
+	if tradeoffs_variant is Array:
+		result["tradeoffs"] = tradeoffs_variant
 	return result
 
 static func _build_character_detail(data_registry: Node, character_id: String) -> Dictionary:
@@ -179,15 +197,16 @@ static func _build_character_detail(data_registry: Node, character_id: String) -
 	if not (character_variant is Dictionary):
 		return detail
 	var character_data: Dictionary = character_variant
+	var presentation := _build_character_presentation(character_data)
 	detail["visual_path"] = str(character_data.get("visual_path", ""))
 	detail["visual_scale"] = float(character_data.get("visual_scale", 1.0))
 	detail["family_label"] = _humanize_family_id(str(character_data.get("preferred_weapon_family", "")))
 	detail["starter_weapon_names"] = _resolve_weapon_names(data_registry, character_data.get("starting_weapon_ids", []))
-	detail["arsenal_names"] = _resolve_weapon_names(data_registry, character_data.get("family_weapon_ids", []))
+	detail["arsenal_names"] = _resolve_arsenal_names(data_registry, character_data, presentation)
 	detail["starter_weapon_summary"] = _build_starter_weapon_summary(data_registry, character_data.get("starting_weapon_ids", []))
 	detail["passive_tags"] = _normalize_string_array(character_data.get("passive_tags", []))
-	detail["strengths"] = _build_character_strengths(character_data)
-	detail["tradeoffs"] = _build_character_tradeoffs(character_data)
+	detail["strengths"] = _resolve_strengths(character_data, presentation)
+	detail["tradeoffs"] = _resolve_tradeoffs(character_data, presentation)
 	return detail
 
 static func _resolve_weapon_names(data_registry: Node, weapon_ids_variant: Variant) -> Array[String]:
@@ -219,7 +238,7 @@ static func _build_starter_weapon_summary(data_registry: Node, weapon_ids_varian
 		return weapon_description
 	if weapon_description == "":
 		return weapon_name
-	return "%s — %s" % [weapon_name, weapon_description]
+	return "%s - %s" % [weapon_name, weapon_description]
 
 static func _resolve_weapon_name(data_registry: Node, weapon_id: String) -> String:
 	if data_registry == null or not data_registry.has_method("get_weapon"):
@@ -262,6 +281,24 @@ static func _normalize_string_array(values_variant: Variant) -> Array[String]:
 		if value != "":
 			normalized.append(value)
 	return normalized
+
+static func _resolve_arsenal_names(data_registry: Node, character_data: Dictionary, presentation: Dictionary) -> Array[String]:
+	var arsenal_preview := _normalize_string_array(presentation.get("arsenal_preview", []))
+	if not arsenal_preview.is_empty():
+		return arsenal_preview
+	return _resolve_weapon_names(data_registry, character_data.get("family_weapon_ids", []))
+
+static func _resolve_strengths(character_data: Dictionary, presentation: Dictionary) -> Array[String]:
+	var configured_strengths := _normalize_string_array(presentation.get("strengths", []))
+	if not configured_strengths.is_empty():
+		return configured_strengths
+	return _build_character_strengths(character_data)
+
+static func _resolve_tradeoffs(character_data: Dictionary, presentation: Dictionary) -> Array[String]:
+	var configured_tradeoffs := _normalize_string_array(presentation.get("tradeoffs", []))
+	if not configured_tradeoffs.is_empty():
+		return configured_tradeoffs
+	return _build_character_tradeoffs(character_data)
 
 static func _build_character_strengths(character_data: Dictionary) -> Array[String]:
 	var strengths: Array[String] = []
