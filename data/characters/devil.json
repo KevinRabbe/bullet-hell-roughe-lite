@@ -77,11 +77,17 @@
   ],
   "presentation": {
     "headline": "Aggressive pact fighter who converts kills into dangerous burst tempo.",
+    "fantasy_hook": "Fast cursed blades and reckless tempo make the Devil feel sharp, risky, and always one bad trade from trouble.",
     "identity_summary": "The Devil is all about cursed aggression: fast thrown blades, close-range pressure, and short windows where trading safety for offense pays off. He should feel reckless, sharp, and rewarding when you stay on top of the fight.",
     "passive_name": "Devil's Bargain",
     "passive_summary": "Enemy kills trigger a short offensive burst that increases damage and attack speed while shaving off a little armor.",
     "playstyle_tags": ["thrown", "aggressive", "curse", "risk_reward"],
-    "difficulty": "hard"
+    "difficulty": "hard",
+    "starter_weapon_label": "Opening Fang",
+    "arsenal_label": "Devil Arsenal",
+    "arsenal_preview": ["Devil Fang", "Sin Shuriken", "Blood Chakram", "Hell Claw", "Chain Crescent", "Pact Blade"],
+    "strengths": ["Explosive kill-tempo windows", "Fast aggressive pressure", "Strong cursed melee-thrown identity"],
+    "tradeoffs": ["Short defensive margin", "Rewards committing harder than safer builds"]
   },
   "passive_tags": ["unbreakable_pact", "low_direct_damage", "devils_bargain"]
 }

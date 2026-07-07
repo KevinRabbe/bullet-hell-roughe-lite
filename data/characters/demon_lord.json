@@ -60,11 +60,17 @@
   ],
   "presentation": {
     "headline": "Infernal ruler with heavy hellfire shots and dangerous power spikes.",
+    "fantasy_hook": "Slow, forceful infernal casting that turns every kill into a more volatile hellfire surge.",
     "identity_summary": "The Demon Lord trades comfort for authority: slower infernal projectiles, heavier impact, and a constant push toward destructive hellfire scaling. He should feel commanding and punishing rather than agile.",
     "passive_name": "Infernal Tribute",
     "passive_summary": "Enemy kills grant a short damage surge with a small defensive downside, turning every takedown into a risky infernal power spike.",
     "playstyle_tags": ["hellfire", "heavy", "burn", "risk_reward"],
-    "difficulty": "medium"
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Relic",
+    "arsenal_label": "Infernal Arsenal",
+    "arsenal_preview": ["Cursed Lantern", "Hellfire Orb", "Demonic Crown", "Hell Sphere", "Infernal Sigil", "Demonic Scepter"],
+    "strengths": ["Heavy destructive projectiles", "Strong burn identity", "Kill spikes reward aggressive control"],
+    "tradeoffs": ["Less agile than fast weapon families", "Power comes with short defensive exposure"]
   },
   "portal_event_biases": {
     "enemy_flood_20s": 1.35,
