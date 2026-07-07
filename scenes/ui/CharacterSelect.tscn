@@ -89,6 +89,99 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
+[node name="HeroPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="HeroMargin" type="MarginContainer" parent="RootMargin/MainHBox/HeroPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="HeroVBox" type="VBoxContainer" parent="RootMargin/MainHBox/HeroPanel/HeroMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeroHeading" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "Choose your fighter."
+
+[node name="PortraitPanel" type="PanelContainer" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+custom_minimum_size = Vector2(0, 360)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PortraitMargin" type="MarginContainer" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="PortraitRect" type="TextureRect" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeroMeta" type="VBoxContainer" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Name" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 40
+text = "Character"
+
+[node name="Family" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 18
+text = "Family: Unknown"
+
+[node name="Difficulty" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+text = "Difficulty: Medium"
+
+[node name="Tags" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+autowrap_mode = 3
+text = "Tags: -"
+
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ConfirmButton" type="Button" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+custom_minimum_size = Vector2(220, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Choose Starting Weapon"
+
+[node name="RandomButton" type="Button" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+text = "Random"
+
+[node name="BackButton" type="Button" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+text = "Back"
+
+[node name="HintLabel" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
+autowrap_mode = 3
+text = "Shortcuts: Up/Down to browse, Enter to continue, R for random, Esc to return."
+
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -103,50 +196,6 @@ theme_override_constants/margin_bottom = 24
 [node name="DetailVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
 theme_override_constants/separation = 14
-
-[node name="Heading" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
-theme_override_font_sizes/font_size = 18
-text = "Choose your fighter."
-
-[node name="HeroRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_constants/separation = 18
-
-[node name="PortraitPanel" type="PanelContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow"]
-custom_minimum_size = Vector2(260, 320)
-layout_mode = 2
-
-[node name="PortraitMargin" type="MarginContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/PortraitPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 14
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 14
-
-[node name="PortraitRect" type="TextureRect" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/PortraitPanel/PortraitMargin"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="InfoVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 12
-
-[node name="Family" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/HeroRow/InfoVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 18
-text = "Family: Unknown"
-
-[node name="Name" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "Character"
 
 [node name="Summary" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 80)
@@ -166,17 +215,6 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Passive summary"
-
-[node name="Tags" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-autowrap_mode = 3
-text = "Tags: -"
-
-[node name="Difficulty" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-text = "Difficulty: Medium"
 
 [node name="StarterWeapon" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 58)
@@ -206,28 +244,8 @@ theme_override_colors/font_color = Color(0.96, 0.71, 0.67, 0.95)
 autowrap_mode = 3
 text = "Tradeoffs: -"
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="ConfirmButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
-custom_minimum_size = Vector2(220, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Choose Starting Weapon"
-
-[node name="RandomButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
-custom_minimum_size = Vector2(140, 50)
-layout_mode = 2
-text = "Random"
-
-[node name="BackButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
-custom_minimum_size = Vector2(160, 50)
-layout_mode = 2
-text = "Back"
-
-[node name="HintLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="FlowLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down to browse, Enter to continue, R for random, Esc to return."
+text = "Confirm moves to starting weapon selection. Back returns to Main Menu."
