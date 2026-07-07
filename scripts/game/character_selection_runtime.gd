@@ -427,15 +427,14 @@ static func build_run_start_payload(data_registry: Node, character_id: String, s
 	var resolved_starting_weapon_id := starting_weapon_id
 	if resolved_character_id == "" and data_registry != null and data_registry.has_method("get_default_selectable_character_id"):
 		resolved_character_id = str(data_registry.call("get_default_selectable_character_id"))
-	if resolved_starting_weapon_id == "" and data_registry != null and data_registry.has_method("get_character"):
+	if data_registry != null and data_registry.has_method("get_character"):
 		var character_variant: Variant = data_registry.call("get_character", resolved_character_id)
 		if character_variant is Dictionary:
 			var character_data: Dictionary = character_variant
-			var starting_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
-			if starting_ids_variant is Array:
-				var starting_ids: Array = starting_ids_variant
-				for starting_weapon_variant in starting_ids:
-					var candidate_id := str(starting_weapon_variant)
+			var starting_ids := _normalize_string_array(character_data.get("starting_weapon_ids", []))
+			if resolved_starting_weapon_id == "" or not starting_ids.has(resolved_starting_weapon_id):
+				resolved_starting_weapon_id = ""
+				for candidate_id in starting_ids:
 					if candidate_id != "":
 						resolved_starting_weapon_id = candidate_id
 						break
