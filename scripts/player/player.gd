@@ -303,7 +303,7 @@ func apply_level_up_bonus(stat_id: String, value: float) -> void:
 	_emit_ui_snapshot_changed()
 	print("LEVEL-UP BONUS: %s %+0.2f" % [stat_id, value])
 
-func apply_character_by_id(character_id: String) -> void:
+func apply_character_by_id(character_id: String, starting_weapon_id: String = "") -> void:
 	if character_id == "":
 		return
 	active_character_id = character_id
@@ -311,7 +311,7 @@ func apply_character_by_id(character_id: String) -> void:
 	_reset_character_stats()
 	_apply_character_rules(active_character_data)
 	_apply_character_visual(active_character_data)
-	_apply_character_starting_weapon(active_character_data)
+	_apply_character_starting_weapon(active_character_data, starting_weapon_id)
 	if player_build != null and player_build.has_method("set_active_character"):
 		player_build.call("set_active_character", active_character_id)
 	_emit_ui_snapshot_changed()
@@ -331,8 +331,10 @@ func _reset_character_stats() -> void:
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
 
-func _apply_character_starting_weapon(character_data: Dictionary = {}) -> void:
-	var starting_weapon_id := _resolve_starting_weapon_id(character_data)
+func _apply_character_starting_weapon(character_data: Dictionary = {}, starting_weapon_override: String = "") -> void:
+	if weapon_loadout != null and weapon_loadout.has_method("clear_loadout"):
+		weapon_loadout.call("clear_loadout")
+	var starting_weapon_id := _resolve_starting_weapon_id(character_data, starting_weapon_override)
 	_grant_starting_weapon_by_id(starting_weapon_id)
 
 func _apply_character_rules(character_data: Dictionary = {}) -> void:
@@ -545,10 +547,12 @@ func _resolve_default_character_id() -> void:
 			active_character_id = resolved_character_id
 	return
 
-func _resolve_starting_weapon_id(character_data: Dictionary) -> String:
+func _resolve_starting_weapon_id(character_data: Dictionary, starting_weapon_override: String = "") -> String:
 	var starting_weapon_ids_variant: Variant = character_data.get("starting_weapon_ids", [])
 	if starting_weapon_ids_variant is Array:
 		var starting_weapon_ids: Array = starting_weapon_ids_variant
+		if starting_weapon_override != "" and starting_weapon_ids.has(starting_weapon_override) and _weapon_resource_exists(starting_weapon_override):
+			return starting_weapon_override
 		for starting_weapon_variant in starting_weapon_ids:
 			var starting_weapon_id := str(starting_weapon_variant)
 			if starting_weapon_id == "":

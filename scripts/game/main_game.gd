@@ -58,6 +58,7 @@ var active_level_up_choices: Array[Dictionary] = []
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
+var pending_run_start_payload: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -96,6 +97,7 @@ func _ready() -> void:
 	_update_character_debug_label()
 	_hide_run_overlays()
 	_set_gameplay_active(false)
+	_try_auto_start_from_pending_payload()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -165,13 +167,8 @@ func _new_run_seed() -> void:
 func _on_start_pressed() -> void:
 	if run_started:
 		return
-	run_started = true
-	_apply_selected_character()
-	_apply_debug_quick_shop_preset()
-	_hide_run_overlays()
-	_set_gameplay_active(true)
-	if character_select_layer != null:
-		character_select_layer.visible = false
+	var payload := _build_current_selection_payload()
+	_start_run_with_payload(payload)
 
 func _apply_debug_quick_shop_preset() -> void:
 	var preset := _get_effective_debug_preset()
@@ -248,6 +245,12 @@ func _load_selectable_characters() -> void:
 		return
 	selectable_characters = normalized
 	selected_character_index = 0
+	var pending_payload := CharacterSelectionRuntime.get_pending_run_start_payload()
+	if not pending_payload.is_empty():
+		var pending_character_id := str(pending_payload.get("character_id", ""))
+		var pending_index := selectable_characters.find(pending_character_id)
+		if pending_index >= 0:
+			selected_character_index = pending_index
 	var display_names_variant: Variant = selection_state.get("display_names", {})
 	character_display_names = display_names_variant if display_names_variant is Dictionary else {}
 	print("Character selection list: " + str(selectable_characters))
@@ -258,6 +261,14 @@ func _update_character_debug_label() -> void:
 	var selected_id := selectable_characters[selected_character_index]
 	var display_name := str(character_display_names.get(selected_id, selected_id))
 	character_label.text = "Selected: %s (C to cycle, Enter to start)" % display_name
+
+func _try_auto_start_from_pending_payload() -> void:
+	pending_run_start_payload = CharacterSelectionRuntime.consume_pending_run_start_payload()
+	if pending_run_start_payload.is_empty():
+		return
+	_start_run_with_payload(pending_run_start_payload)
+	CharacterSelectionRuntime.clear_pending_character_id()
+	pending_run_start_payload.clear()
 
 func _on_wave_completed(wave_index: int) -> void:
 	if boss_victory_pending:
@@ -420,6 +431,42 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 		if resolved is RandomNumberGenerator:
 			return resolved
 	return DeterministicRng.create_fallback_rng(stream_name, "MainGame")
+
+func _build_current_selection_payload() -> Dictionary:
+	if selectable_characters.is_empty():
+		return {}
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		return {}
+	var character_id := selectable_characters[selected_character_index]
+	return CharacterSelectionRuntime.build_run_start_payload(data_registry, character_id)
+
+func _start_run_with_payload(payload: Dictionary) -> void:
+	if run_started:
+		return
+	var applied := _apply_run_start_payload(payload)
+	if applied.is_empty():
+		_apply_selected_character()
+	else:
+		var character_id := str(applied.get("character_id", ""))
+		var selected_index := selectable_characters.find(character_id)
+		if selected_index >= 0:
+			selected_character_index = selected_index
+	_update_character_debug_label()
+	run_started = true
+	_apply_debug_quick_shop_preset()
+	_hide_run_overlays()
+	_set_gameplay_active(true)
+	if character_select_layer != null:
+		character_select_layer.visible = false
+
+func _apply_run_start_payload(payload: Dictionary) -> Dictionary:
+	if payload.is_empty():
+		return {}
+	var applied_variant: Variant = MainGameStartRuntime.apply_run_start_payload(player, payload)
+	if applied_variant is Dictionary:
+		return applied_variant as Dictionary
+	return {}
 
 func _try_finish_pending_victory() -> void:
 	if not boss_victory_pending:
