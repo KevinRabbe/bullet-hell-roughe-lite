@@ -333,6 +333,35 @@ custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_override_constants/separation = 20
 
+[node name="FeaturedRosterPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
+layout_mode = 2
+
+[node name="FeaturedRosterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="FeaturedRosterVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="FeaturedRosterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Featured Roster"
+
+[node name="FeaturedRosterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
+autowrap_mode = 3
+text = "The current slice already supports six active characters. This preview calls out the front-door identities without leaving the main menu."
+
+[node name="FeaturedRosterList" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
 [node name="StatusPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
 layout_mode = 2
 
