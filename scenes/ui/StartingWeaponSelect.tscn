@@ -54,8 +54,77 @@ offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
+[node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
 layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="FlowHeader" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StepChip1" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip1Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip1"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip1Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip1/StepChip1Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "1 Main Menu"
+
+[node name="StepChip2" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip2Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip2"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip2Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip2/StepChip2Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "2 Character"
+
+[node name="StepChip3" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip3Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip3"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip3Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip3/StepChip3Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+text = "3 Starter"
+
+[node name="StepChip4" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip4Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip4"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip4Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip4/StepChip4Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "4 Arena"
+
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 28
 
 [node name="CharacterPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
@@ -133,7 +202,7 @@ text = "Tags: None"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Back returns to Character Select. Confirm sends this exact starter into the run."
+text = "Step 3 of 4. Back returns to Character Select. Confirm sends this exact starter into the run."
 
 [node name="WeaponPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
 custom_minimum_size = Vector2(360, 0)
@@ -243,4 +312,4 @@ text = "Default Starter"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down to browse, Enter to start, R for random, T for default starter, Esc to return."
+text = "Shortcuts: Up/Down browse, Enter start, R random starter, T default starter, Esc back."
