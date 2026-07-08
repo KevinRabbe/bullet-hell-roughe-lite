@@ -184,9 +184,12 @@ static func _build_character_detail(data_registry: Node, character_id: String) -
 		"visual_path": "",
 		"visual_scale": 1.0,
 		"family_label": "",
+		"fantasy_hook": "",
 		"starter_weapon_names": [],
+		"starter_weapon_label": "Starting Weapon",
 		"starter_weapon_summary": "",
 		"arsenal_names": [],
+		"arsenal_label": "Arsenal",
 		"passive_tags": [],
 		"strengths": [],
 		"tradeoffs": []
@@ -201,8 +204,11 @@ static func _build_character_detail(data_registry: Node, character_id: String) -
 	detail["visual_path"] = str(character_data.get("visual_path", ""))
 	detail["visual_scale"] = float(character_data.get("visual_scale", 1.0))
 	detail["family_label"] = _humanize_family_id(str(character_data.get("preferred_weapon_family", "")))
+	detail["fantasy_hook"] = str(presentation.get("fantasy_hook", ""))
 	detail["starter_weapon_names"] = _resolve_weapon_names(data_registry, character_data.get("starting_weapon_ids", []))
+	detail["starter_weapon_label"] = str(presentation.get("starter_weapon_label", "Starting Weapon"))
 	detail["arsenal_names"] = _resolve_arsenal_names(data_registry, character_data, presentation)
+	detail["arsenal_label"] = str(presentation.get("arsenal_label", "Arsenal"))
 	detail["starter_weapon_summary"] = _build_starter_weapon_summary(data_registry, character_data.get("starting_weapon_ids", []))
 	detail["passive_tags"] = _normalize_string_array(character_data.get("passive_tags", []))
 	detail["strengths"] = _resolve_strengths(character_data, presentation)
@@ -388,19 +394,28 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 			"readiness_reason": "Fallback character data only",
 			"presentation": {
 				"headline": "",
+				"fantasy_hook": "",
 				"identity_summary": "",
 				"passive_name": "",
 				"passive_summary": "",
 				"playstyle_tags": [],
-				"difficulty": "medium"
+				"difficulty": "medium",
+				"starter_weapon_label": "Starting Weapon",
+				"arsenal_label": "Arsenal",
+				"arsenal_preview": [],
+				"strengths": [],
+				"tradeoffs": []
 			},
 			"detail": {
 				"visual_path": "",
 				"visual_scale": 1.0,
 				"family_label": "Unknown",
+				"fantasy_hook": "",
 				"starter_weapon_names": [],
+				"starter_weapon_label": "Starting Weapon",
 				"starter_weapon_summary": "",
 				"arsenal_names": [],
+				"arsenal_label": "Arsenal",
 				"passive_tags": [],
 				"strengths": [],
 				"tradeoffs": []
@@ -410,11 +425,17 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 		"presentations": {
 			fallback_character_id: {
 				"headline": "",
+				"fantasy_hook": "",
 				"identity_summary": "",
 				"passive_name": "",
 				"passive_summary": "",
 				"playstyle_tags": [],
-				"difficulty": "medium"
+				"difficulty": "medium",
+				"starter_weapon_label": "Starting Weapon",
+				"arsenal_label": "Arsenal",
+				"arsenal_preview": [],
+				"strengths": [],
+				"tradeoffs": []
 			}
 		},
 		"details": {
@@ -422,9 +443,12 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 				"visual_path": "",
 				"visual_scale": 1.0,
 				"family_label": "Unknown",
+				"fantasy_hook": "",
 				"starter_weapon_names": [],
+				"starter_weapon_label": "Starting Weapon",
 				"starter_weapon_summary": "",
 				"arsenal_names": [],
+				"arsenal_label": "Arsenal",
 				"passive_tags": [],
 				"strengths": [],
 				"tradeoffs": []

@@ -198,6 +198,12 @@ theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Tags: None"
 
+[node name="FantasyHook" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.9)
+autowrap_mode = 3
+text = "Fantasy hook"
+
 [node name="CharacterHint" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)

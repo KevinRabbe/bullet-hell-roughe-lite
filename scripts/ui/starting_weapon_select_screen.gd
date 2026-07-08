@@ -9,6 +9,7 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 @onready var character_family_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterFamily
 @onready var passive_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
 @onready var character_tags_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterTags
+@onready var fantasy_hook_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/FantasyHook
 @onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
 @onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
 @onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
@@ -124,7 +125,7 @@ func _refresh_weapon_buttons() -> void:
 func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
 	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
 	var tags_text := _join_tags(option.get("tags", []))
-	var prefix := "▶ " if is_selected else ""
+	var prefix := "> " if is_selected else ""
 	return "%s%s\n%s" % [prefix, display_name, tags_text]
 
 func _refresh_selection() -> void:
@@ -138,10 +139,13 @@ func _refresh_selection() -> void:
 		return
 	var option: Dictionary = weapon_options[selected_index]
 	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
-	selected_name_label.text = str(option.get("display_name", option.get("id", "Weapon")))
+	selected_name_label.text = display_name
 	selected_description_label.text = str(option.get("description", ""))
 	selected_tags_label.text = "Tags: %s" % _join_tags(option.get("tags", []))
-	selection_summary_label.text = "Starter choice: %s\nThis weapon will be written into the run-start payload for %s." % [display_name, str(current_character_entry.get("display_name", current_character_id))]
+	var detail_variant: Variant = current_character_entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var starter_label := str(detail.get("starter_weapon_label", "Starting Weapon"))
+	selection_summary_label.text = "%s: %s\nThis weapon will be written into the run-start payload for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
 		confirm_button.text = "Enter Arena with %s" % display_name
@@ -157,6 +161,7 @@ func _apply_character_summary(display_name: String) -> void:
 	character_family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	character_tags_label.text = "Tags: %s" % _join_tags(presentation.get("playstyle_tags", []))
+	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
 	var visual_path := str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
