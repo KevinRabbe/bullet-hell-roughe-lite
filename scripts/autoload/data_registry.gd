@@ -298,21 +298,27 @@ func _validate_character_presentation(character_id: String, presentation_variant
 		push_warning("Character '%s' presentation has invalid difficulty '%s'." % [character_id, difficulty])
 	var playstyle_tags_variant: Variant = presentation.get("playstyle_tags", [])
 	if playstyle_tags_variant is Array:
+		if selectable and (playstyle_tags_variant as Array).is_empty():
+			push_warning("Character '%s' presentation should expose at least one playstyle tag." % character_id)
 		for tag_variant in playstyle_tags_variant:
 			if str(tag_variant) == "":
 				push_warning("Character '%s' presentation contains an empty playstyle tag." % character_id)
+	else:
+		push_warning("Character '%s' presentation field 'playstyle_tags' should be an array." % character_id)
 	var strengths_variant: Variant = presentation.get("strengths", [])
-	_validate_character_presentation_list(character_id, "strengths", strengths_variant)
+	_validate_character_presentation_list(character_id, "strengths", strengths_variant, selectable)
 	var tradeoffs_variant: Variant = presentation.get("tradeoffs", [])
-	_validate_character_presentation_list(character_id, "tradeoffs", tradeoffs_variant)
+	_validate_character_presentation_list(character_id, "tradeoffs", tradeoffs_variant, selectable)
 	var arsenal_preview_variant: Variant = presentation.get("arsenal_preview", [])
-	_validate_character_presentation_list(character_id, "arsenal_preview", arsenal_preview_variant)
+	_validate_character_presentation_list(character_id, "arsenal_preview", arsenal_preview_variant, selectable)
 
-func _validate_character_presentation_list(character_id: String, field_name: String, values_variant: Variant) -> void:
+func _validate_character_presentation_list(character_id: String, field_name: String, values_variant: Variant, selectable: bool = false) -> void:
 	if not (values_variant is Array):
 		push_warning("Character '%s' presentation field '%s' should be an array." % [character_id, field_name])
 		return
 	var values: Array = values_variant
+	if selectable and values.is_empty():
+		push_warning("Character '%s' presentation field '%s' should contain at least one entry." % [character_id, field_name])
 	for value_variant in values:
 		if str(value_variant) == "":
 			push_warning("Character '%s' presentation field '%s' contains an empty entry." % [character_id, field_name])
