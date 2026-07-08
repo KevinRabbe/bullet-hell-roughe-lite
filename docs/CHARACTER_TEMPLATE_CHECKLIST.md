@@ -58,12 +58,22 @@ Optional but strongly recommended:
 ### 4. Presentation data
 - Add a `presentation` block with:
   - `headline`
+  - `fantasy_hook`
   - `identity_summary`
   - `passive_name`
   - `passive_summary`
   - `playstyle_tags`
   - `difficulty`
+  - `starter_weapon_label`
+  - `arsenal_label`
+  - `arsenal_preview`
+  - `strengths`
+  - `tradeoffs`
 - This is what the menu/character selection screens should consume instead of hardcoded UI strings.
+- The same block now feeds:
+  - Main character detail copy
+  - Starting weapon selection context
+  - roster-scaling validation in `DataRegistry`
 
 ### 5. Passive baseline
 - Use `passive_runtime_rules` if the current passive runtime supports the mechanic.
@@ -111,11 +121,17 @@ Use this as the starting point for new characters:
   "passive_tags": [],
   "presentation": {
     "headline": "Short front-door hook.",
+    "fantasy_hook": "One-line emotional or fantasy-facing hook for the detail panel.",
     "identity_summary": "Two-sentence identity summary for the character select screen.",
     "passive_name": "Passive Name",
     "passive_summary": "Short passive summary for the detail panel.",
     "playstyle_tags": ["tag_a", "tag_b", "tag_c"],
-    "difficulty": "medium"
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Weapon",
+    "arsenal_label": "Family Arsenal",
+    "arsenal_preview": ["Weapon A", "Weapon B", "Weapon C"],
+    "strengths": ["Why this character feels strong"],
+    "tradeoffs": ["What pressure or downside defines them"]
   }
 }
 ```
@@ -130,6 +146,8 @@ Use this before opening a character PR:
 - All 6 family weapons exist.
 - `family_weapon_ids` and `starting_weapon_ids` are valid.
 - Presentation block is complete.
+- `fantasy_hook`, `starter_weapon_label`, and `arsenal_label` are intentional and read well in the menu.
+- `arsenal_preview`, `strengths`, and `tradeoffs` are arrays without empty entries.
 - `passive_tags` are intentional and use canonical tag naming.
 - Passive uses the existing runtime generically, or the PR clearly scopes a generic runtime extension.
 - Character works with shop family bias.

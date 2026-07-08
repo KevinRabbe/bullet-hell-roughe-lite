@@ -1,0 +1,52 @@
+{
+  "id": "new_character",
+  "display_name": "The New Character",
+  "description": "One-line gameplay identity.",
+  "roster_order": 99,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/new_character/new_character.png",
+  "visual_scale": 1.0,
+  "starting_weapon_ids": ["new_character_starter"],
+  "family_weapon_ids": [
+    "new_character_starter",
+    "new_character_weapon_2",
+    "new_character_weapon_3",
+    "new_character_weapon_4",
+    "new_character_weapon_5",
+    "new_character_weapon_6"
+  ],
+  "preferred_weapon_family": "new_character",
+  "shop_weapon_family_bias": 0.2,
+  "stat_multipliers": {},
+  "stat_bonuses": {},
+  "damage_rules": [],
+  "passive_runtime_rules": [],
+  "portal_event_biases": {},
+  "portal_reward_tier_biases": {},
+  "passive_tags": [],
+  "presentation": {
+    "headline": "Short front-door hook.",
+    "fantasy_hook": "One-line emotional or fantasy-facing hook for the detail panel.",
+    "identity_summary": "Two-sentence identity summary for the character select screen.",
+    "passive_name": "Passive Name",
+    "passive_summary": "Short passive summary for the detail panel.",
+    "playstyle_tags": ["tag_a", "tag_b", "tag_c"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Weapon",
+    "arsenal_label": "Family Arsenal",
+    "arsenal_preview": [
+      "Weapon A",
+      "Weapon B",
+      "Weapon C",
+      "Weapon D",
+      "Weapon E",
+      "Weapon F"
+    ],
+    "strengths": [
+      "Why this character feels strong"
+    ],
+    "tradeoffs": [
+      "What pressure or downside defines them"
+    ]
+  }
+}
