@@ -208,26 +208,44 @@ func _validate_character_entries() -> void:
 		_validate_character_presentation(str(character_id), character_data.get("presentation", {}), selectable)
 		if not selectable:
 			continue
-		_validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
-		_validate_character_weapon_list(str(character_id), "family_weapon_ids", character_data.get("family_weapon_ids", []))
+		var starting_weapon_ids := _validate_character_weapon_list(str(character_id), "starting_weapon_ids", character_data.get("starting_weapon_ids", []))
+		var family_weapon_ids := _validate_character_weapon_list(str(character_id), "family_weapon_ids", character_data.get("family_weapon_ids", []))
+		_validate_character_starter_pool(str(character_id), starting_weapon_ids, family_weapon_ids)
 		_validate_character_passive_runtime_tags(str(character_id), character_data.get("passive_runtime_rules", []))
 
-func _validate_character_weapon_list(character_id: String, field_name: String, weapon_ids_variant: Variant) -> void:
+func _validate_character_weapon_list(character_id: String, field_name: String, weapon_ids_variant: Variant) -> Array[String]:
+	var normalized_ids: Array[String] = []
 	if not (weapon_ids_variant is Array):
 		push_warning("Character '%s' has invalid %s payload." % [character_id, field_name])
-		return
+		return normalized_ids
 	var weapon_ids: Array = weapon_ids_variant
 	if weapon_ids.is_empty():
 		push_warning("Character '%s' has no entries in %s." % [character_id, field_name])
-		return
+		return normalized_ids
+	var seen_ids: Dictionary = {}
 	for weapon_id_variant in weapon_ids:
 		var weapon_id := str(weapon_id_variant)
 		if weapon_id == "":
 			push_warning("Character '%s' has an empty weapon id in %s." % [character_id, field_name])
 			continue
+		if seen_ids.get(weapon_id, false) == true:
+			push_warning("Character '%s' repeats weapon '%s' in %s." % [character_id, weapon_id, field_name])
+			continue
+		seen_ids[weapon_id] = true
+		normalized_ids.append(weapon_id)
 		var resource_path := "%s/%s.tres" % [WEAPON_RESOURCE_DIR, weapon_id]
 		if not ResourceLoader.exists(resource_path):
 			push_warning("Character '%s' references missing weapon '%s' in %s." % [character_id, weapon_id, field_name])
+	if field_name == "family_weapon_ids" and normalized_ids.size() != 6:
+		push_warning("Character '%s' should expose exactly 6 family weapons; found %d." % [character_id, normalized_ids.size()])
+	return normalized_ids
+
+func _validate_character_starter_pool(character_id: String, starting_weapon_ids: Array[String], family_weapon_ids: Array[String]) -> void:
+	if starting_weapon_ids.is_empty() or family_weapon_ids.is_empty():
+		return
+	for weapon_id in starting_weapon_ids:
+		if not family_weapon_ids.has(weapon_id):
+			push_warning("Character '%s' starting weapon '%s' is not part of family_weapon_ids." % [character_id, weapon_id])
 
 func _validate_character_passive_runtime_tags(character_id: String, rules_variant: Variant) -> void:
 	if not (rules_variant is Array):
@@ -263,10 +281,18 @@ func _validate_character_presentation(character_id: String, presentation_variant
 	var presentation: Dictionary = presentation_variant
 	if selectable and str(presentation.get("headline", "")) == "":
 		push_warning("Character '%s' presentation is missing headline." % character_id)
+	if selectable and str(presentation.get("fantasy_hook", "")) == "":
+		push_warning("Character '%s' presentation is missing fantasy_hook." % character_id)
+	if selectable and str(presentation.get("identity_summary", "")) == "":
+		push_warning("Character '%s' presentation is missing identity_summary." % character_id)
 	if selectable and str(presentation.get("passive_name", "")) == "":
 		push_warning("Character '%s' presentation is missing passive_name." % character_id)
 	if selectable and str(presentation.get("passive_summary", "")) == "":
 		push_warning("Character '%s' presentation is missing passive_summary." % character_id)
+	if selectable and str(presentation.get("starter_weapon_label", "")) == "":
+		push_warning("Character '%s' presentation is missing starter_weapon_label." % character_id)
+	if selectable and str(presentation.get("arsenal_label", "")) == "":
+		push_warning("Character '%s' presentation is missing arsenal_label." % character_id)
 	var difficulty := str(presentation.get("difficulty", "medium"))
 	if difficulty not in ["easy", "medium", "hard"]:
 		push_warning("Character '%s' presentation has invalid difficulty '%s'." % [character_id, difficulty])
@@ -275,6 +301,21 @@ func _validate_character_presentation(character_id: String, presentation_variant
 		for tag_variant in playstyle_tags_variant:
 			if str(tag_variant) == "":
 				push_warning("Character '%s' presentation contains an empty playstyle tag." % character_id)
+	var strengths_variant: Variant = presentation.get("strengths", [])
+	_validate_character_presentation_list(character_id, "strengths", strengths_variant)
+	var tradeoffs_variant: Variant = presentation.get("tradeoffs", [])
+	_validate_character_presentation_list(character_id, "tradeoffs", tradeoffs_variant)
+	var arsenal_preview_variant: Variant = presentation.get("arsenal_preview", [])
+	_validate_character_presentation_list(character_id, "arsenal_preview", arsenal_preview_variant)
+
+func _validate_character_presentation_list(character_id: String, field_name: String, values_variant: Variant) -> void:
+	if not (values_variant is Array):
+		push_warning("Character '%s' presentation field '%s' should be an array." % [character_id, field_name])
+		return
+	var values: Array = values_variant
+	for value_variant in values:
+		if str(value_variant) == "":
+			push_warning("Character '%s' presentation field '%s' contains an empty entry." % [character_id, field_name])
 
 func _validate_set_bonus_entries() -> void:
 	var required_thresholds: Array[int] = [2, 4, 6]
