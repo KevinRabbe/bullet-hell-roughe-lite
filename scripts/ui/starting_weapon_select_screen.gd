@@ -4,17 +4,25 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
+@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitRect
+@onready var character_name_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterName
+@onready var character_family_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterFamily
+@onready var passive_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
+@onready var character_tags_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterTags
 @onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
 @onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
-@onready var weapon_list: VBoxContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
+@onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
+@onready var weapon_list: GridContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
 @onready var selected_name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
 @onready var selected_tags_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedTags
 @onready var confirm_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
 @onready var back_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
+@onready var default_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/DefaultButton
 
 var current_character_id: String = ""
 var weapon_options: Array[Dictionary] = []
+var current_character_entry: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
@@ -25,6 +33,8 @@ func _ready() -> void:
 		confirm_button.pressed.connect(_on_confirm_pressed)
 	if back_button != null:
 		back_button.pressed.connect(_on_back_pressed)
+	if default_button != null:
+		default_button.pressed.connect(_on_default_pressed)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -57,16 +67,17 @@ func _load_state() -> void:
 		return
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	var selection_state := CharacterSelectionRuntime.build_starting_weapon_selection_state(data_registry, current_character_id)
+	var character_entry_variant: Variant = selection_state.get("character_entry", {})
+	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
 	title_label.text = "Starting Weapon"
 	var display_name := str(selection_state.get("display_name", current_character_id))
-	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	var family_count := 0
-	if character_entry_variant is Dictionary:
-		var character_entry: Dictionary = character_entry_variant
-		family_count = int(character_entry.get("family_weapon_count", 0))
+	if not current_character_entry.is_empty():
+		family_count = int(current_character_entry.get("family_weapon_count", 0))
 	headline_label.text = "%s - choose the weapon that opens this run." % display_name
 	if family_count > 0:
 		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
+	_apply_character_summary(display_name)
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
 		for option_variant in options_variant:
@@ -80,9 +91,13 @@ func _rebuild_weapon_buttons() -> void:
 	for index in weapon_options.size():
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 60)
+		button.custom_minimum_size = Vector2(0, 96)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.text = str(option.get("display_name", option.get("id", "Weapon")))
+		var display_name := str(option.get("display_name", option.get("id", "Weapon")))
+		var tags_text := _join_tags(option.get("tags", []))
+		button.text = "%s\n%s" % [display_name, tags_text]
+		button.clip_text = true
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
 		weapon_list.add_child(button)
 	if weapon_list.get_child_count() > 0:
@@ -110,12 +125,32 @@ func _refresh_selection() -> void:
 			confirm_button.text = "Enter Arena"
 		return
 	var option: Dictionary = weapon_options[selected_index]
+	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
 	selected_name_label.text = str(option.get("display_name", option.get("id", "Weapon")))
 	selected_description_label.text = str(option.get("description", ""))
 	selected_tags_label.text = "Tags: %s" % _join_tags(option.get("tags", []))
+	selection_summary_label.text = "Starter choice: %s\nThis weapon will be written into the run-start payload for %s." % [display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
-		confirm_button.text = "Enter Arena with %s" % str(option.get("display_name", option.get("id", "Weapon")))
+		confirm_button.text = "Enter Arena with %s" % display_name
+	if default_button != null:
+		default_button.disabled = false
+
+func _apply_character_summary(display_name: String) -> void:
+	character_name_label.text = display_name
+	var detail_variant: Variant = current_character_entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var presentation_variant: Variant = current_character_entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	character_family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
+	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
+	character_tags_label.text = "Tags: %s" % _join_tags(presentation.get("playstyle_tags", []))
+	var visual_path := str(detail.get("visual_path", ""))
+	if visual_path == "":
+		portrait_rect.texture = null
+		return
+	var texture_variant: Variant = load(visual_path)
+	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
 
 func _join_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
@@ -163,6 +198,11 @@ func _select_default_weapon(should_refresh: bool = false) -> void:
 		var selected_button := weapon_list.get_child(selected_index) as Button
 		if selected_button != null:
 			selected_button.grab_focus()
+
+func _on_default_pressed() -> void:
+	if weapon_options.is_empty():
+		return
+	_select_default_weapon(true)
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
