@@ -94,11 +94,13 @@ func _rebuild_weapon_buttons() -> void:
 	for index in weapon_options.size():
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 96)
+		button.custom_minimum_size = Vector2(0, 128)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 17)
+		_apply_weapon_button_style(button, option, index == selected_index)
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
 		weapon_list.add_child(button)
 	if weapon_list.get_child_count() > 0:
@@ -122,13 +124,19 @@ func _refresh_weapon_buttons() -> void:
 		var button := weapon_list.get_child(index) as Button
 		if button == null or index >= weapon_options.size():
 			continue
-		button.text = _build_weapon_button_text(weapon_options[index], index == selected_index)
+		var option := weapon_options[index]
+		button.text = _build_weapon_button_text(option, index == selected_index)
+		_apply_weapon_button_style(button, option, index == selected_index)
 
 func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
 	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
-	var tags_text := _join_tags(option.get("tags", []))
+	var description := _summarize_description(str(option.get("description", "")))
+	var tags_text := "Tags: %s" % _join_tags(option.get("tags", []))
+	var badge := "[Default] " if option.get("default_selected", false) == true else ""
 	var prefix := "> " if is_selected else ""
-	return "%s%s\n%s" % [prefix, display_name, tags_text]
+	if description == "":
+		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
+	return "%s%s%s\n%s\n%s" % [prefix, badge, display_name, description, tags_text]
 
 func _refresh_selection() -> void:
 	if weapon_options.is_empty():
@@ -152,7 +160,7 @@ func _refresh_selection() -> void:
 		confirm_button.disabled = false
 		confirm_button.text = "Enter Arena with %s" % display_name
 	if default_button != null:
-		default_button.disabled = false
+		default_button.disabled = option.get("default_selected", false) == true
 
 func _apply_character_summary(display_name: String) -> void:
 	character_name_label.text = display_name
@@ -186,6 +194,36 @@ func _join_tags(tags_variant: Variant) -> String:
 		if tag_text != "":
 			parts.append(tag_text.capitalize())
 	return ", ".join(parts) if not parts.is_empty() else "None"
+
+func _summarize_description(description: String) -> String:
+	var normalized := description.strip_edges()
+	if normalized == "":
+		return ""
+	if normalized.length() <= 72:
+		return normalized
+	return "%s..." % normalized.substr(0, 69).rstrip(" ")
+
+func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected: bool) -> void:
+	var accent := _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_right = 12
+	style.corner_radius_bottom_left = 12
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	if is_selected:
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.24)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.72)
+	else:
+		style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.20)
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("pressed", style)
+	button.add_theme_stylebox_override("focus", style)
 
 func _family_accent_color(family_label: String) -> Color:
 	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
