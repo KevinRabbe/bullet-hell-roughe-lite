@@ -124,10 +124,16 @@ static func _build_character_entry(data_registry: Node, character_id: String) ->
 	}
 
 static func _build_character_readiness(character_data: Dictionary, starting_weapon_ids: Array[String], family_weapon_ids: Array[String]) -> Dictionary:
-	if str(character_data.get("visual_path", "")) == "":
+	var visual_path := str(character_data.get("visual_path", ""))
+	if visual_path == "":
 		return {"is_ready": false, "reason": "Missing visual path"}
+	if not ResourceLoader.exists(visual_path):
+		return {"is_ready": false, "reason": "Missing visual resource"}
 	if starting_weapon_ids.is_empty():
 		return {"is_ready": false, "reason": "Missing starting weapon"}
+	for weapon_id in starting_weapon_ids:
+		if not ResourceLoader.exists("res://data/weapons/%s.tres" % weapon_id):
+			return {"is_ready": false, "reason": "Missing starting weapon resource"}
 	if family_weapon_ids.is_empty():
 		return {"is_ready": false, "reason": "Missing family arsenal"}
 	var presentation_variant: Variant = character_data.get("presentation", {})
