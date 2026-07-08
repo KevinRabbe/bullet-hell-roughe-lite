@@ -91,6 +91,66 @@ theme_override_constants/separation = 26
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="StepChip1" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+
+[node name="StepChip1Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip1"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip1Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip1/StepChip1Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+text = "1 Main Menu"
+
+[node name="StepChip2" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+
+[node name="StepChip2Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip2"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip2Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip2/StepChip2Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "2 Character"
+
+[node name="StepChip3" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+
+[node name="StepChip3Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip3"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip3Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip3/StepChip3Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "3 Starter"
+
+[node name="StepChip4" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+
+[node name="StepChip4Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip4"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip4Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip4/StepChip4Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "4 Arena"
+
 [node name="BuildChip" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
 layout_mode = 2
 
@@ -234,7 +294,7 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Start Run"
+text = "Start Run -> Character Select"
 
 [node name="ArmoryButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)

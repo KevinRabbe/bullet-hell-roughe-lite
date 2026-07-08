@@ -54,8 +54,77 @@ offset_bottom = -36.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
+[node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
 layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="FlowHeader" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StepChip1" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip1Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip1"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip1Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip1/StepChip1Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "1 Main Menu"
+
+[node name="StepChip2" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip2Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip2"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip2Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip2/StepChip2Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.95)
+text = "2 Character"
+
+[node name="StepChip3" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip3Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip3"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip3Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip3/StepChip3Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "3 Starter"
+
+[node name="StepChip4" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+layout_mode = 2
+
+[node name="StepChip4Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip4"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChip4Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip4/StepChip4Margin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "4 Arena"
+
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 28
 
 [node name="RosterPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
@@ -82,7 +151,7 @@ text = "Character Select"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Choose who enters the arena. The next step lets you lock the starting weapon before the run begins."
+text = "Choose who enters the arena. The next step locks the exact starting weapon before the run begins."
 
 [node name="RosterList" type="VBoxContainer" parent="RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
@@ -180,7 +249,7 @@ text = "Back"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down to browse, Enter to continue, R for random, Esc to return."
+text = "Shortcuts: Up/Down browse, Enter continue, R random character, Esc back."
 
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
 layout_mode = 2
@@ -248,4 +317,4 @@ text = "Tradeoffs: -"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Confirm moves to starting weapon selection. Back returns to Main Menu."
+text = "Step 2 of 4. Confirm moves to starting weapon selection. Back returns to Main Menu."

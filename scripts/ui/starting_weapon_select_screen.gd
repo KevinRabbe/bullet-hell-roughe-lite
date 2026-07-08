@@ -93,9 +93,7 @@ func _rebuild_weapon_buttons() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, 96)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		var display_name := str(option.get("display_name", option.get("id", "Weapon")))
-		var tags_text := _join_tags(option.get("tags", []))
-		button.text = "%s\n%s" % [display_name, tags_text]
+		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
@@ -110,10 +108,24 @@ func _on_weapon_button_pressed(index: int) -> void:
 
 func _select_index(index: int) -> void:
 	selected_index = clampi(index, 0, max(weapon_options.size() - 1, 0))
+	_refresh_weapon_buttons()
 	_refresh_selection()
 	var selected_button := weapon_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
+
+func _refresh_weapon_buttons() -> void:
+	for index in range(weapon_list.get_child_count()):
+		var button := weapon_list.get_child(index) as Button
+		if button == null or index >= weapon_options.size():
+			continue
+		button.text = _build_weapon_button_text(weapon_options[index], index == selected_index)
+
+func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
+	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
+	var tags_text := _join_tags(option.get("tags", []))
+	var prefix := "▶ " if is_selected else ""
+	return "%s%s\n%s" % [prefix, display_name, tags_text]
 
 func _refresh_selection() -> void:
 	if weapon_options.is_empty():
@@ -176,6 +188,7 @@ func _on_random_pressed() -> void:
 	if weapon_options.is_empty():
 		return
 	selected_index = randi_range(0, weapon_options.size() - 1)
+	_refresh_weapon_buttons()
 	_refresh_selection()
 	var selected_button := weapon_list.get_child(selected_index) as Button
 	if selected_button != null:
@@ -187,6 +200,7 @@ func _select_default_weapon(should_refresh: bool = false) -> void:
 		if option.get("default_selected", false) == true:
 			selected_index = option_index
 			if should_refresh:
+				_refresh_weapon_buttons()
 				_refresh_selection()
 				var selected_button := weapon_list.get_child(selected_index) as Button
 				if selected_button != null:
@@ -194,6 +208,7 @@ func _select_default_weapon(should_refresh: bool = false) -> void:
 			return
 	selected_index = 0
 	if should_refresh:
+		_refresh_weapon_buttons()
 		_refresh_selection()
 		var selected_button := weapon_list.get_child(selected_index) as Button
 		if selected_button != null:

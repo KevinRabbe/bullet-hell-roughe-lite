@@ -89,8 +89,8 @@ func _rebuild_roster_buttons() -> void:
 	for index in selectable_ids.size():
 		var character_id := selectable_ids[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 56)
-		button.text = str(display_names.get(character_id, character_id))
+		button.custom_minimum_size = Vector2(0, 84)
+		button.text = _build_roster_button_text(character_id, index == selected_index)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.focus_mode = Control.FOCUS_ALL
 		button.pressed.connect(_on_character_button_pressed.bind(index))
@@ -105,10 +105,28 @@ func _on_character_button_pressed(index: int) -> void:
 
 func _select_index(index: int) -> void:
 	selected_index = clampi(index, 0, max(selectable_ids.size() - 1, 0))
+	_refresh_roster_buttons()
 	_refresh_selection_details()
 	var selected_button := roster_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
+
+func _refresh_roster_buttons() -> void:
+	for index in range(roster_list.get_child_count()):
+		var button := roster_list.get_child(index) as Button
+		if button == null or index >= selectable_ids.size():
+			continue
+		button.text = _build_roster_button_text(selectable_ids[index], index == selected_index)
+
+func _build_roster_button_text(character_id: String, is_selected: bool) -> String:
+	var entry := _find_character_entry(character_id)
+	var presentation_variant: Variant = entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var display_name := str(display_names.get(character_id, character_id))
+	var passive_name := str(presentation.get("passive_name", "Passive"))
+	var difficulty := str(presentation.get("difficulty", "medium")).capitalize()
+	var prefix := "▶ " if is_selected else ""
+	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
 
 func _refresh_selection_details() -> void:
 	if selectable_ids.is_empty():
@@ -208,6 +226,7 @@ func _on_random_pressed() -> void:
 	if selectable_ids.is_empty():
 		return
 	selected_index = randi_range(0, selectable_ids.size() - 1)
+	_refresh_roster_buttons()
 	_refresh_selection_details()
 	var selected_button := roster_list.get_child(selected_index) as Button
 	if selected_button != null:
