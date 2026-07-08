@@ -134,8 +134,25 @@ static func _build_character_readiness(character_data: Dictionary, starting_weap
 	if not (presentation_variant is Dictionary):
 		return {"is_ready": false, "reason": "Missing presentation block"}
 	var presentation: Dictionary = presentation_variant
-	if str(presentation.get("headline", "")) == "" or str(presentation.get("identity_summary", "")) == "":
+	if str(presentation.get("headline", "")) == "":
+		return {"is_ready": false, "reason": "Missing presentation headline"}
+	if str(presentation.get("fantasy_hook", "")) == "":
+		return {"is_ready": false, "reason": "Missing fantasy hook"}
+	if str(presentation.get("identity_summary", "")) == "":
 		return {"is_ready": false, "reason": "Incomplete presentation copy"}
+	if str(presentation.get("passive_name", "")) == "" or str(presentation.get("passive_summary", "")) == "":
+		return {"is_ready": false, "reason": "Missing passive presentation"}
+	if str(presentation.get("starter_weapon_label", "")) == "" or str(presentation.get("arsenal_label", "")) == "":
+		return {"is_ready": false, "reason": "Missing presentation labels"}
+	var strengths := _normalize_string_array(presentation.get("strengths", []))
+	if strengths.is_empty():
+		return {"is_ready": false, "reason": "Missing strengths list"}
+	var tradeoffs := _normalize_string_array(presentation.get("tradeoffs", []))
+	if tradeoffs.is_empty():
+		return {"is_ready": false, "reason": "Missing tradeoffs list"}
+	var arsenal_preview := _normalize_string_array(presentation.get("arsenal_preview", []))
+	if arsenal_preview.is_empty():
+		return {"is_ready": false, "reason": "Missing arsenal preview"}
 	return {"is_ready": true, "reason": ""}
 
 static func _build_character_presentation(character_data: Dictionary) -> Dictionary:
