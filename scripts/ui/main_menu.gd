@@ -1,5 +1,6 @@
 extends Control
 
+const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 const ARMORY_COPY := "The Armory lands in a later menu phase. For now we keep the front door stable: Start Run -> Character Select -> Starting Weapon -> Arena."
@@ -7,6 +8,7 @@ const OPTIONS_COPY := "Options stay intentionally lightweight until the full men
 const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelite prototype. Current focus: stronger menu identity, readable character discovery, and a clean run-start flow that can absorb final art later."
 
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
+@onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
 @onready var modal_scrim: ColorRect = $ModalScrim
 @onready var dialog_panel: PanelContainer = $DialogPanel
 @onready var dialog_title: Label = $DialogPanel/DialogMargin/DialogVBox/DialogTitle
@@ -15,6 +17,7 @@ const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelit
 
 func _ready() -> void:
 	_hide_dialog()
+	_rebuild_featured_roster()
 	if start_button != null:
 		start_button.grab_focus()
 
@@ -55,3 +58,89 @@ func _hide_dialog() -> void:
 	dialog_panel.visible = false
 	if start_button != null:
 		start_button.grab_focus()
+
+func _rebuild_featured_roster() -> void:
+	if featured_roster_list == null:
+		return
+	for child in featured_roster_list.get_children():
+		child.queue_free()
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	var entries_variant: Variant = selection_state.get("entries", [])
+	if not (entries_variant is Array):
+		return
+	var shown := 0
+	for entry_variant in entries_variant:
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		if entry.get("selectable", true) == false:
+			continue
+		featured_roster_list.add_child(_build_featured_roster_card(entry))
+		shown += 1
+		if shown >= 4:
+			break
+
+func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
+	var card := PanelContainer.new()
+	var card_style := StyleBoxFlat.new()
+	card_style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	card_style.border_width_left = 1
+	card_style.border_width_top = 1
+	card_style.border_width_right = 1
+	card_style.border_width_bottom = 1
+	card_style.border_color = Color(0.992157, 0.560784, 0.560784, 0.22)
+	card_style.corner_radius_top_left = 10
+	card_style.corner_radius_top_right = 10
+	card_style.corner_radius_bottom_right = 10
+	card_style.corner_radius_bottom_left = 10
+	card.add_theme_stylebox_override("panel", card_style)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 14)
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 14)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	card.add_child(margin)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 4)
+	margin.add_child(column)
+
+	var presentation_variant: Variant = entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var name_label := Label.new()
+	name_label.text = str(entry.get("display_name", entry.get("id", "Character")))
+	name_label.add_theme_font_size_override("font_size", 20)
+	column.add_child(name_label)
+
+	var passive_label := Label.new()
+	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
+	passive_label.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	column.add_child(passive_label)
+
+	var summary_label := Label.new()
+	summary_label.text = str(presentation.get("headline", ""))
+	summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	summary_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+	column.add_child(summary_label)
+
+	var tags_variant: Variant = presentation.get("playstyle_tags", [])
+	var tags_text := _format_tags(tags_variant)
+	if tags_text != "":
+		var tags_label := Label.new()
+		tags_label.text = tags_text
+		tags_label.modulate = Color(0.75, 0.79, 0.86, 0.92)
+		column.add_child(tags_label)
+
+	return card
+
+func _format_tags(tags_variant: Variant) -> String:
+	if not (tags_variant is Array):
+		return ""
+	var parts: Array[String] = []
+	for tag_variant in tags_variant:
+		var tag_text := str(tag_variant)
+		if tag_text != "":
+			parts.append(tag_text.capitalize())
+	return "Tags: %s" % ", ".join(parts) if not parts.is_empty() else ""
