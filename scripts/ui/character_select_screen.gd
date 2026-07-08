@@ -10,6 +10,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var family_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
 @onready var name_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
 @onready var summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
+@onready var fantasy_hook_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/FantasyHook
 @onready var passive_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
 @onready var passive_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
 @onready var tags_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
@@ -125,7 +126,7 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	var display_name := str(display_names.get(character_id, character_id))
 	var passive_name := str(presentation.get("passive_name", "Passive"))
 	var difficulty := str(presentation.get("difficulty", "medium")).capitalize()
-	var prefix := "▶ " if is_selected else ""
+	var prefix := "> " if is_selected else ""
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
 
 func _refresh_selection_details() -> void:
@@ -134,6 +135,7 @@ func _refresh_selection_details() -> void:
 		family_label.text = "Family: -"
 		name_label.text = ""
 		summary_label.text = ""
+		fantasy_hook_label.text = ""
 		passive_label.text = ""
 		passive_summary_label.text = ""
 		tags_label.text = ""
@@ -161,6 +163,7 @@ func _refresh_selection_details() -> void:
 	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
 	name_label.text = str(display_names.get(character_id, character_id))
 	summary_label.text = str(presentation.get("identity_summary", ""))
+	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	passive_summary_label.text = str(presentation.get("passive_summary", ""))
 	var tags_variant: Variant = presentation.get("playstyle_tags", [])
@@ -172,11 +175,13 @@ func _refresh_selection_details() -> void:
 				tags.append(tag_text.capitalize())
 	tags_label.text = "Tags: %s" % (", ".join(tags) if not tags.is_empty() else "None")
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
-	starter_weapon_label.text = "Starting Weapon: %s" % _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")
+	var starter_title := str(detail.get("starter_weapon_label", "Starting Weapon"))
+	starter_weapon_label.text = "%s: %s" % [starter_title, _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")]
 	var starter_summary := str(detail.get("starter_weapon_summary", ""))
 	if starter_summary != "":
 		starter_weapon_label.text = "%s\n%s" % [starter_weapon_label.text, starter_summary]
-	arsenal_label.text = "Arsenal: %s" % _join_detail_list(detail.get("arsenal_names", []), "Unknown")
+	var arsenal_title := str(detail.get("arsenal_label", "Arsenal"))
+	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list(detail.get("arsenal_names", []), "Unknown")]
 	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
 	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
 	if confirm_button != null:
