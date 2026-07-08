@@ -6,7 +6,10 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var roster_list: VBoxContainer = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
 @onready var heading_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
-@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitRect
+@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_backdrop: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
+@onready var portrait_halo: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
+@onready var portrait_accent_bar: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
 @onready var family_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
 @onready var name_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
 @onready var summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
@@ -14,6 +17,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var passive_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
 @onready var passive_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
 @onready var tags_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
+@onready var tag_chips: FlowContainer = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
 @onready var difficulty_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
 @onready var starter_weapon_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/StarterWeapon
 @onready var arsenal_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Arsenal
@@ -173,7 +177,8 @@ func _refresh_selection_details() -> void:
 			var tag_text := str(tag_variant)
 			if tag_text != "":
 				tags.append(tag_text.capitalize())
-	tags_label.text = "Tags: %s" % (", ".join(tags) if not tags.is_empty() else "None")
+	tags_label.text = "Build Tags"
+	_rebuild_tag_chips(tags, _family_accent_color(str(current_entry.get("preferred_weapon_family", ""))))
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
 	var starter_title := str(detail.get("starter_weapon_label", "Starting Weapon"))
 	starter_weapon_label.text = "%s: %s" % [starter_title, _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")]
@@ -195,6 +200,13 @@ func _refresh_selection_details() -> void:
 func _apply_portrait(detail: Dictionary) -> void:
 	if portrait_rect == null:
 		return
+	var accent := _family_accent_color(str(detail.get("family_label", "")))
+	if portrait_backdrop != null:
+		portrait_backdrop.color = Color(0.05, 0.06, 0.1, 0.94)
+	if portrait_accent_bar != null:
+		portrait_accent_bar.color = accent
+	if portrait_halo != null:
+		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
 	var visual_path := str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
@@ -212,6 +224,61 @@ func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
 		if value != "":
 			parts.append(value)
 	return ", ".join(parts) if not parts.is_empty() else empty_text
+
+func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
+	if tag_chips == null:
+		return
+	for child in tag_chips.get_children():
+		child.queue_free()
+	if tags.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "No build tags yet"
+		empty_label.modulate = Color(0.72, 0.76, 0.84, 0.9)
+		tag_chips.add_child(empty_label)
+		return
+	for tag in tags:
+		var chip := PanelContainer.new()
+		var chip_style := StyleBoxFlat.new()
+		chip_style.bg_color = Color(accent.r, accent.g, accent.b, 0.16)
+		chip_style.border_width_left = 1
+		chip_style.border_width_top = 1
+		chip_style.border_width_right = 1
+		chip_style.border_width_bottom = 1
+		chip_style.border_color = Color(accent.r, accent.g, accent.b, 0.45)
+		chip_style.corner_radius_top_left = 10
+		chip_style.corner_radius_top_right = 10
+		chip_style.corner_radius_bottom_right = 10
+		chip_style.corner_radius_bottom_left = 10
+		chip.add_theme_stylebox_override("panel", chip_style)
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 10)
+		margin.add_theme_constant_override("margin_top", 4)
+		margin.add_theme_constant_override("margin_right", 10)
+		margin.add_theme_constant_override("margin_bottom", 4)
+		chip.add_child(margin)
+		var label := Label.new()
+		label.text = tag
+		label.modulate = Color(0.96, 0.97, 1.0, 0.95)
+		margin.add_child(label)
+		tag_chips.add_child(chip)
+
+func _family_accent_color(family_label: String) -> Color:
+	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
+	match normalized:
+		"gunslinger":
+			return Color(0.96, 0.72, 0.33, 1.0)
+		"harvester":
+			return Color(0.90, 0.33, 0.56, 1.0)
+		"hellfire":
+			return Color(0.95, 0.42, 0.32, 1.0)
+		"portal":
+			return Color(0.50, 0.68, 1.0, 1.0)
+		"devil":
+			return Color(0.97, 0.28, 0.38, 1.0)
+		"ritual":
+			return Color(0.83, 0.43, 0.96, 1.0)
+		_:
+			return Color(0.99, 0.56, 0.56, 1.0)
 
 func _find_character_entry(character_id: String) -> Dictionary:
 	for entry in character_entries:
