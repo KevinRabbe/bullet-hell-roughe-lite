@@ -4,7 +4,9 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
-@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitRect
+@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_halo: ColorRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
+@onready var portrait_accent_bar: ColorRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
 @onready var character_name_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterName
 @onready var character_family_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterFamily
 @onready var passive_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
@@ -162,6 +164,11 @@ func _apply_character_summary(display_name: String) -> void:
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	character_tags_label.text = "Tags: %s" % _join_tags(presentation.get("playstyle_tags", []))
 	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
+	var accent := _family_accent_color(str(detail.get("family_label", "")))
+	if portrait_accent_bar != null:
+		portrait_accent_bar.color = accent
+	if portrait_halo != null:
+		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
 	var visual_path := str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
@@ -179,6 +186,24 @@ func _join_tags(tags_variant: Variant) -> String:
 		if tag_text != "":
 			parts.append(tag_text.capitalize())
 	return ", ".join(parts) if not parts.is_empty() else "None"
+
+func _family_accent_color(family_label: String) -> Color:
+	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
+	match normalized:
+		"gunslinger":
+			return Color(0.96, 0.72, 0.33, 1.0)
+		"harvester":
+			return Color(0.90, 0.33, 0.56, 1.0)
+		"hellfire":
+			return Color(0.95, 0.42, 0.32, 1.0)
+		"portal":
+			return Color(0.50, 0.68, 1.0, 1.0)
+		"devil":
+			return Color(0.97, 0.28, 0.38, 1.0)
+		"ritual":
+			return Color(0.83, 0.43, 0.96, 1.0)
+		_:
+			return Color(0.99, 0.56, 0.56, 1.0)
 
 func _on_confirm_pressed() -> void:
 	if current_character_id == "" or weapon_options.is_empty():
