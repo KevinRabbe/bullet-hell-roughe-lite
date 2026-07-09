@@ -292,6 +292,12 @@ theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Only valid starting weapons are shown here. Use R for random or T to snap back to the default opener."
 
+[node name="WeaponStatus" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
+autowrap_mode = 3
+text = "Starter cards show role, tags, and default status at a glance."
+
 [node name="WeaponList" type="GridContainer" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -337,6 +343,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Selected weapon summary"
+
+[node name="SelectedSectionLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 16
+text = "Selected Starter"
 
 [node name="SelectedName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
