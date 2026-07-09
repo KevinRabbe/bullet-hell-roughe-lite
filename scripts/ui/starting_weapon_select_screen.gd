@@ -14,8 +14,8 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 @onready var fantasy_hook_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/FantasyHook
 @onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
 @onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
-@onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
 @onready var selection_state_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
+@onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
 @onready var weapon_list: GridContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
 @onready var selected_name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
@@ -101,7 +101,7 @@ func _rebuild_weapon_buttons() -> void:
 	for index in weapon_options.size():
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 128)
+		button.custom_minimum_size = Vector2(0, 144)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
@@ -163,6 +163,11 @@ func _refresh_selection() -> void:
 	var detail_variant: Variant = current_character_entry.get("detail", {})
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
 	var starter_label := str(detail.get("starter_weapon_label", "Starting Weapon"))
+	if selection_state_label != null:
+		if option.get("default_selected", false) == true:
+			selection_state_label.text = "Default starter selected."
+		else:
+			selection_state_label.text = "Alternate valid starter selected."
 	selection_summary_label.text = "%s: %s\nThis weapon will be written into the run-start payload for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
@@ -222,6 +227,10 @@ func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected:
 	style.border_width_top = 1
 	style.border_width_right = 1
 	style.border_width_bottom = 1
+	style.content_margin_left = 14
+	style.content_margin_top = 14
+	style.content_margin_right = 14
+	style.content_margin_bottom = 14
 	if is_selected:
 		style.bg_color = Color(accent.r, accent.g, accent.b, 0.24)
 		style.border_color = Color(accent.r, accent.g, accent.b, 0.72)
