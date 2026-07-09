@@ -127,54 +127,54 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 28
 
-[node name="CharacterPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+[node name="CharacterPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
-[node name="CharacterMargin" type="MarginContainer" parent="RootMargin/MainHBox/CharacterPanel"]
+[node name="CharacterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="CharacterVBox" type="VBoxContainer" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin"]
+[node name="CharacterVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="CharacterTitle" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
+[node name="CharacterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Run Loadout"
 
-[node name="CharacterBody" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
+[node name="CharacterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Lock the opening weapon for this character before the arena starts."
 
-[node name="HeroPanel" type="PanelContainer" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
+[node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 custom_minimum_size = Vector2(0, 330)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="HeroMargin" type="MarginContainer" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel"]
+[node name="HeroMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="HeroVBox" type="VBoxContainer" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin"]
+[node name="HeroVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="PortraitStage" type="Control" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="PortraitStage" type="Control" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PortraitBackdrop" type="ColorRect" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
+[node name="PortraitBackdrop" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -183,7 +183,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0588235, 0.0666667, 0.105882, 0.94)
 
-[node name="PortraitHalo" type="ColorRect" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
+[node name="PortraitHalo" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -198,7 +198,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.592157, 0.2, 0.286275, 0.18)
 
-[node name="PortraitAccentBar" type="ColorRect" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
+[node name="PortraitAccentBar" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -206,7 +206,7 @@ offset_bottom = 6.0
 grow_horizontal = 2
 color = Color(0.992157, 0.560784, 0.560784, 0.8)
 
-[node name="PortraitFloor" type="ColorRect" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
+[node name="PortraitFloor" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -217,7 +217,7 @@ grow_horizontal = 2
 grow_vertical = 0
 color = Color(0.0117647, 0.0156863, 0.027451, 0.88)
 
-[node name="PortraitCenter" type="CenterContainer" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
+[node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -225,170 +225,170 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PortraitRect" type="TextureRect" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter"]
+[node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter"]
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CharacterName" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="CharacterName" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Character"
 
-[node name="CharacterFamily" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="CharacterFamily" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 text = "Family: Unknown"
 
-[node name="PassiveLabel" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="PassiveLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Passive: -"
 
-[node name="CharacterTags" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="CharacterTags" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Tags: None"
 
-[node name="FantasyHook" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="FantasyHook" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.9)
 autowrap_mode = 3
 text = "Fantasy hook"
 
-[node name="CharacterHint" type="Label" parent="RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
+[node name="CharacterHint" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
 text = "Step 3 of 4. Back returns to Character Select. Confirm sends this exact starter into the run."
 
-[node name="WeaponPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+[node name="WeaponPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 
-[node name="WeaponMargin" type="MarginContainer" parent="RootMargin/MainHBox/WeaponPanel"]
+[node name="WeaponMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="WeaponVBox" type="VBoxContainer" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin"]
+[node name="WeaponVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="WeaponTitle" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+[node name="WeaponTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Starter Weapons"
 
-[node name="WeaponBody" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+[node name="WeaponBody" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Only valid starting weapons are shown here. Use R for random or T to snap back to the default opener."
 
-[node name="WeaponStatus" type="Label" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+[node name="WeaponStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 autowrap_mode = 3
 text = "Starter cards show role, tags, and default status at a glance."
 
-[node name="WeaponList" type="GridContainer" parent="RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+[node name="WeaponList" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 size_flags_vertical = 3
 columns = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 
-[node name="DetailPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+[node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="DetailMargin" type="MarginContainer" parent="RootMargin/MainHBox/DetailPanel"]
+[node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin"]
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="Title" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="Title" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
 text = "Starting Weapon"
 
-[node name="Headline" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="Headline" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Pick the opener that defines this run's first decisions."
 
-[node name="SelectionState" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectionState" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Default starter selected."
 
-[node name="SelectionSummary" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectionSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Selected weapon summary"
 
-[node name="SelectedSectionLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 theme_override_font_sizes/font_size = 16
 text = "Selected Starter"
 
-[node name="SelectedName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "Weapon"
 
-[node name="SelectedDescription" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedDescription" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Description"
 
-[node name="SelectedTags" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedTags" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Tags: None"
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ConfirmButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Enter Arena"
 
-[node name="BackButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Back"
 
-[node name="DefaultButton" type="Button" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="DefaultButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Default Starter"
 
-[node name="HintLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
