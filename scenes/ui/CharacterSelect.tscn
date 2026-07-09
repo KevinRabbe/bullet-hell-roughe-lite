@@ -153,6 +153,12 @@ theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Choose who enters the arena. The next step locks the exact starting weapon before the run begins."
 
+[node name="RosterStatus" type="Label" parent="RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
+autowrap_mode = 3
+text = "6 active roster entries ready for the arena."
+
 [node name="RosterList" type="VBoxContainer" parent="RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -353,6 +359,12 @@ theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.9)
 autowrap_mode = 3
 text = "Fantasy hook"
 
+[node name="PassiveSectionLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 16
+text = "Passive"
+
 [node name="PassiveName" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
@@ -364,6 +376,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Passive summary"
+
+[node name="StarterSectionLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 16
+text = "Opening Weapon"
 
 [node name="StarterWeapon" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 58)
@@ -378,6 +396,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Arsenal: -"
+
+[node name="StrengthsSectionLabel" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
+theme_override_font_sizes/font_size = 16
+text = "Strengths & Tradeoffs"
 
 [node name="Strengths" type="Label" parent="RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 42)

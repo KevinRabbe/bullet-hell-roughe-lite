@@ -5,6 +5,7 @@ const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var roster_list: VBoxContainer = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
+@onready var roster_status_label: Label = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
 @onready var heading_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
 @onready var portrait_rect: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
 @onready var portrait_backdrop: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
@@ -94,10 +95,14 @@ func _rebuild_roster_buttons() -> void:
 	for index in selectable_ids.size():
 		var character_id := selectable_ids[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 84)
+		button.custom_minimum_size = Vector2(0, 94)
 		button.text = _build_roster_button_text(character_id, index == selected_index)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.focus_mode = Control.FOCUS_ALL
+		button.clip_text = true
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 18)
+		_apply_roster_button_style(button, character_id, index == selected_index)
 		button.pressed.connect(_on_character_button_pressed.bind(index))
 		roster_list.add_child(button)
 	if roster_list.get_child_count() > 0:
@@ -121,7 +126,9 @@ func _refresh_roster_buttons() -> void:
 		var button := roster_list.get_child(index) as Button
 		if button == null or index >= selectable_ids.size():
 			continue
-		button.text = _build_roster_button_text(selectable_ids[index], index == selected_index)
+		var character_id := selectable_ids[index]
+		button.text = _build_roster_button_text(character_id, index == selected_index)
+		_apply_roster_button_style(button, character_id, index == selected_index)
 
 func _build_roster_button_text(character_id: String, is_selected: bool) -> String:
 	var entry := _find_character_entry(character_id)
@@ -132,6 +139,33 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	var difficulty := str(presentation.get("difficulty", "medium")).capitalize()
 	var prefix := "> " if is_selected else ""
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
+
+func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
+	var entry := _find_character_entry(character_id)
+	var accent := _family_accent_color(str(entry.get("preferred_weapon_family", "")))
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.content_margin_left = 16
+	style.content_margin_top = 14
+	style.content_margin_right = 16
+	style.content_margin_bottom = 14
+	if is_selected:
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.22)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.78)
+	else:
+		style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.22)
+	button.add_theme_stylebox_override("normal", style)
+	button.add_theme_stylebox_override("hover", style)
+	button.add_theme_stylebox_override("pressed", style)
+	button.add_theme_stylebox_override("focus", style)
 
 func _refresh_selection_details() -> void:
 	if selectable_ids.is_empty():
@@ -189,6 +223,12 @@ func _refresh_selection_details() -> void:
 	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list(detail.get("arsenal_names", []), "Unknown")]
 	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
 	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
+	if roster_status_label != null:
+		var ready_count := 0
+		for entry in character_entries:
+			if entry.get("is_ready_for_run_start", true) != false:
+				ready_count += 1
+		roster_status_label.text = "%d active roster entries. %d ready for run start." % [selectable_ids.size(), ready_count]
 	if confirm_button != null:
 		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
 		confirm_button.disabled = not run_ready
