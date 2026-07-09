@@ -15,6 +15,7 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 @onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
 @onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
 @onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
+@onready var selection_state_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
 @onready var weapon_list: GridContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
 @onready var selected_name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
@@ -80,6 +81,11 @@ func _load_state() -> void:
 	headline_label.text = "%s - choose the weapon that opens this run." % display_name
 	if family_count > 0:
 		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
+	var selection_source := str(selection_state.get("selection_source", "default_starter"))
+	if selection_state_label != null:
+		selection_state_label.text = "Default starter selected."
+		if selection_source == "remembered_choice":
+			selection_state_label.text = "Restored your previous weapon choice."
 	_apply_character_summary(display_name)
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
@@ -87,6 +93,7 @@ func _load_state() -> void:
 			if option_variant is Dictionary:
 				weapon_options.append(option_variant)
 	_select_default_weapon()
+	_persist_pending_selection()
 
 func _rebuild_weapon_buttons() -> void:
 	for child in weapon_list.get_children():
@@ -113,6 +120,7 @@ func _on_weapon_button_pressed(index: int) -> void:
 
 func _select_index(index: int) -> void:
 	selected_index = clampi(index, 0, max(weapon_options.size() - 1, 0))
+	_persist_pending_selection()
 	_refresh_weapon_buttons()
 	_refresh_selection()
 	var selected_button := weapon_list.get_child(selected_index) as Button
@@ -246,10 +254,7 @@ func _family_accent_color(family_label: String) -> Color:
 func _on_confirm_pressed() -> void:
 	if current_character_id == "" or weapon_options.is_empty():
 		return
-	var option: Dictionary = weapon_options[selected_index]
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
-	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
+	_persist_pending_selection()
 	get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
 func _on_random_pressed() -> void:
@@ -288,4 +293,13 @@ func _on_default_pressed() -> void:
 	_select_default_weapon(true)
 
 func _on_back_pressed() -> void:
+	_persist_pending_selection()
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
+
+func _persist_pending_selection() -> void:
+	if current_character_id == "" or weapon_options.is_empty():
+		return
+	var option: Dictionary = weapon_options[selected_index]
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
+	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
