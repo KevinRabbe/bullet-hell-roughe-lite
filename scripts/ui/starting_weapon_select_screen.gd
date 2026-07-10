@@ -1,7 +1,7 @@
 extends Control
 
-const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
-const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
+const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
@@ -38,7 +38,7 @@ var current_character_entry: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
-	DisplaySettingsRuntime.apply_saved_settings()
+	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_state()
 	_apply_responsive_layout()
 	_rebuild_weapon_buttons()
@@ -76,12 +76,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_back_pressed()
 
 func _load_state() -> void:
-	var pending_payload := CharacterSelectionRuntime.get_pending_run_start_payload()
+	var pending_payload := CharacterSelectionRuntimeRef.get_pending_run_start_payload()
 	current_character_id = str(pending_payload.get("character_id", ""))
 	if current_character_id == "":
 		return
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntime.build_starting_weapon_selection_state(data_registry, current_character_id)
+	var selection_state := CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(data_registry, current_character_id)
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
 	title_label.text = "Choose Your Starting Weapon"
@@ -111,7 +111,7 @@ func _rebuild_weapon_buttons() -> void:
 		return
 	for child in weapon_list.get_children():
 		child.queue_free()
-	for index in weapon_options.size():
+	for index in range(weapon_options.size()):
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, 144)
@@ -333,8 +333,8 @@ func _persist_pending_selection() -> void:
 		return
 	var option: Dictionary = weapon_options[selected_index]
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
-	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
+	var payload := CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
+	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
