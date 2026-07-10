@@ -96,14 +96,14 @@ func _load_state() -> void:
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
 	title_label.text = "Choose Your Starting Weapon"
-	var display_name := str(selection_state.get("display_name", current_character_id))
+	var display_name: String = str(selection_state.get("display_name", current_character_id))
 	var family_count := 0
 	if not current_character_entry.is_empty():
 		family_count = int(current_character_entry.get("family_weapon_count", 0))
 	headline_label.text = "%s - choose the weapon that opens this run." % display_name
 	if family_count > 0:
 		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
-	var selection_source := str(selection_state.get("selection_source", "default_starter"))
+	var selection_source: String = str(selection_state.get("selection_source", "default_starter"))
 	if selection_state_label != null:
 		selection_state_label.text = "Default opening weapon selected."
 		if selection_source == "remembered_choice":
@@ -165,16 +165,16 @@ func _refresh_weapon_buttons() -> void:
 		if button == null or index >= weapon_options.size():
 			continue
 		button.custom_minimum_size = Vector2(0, card_height)
-		var option := weapon_options[index]
+		var option: Dictionary = weapon_options[index]
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		_apply_weapon_button_style(button, option, index == selected_index)
 
 func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
-	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
-	var description := _summarize_description(str(option.get("description", "")))
-	var tags_text := "Tags: %s" % _join_tags(option.get("tags", []))
-	var badge := "[Default] " if option.get("default_selected", false) == true else ""
-	var prefix := "> " if is_selected else ""
+	var display_name: String = str(option.get("display_name", option.get("id", "Weapon")))
+	var description: String = _summarize_description(str(option.get("description", "")))
+	var tags_text: String = "Tags: %s" % _join_tags(option.get("tags", []))
+	var badge: String = "[Default] " if option.get("default_selected", false) == true else ""
+	var prefix: String = "> " if is_selected else ""
 	if _is_tight_viewport():
 		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
 	if description == "":
@@ -191,13 +191,13 @@ func _refresh_selection() -> void:
 			confirm_button.text = "Enter Arena"
 		return
 	var option: Dictionary = weapon_options[selected_index]
-	var display_name := str(option.get("display_name", option.get("id", "Weapon")))
+	var display_name: String = str(option.get("display_name", option.get("id", "Weapon")))
 	selected_name_label.text = display_name
 	selected_description_label.text = str(option.get("description", ""))
 	selected_tags_label.text = "Tags: %s" % _join_tags(option.get("tags", []))
 	var detail_variant: Variant = current_character_entry.get("detail", {})
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	var starter_label := str(detail.get("starter_weapon_label", "Starting Weapon"))
+	var starter_label: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
 	if selection_state_label != null:
 		if option.get("default_selected", false) == true:
 			selection_state_label.text = "Default opening weapon selected."
@@ -220,13 +220,13 @@ func _apply_character_summary(display_name: String) -> void:
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	character_tags_label.text = "Tags: %s" % _join_tags(presentation.get("playstyle_tags", []))
 	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
-	var accent := _family_accent_color(str(detail.get("family_label", "")))
+	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
 	if portrait_accent_bar != null:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
-	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % current_character_id
-	var visual_path := portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
+	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % current_character_id
+	var visual_path: String = portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
 		return

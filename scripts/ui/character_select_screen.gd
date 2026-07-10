@@ -106,9 +106,9 @@ func _load_selection_state() -> void:
 	presentations = presentations_variant if presentations_variant is Dictionary else {}
 	var details_variant: Variant = selection_state.get("details", {})
 	details = details_variant if details_variant is Dictionary else {}
-	var pending_id := CharacterSelectionRuntimeRef.get_pending_character_id()
+	var pending_id: String = CharacterSelectionRuntimeRef.get_pending_character_id()
 	if pending_id != "":
-		var pending_index := selectable_ids.find(pending_id)
+		var pending_index: int = selectable_ids.find(pending_id)
 		if pending_index >= 0:
 			selected_index = pending_index
 
@@ -168,10 +168,10 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	var entry := _find_character_entry(character_id)
 	var presentation_variant: Variant = entry.get("presentation", {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
-	var display_name := str(display_names.get(character_id, character_id))
-	var passive_name := str(presentation.get("passive_name", "Passive"))
-	var difficulty := str(presentation.get("difficulty", "medium")).capitalize()
-	var prefix := "> " if is_selected else ""
+	var display_name: String = str(display_names.get(character_id, character_id))
+	var passive_name: String = str(presentation.get("passive_name", "Passive"))
+	var difficulty: String = str(presentation.get("difficulty", "medium")).capitalize()
+	var prefix: String = "> " if is_selected else ""
 	if _is_tight_viewport():
 		return "%s%s\n%s" % [prefix, display_name, difficulty]
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
@@ -250,17 +250,17 @@ func _refresh_selection_details() -> void:
 	tags_label.text = "Build Tags"
 	_rebuild_tag_chips(tags, _family_accent_color(str(current_entry.get("preferred_weapon_family", ""))))
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
-	var starter_title := str(detail.get("starter_weapon_label", "Starting Weapon"))
+	var starter_title: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
 	starter_weapon_label.text = "%s: %s" % [starter_title, _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")]
-	var starter_summary := str(detail.get("starter_weapon_summary", ""))
+	var starter_summary: String = str(detail.get("starter_weapon_summary", ""))
 	if starter_summary != "":
 		starter_weapon_label.text = "%s\n%s" % [starter_weapon_label.text, starter_summary]
-	var arsenal_title := str(detail.get("arsenal_label", "Arsenal"))
+	var arsenal_title: String = str(detail.get("arsenal_label", "Arsenal"))
 	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list(detail.get("arsenal_names", []), "Unknown")]
 	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
 	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
 	if roster_status_label != null:
-		var ready_count := 0
+		var ready_count: int = 0
 		for entry in character_entries:
 			if entry.get("is_ready_for_run_start", true) != false:
 				ready_count += 1
@@ -276,15 +276,15 @@ func _refresh_selection_details() -> void:
 func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	if portrait_rect == null:
 		return
-	var accent := _family_accent_color(str(detail.get("family_label", "")))
+	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
 	if portrait_backdrop != null:
 		portrait_backdrop.color = Color(0.05, 0.06, 0.1, 0.94)
 	if portrait_accent_bar != null:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
-	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
-	var visual_path := portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
+	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var visual_path: String = portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
 		return

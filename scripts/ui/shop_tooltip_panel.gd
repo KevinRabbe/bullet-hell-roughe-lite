@@ -1,8 +1,6 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
-const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
-
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []

@@ -97,7 +97,7 @@ func _on_quit_button_pressed() -> void:
 func _show_dialog(title: String, body: String) -> void:
 	dialog_title.text = title
 	dialog_body.text = body
-	var options_mode := dialog_mode == "options"
+	var options_mode: bool = dialog_mode == "options"
 	if dialog_resolution_label != null:
 		dialog_resolution_label.visible = options_mode
 	if dialog_resolution_row != null:
@@ -214,7 +214,7 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	column.add_child(summary_label)
 
 	var tags_variant: Variant = presentation.get("playstyle_tags", [])
-	var tags_text := _format_tags(tags_variant)
+	var tags_text: String = _format_tags(tags_variant)
 	if tags_text != "":
 		var tags_label := Label.new()
 		tags_label.text = tags_text
