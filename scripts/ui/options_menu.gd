@@ -186,7 +186,7 @@ func _refresh_content() -> void:
 			)
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
-			tab_summary_label.text = "Pick a realistic window size and display mode for the current menu shell. Changes are staged until you apply them."
+			tab_summary_label.text = "Pick a realistic window size and display mode for the current menu shell. Changes preview immediately and save only when you apply them."
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
@@ -237,7 +237,7 @@ func _refresh_video_content() -> void:
 		fullscreen_toggle_button.text = "Switch to Windowed" if staged_settings.get("fullscreen", false) == true else "Switch to Fullscreen"
 	var is_dirty := not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
 	if dirty_state_label != null:
-		dirty_state_label.text = "Pending changes not applied yet." if is_dirty else "Display settings match the saved profile."
+		dirty_state_label.text = "Preview differs from saved profile. Apply to keep it or Back to revert." if is_dirty else "Display settings match the saved profile."
 		dirty_state_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
 	if apply_button != null:
 		apply_button.disabled = not is_dirty
@@ -245,29 +245,39 @@ func _refresh_video_content() -> void:
 	if reset_button != null:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 	if preview_summary_label != null:
-		preview_summary_label.text = "Preview after apply: %s" % DisplaySettingsRuntimeRef.build_summary(staged_settings)
+		preview_summary_label.text = "Current preview: %s" % DisplaySettingsRuntimeRef.build_summary(staged_settings)
 
 func _cycle_resolution(direction: int) -> void:
 	staged_settings = DisplaySettingsRuntimeRef.cycle_resolution(staged_settings, direction)
+	_apply_staged_preview()
 	_refresh_video_content()
 
 func _on_fullscreen_toggled() -> void:
 	staged_settings = DisplaySettingsRuntimeRef.toggle_fullscreen(staged_settings)
+	_apply_staged_preview()
 	_refresh_video_content()
 
 func _on_apply_pressed() -> void:
-	DisplaySettingsRuntimeRef.apply_settings(staged_settings)
 	DisplaySettingsRuntimeRef.save_settings(staged_settings)
 	saved_settings = DisplaySettingsRuntimeRef.clone_settings(staged_settings)
+	DisplaySettingsRuntimeRef.apply_settings(saved_settings)
 	_refresh_video_content()
 	_apply_responsive_layout()
 
 func _on_reset_pressed() -> void:
 	staged_settings = DisplaySettingsRuntimeRef.default_settings()
+	_apply_staged_preview()
 	_refresh_video_content()
 
 func _on_back_pressed() -> void:
+	if not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings):
+		staged_settings = DisplaySettingsRuntimeRef.clone_settings(saved_settings)
+		DisplaySettingsRuntimeRef.apply_settings(saved_settings)
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+func _apply_staged_preview() -> void:
+	DisplaySettingsRuntimeRef.apply_settings(staged_settings)
+	_apply_responsive_layout()
 
 func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	if target == null:
