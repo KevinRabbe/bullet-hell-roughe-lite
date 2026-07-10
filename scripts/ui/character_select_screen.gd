@@ -117,10 +117,11 @@ func _rebuild_roster_buttons() -> void:
 		return
 	for child in roster_list.get_children():
 		child.queue_free()
+	var roster_button_height := _roster_button_height()
 	for index in range(selectable_ids.size()):
 		var character_id := selectable_ids[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 94)
+		button.custom_minimum_size = Vector2(0, roster_button_height)
 		button.text = _build_roster_button_text(character_id, index == selected_index)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.focus_mode = Control.FOCUS_ALL
@@ -153,10 +154,12 @@ func _select_index(index: int) -> void:
 func _refresh_roster_buttons() -> void:
 	if roster_list == null:
 		return
+	var roster_button_height := _roster_button_height()
 	for index in range(roster_list.get_child_count()):
 		var button := roster_list.get_child(index) as Button
 		if button == null or index >= selectable_ids.size():
 			continue
+		button.custom_minimum_size = Vector2(0, roster_button_height)
 		var character_id := selectable_ids[index]
 		button.text = _build_roster_button_text(character_id, index == selected_index)
 		_apply_roster_button_style(button, character_id, index == selected_index)
@@ -412,24 +415,40 @@ func _on_back_pressed() -> void:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
+	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
 	if root_margin != null:
-		root_margin.offset_left = 20.0 if compact else 40.0
-		root_margin.offset_top = 18.0 if compact else 36.0
-		root_margin.offset_right = -20.0 if compact else -40.0
-		root_margin.offset_bottom = -18.0 if compact else -36.0
+		root_margin.offset_left = 12.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_top = 12.0 if tight else (18.0 if compact else 36.0)
+		root_margin.offset_right = -12.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_bottom = -12.0 if tight else (-18.0 if compact else -36.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
+		roster_panel.custom_minimum_size = Vector2(210 if tight else (260 if compact else 320), 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(300 if compact else 360, 0)
+		hero_panel.custom_minimum_size = Vector2(240 if tight else (300 if compact else 360), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 300 if compact else 360)
+		portrait_panel.custom_minimum_size = Vector2(0, 220 if tight else (300 if compact else 360))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 260 if compact else 320)
+		portrait_stage.custom_minimum_size = Vector2(0, 190 if tight else (260 if compact else 320))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 220 if compact else 280)
+		portrait_rect.custom_minimum_size = Vector2(0, 165 if tight else (220 if compact else 280))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", 32 if compact else 40)
+		name_label.add_theme_font_size_override("font_size", 26 if tight else (32 if compact else 40))
+	if confirm_button != null:
+		confirm_button.custom_minimum_size = Vector2(180 if tight else 220, 46 if tight else 50)
+	if random_button != null:
+		random_button.custom_minimum_size = Vector2(96 if tight else 120, 46 if tight else 50)
+	if back_button != null:
+		back_button.custom_minimum_size = Vector2(96 if tight else 120, 46 if tight else 50)
+	_refresh_roster_buttons()
+
+func _roster_button_height() -> float:
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x < 1280.0 or viewport_size.y < 720.0:
+		return 78.0
+	if viewport_size.x < 1360.0:
+		return 86.0
+	return 94.0

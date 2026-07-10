@@ -122,10 +122,11 @@ func _rebuild_weapon_buttons() -> void:
 		return
 	for child in weapon_list.get_children():
 		child.queue_free()
+	var card_height := _weapon_card_height()
 	for index in range(weapon_options.size()):
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 144)
+		button.custom_minimum_size = Vector2(0, card_height)
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
@@ -158,10 +159,12 @@ func _select_index(index: int) -> void:
 func _refresh_weapon_buttons() -> void:
 	if weapon_list == null:
 		return
+	var card_height := _weapon_card_height()
 	for index in range(weapon_list.get_child_count()):
 		var button := weapon_list.get_child(index) as Button
 		if button == null or index >= weapon_options.size():
 			continue
+		button.custom_minimum_size = Vector2(0, card_height)
 		var option := weapon_options[index]
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		_apply_weapon_button_style(button, option, index == selected_index)
@@ -381,26 +384,42 @@ func _persist_pending_selection() -> void:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1440.0
+	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
 	if root_margin != null:
-		root_margin.offset_left = 20.0 if compact else 40.0
-		root_margin.offset_top = 18.0 if compact else 36.0
-		root_margin.offset_right = -20.0 if compact else -40.0
-		root_margin.offset_bottom = -18.0 if compact else -36.0
+		root_margin.offset_left = 12.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_top = 12.0 if tight else (18.0 if compact else 36.0)
+		root_margin.offset_right = -12.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_bottom = -12.0 if tight else (-18.0 if compact else -36.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
 	if character_panel != null:
-		character_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
+		character_panel.custom_minimum_size = Vector2(220 if tight else (260 if compact else 320), 0)
 	if weapon_panel != null:
-		weapon_panel.custom_minimum_size = Vector2(280 if compact else 360, 0)
+		weapon_panel.custom_minimum_size = Vector2(220 if tight else (280 if compact else 360), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(0, 280 if compact else 330)
+		hero_panel.custom_minimum_size = Vector2(0, 230 if tight else (280 if compact else 330))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 180 if compact else 210)
+		portrait_stage.custom_minimum_size = Vector2(0, 150 if tight else (180 if compact else 210))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 150 if compact else 180)
+		portrait_rect.custom_minimum_size = Vector2(0, 130 if tight else (150 if compact else 180))
 	if weapon_list != null:
-		weapon_list.columns = 1 if viewport_size.x < 1280.0 else 2
+		weapon_list.columns = 1 if tight else (1 if viewport_size.x < 1360.0 else 2)
 	if selected_name_label != null:
-		selected_name_label.add_theme_font_size_override("font_size", 30 if compact else 36)
+		selected_name_label.add_theme_font_size_override("font_size", 26 if tight else (30 if compact else 36))
+	if confirm_button != null:
+		confirm_button.custom_minimum_size = Vector2(190 if tight else 220, 46 if tight else 50)
+	if back_button != null:
+		back_button.custom_minimum_size = Vector2(120 if tight else 160, 46 if tight else 50)
+	if default_button != null:
+		default_button.custom_minimum_size = Vector2(120 if tight else 160, 46 if tight else 50)
+	_refresh_weapon_buttons()
+
+func _weapon_card_height() -> float:
+	var viewport_size := get_viewport_rect().size
+	if viewport_size.x < 1280.0 or viewport_size.y < 720.0:
+		return 120.0
+	if viewport_size.x < 1440.0:
+		return 132.0
+	return 144.0
