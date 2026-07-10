@@ -29,19 +29,20 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
 @onready var family_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
 @onready var name_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
-@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
-@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/FantasyHook
-@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
-@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
+@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Summary
+@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FantasyHook
+@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveName
+@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveSummary
 @onready var tags_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
 @onready var tag_chips: FlowContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
 @onready var difficulty_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
-@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/StarterWeapon
-@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Arsenal
-@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
-@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
+@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterWeapon
+@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Arsenal
+@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Strengths
+@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Tradeoffs
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
 @onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
+@onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll
 @onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
 @onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
 @onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
@@ -431,34 +432,36 @@ func _apply_responsive_layout() -> void:
 		hero_panel.custom_minimum_size = Vector2(220 if tight else (300 if compact else 360), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if detail_scroll != null:
+		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 190 if tight else (300 if compact else 360))
+		portrait_panel.custom_minimum_size = Vector2(0, 170 if tight else (300 if compact else 360))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 165 if tight else (260 if compact else 320))
+		portrait_stage.custom_minimum_size = Vector2(0, 145 if tight else (260 if compact else 320))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 140 if tight else (220 if compact else 280))
+		portrait_rect.custom_minimum_size = Vector2(0, 120 if tight else (220 if compact else 280))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", 22 if tight else (32 if compact else 40))
+		name_label.add_theme_font_size_override("font_size", 20 if tight else (32 if compact else 40))
 	if heading_label != null:
-		heading_label.add_theme_font_size_override("font_size", 16 if tight else 18)
+		heading_label.add_theme_font_size_override("font_size", 15 if tight else 18)
 	if family_label != null:
-		family_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		family_label.add_theme_font_size_override("font_size", 14 if tight else 17)
 	if passive_label != null:
-		passive_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		passive_label.add_theme_font_size_override("font_size", 14 if tight else 17)
 	if starter_weapon_label != null:
-		starter_weapon_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+		starter_weapon_label.add_theme_font_size_override("font_size", 14 if tight else 18)
 	if arsenal_label != null:
-		arsenal_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+		arsenal_label.add_theme_font_size_override("font_size", 14 if tight else 18)
 	if strengths_label != null:
-		strengths_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		strengths_label.add_theme_font_size_override("font_size", 14 if tight else 17)
 	if tradeoffs_label != null:
-		tradeoffs_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		tradeoffs_label.add_theme_font_size_override("font_size", 14 if tight else 17)
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(180 if tight else 220, 46 if tight else 50)
+		confirm_button.custom_minimum_size = Vector2(150 if tight else 220, 42 if tight else 50)
 	if random_button != null:
-		random_button.custom_minimum_size = Vector2(96 if tight else 120, 46 if tight else 50)
+		random_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(96 if tight else 120, 46 if tight else 50)
+		back_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
 	_refresh_roster_buttons()
 
 func _roster_button_height() -> float:
