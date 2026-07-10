@@ -77,6 +77,9 @@ static func build_summary(settings: Dictionary) -> String:
 	var mode := "Fullscreen" if settings.get("fullscreen", false) == true else "Windowed"
 	return "%s / %dx%d" % [mode, resolution.x, resolution.y]
 
+static func get_resolution(settings: Dictionary) -> Vector2i:
+	return _normalize_resolution(_extract_resolution(settings))
+
 static func clone_settings(settings: Dictionary) -> Dictionary:
 	return {
 		"resolution": _normalize_resolution(_extract_resolution(settings)),
