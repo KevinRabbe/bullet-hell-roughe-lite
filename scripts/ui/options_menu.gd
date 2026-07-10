@@ -157,7 +157,7 @@ func _apply_tab_button_style(button: Button, is_selected: bool) -> void:
 	button.add_theme_stylebox_override("focus", style)
 
 func _refresh_content() -> void:
-	var showing_video := current_tab == TAB_VIDEO
+	var showing_video: bool = current_tab == TAB_VIDEO
 	if video_content != null:
 		video_content.visible = showing_video
 	if placeholder_content != null:
@@ -301,11 +301,11 @@ func _apply_responsive_layout() -> void:
 		resolution_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
 	if fullscreen_value_label != null:
 		fullscreen_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
-	var nav_button_size := Vector2(0, 56 if tight else 64)
+	var nav_button_size: Vector2 = Vector2(0, 56 if tight else 64)
 	for tab_button in [tab_audio_button, tab_video_button, tab_controls_button, tab_accessibility_button]:
 		if tab_button != null:
 			tab_button.custom_minimum_size = nav_button_size
-	var action_button_size := Vector2(160 if tight else 180, 48 if tight else 54)
+	var action_button_size: Vector2 = Vector2(160 if tight else 180, 48 if tight else 54)
 	for action_button in [resolution_prev_button, resolution_next_button, fullscreen_toggle_button, apply_button, reset_button, back_button]:
 		if action_button != null:
 			action_button.custom_minimum_size = action_button_size

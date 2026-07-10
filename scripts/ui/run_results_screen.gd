@@ -128,7 +128,7 @@ func _apply_responsive_layout() -> void:
 		action_hint_label.add_theme_font_size_override("font_size", 13 if compact else 15)
 
 func _build_result_eyebrow() -> String:
-	var title_text := str(result_state.get("title", "Run Complete")).to_lower()
+	var title_text: String = str(result_state.get("title", "Run Complete")).to_lower()
 	if "victory" in title_text:
 		return "FRONTIER CLEARED"
 	if "defeat" in title_text or "game over" in title_text:
