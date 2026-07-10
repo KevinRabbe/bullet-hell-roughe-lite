@@ -1,28 +1,34 @@
 extends Control
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
-@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
-@onready var portrait_halo: ColorRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
-@onready var portrait_accent_bar: ColorRect = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
-@onready var character_name_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterName
-@onready var character_family_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterFamily
-@onready var passive_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
-@onready var character_tags_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterTags
-@onready var fantasy_hook_label: Label = $RootMargin/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/FantasyHook
-@onready var title_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
-@onready var headline_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
-@onready var selection_state_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
-@onready var selection_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
-@onready var weapon_list: GridContainer = $RootMargin/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
-@onready var selected_name_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
-@onready var selected_description_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
-@onready var selected_tags_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedTags
-@onready var confirm_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
-@onready var back_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
-@onready var default_button: Button = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/DefaultButton
+@onready var root_margin: MarginContainer = $RootMargin
+@onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
+@onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
+@onready var character_name_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterName
+@onready var character_family_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterFamily
+@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
+@onready var character_tags_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterTags
+@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/FantasyHook
+@onready var title_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
+@onready var headline_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
+@onready var selection_state_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
+@onready var selection_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
+@onready var character_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel
+@onready var weapon_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel
+@onready var weapon_list: GridContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
+@onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
+@onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
+@onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
+@onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedTags
+@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
+@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
+@onready var default_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/DefaultButton
 
 var current_character_id: String = ""
 var weapon_options: Array[Dictionary] = []
@@ -30,9 +36,12 @@ var current_character_entry: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
+	DisplaySettingsRuntime.apply_saved_settings()
 	_load_state()
+	_apply_responsive_layout()
 	_rebuild_weapon_buttons()
 	_refresh_selection()
+	resized.connect(_apply_responsive_layout)
 	if confirm_button != null:
 		confirm_button.pressed.connect(_on_confirm_pressed)
 	if back_button != null:
@@ -96,6 +105,8 @@ func _load_state() -> void:
 	_persist_pending_selection()
 
 func _rebuild_weapon_buttons() -> void:
+	if weapon_list == null:
+		return
 	for child in weapon_list.get_children():
 		child.queue_free()
 	for index in weapon_options.size():
@@ -123,11 +134,15 @@ func _select_index(index: int) -> void:
 	_persist_pending_selection()
 	_refresh_weapon_buttons()
 	_refresh_selection()
+	if weapon_list == null or weapon_list.get_child_count() == 0:
+		return
 	var selected_button := weapon_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
 
 func _refresh_weapon_buttons() -> void:
+	if weapon_list == null:
+		return
 	for index in range(weapon_list.get_child_count()):
 		var button := weapon_list.get_child(index) as Button
 		if button == null or index >= weapon_options.size():
@@ -272,6 +287,8 @@ func _on_random_pressed() -> void:
 	selected_index = randi_range(0, weapon_options.size() - 1)
 	_refresh_weapon_buttons()
 	_refresh_selection()
+	if weapon_list == null or weapon_list.get_child_count() == 0:
+		return
 	var selected_button := weapon_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
@@ -284,6 +301,8 @@ func _select_default_weapon(should_refresh: bool = false) -> void:
 			if should_refresh:
 				_refresh_weapon_buttons()
 				_refresh_selection()
+				if weapon_list == null or weapon_list.get_child_count() == 0:
+					return
 				var selected_button := weapon_list.get_child(selected_index) as Button
 				if selected_button != null:
 					selected_button.grab_focus()
@@ -292,6 +311,8 @@ func _select_default_weapon(should_refresh: bool = false) -> void:
 	if should_refresh:
 		_refresh_weapon_buttons()
 		_refresh_selection()
+		if weapon_list == null or weapon_list.get_child_count() == 0:
+			return
 		var selected_button := weapon_list.get_child(selected_index) as Button
 		if selected_button != null:
 			selected_button.grab_focus()
@@ -312,3 +333,24 @@ func _persist_pending_selection() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
 	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
+
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	var compact := viewport_size.x < 1440.0
+	if root_margin != null:
+		root_margin.offset_left = 20.0 if compact else 40.0
+		root_margin.offset_top = 18.0 if compact else 36.0
+		root_margin.offset_right = -20.0 if compact else -40.0
+		root_margin.offset_bottom = -18.0 if compact else -36.0
+	if main_hbox != null:
+		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+	if character_panel != null:
+		character_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
+	if weapon_panel != null:
+		weapon_panel.custom_minimum_size = Vector2(280 if compact else 360, 0)
+	if detail_panel != null:
+		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if weapon_list != null:
+		weapon_list.columns = 1 if viewport_size.x < 1280.0 else 2
+	if selected_name_label != null:
+		selected_name_label.add_theme_font_size_override("font_size", 30 if compact else 36)

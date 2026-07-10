@@ -1,32 +1,38 @@
 extends Control
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
-@onready var roster_list: VBoxContainer = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
-@onready var roster_status_label: Label = $RootMargin/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
-@onready var heading_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
-@onready var portrait_rect: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
-@onready var portrait_backdrop: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
-@onready var portrait_halo: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
-@onready var portrait_accent_bar: ColorRect = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
-@onready var family_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
-@onready var name_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
-@onready var summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
-@onready var fantasy_hook_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/FantasyHook
-@onready var passive_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
-@onready var passive_summary_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
-@onready var tags_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
-@onready var tag_chips: FlowContainer = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
-@onready var difficulty_label: Label = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
-@onready var starter_weapon_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/StarterWeapon
-@onready var arsenal_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Arsenal
-@onready var strengths_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
-@onready var tradeoffs_label: Label = $RootMargin/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
-@onready var confirm_button: Button = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
-@onready var random_button: Button = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
-@onready var back_button: Button = $RootMargin/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
+@onready var root_margin: MarginContainer = $RootMargin
+@onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var roster_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/RosterPanel
+@onready var roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
+@onready var roster_status_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
+@onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel
+@onready var heading_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
+@onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
+@onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
+@onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
+@onready var family_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
+@onready var name_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
+@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Summary
+@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/FantasyHook
+@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveName
+@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveSummary
+@onready var tags_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
+@onready var tag_chips: FlowContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
+@onready var difficulty_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
+@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/StarterWeapon
+@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Arsenal
+@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
+@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
+@onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
+@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
+@onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
+@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
 
 var selectable_ids: Array[String] = []
 var character_entries: Array[Dictionary] = []
@@ -36,9 +42,12 @@ var details: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
+	DisplaySettingsRuntime.apply_saved_settings()
 	_load_selection_state()
+	_apply_responsive_layout()
 	_rebuild_roster_buttons()
 	_refresh_selection_details()
+	resized.connect(_apply_responsive_layout)
 	if confirm_button != null:
 		confirm_button.pressed.connect(_on_confirm_pressed)
 	if random_button != null:
@@ -90,6 +99,8 @@ func _load_selection_state() -> void:
 			selected_index = pending_index
 
 func _rebuild_roster_buttons() -> void:
+	if roster_list == null:
+		return
 	for child in roster_list.get_children():
 		child.queue_free()
 	for index in selectable_ids.size():
@@ -117,11 +128,15 @@ func _select_index(index: int) -> void:
 	selected_index = clampi(index, 0, max(selectable_ids.size() - 1, 0))
 	_refresh_roster_buttons()
 	_refresh_selection_details()
+	if roster_list == null or roster_list.get_child_count() == 0:
+		return
 	var selected_button := roster_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
 
 func _refresh_roster_buttons() -> void:
+	if roster_list == null:
+		return
 	for index in range(roster_list.get_child_count()):
 		var button := roster_list.get_child(index) as Button
 		if button == null or index >= selectable_ids.size():
@@ -302,8 +317,8 @@ func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 		margin.add_child(label)
 		tag_chips.add_child(chip)
 
-func _family_accent_color(family_label: String) -> Color:
-	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
+func _family_accent_color(family_name: String) -> Color:
+	var normalized := family_name.strip_edges().to_lower().replace(" ", "_")
 	match normalized:
 		"gunslinger":
 			return Color(0.96, 0.72, 0.33, 1.0)
@@ -340,9 +355,30 @@ func _on_random_pressed() -> void:
 	selected_index = randi_range(0, selectable_ids.size() - 1)
 	_refresh_roster_buttons()
 	_refresh_selection_details()
+	if roster_list == null or roster_list.get_child_count() == 0:
+		return
 	var selected_button := roster_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	var compact := viewport_size.x < 1360.0
+	if root_margin != null:
+		root_margin.offset_left = 20.0 if compact else 40.0
+		root_margin.offset_top = 18.0 if compact else 36.0
+		root_margin.offset_right = -20.0 if compact else -40.0
+		root_margin.offset_bottom = -18.0 if compact else -36.0
+	if main_hbox != null:
+		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+	if roster_panel != null:
+		roster_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
+	if hero_panel != null:
+		hero_panel.custom_minimum_size = Vector2(300 if compact else 360, 0)
+	if detail_panel != null:
+		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if name_label != null:
+		name_label.add_theme_font_size_override("font_size", 32 if compact else 40)
