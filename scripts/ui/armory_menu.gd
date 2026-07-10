@@ -83,12 +83,15 @@ var selected_weapon_id := ""
 var weapon_entries: Array[Dictionary] = []
 var selected_item_id := ""
 var item_entries: Array[Dictionary] = []
+var selected_set_bonus_id := ""
+var set_bonus_entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_character_codex_entries()
 	_load_weapon_codex_entries()
 	_load_item_codex_entries()
+	_load_set_bonus_codex_entries()
 	_apply_responsive_layout()
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
@@ -150,6 +153,10 @@ func _rebuild_collection_cards() -> void:
 	if selected_section_id == "items":
 		for entry in item_entries:
 			collection_grid.add_child(_build_item_card(entry))
+		return
+	if selected_section_id == "set_bonuses":
+		for entry in set_bonus_entries:
+			collection_grid.add_child(_build_set_bonus_card(entry))
 		return
 	for section_id in SECTION_ORDER:
 		collection_grid.add_child(_build_collection_card(section_id))
@@ -369,6 +376,73 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 
 	return card
 
+func _build_set_bonus_card(entry: Dictionary) -> PanelContainer:
+	var set_bonus_id := str(entry.get("id", ""))
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 210)
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	var selected := set_bonus_id == selected_set_bonus_id
+	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	style.border_color = Color(0.58, 0.83, 0.98, 0.72) if selected else Color(0.58, 0.83, 0.98, 0.18)
+	card.add_theme_stylebox_override("panel", style)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_PASS
+	button.anchors_preset = Control.PRESET_FULL_RECT
+	button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	button.grow_vertical = Control.GROW_DIRECTION_BOTH
+	button.pressed.connect(_on_set_bonus_card_pressed.bind(set_bonus_id))
+	card.add_child(button)
+
+	var margin := MarginContainer.new()
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	card.add_child(margin)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	margin.add_child(column)
+
+	var title := Label.new()
+	title.text = str(entry.get("family_label", set_bonus_id))
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = str(entry.get("subtitle", "Set bonus thresholds"))
+	subtitle.modulate = Color(0.58, 0.83, 0.98, 0.92)
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(subtitle)
+
+	var summary := Label.new()
+	summary.text = str(entry.get("summary", ""))
+	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(summary)
+
+	var footer := Label.new()
+	footer.text = "Thresholds: %s" % ", ".join(_string_array_from_variant(entry.get("threshold_labels", [])))
+	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(footer)
+
+	return card
+
 func _build_collection_card(section_id: String) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 190)
@@ -445,6 +519,9 @@ func _refresh_detail() -> void:
 		return
 	if selected_section_id == "items":
 		_refresh_item_detail()
+		return
+	if selected_section_id == "set_bonuses":
+		_refresh_set_bonus_detail()
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Collection Overview"
@@ -585,6 +662,38 @@ func _refresh_item_detail() -> void:
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
 
+func _refresh_set_bonus_detail() -> void:
+	var entry := _find_set_bonus_entry(selected_set_bonus_id)
+	if entry.is_empty():
+		detail_title.text = "Set Bonus Codex"
+		detail_subtitle.text = "No set bonus entry selected."
+		detail_summary.text = "Family threshold rewards and tag-facing bonus notes will appear here once a set bonus entry is selected."
+		detail_bullets.text = ""
+		detail_status.text = "Status: waiting for valid set bonus data."
+		return
+	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
+	collection_title.text = "Set Bonus Codex"
+	collection_body.text = "Review family thresholds, active effect types, and where each family bonus nudges a build before tag synergies take over."
+	detail_title.text = str(entry.get("family_label", selected_set_bonus_id))
+	detail_subtitle.text = str(entry.get("subtitle", "Set bonus thresholds"))
+	detail_summary.text = str(entry.get("summary", ""))
+	var bullet_lines: Array[String] = []
+	for line in _string_array_from_variant(entry.get("threshold_lines", [])):
+		bullet_lines.append(line)
+	for line in _string_array_from_variant(entry.get("effect_tag_lines", [])):
+		bullet_lines.append("Effect Tags - %s" % line)
+	detail_bullets.text = "\n".join(bullet_lines)
+	var status_lines: Array[String] = []
+	var threshold_labels := _string_array_from_variant(entry.get("threshold_labels", []))
+	if not threshold_labels.is_empty():
+		status_lines.append("Thresholds - %s" % ", ".join(threshold_labels))
+	var effect_types := _string_array_from_variant(entry.get("effect_types", []))
+	if not effect_types.is_empty():
+		status_lines.append("Effect Types - %s" % ", ".join(effect_types))
+	detail_status.text = "\n".join(status_lines)
+	_rebuild_nav_buttons()
+	_rebuild_collection_cards()
+
 func _select_section(section_id: String) -> void:
 	if not SECTION_DATA.has(section_id):
 		return
@@ -595,6 +704,8 @@ func _select_section(section_id: String) -> void:
 		selected_weapon_id = str(weapon_entries[0].get("id", ""))
 	if selected_section_id == "items" and selected_item_id == "" and not item_entries.is_empty():
 		selected_item_id = str(item_entries[0].get("id", ""))
+	if selected_section_id == "set_bonuses" and selected_set_bonus_id == "" and not set_bonus_entries.is_empty():
+		selected_set_bonus_id = str(set_bonus_entries[0].get("id", ""))
 	_refresh_detail()
 
 func _on_character_card_pressed(character_id: String) -> void:
@@ -613,6 +724,12 @@ func _on_item_card_pressed(item_id: String) -> void:
 	if item_id == "":
 		return
 	selected_item_id = item_id
+	_refresh_detail()
+
+func _on_set_bonus_card_pressed(set_bonus_id: String) -> void:
+	if set_bonus_id == "":
+		return
+	selected_set_bonus_id = set_bonus_id
 	_refresh_detail()
 
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
@@ -815,6 +932,51 @@ func _find_item_entry(item_id: String) -> Dictionary:
 			return entry
 	return {}
 
+func _load_set_bonus_codex_entries() -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		set_bonus_entries = []
+		selected_set_bonus_id = ""
+		return
+	var entries: Array[Dictionary] = []
+	if "set_bonuses" in data_registry:
+		var set_bonuses_variant: Variant = data_registry.get("set_bonuses")
+		if set_bonuses_variant is Dictionary:
+			var set_bonuses_dict: Dictionary = set_bonuses_variant
+			for set_bonus_id_variant in set_bonuses_dict.keys():
+				var set_bonus_id := str(set_bonus_id_variant)
+				var set_bonus_variant: Variant = set_bonuses_dict[set_bonus_id_variant]
+				var entry := _build_set_bonus_entry(set_bonus_id, set_bonus_variant)
+				if not entry.is_empty():
+					entries.append(entry)
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return str(a.get("family_label", "")) < str(b.get("family_label", ""))
+	)
+	set_bonus_entries = entries
+	if selected_set_bonus_id == "" and not set_bonus_entries.is_empty():
+		selected_set_bonus_id = str(set_bonus_entries[0].get("id", ""))
+
+func _build_set_bonus_entry(set_bonus_id: String, set_bonus_variant: Variant) -> Dictionary:
+	if not (set_bonus_variant is Dictionary):
+		return {}
+	var definition: Dictionary = set_bonus_variant
+	return {
+		"id": set_bonus_id,
+		"family_label": _humanize_family_id(set_bonus_id),
+		"subtitle": "2 / 4 / 6-piece family rewards",
+		"summary": _build_set_bonus_summary(definition.get("thresholds", [])),
+		"threshold_labels": _build_set_bonus_threshold_labels(definition.get("thresholds", [])),
+		"threshold_lines": _build_set_bonus_threshold_lines(definition.get("thresholds", [])),
+		"effect_tag_lines": _build_set_bonus_effect_tag_lines(definition.get("thresholds", [])),
+		"effect_types": _build_set_bonus_effect_types(definition.get("thresholds", []))
+	}
+
+func _find_set_bonus_entry(set_bonus_id: String) -> Dictionary:
+	for entry in set_bonus_entries:
+		if str(entry.get("id", "")) == set_bonus_id:
+			return entry
+	return {}
+
 func _string_array_from_variant(values_variant: Variant) -> Array[String]:
 	var values: Array[String] = []
 	if not (values_variant is Array):
@@ -845,6 +1007,8 @@ func _apply_responsive_layout() -> void:
 		elif selected_section_id == "weapons":
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
 		elif selected_section_id == "items":
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+		elif selected_section_id == "set_bonuses":
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
 		else:
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
@@ -889,3 +1053,108 @@ func _build_item_tag_bonus_lines(bonus_rules_variant: Variant) -> Array[String]:
 		lines.append("%s weapons: %s %+0.2f" % [_humanize_family_id(tag), _humanize_family_id(stat_id), amount])
 	lines.sort()
 	return lines
+
+func _build_set_bonus_summary(thresholds_variant: Variant) -> String:
+	var threshold_labels := _build_set_bonus_threshold_labels(thresholds_variant)
+	if threshold_labels.is_empty():
+		return "This family does not expose any threshold rewards yet."
+	return "Collect %s pieces to unlock the full family ladder, then layer tag synergies on top." % ", ".join(threshold_labels)
+
+func _build_set_bonus_threshold_labels(thresholds_variant: Variant) -> Array[String]:
+	var labels: Array[String] = []
+	if not (thresholds_variant is Array):
+		return labels
+	for threshold_variant in thresholds_variant:
+		if not (threshold_variant is Dictionary):
+			continue
+		var threshold: Dictionary = threshold_variant
+		var pieces := int(threshold.get("pieces", 0))
+		if pieces > 0:
+			labels.append("%d-piece" % pieces)
+	return labels
+
+func _build_set_bonus_threshold_lines(thresholds_variant: Variant) -> Array[String]:
+	var lines: Array[String] = []
+	if not (thresholds_variant is Array):
+		return lines
+	for threshold_variant in thresholds_variant:
+		if not (threshold_variant is Dictionary):
+			continue
+		var threshold: Dictionary = threshold_variant
+		var pieces := int(threshold.get("pieces", 0))
+		var effect_lines: Array[String] = []
+		var effects_variant: Variant = threshold.get("effects", [])
+		if effects_variant is Array:
+			for effect_variant in effects_variant:
+				if effect_variant is Dictionary:
+					effect_lines.append(_describe_set_bonus_effect(effect_variant))
+		if not effect_lines.is_empty():
+			lines.append("%d-piece - %s" % [pieces, "; ".join(effect_lines)])
+	return lines
+
+func _build_set_bonus_effect_tag_lines(thresholds_variant: Variant) -> Array[String]:
+	var lines: Array[String] = []
+	if not (thresholds_variant is Array):
+		return lines
+	for threshold_variant in thresholds_variant:
+		if not (threshold_variant is Dictionary):
+			continue
+		var threshold: Dictionary = threshold_variant
+		var pieces := int(threshold.get("pieces", 0))
+		var effects_variant: Variant = threshold.get("effects", [])
+		if not (effects_variant is Array):
+			continue
+		for effect_variant in effects_variant:
+			if not (effect_variant is Dictionary):
+				continue
+			var effect: Dictionary = effect_variant
+			var effect_tags := _string_array_from_variant(effect.get("effect_tags", []))
+			if effect_tags.is_empty():
+				continue
+			lines.append("%d-piece targets %s" % [pieces, ", ".join(effect_tags)])
+	return lines
+
+func _build_set_bonus_effect_types(thresholds_variant: Variant) -> Array[String]:
+	var seen: Dictionary = {}
+	var labels: Array[String] = []
+	if not (thresholds_variant is Array):
+		return labels
+	for threshold_variant in thresholds_variant:
+		if not (threshold_variant is Dictionary):
+			continue
+		var threshold: Dictionary = threshold_variant
+		var effects_variant: Variant = threshold.get("effects", [])
+		if not (effects_variant is Array):
+			continue
+		for effect_variant in effects_variant:
+			if not (effect_variant is Dictionary):
+				continue
+			var effect: Dictionary = effect_variant
+			var effect_type := str(effect.get("type", ""))
+			if effect_type == "" or seen.get(effect_type, false) == true:
+				continue
+			seen[effect_type] = true
+			labels.append(_humanize_family_id(effect_type))
+	return labels
+
+func _describe_set_bonus_effect(effect: Dictionary) -> String:
+	var effect_type := str(effect.get("type", ""))
+	match effect_type:
+		"damage_multiplier_bonus":
+			return "damage %+0.0f%%" % (float(effect.get("value", 0.0)) * 100.0)
+		"player_stat_bonus":
+			return "%s %+0.2f" % [_humanize_family_id(str(effect.get("stat_id", ""))), float(effect.get("value", 0.0))]
+		"weapon_stat_bonus":
+			var label := "%s %+0.2f" % [_humanize_family_id(str(effect.get("stat_id", ""))), float(effect.get("value", 0.0))]
+			var effect_tags := _string_array_from_variant(effect.get("effect_tags", []))
+			if not effect_tags.is_empty():
+				label += " on %s" % ", ".join(effect_tags)
+			return label
+		"pierce_proc":
+			return "pierce proc %.0f%%" % (float(effect.get("chance", 0.0)) * 100.0)
+		"execution_cadence":
+			return "execution shot every %d attacks" % maxi(int(effect.get("every_shots", 0)), 1)
+		"execution_damage_multiplier":
+			return "execution damage x%.2f" % float(effect.get("value", 1.0))
+		_:
+			return _humanize_family_id(effect_type)
