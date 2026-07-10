@@ -1,5 +1,6 @@
 extends Control
 
+const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
@@ -37,8 +38,10 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var placeholder_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent
 @onready var placeholder_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/PlaceholderTitle
 @onready var placeholder_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/PlaceholderBody
+@onready var placeholder_focus_block: PanelContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock
 @onready var placeholder_focus_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusTitle
 @onready var placeholder_focus_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusBody
+@onready var placeholder_checklist_block: PanelContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock
 @onready var placeholder_checklist_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox/ChecklistBody
 @onready var placeholder_status_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/StatusLabel
 @onready var resolution_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionValue
@@ -56,12 +59,22 @@ const TAB_ACCESSIBILITY := "accessibility"
 
 var saved_settings: Dictionary = {}
 var staged_settings: Dictionary = {}
+var saved_audio_settings: Dictionary = {}
+var staged_audio_settings: Dictionary = {}
 var current_tab: String = TAB_VIDEO
+var audio_runtime_box: VBoxContainer = null
+var audio_value_labels: Dictionary = {}
+var audio_mute_value_label: Label = null
+var audio_status_label: Label = null
+var audio_preview_label: Label = null
 
 func _ready() -> void:
 	saved_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
 	staged_settings = DisplaySettingsRuntimeRef.clone_settings(saved_settings)
+	saved_audio_settings = AudioSettingsRuntimeRef.apply_saved_settings()
+	staged_audio_settings = AudioSettingsRuntimeRef.clone_settings(saved_audio_settings)
 	_apply_optional_texture(arena_texture, OPTIONS_BACKGROUND_ART_PATH)
+	_ensure_audio_runtime_content()
 	_apply_responsive_layout()
 	_connect_buttons()
 	_refresh_tab_styles()
@@ -172,18 +185,12 @@ func _refresh_content() -> void:
 		video_content.visible = showing_video
 	if placeholder_content != null:
 		placeholder_content.visible = not showing_video
+	_toggle_audio_runtime_content(current_tab == TAB_AUDIO)
 	match current_tab:
 		TAB_AUDIO:
 			tab_title_label.text = "Audio"
-			tab_summary_label.text = "Audio should feel deliberate even before the full sound mix pass lands. This shell now shows the intended settings groups and rollout order."
-			_apply_placeholder_content(
-				"Audio Foundation Pending",
-				"Music, SFX, ambience, and UI feedback controls belong here once the shared menu shell is locked and we are ready to tune the mix intentionally.",
-				"Planned first pass",
-				"Master volume, music volume, SFX volume, ambience volume, and a simple mute/quiet-mode route.",
-				"- Master / Music / SFX / Ambience sliders\n- UI click and hover feedback level\n- Safe defaults for streamers and low-volume play",
-				"Status: shell complete, controls deferred until the dedicated audio pass."
-			)
+			tab_summary_label.text = "Dial in a practical first-pass mix for the menu shell. Audio previews immediately and saves only when you apply it."
+			_refresh_audio_content()
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
 			tab_summary_label.text = "Pick a realistic window size and display mode for the current menu shell. Changes preview immediately and save only when you apply them."
@@ -210,6 +217,7 @@ func _refresh_content() -> void:
 				"- Larger menu text mode\n- Reduced menu motion / softer animation pass\n- Stronger contrast and highlight states\n- Cleaner combat readability options later",
 				"Status: category shell ready, settings follow after menu readability review."
 			)
+	_refresh_action_row_state()
 
 func _apply_placeholder_content(title: String, body: String, focus_title: String, focus_body: String, checklist: String, status: String) -> void:
 	if placeholder_title_label != null:
@@ -246,6 +254,31 @@ func _refresh_video_content() -> void:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 	if preview_summary_label != null:
 		preview_summary_label.text = "Current preview: %s" % DisplaySettingsRuntimeRef.build_summary(staged_settings)
+	_refresh_action_row_state()
+
+func _refresh_audio_content() -> void:
+	if audio_runtime_box == null:
+		return
+	var channel_labels := {
+		"master": "Master",
+		"music": "Music",
+		"sfx": "SFX",
+		"ambience": "Ambience"
+	}
+	for channel_id in channel_labels.keys():
+		var label_variant: Variant = audio_value_labels.get(channel_id, null)
+		if label_variant is Label:
+			var channel_label: Label = label_variant
+			channel_label.text = "%s Volume: %s" % [channel_labels[channel_id], _format_audio_percent(staged_audio_settings, channel_id)]
+	if audio_mute_value_label != null:
+		audio_mute_value_label.text = "Mute is %s" % ("On" if staged_audio_settings.get("muted", false) == true else "Off")
+	if audio_status_label != null:
+		var is_dirty: bool = not AudioSettingsRuntimeRef.settings_match(saved_audio_settings, staged_audio_settings)
+		audio_status_label.text = "Preview differs from saved profile. Apply to keep it or Back to revert." if is_dirty else "Audio settings match the saved profile."
+		audio_status_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
+	if audio_preview_label != null:
+		audio_preview_label.text = "Current preview: %s" % AudioSettingsRuntimeRef.build_summary(staged_audio_settings)
+	_refresh_action_row_state()
 
 func _cycle_resolution(direction: int) -> void:
 	staged_settings = DisplaySettingsRuntimeRef.cycle_resolution(staged_settings, direction)
@@ -257,26 +290,42 @@ func _on_fullscreen_toggled() -> void:
 	_apply_staged_preview()
 	_refresh_video_content()
 
-func _on_apply_pressed() -> void:
-	DisplaySettingsRuntimeRef.save_settings(staged_settings)
-	saved_settings = DisplaySettingsRuntimeRef.clone_settings(staged_settings)
-	DisplaySettingsRuntimeRef.apply_settings(saved_settings)
-	_refresh_video_content()
-	_apply_responsive_layout()
-
 func _on_reset_pressed() -> void:
-	staged_settings = DisplaySettingsRuntimeRef.default_settings()
-	_apply_staged_preview()
-	_refresh_video_content()
+	match current_tab:
+		TAB_VIDEO:
+			staged_settings = DisplaySettingsRuntimeRef.default_settings()
+			_apply_staged_preview()
+			_refresh_video_content()
+		TAB_AUDIO:
+			staged_audio_settings = AudioSettingsRuntimeRef.default_settings()
+			_apply_staged_audio_preview()
+			_refresh_audio_content()
 
 func _on_back_pressed() -> void:
 	if not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings):
 		staged_settings = DisplaySettingsRuntimeRef.clone_settings(saved_settings)
 		DisplaySettingsRuntimeRef.apply_settings(saved_settings)
+	if not AudioSettingsRuntimeRef.settings_match(saved_audio_settings, staged_audio_settings):
+		staged_audio_settings = AudioSettingsRuntimeRef.clone_settings(saved_audio_settings)
+		AudioSettingsRuntimeRef.apply_settings(saved_audio_settings)
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_staged_preview() -> void:
 	DisplaySettingsRuntimeRef.apply_settings(staged_settings)
+	_apply_responsive_layout()
+
+func _apply_staged_audio_preview() -> void:
+	AudioSettingsRuntimeRef.apply_settings(staged_audio_settings)
+
+func _on_apply_pressed() -> void:
+	DisplaySettingsRuntimeRef.save_settings(staged_settings)
+	AudioSettingsRuntimeRef.save_settings(staged_audio_settings)
+	saved_settings = DisplaySettingsRuntimeRef.clone_settings(staged_settings)
+	saved_audio_settings = AudioSettingsRuntimeRef.clone_settings(staged_audio_settings)
+	DisplaySettingsRuntimeRef.apply_settings(saved_settings)
+	AudioSettingsRuntimeRef.apply_settings(saved_audio_settings)
+	_refresh_video_content()
+	_refresh_audio_content()
 	_apply_responsive_layout()
 
 func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
@@ -364,3 +413,148 @@ func _apply_responsive_layout() -> void:
 			action_button.custom_minimum_size = action_button_size
 	if action_row != null:
 		action_row.add_theme_constant_override("separation", 8 if very_tight else 12)
+
+func _refresh_action_row_state() -> void:
+	var has_video_changes: bool = not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
+	var has_audio_changes: bool = not AudioSettingsRuntimeRef.settings_match(saved_audio_settings, staged_audio_settings)
+	if apply_button != null:
+		apply_button.disabled = not (has_video_changes or has_audio_changes)
+		apply_button.text = "Apply Changes" if not apply_button.disabled else "Applied"
+	if reset_button != null:
+		match current_tab:
+			TAB_VIDEO:
+				reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
+			TAB_AUDIO:
+				reset_button.disabled = AudioSettingsRuntimeRef.settings_match(AudioSettingsRuntimeRef.default_settings(), staged_audio_settings)
+			_:
+				reset_button.disabled = true
+
+func _ensure_audio_runtime_content() -> void:
+	if placeholder_content == null or audio_runtime_box != null:
+		return
+	audio_runtime_box = VBoxContainer.new()
+	audio_runtime_box.name = "AudioRuntimeContent"
+	audio_runtime_box.theme_override_constants.separation = 14
+	audio_runtime_box.visible = false
+	placeholder_content.add_child(audio_runtime_box)
+	placeholder_content.move_child(audio_runtime_box, placeholder_content.get_child_count() - 1)
+	for channel_data in [
+		{"id": "master", "title": "Master Volume", "body": "Set the overall loudness for the current menu shell and any shared buses that route through Master."},
+		{"id": "music", "title": "Music Volume", "body": "Reserve a separate music channel now so later soundtrack drops can land without rebuilding the options route."},
+		{"id": "sfx", "title": "SFX Volume", "body": "Control weapon fire, hits, reward pings, and other gameplay feedback as the demo sound set grows."},
+		{"id": "ambience", "title": "Ambience Volume", "body": "Shape environmental loops, portal hums, and arena bed layers without muting combat feedback."}
+	]:
+		_add_audio_channel_block(channel_data)
+	_add_audio_mute_block()
+	audio_status_label = Label.new()
+	audio_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	audio_runtime_box.add_child(audio_status_label)
+	audio_preview_label = Label.new()
+	audio_preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	audio_preview_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+	audio_runtime_box.add_child(audio_preview_label)
+
+func _add_audio_channel_block(channel_data: Dictionary) -> void:
+	if audio_runtime_box == null:
+		return
+	var block := PanelContainer.new()
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	block.add_child(margin)
+	var column := VBoxContainer.new()
+	column.theme_override_constants.separation = 10
+	margin.add_child(column)
+	var title := Label.new()
+	title.text = str(channel_data.get("title", "Audio"))
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+	var body := Label.new()
+	body.text = str(channel_data.get("body", ""))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
+	column.add_child(body)
+	var value_label := Label.new()
+	value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	value_label.add_theme_font_size_override("font_size", 22)
+	column.add_child(value_label)
+	audio_value_labels[str(channel_data.get("id", ""))] = value_label
+	var controls := HBoxContainer.new()
+	controls.theme_override_constants.separation = 12
+	column.add_child(controls)
+	var prev_button := Button.new()
+	prev_button.custom_minimum_size = Vector2(180, 48)
+	prev_button.text = "Lower"
+	prev_button.pressed.connect(func() -> void:
+		_cycle_audio_channel(str(channel_data.get("id", "")), -1)
+	)
+	controls.add_child(prev_button)
+	var next_button := Button.new()
+	next_button.custom_minimum_size = Vector2(180, 48)
+	next_button.text = "Raise"
+	next_button.pressed.connect(func() -> void:
+		_cycle_audio_channel(str(channel_data.get("id", "")), 1)
+	)
+	controls.add_child(next_button)
+	audio_runtime_box.add_child(block)
+
+func _add_audio_mute_block() -> void:
+	if audio_runtime_box == null:
+		return
+	var block := PanelContainer.new()
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	block.add_child(margin)
+	var column := VBoxContainer.new()
+	column.theme_override_constants.separation = 10
+	margin.add_child(column)
+	var title := Label.new()
+	title.text = "Quiet Mode"
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+	var body := Label.new()
+	body.text = "Use a simple mute route when you need the front-door shell silent without rewriting every future audio source."
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
+	column.add_child(body)
+	audio_mute_value_label = Label.new()
+	audio_mute_value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	audio_mute_value_label.add_theme_font_size_override("font_size", 22)
+	column.add_child(audio_mute_value_label)
+	var toggle_button := Button.new()
+	toggle_button.custom_minimum_size = Vector2(220, 48)
+	toggle_button.text = "Toggle Mute"
+	toggle_button.pressed.connect(func() -> void:
+		staged_audio_settings = AudioSettingsRuntimeRef.toggle_muted(staged_audio_settings)
+		_apply_staged_audio_preview()
+		_refresh_audio_content()
+	)
+	column.add_child(toggle_button)
+	audio_runtime_box.add_child(block)
+
+func _toggle_audio_runtime_content(show_audio_runtime: bool) -> void:
+	if audio_runtime_box != null:
+		audio_runtime_box.visible = show_audio_runtime
+	if placeholder_title_label != null:
+		placeholder_title_label.visible = not show_audio_runtime
+	if placeholder_body_label != null:
+		placeholder_body_label.visible = not show_audio_runtime
+	if placeholder_focus_block != null:
+		placeholder_focus_block.visible = not show_audio_runtime
+	if placeholder_checklist_block != null:
+		placeholder_checklist_block.visible = not show_audio_runtime
+	if placeholder_status_label != null:
+		placeholder_status_label.visible = not show_audio_runtime
+
+func _cycle_audio_channel(channel_id: String, direction: int) -> void:
+	staged_audio_settings = AudioSettingsRuntimeRef.cycle_level(staged_audio_settings, channel_id, direction)
+	_apply_staged_audio_preview()
+	_refresh_audio_content()
+
+func _format_audio_percent(settings: Dictionary, channel_id: String) -> String:
+	return "%d%%" % int(round(float(settings.get(channel_id, 1.0)) * 100.0))
