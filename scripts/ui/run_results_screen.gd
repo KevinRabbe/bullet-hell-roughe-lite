@@ -13,12 +13,14 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_panel: PanelContainer = $RootMargin/RootVBox/MainPanel
+@onready var result_eyebrow_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultEyebrow
 @onready var result_title_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultTitle
 @onready var result_summary_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultSummary
 @onready var result_stats_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultStats
 @onready var retry_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/RetryButton
 @onready var new_character_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/NewCharacterButton
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
+@onready var action_hint_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionHint
 
 var standalone_mode := true
 var result_state := {
@@ -70,6 +72,8 @@ func apply_result_state(next_state: Dictionary) -> void:
 	_refresh()
 
 func _refresh() -> void:
+	if result_eyebrow_label != null:
+		result_eyebrow_label.text = _build_result_eyebrow()
 	result_title_label.text = str(result_state.get("title", "Run Complete"))
 	result_summary_label.text = str(result_state.get("summary", ""))
 	var lines: Array[String] = []
@@ -114,3 +118,19 @@ func _apply_responsive_layout() -> void:
 		new_character_button.custom_minimum_size = Vector2(220 if compact else 260, 50 if compact else 54)
 	if main_menu_button != null:
 		main_menu_button.custom_minimum_size = Vector2(180 if compact else 220, 50 if compact else 54)
+	if result_eyebrow_label != null:
+		result_eyebrow_label.add_theme_font_size_override("font_size", 16 if compact else 18)
+	if result_summary_label != null:
+		result_summary_label.add_theme_font_size_override("font_size", 15 if compact else 17)
+	if result_stats_label != null:
+		result_stats_label.add_theme_font_size_override("font_size", 15 if compact else 17)
+	if action_hint_label != null:
+		action_hint_label.add_theme_font_size_override("font_size", 13 if compact else 15)
+
+func _build_result_eyebrow() -> String:
+	var title_text := str(result_state.get("title", "Run Complete")).to_lower()
+	if "victory" in title_text:
+		return "FRONTIER CLEARED"
+	if "defeat" in title_text or "game over" in title_text:
+		return "RUN ENDED"
+	return "RUN RESULTS"
