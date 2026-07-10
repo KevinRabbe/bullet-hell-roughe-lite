@@ -4,16 +4,24 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
+const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/character_select_background.png"
+const CHARACTER_SELECT_ROSTER_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_roster_frame.png"
+const CHARACTER_SELECT_HERO_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_hero_frame.png"
+const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_detail_frame.png"
 
+@onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var roster_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/RosterPanel
+@onready var roster_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterFrameArtSlot
 @onready var roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
 @onready var roster_status_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
 @onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel
+@onready var hero_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroFrameArtSlot
 @onready var heading_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
 @onready var portrait_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel
 @onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage
+@onready var portrait_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFrameArtSlot
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
 @onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
@@ -32,6 +40,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Strengths
 @onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Tradeoffs
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
+@onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
 @onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
 @onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
 @onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
@@ -46,6 +55,7 @@ var selected_index: int = 0
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_selection_state()
+	_apply_screen_art_slots()
 	_apply_responsive_layout()
 	_rebuild_roster_buttons()
 	_refresh_selection_details()
@@ -214,7 +224,7 @@ func _refresh_selection_details() -> void:
 	if current_entry.get("detail", null) is Dictionary:
 		detail = current_entry.get("detail", {})
 	heading_label.text = str(presentation.get("headline", "Choose your fighter."))
-	_apply_portrait(detail)
+	_apply_portrait(character_id, detail)
 	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
 	name_label.text = str(display_names.get(character_id, character_id))
 	summary_label.text = str(presentation.get("identity_summary", ""))
@@ -254,7 +264,7 @@ func _refresh_selection_details() -> void:
 		else:
 			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
 
-func _apply_portrait(detail: Dictionary) -> void:
+func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	if portrait_rect == null:
 		return
 	var accent := _family_accent_color(str(detail.get("family_label", "")))
@@ -264,12 +274,39 @@ func _apply_portrait(detail: Dictionary) -> void:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
-	var visual_path := str(detail.get("visual_path", ""))
+	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var visual_path := portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
 		return
 	var texture_variant: Variant = load(visual_path)
 	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
+
+func _apply_screen_art_slots() -> void:
+	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
+	_apply_frame_texture(roster_frame_art_slot, CHARACTER_SELECT_ROSTER_FRAME_PATH)
+	_apply_frame_texture(hero_frame_art_slot, CHARACTER_SELECT_HERO_FRAME_PATH)
+	_apply_frame_texture(portrait_frame_art_slot, CHARACTER_SELECT_HERO_FRAME_PATH)
+	_apply_frame_texture(detail_frame_art_slot, CHARACTER_SELECT_DETAIL_FRAME_PATH)
+
+func _apply_frame_texture(target: TextureRect, texture_path: String) -> void:
+	if target == null:
+		return
+	var loaded := _apply_optional_texture(target, texture_path)
+	target.visible = loaded
+
+func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
+	if target == null:
+		return false
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		target.texture = null
+		return false
+	var texture_variant: Variant = load(texture_path)
+	if texture_variant is Texture2D:
+		target.texture = texture_variant
+		return true
+	target.texture = null
+	return false
 
 func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
 	if not (values_variant is Array):
