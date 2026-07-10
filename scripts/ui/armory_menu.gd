@@ -79,10 +79,13 @@ const SECTION_DATA := {
 var selected_section_id := "characters"
 var selected_character_id := ""
 var character_entries: Array[Dictionary] = []
+var selected_weapon_id := ""
+var weapon_entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_character_codex_entries()
+	_load_weapon_codex_entries()
 	_apply_responsive_layout()
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
@@ -136,6 +139,10 @@ func _rebuild_collection_cards() -> void:
 	if selected_section_id == "characters":
 		for entry in character_entries:
 			collection_grid.add_child(_build_character_card(entry))
+		return
+	if selected_section_id == "weapons":
+		for entry in weapon_entries:
+			collection_grid.add_child(_build_weapon_card(entry))
 		return
 	for section_id in SECTION_ORDER:
 		collection_grid.add_child(_build_collection_card(section_id))
@@ -215,6 +222,76 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 
 	return card
 
+func _build_weapon_card(entry: Dictionary) -> PanelContainer:
+	var weapon_id := str(entry.get("id", ""))
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 200)
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	var selected := weapon_id == selected_weapon_id
+	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	style.border_color = Color(0.99, 0.56, 0.56, 0.72) if selected else Color(0.99, 0.56, 0.56, 0.18)
+	card.add_theme_stylebox_override("panel", style)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_PASS
+	button.anchors_preset = Control.PRESET_FULL_RECT
+	button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	button.grow_vertical = Control.GROW_DIRECTION_BOTH
+	button.pressed.connect(_on_weapon_card_pressed.bind(weapon_id))
+	card.add_child(button)
+
+	var margin := MarginContainer.new()
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	card.add_child(margin)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	margin.add_child(column)
+
+	var title := Label.new()
+	title.text = str(entry.get("display_name", weapon_id))
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "%s / %s" % [
+		str(entry.get("family_label", "Unaligned")),
+		str(entry.get("rarity", "common")).capitalize()
+	]
+	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(subtitle)
+
+	var summary := Label.new()
+	summary.text = str(entry.get("description", ""))
+	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(summary)
+
+	var footer := Label.new()
+	footer.text = "Tags: %s" % ", ".join(_string_array_from_variant(entry.get("tags", [])))
+	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(footer)
+
+	return card
+
 func _build_collection_card(section_id: String) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 190)
@@ -286,6 +363,9 @@ func _refresh_detail() -> void:
 	if selected_section_id == "characters":
 		_refresh_character_detail()
 		return
+	if selected_section_id == "weapons":
+		_refresh_weapon_detail()
+		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Collection Overview"
 	collection_body.text = "The Armory home should make future discovery routes feel deliberate even before the codex data is fully populated."
@@ -353,18 +433,64 @@ func _refresh_character_detail() -> void:
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
 
+func _refresh_weapon_detail() -> void:
+	var entry := _find_weapon_entry(selected_weapon_id)
+	if entry.is_empty():
+		detail_title.text = "Weapon Codex"
+		detail_subtitle.text = "No weapon entry selected."
+		detail_summary.text = "Weapon family, tag, and cadence details will appear here once a weapon entry is selected."
+		detail_bullets.text = ""
+		detail_status.text = "Status: waiting for valid weapon data."
+		return
+	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
+	collection_title.text = "Weapon Codex"
+	collection_body.text = "Browse active arsenal roles, tags, and feel baselines without opening the shop or starting a run."
+	detail_title.text = str(entry.get("display_name", selected_weapon_id))
+	detail_subtitle.text = "%s / %s" % [
+		str(entry.get("family_label", "Unaligned")),
+		str(entry.get("rarity", "common")).capitalize()
+	]
+	detail_summary.text = str(entry.get("description", ""))
+	var bullet_lines: Array[String] = []
+	var tags := _string_array_from_variant(entry.get("tags", []))
+	if not tags.is_empty():
+		bullet_lines.append("Tags - %s" % ", ".join(tags))
+	bullet_lines.append("Damage - %.1f" % float(entry.get("base_damage", 0.0)))
+	bullet_lines.append("Cooldown - %.2fs" % float(entry.get("cooldown", 0.0)))
+	bullet_lines.append("Range - %.2f" % float(entry.get("range", 0.0)))
+	bullet_lines.append("Projectile Speed - %.0f" % float(entry.get("projectile_speed", 0.0)))
+	var special_effect_id := str(entry.get("special_effect_id", ""))
+	if special_effect_id != "":
+		bullet_lines.append("Special - %s" % special_effect_id)
+	detail_bullets.text = "\n".join(bullet_lines)
+	var status_lines: Array[String] = []
+	status_lines.append("Shop - %s" % ("Available" if entry.get("shop_enabled", false) == true else "Not in shop"))
+	status_lines.append("Price - %dG" % int(entry.get("price", 0)))
+	status_lines.append("Damage Type - %s" % str(entry.get("damage_type", "physical")))
+	detail_status.text = "\n".join(status_lines)
+	_rebuild_nav_buttons()
+	_rebuild_collection_cards()
+
 func _select_section(section_id: String) -> void:
 	if not SECTION_DATA.has(section_id):
 		return
 	selected_section_id = section_id
 	if selected_section_id == "characters" and selected_character_id == "" and not character_entries.is_empty():
 		selected_character_id = str(character_entries[0].get("id", ""))
+	if selected_section_id == "weapons" and selected_weapon_id == "" and not weapon_entries.is_empty():
+		selected_weapon_id = str(weapon_entries[0].get("id", ""))
 	_refresh_detail()
 
 func _on_character_card_pressed(character_id: String) -> void:
 	if character_id == "":
 		return
 	selected_character_id = character_id
+	_refresh_detail()
+
+func _on_weapon_card_pressed(weapon_id: String) -> void:
+	if weapon_id == "":
+		return
+	selected_weapon_id = weapon_id
 	_refresh_detail()
 
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
@@ -425,6 +551,81 @@ func _find_character_entry(character_id: String) -> Dictionary:
 			return entry
 	return {}
 
+func _load_weapon_codex_entries() -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		weapon_entries = []
+		selected_weapon_id = ""
+		return
+	var entries: Array[Dictionary] = []
+	if "weapons" in data_registry:
+		var weapons_variant: Variant = data_registry.get("weapons")
+		if weapons_variant is Dictionary:
+			var weapons_dict: Dictionary = weapons_variant
+			for weapon_id_variant in weapons_dict.keys():
+				var weapon_id := str(weapon_id_variant)
+				var weapon_variant: Variant = weapons_dict[weapon_id_variant]
+				var entry := _build_weapon_entry(weapon_id, weapon_variant)
+				if not entry.is_empty():
+					entries.append(entry)
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var family_a := str(a.get("family_label", ""))
+		var family_b := str(b.get("family_label", ""))
+		if family_a == family_b:
+			return str(a.get("display_name", "")) < str(b.get("display_name", ""))
+		return family_a < family_b
+	)
+	weapon_entries = entries
+	if selected_weapon_id == "" and not weapon_entries.is_empty():
+		selected_weapon_id = str(weapon_entries[0].get("id", ""))
+
+func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictionary:
+	if weapon_variant is WeaponData:
+		var weapon: WeaponData = weapon_variant
+		return {
+			"id": weapon_id,
+			"display_name": weapon.display_name if weapon.display_name != "" else weapon_id,
+			"description": weapon.description,
+			"family_label": _humanize_family_id(weapon.get_family_value()),
+			"family_id": weapon.get_family_value(),
+			"rarity": weapon.rarity,
+			"tags": weapon.tags,
+			"shop_enabled": weapon.shop_enabled == true,
+			"price": weapon.price,
+			"damage_type": weapon.damage_type,
+			"base_damage": weapon.get_damage_value(),
+			"cooldown": weapon.get_cooldown_value(),
+			"range": weapon.get_attack_range_value(),
+			"projectile_speed": weapon.projectile_speed,
+			"special_effect_id": weapon.special_effect_id
+		}
+	if weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		return {
+			"id": weapon_id,
+			"display_name": str(weapon_data.get("display_name", weapon_id)),
+			"description": str(weapon_data.get("description", "")),
+			"family_label": _humanize_family_id(str(weapon_data.get("family", ""))),
+			"family_id": str(weapon_data.get("family", "")),
+			"rarity": str(weapon_data.get("rarity", "common")),
+			"tags": weapon_data.get("tags", []),
+			"shop_enabled": weapon_data.get("shop_enabled", false) == true,
+			"price": int(weapon_data.get("price", 0)),
+			"damage_type": str(weapon_data.get("damage_type", "")),
+			"base_damage": float(weapon_data.get("base_damage", weapon_data.get("damage", 0.0))),
+			"cooldown": float(weapon_data.get("cooldown", weapon_data.get("cooldown_seconds", 0.0))),
+			"range": float(weapon_data.get("range", weapon_data.get("attack_range", 0.0))),
+			"projectile_speed": float(weapon_data.get("projectile_speed", 0.0)),
+			"special_effect_id": str(weapon_data.get("special_effect_id", ""))
+		}
+	return {}
+
+func _find_weapon_entry(weapon_id: String) -> Dictionary:
+	for entry in weapon_entries:
+		if str(entry.get("id", "")) == weapon_id:
+			return entry
+	return {}
+
 func _string_array_from_variant(values_variant: Variant) -> Array[String]:
 	var values: Array[String] = []
 	if not (values_variant is Array):
@@ -452,5 +653,18 @@ func _apply_responsive_layout() -> void:
 	if collection_grid != null:
 		if selected_section_id == "characters":
 			collection_grid.columns = 1
+		elif selected_section_id == "weapons":
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
 		else:
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+
+func _humanize_family_id(family_id: String) -> String:
+	if family_id == "":
+		return "Unaligned"
+	var label := family_id.replace("_", " ")
+	var words := label.split(" ")
+	for index in range(words.size()):
+		var word := str(words[index])
+		if word != "":
+			words[index] = word.capitalize()
+	return " ".join(words)
