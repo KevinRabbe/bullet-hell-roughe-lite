@@ -154,7 +154,7 @@ autowrap_mode = 3
 text = "Lock the opening weapon for this character before the arena starts."
 
 [node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
-custom_minimum_size = Vector2(0, 330)
+custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -170,7 +170,7 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="PortraitStage" type="Control" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
-custom_minimum_size = Vector2(0, 210)
+custom_minimum_size = Vector2(0, 230)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -226,9 +226,10 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter"]
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 210)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 

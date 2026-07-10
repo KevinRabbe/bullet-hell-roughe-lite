@@ -7,6 +7,8 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel
+@onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
@@ -350,6 +352,12 @@ func _apply_responsive_layout() -> void:
 		weapon_panel.custom_minimum_size = Vector2(280 if compact else 360, 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if hero_panel != null:
+		hero_panel.custom_minimum_size = Vector2(0, 280 if compact else 330)
+	if portrait_stage != null:
+		portrait_stage.custom_minimum_size = Vector2(0, 180 if compact else 210)
+	if portrait_rect != null:
+		portrait_rect.custom_minimum_size = Vector2(0, 150 if compact else 180)
 	if weapon_list != null:
 		weapon_list.columns = 1 if viewport_size.x < 1280.0 else 2
 	if selected_name_label != null:
