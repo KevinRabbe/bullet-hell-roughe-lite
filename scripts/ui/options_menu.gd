@@ -25,6 +25,10 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var placeholder_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent
 @onready var placeholder_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderTitle
 @onready var placeholder_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderBody
+@onready var placeholder_focus_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusTitle
+@onready var placeholder_focus_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusBody
+@onready var placeholder_checklist_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox/ChecklistBody
+@onready var placeholder_status_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/StatusLabel
 @onready var resolution_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionValue
 @onready var saved_profile_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/SavedProfileValue
 @onready var fullscreen_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenValue
@@ -158,23 +162,55 @@ func _refresh_content() -> void:
 	match current_tab:
 		TAB_AUDIO:
 			tab_title_label.text = "Audio"
-			tab_summary_label.text = "Audio controls will land here next. This shell keeps the route and category structure stable now."
-			placeholder_title_label.text = "Audio Foundation Pending"
-			placeholder_body_label.text = "Music, SFX, and ambience sliders belong here once the menu shell and display flow are stable."
+			tab_summary_label.text = "Audio should feel deliberate even before the full sound mix pass lands. This shell now shows the intended settings groups and rollout order."
+			_apply_placeholder_content(
+				"Audio Foundation Pending",
+				"Music, SFX, ambience, and UI feedback controls belong here once the shared menu shell is locked and we are ready to tune the mix intentionally.",
+				"Planned first pass",
+				"Master volume, music volume, SFX volume, ambience volume, and a simple mute/quiet-mode route.",
+				"- Master / Music / SFX / Ambience sliders\n- UI click and hover feedback level\n- Safe defaults for streamers and low-volume play",
+				"Status: shell complete, controls deferred until the dedicated audio pass."
+			)
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
 			tab_summary_label.text = "Pick a realistic window size and display mode for the current menu shell. Changes are staged until you apply them."
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
-			tab_summary_label.text = "Control remapping belongs here once the front-door menu and run-start flow are fully stable."
-			placeholder_title_label.text = "Controls Foundation Pending"
-			placeholder_body_label.text = "Keyboard, mouse, and controller remapping can be added later without rebuilding the options route."
+			tab_summary_label.text = "Controls need a clear layout before full rebinding arrives. This screen now signals where keyboard, mouse, and controller support will live."
+			_apply_placeholder_content(
+				"Controls Foundation Pending",
+				"Keyboard, mouse, and controller remapping can be added later without rebuilding the options route or touching the run-start menu stack again.",
+				"Planned first pass",
+				"Movement, confirm/back bindings, pause, starter-random shortcuts, and controller navigation all belong here.",
+				"- Keyboard action list with remap state\n- Mouse aim / cursor sensitivity options\n- Controller navigation and focus behavior\n- Reset-to-default bindings",
+				"Status: route locked, full remapping intentionally deferred."
+			)
 		TAB_ACCESSIBILITY:
 			tab_title_label.text = "Accessibility"
-			tab_summary_label.text = "Accessibility settings will plug into this shell after the core menu readability and display work is locked."
-			placeholder_title_label.text = "Accessibility Foundation Pending"
-			placeholder_body_label.text = "Future contrast, text size, motion, and readability options will live here."
+			tab_summary_label.text = "Accessibility deserves a first-class route. This shell now frames the practical groups we should support once readability and motion tuning begins."
+			_apply_placeholder_content(
+				"Accessibility Foundation Pending",
+				"Future contrast, text size, motion, and readability options will live here so players can shape the front door before they enter a run.",
+				"Planned first pass",
+				"Text readability, reduced motion, contrast support, and calmer feedback modes should be the first accessibility wins.",
+				"- Larger menu text mode\n- Reduced menu motion / softer animation pass\n- Stronger contrast and highlight states\n- Cleaner combat readability options later",
+				"Status: category shell ready, settings follow after menu readability review."
+			)
+
+func _apply_placeholder_content(title: String, body: String, focus_title: String, focus_body: String, checklist: String, status: String) -> void:
+	if placeholder_title_label != null:
+		placeholder_title_label.text = title
+	if placeholder_body_label != null:
+		placeholder_body_label.text = body
+	if placeholder_focus_title_label != null:
+		placeholder_focus_title_label.text = focus_title
+	if placeholder_focus_body_label != null:
+		placeholder_focus_body_label.text = focus_body
+	if placeholder_checklist_label != null:
+		placeholder_checklist_label.text = checklist
+	if placeholder_status_label != null:
+		placeholder_status_label.text = status
 
 func _refresh_video_content() -> void:
 	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(staged_settings)
