@@ -207,6 +207,11 @@ theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "1280x720"
 
+[node name="SavedProfileValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
+text = "Saved profile: Windowed / 1280x720"
+
 [node name="ResolutionControls" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_constants/separation = 12
@@ -263,6 +268,12 @@ theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 autowrap_mode = 3
 text = "Display settings match the saved profile."
 
+[node name="PreviewSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Preview after apply: Windowed / 1280x720"
+
 [node name="PlaceholderContent" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
 visible = false
 layout_mode = 2
@@ -287,7 +298,7 @@ theme_override_constants/separation = 12
 [node name="ApplyButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow"]
 custom_minimum_size = Vector2(180, 54)
 layout_mode = 2
-text = "Apply"
+text = "Applied"
 
 [node name="ResetButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow"]
 custom_minimum_size = Vector2(180, 54)

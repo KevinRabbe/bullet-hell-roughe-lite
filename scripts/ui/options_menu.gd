@@ -26,8 +26,10 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var placeholder_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderTitle
 @onready var placeholder_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderBody
 @onready var resolution_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionValue
+@onready var saved_profile_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/SavedProfileValue
 @onready var fullscreen_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenValue
 @onready var dirty_state_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/DirtyState
+@onready var preview_summary_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/PreviewSummary
 @onready var resolution_prev_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionControls/ResolutionPrevButton
 @onready var resolution_next_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionControls/ResolutionNextButton
 @onready var fullscreen_toggle_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenToggleButton
@@ -175,9 +177,11 @@ func _refresh_content() -> void:
 			placeholder_body_label.text = "Future contrast, text size, motion, and readability options will live here."
 
 func _refresh_video_content() -> void:
-	var resolution: Vector2i = DisplaySettingsRuntimeRef._extract_resolution(staged_settings)
+	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(staged_settings)
 	if resolution_value_label != null:
 		resolution_value_label.text = "%dx%d" % [resolution.x, resolution.y]
+	if saved_profile_value_label != null:
+		saved_profile_value_label.text = "Saved profile: %s" % DisplaySettingsRuntimeRef.build_summary(saved_settings)
 	if fullscreen_value_label != null:
 		fullscreen_value_label.text = "Fullscreen" if staged_settings.get("fullscreen", false) == true else "Windowed"
 	if fullscreen_toggle_button != null:
@@ -188,8 +192,11 @@ func _refresh_video_content() -> void:
 		dirty_state_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
 	if apply_button != null:
 		apply_button.disabled = not is_dirty
+		apply_button.text = "Apply Changes" if is_dirty else "Applied"
 	if reset_button != null:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
+	if preview_summary_label != null:
+		preview_summary_label.text = "Preview after apply: %s" % DisplaySettingsRuntimeRef.build_summary(staged_settings)
 
 func _cycle_resolution(direction: int) -> void:
 	staged_settings = DisplaySettingsRuntimeRef.cycle_resolution(staged_settings, direction)
@@ -240,3 +247,7 @@ func _apply_responsive_layout() -> void:
 		nav_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
 	if content_panel != null:
 		content_panel.custom_minimum_size = Vector2(0, 0)
+	if resolution_value_label != null:
+		resolution_value_label.add_theme_font_size_override("font_size", 20 if compact else 22)
+	if fullscreen_value_label != null:
+		fullscreen_value_label.add_theme_font_size_override("font_size", 20 if compact else 22)
