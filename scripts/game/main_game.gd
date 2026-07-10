@@ -9,6 +9,7 @@ const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const PauseMenuScene = preload("res://scenes/ui/PauseMenu.tscn")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -61,6 +62,7 @@ var active_level_up_choices: Array[Dictionary] = []
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
+var active_pause_menu: Control = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -150,9 +152,9 @@ func _toggle_pause() -> void:
 	var should_pause := not get_tree().paused
 	get_tree().paused = should_pause
 	if should_pause:
-		print("GAME PAUSED")
+		_show_pause_menu()
 	else:
-		print("GAME RESUMED")
+		_hide_pause_menu()
 
 func _cycle_character() -> void:
 	if selectable_characters.is_empty():
@@ -361,10 +363,14 @@ func _enter_run_end_state(state: String) -> void:
 	RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
 
 func _restart_run() -> void:
+	get_tree().paused = false
+	_hide_pause_menu()
 	print("Restarting current scene...")
 	RunEndRuntime.restart_run(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _return_to_main_menu() -> void:
+	get_tree().paused = false
+	_hide_pause_menu()
 	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
@@ -473,3 +479,50 @@ func _has_live_group_members(group_name: String) -> bool:
 		if node != null and is_instance_valid(node):
 			return true
 	return false
+
+func _show_pause_menu() -> void:
+	if active_pause_menu != null and is_instance_valid(active_pause_menu):
+		return
+	var pause_menu := PauseMenuScene.instantiate()
+	if not (pause_menu is Control):
+		return
+	active_pause_menu = pause_menu
+	add_child(active_pause_menu)
+	if active_pause_menu.has_method("set_standalone_mode"):
+		active_pause_menu.call("set_standalone_mode", false)
+	if active_pause_menu.has_method("configure_copy"):
+		active_pause_menu.call(
+			"configure_copy",
+			"Paused",
+			"Take a breath, adjust settings, restart the run, or head back to the main menu."
+		)
+	if active_pause_menu.has_signal("resume_requested"):
+		active_pause_menu.connect("resume_requested", _on_pause_resume_requested)
+	if active_pause_menu.has_signal("options_requested"):
+		active_pause_menu.connect("options_requested", _on_pause_options_requested)
+	if active_pause_menu.has_signal("restart_requested"):
+		active_pause_menu.connect("restart_requested", _on_pause_restart_requested)
+	if active_pause_menu.has_signal("main_menu_requested"):
+		active_pause_menu.connect("main_menu_requested", _on_pause_main_menu_requested)
+
+func _hide_pause_menu() -> void:
+	if active_pause_menu == null or not is_instance_valid(active_pause_menu):
+		active_pause_menu = null
+		return
+	active_pause_menu.queue_free()
+	active_pause_menu = null
+
+func _on_pause_resume_requested() -> void:
+	get_tree().paused = false
+	_hide_pause_menu()
+
+func _on_pause_options_requested() -> void:
+	get_tree().paused = false
+	_hide_pause_menu()
+	get_tree().change_scene_to_file("res://scenes/ui/OptionsMenu.tscn")
+
+func _on_pause_restart_requested() -> void:
+	_restart_run()
+
+func _on_pause_main_menu_requested() -> void:
+	_return_to_main_menu()
