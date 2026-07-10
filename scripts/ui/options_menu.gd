@@ -15,6 +15,9 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var nav_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/NavPanel
 @onready var content_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/ContentPanel
+@onready var nav_title_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavTitle
+@onready var nav_body_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavBody
+@onready var hint_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/HintLabel
 @onready var tab_audio_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/AudioButton
 @onready var tab_video_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/VideoButton
 @onready var tab_controls_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/ControlsButton
@@ -272,18 +275,37 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
+	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
 	if root_margin != null:
-		root_margin.offset_left = 20.0 if compact else 40.0
-		root_margin.offset_top = 18.0 if compact else 36.0
-		root_margin.offset_right = -20.0 if compact else -40.0
-		root_margin.offset_bottom = -18.0 if compact else -36.0
+		root_margin.offset_left = 10.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_top = 10.0 if tight else (18.0 if compact else 36.0)
+		root_margin.offset_right = -10.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_bottom = -10.0 if tight else (-18.0 if compact else -36.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
 	if nav_panel != null:
-		nav_panel.custom_minimum_size = Vector2(260 if compact else 320, 0)
+		nav_panel.custom_minimum_size = Vector2(220 if tight else (260 if compact else 320), 0)
 	if content_panel != null:
 		content_panel.custom_minimum_size = Vector2(0, 0)
+	if nav_title_label != null:
+		nav_title_label.add_theme_font_size_override("font_size", 24 if tight else (26 if compact else 30))
+	if nav_body_label != null:
+		nav_body_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+	if hint_label != null:
+		hint_label.add_theme_font_size_override("font_size", 13 if tight else 15)
+	if tab_title_label != null:
+		tab_title_label.add_theme_font_size_override("font_size", 28 if tight else (30 if compact else 34))
+	if tab_summary_label != null:
+		tab_summary_label.add_theme_font_size_override("font_size", 15 if tight else 17)
 	if resolution_value_label != null:
-		resolution_value_label.add_theme_font_size_override("font_size", 20 if compact else 22)
+		resolution_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
 	if fullscreen_value_label != null:
-		fullscreen_value_label.add_theme_font_size_override("font_size", 20 if compact else 22)
+		fullscreen_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
+	var nav_button_size := Vector2(0, 56 if tight else 64)
+	for tab_button in [tab_audio_button, tab_video_button, tab_controls_button, tab_accessibility_button]:
+		if tab_button != null:
+			tab_button.custom_minimum_size = nav_button_size
+	var action_button_size := Vector2(160 if tight else 180, 48 if tight else 54)
+	for action_button in [resolution_prev_button, resolution_next_button, fullscreen_toggle_button, apply_button, reset_button, back_button]:
+		if action_button != null:
+			action_button.custom_minimum_size = action_button_size
