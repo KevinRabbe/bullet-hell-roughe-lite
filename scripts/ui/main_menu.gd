@@ -4,6 +4,7 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
+const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenu.tscn"
 const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 const MAIN_MENU_LOGO_ART_PATH := "res://assets/sprites/ui/menu/logos/main_menu_logo.png"
 const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_hero_art.png"
@@ -69,9 +70,7 @@ func _on_armory_button_pressed() -> void:
 	_show_dialog("Armory", ARMORY_COPY)
 
 func _on_options_button_pressed() -> void:
-	dialog_mode = "options"
-	_refresh_display_settings_ui()
-	_show_dialog("Options", OPTIONS_COPY)
+	get_tree().change_scene_to_file(OPTIONS_SCENE_PATH)
 
 func _on_credits_button_pressed() -> void:
 	_show_dialog("Credits", CREDITS_COPY)

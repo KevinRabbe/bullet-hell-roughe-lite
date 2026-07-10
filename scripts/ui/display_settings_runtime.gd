@@ -13,12 +13,15 @@ const RESOLUTION_PRESETS: Array[Vector2i] = [
 	Vector2i(1920, 1080)
 ]
 
-static func load_settings() -> Dictionary:
-	var config := ConfigFile.new()
-	var result := {
+static func default_settings() -> Dictionary:
+	return {
 		"resolution": DEFAULT_RESOLUTION,
 		"fullscreen": false
 	}
+
+static func load_settings() -> Dictionary:
+	var config := ConfigFile.new()
+	var result := default_settings()
 	var load_error := config.load(CONFIG_PATH)
 	if load_error != OK:
 		return result
@@ -79,6 +82,11 @@ static func clone_settings(settings: Dictionary) -> Dictionary:
 		"resolution": _normalize_resolution(_extract_resolution(settings)),
 		"fullscreen": settings.get("fullscreen", false) == true
 	}
+
+static func settings_match(left: Dictionary, right: Dictionary) -> bool:
+	var left_resolution := _normalize_resolution(_extract_resolution(left))
+	var right_resolution := _normalize_resolution(_extract_resolution(right))
+	return left_resolution == right_resolution and left.get("fullscreen", false) == right.get("fullscreen", false)
 
 static func _extract_resolution(settings: Dictionary) -> Vector2i:
 	var resolution_variant: Variant = settings.get("resolution", DEFAULT_RESOLUTION)
