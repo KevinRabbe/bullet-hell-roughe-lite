@@ -4,11 +4,17 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
+const STARTING_WEAPON_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/starting_weapon_background.png"
+const STARTING_WEAPON_CHARACTER_FRAME_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_character_frame.png"
+const STARTING_WEAPON_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_detail_frame.png"
 
+@onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel
+@onready var character_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterFrameArtSlot
 @onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage
+@onready var portrait_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFrameArtSlot
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
@@ -23,8 +29,10 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 @onready var selection_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
 @onready var character_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel
 @onready var weapon_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel
+@onready var weapon_panel_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponFrameArtSlot
 @onready var weapon_list: GridContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
+@onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
 @onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
 @onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedTags
@@ -40,6 +48,7 @@ var selected_index: int = 0
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_state()
+	_apply_screen_art_slots()
 	_apply_responsive_layout()
 	_rebuild_weapon_buttons()
 	_refresh_selection()
@@ -207,12 +216,39 @@ func _apply_character_summary(display_name: String) -> void:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
-	var visual_path := str(detail.get("visual_path", ""))
+	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % current_character_id
+	var visual_path := portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
 	if visual_path == "":
 		portrait_rect.texture = null
 		return
 	var texture_variant: Variant = load(visual_path)
 	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
+
+func _apply_screen_art_slots() -> void:
+	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)
+	_apply_frame_texture(character_frame_art_slot, STARTING_WEAPON_CHARACTER_FRAME_PATH)
+	_apply_frame_texture(portrait_frame_art_slot, STARTING_WEAPON_CHARACTER_FRAME_PATH)
+	_apply_frame_texture(weapon_panel_frame_art_slot, STARTING_WEAPON_DETAIL_FRAME_PATH)
+	_apply_frame_texture(detail_frame_art_slot, STARTING_WEAPON_DETAIL_FRAME_PATH)
+
+func _apply_frame_texture(target: TextureRect, texture_path: String) -> void:
+	if target == null:
+		return
+	var loaded := _apply_optional_texture(target, texture_path)
+	target.visible = loaded
+
+func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
+	if target == null:
+		return false
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		target.texture = null
+		return false
+	var texture_variant: Variant = load(texture_path)
+	if texture_variant is Texture2D:
+		target.texture = texture_variant
+		return true
+	target.texture = null
+	return false
 
 func _join_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
