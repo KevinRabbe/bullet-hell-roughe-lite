@@ -164,7 +164,7 @@ theme_override_constants/margin_bottom = 8
 [node name="BuildChipLabel" type="Label" parent="RootMargin/RootVBox/HeaderRow/BuildChip/BuildChipMargin"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
-text = "Vertical Slice Foundation"
+text = "Frontier Build"
 
 [node name="FlowChip" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
 layout_mode = 2
@@ -179,7 +179,7 @@ theme_override_constants/margin_bottom = 8
 [node name="FlowChipLabel" type="Label" parent="RootMargin/RootVBox/HeaderRow/FlowChip/FlowChipMargin"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.95)
-text = "Main Menu -> Character -> Starter -> Run"
+text = "Start Run -> Character -> Starter -> Arena"
 
 [node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
 layout_mode = 2
@@ -210,7 +210,7 @@ theme_override_constants/separation = 14
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
-text = "HELLSHOT FRONTIER / PROTOTYPE"
+text = "HELLSHOT FRONTIER"
 
 [node name="Title" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
 layout_mode = 2
@@ -224,7 +224,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.94)
 theme_override_font_sizes/font_size = 20
 autowrap_mode = 3
-text = "A dark arena roguelite about fast runs, distinct characters, growing weapon identities, portal decisions, and hybrid tag-driven builds. This menu now uses the final structural flow even before the final painted art arrives."
+text = "Choose a hunter, lock an opening weapon, and carve through a hell-torn frontier where each run grows through portals, tags, and dangerous build pivots."
 
 [node name="HeroFramePanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 custom_minimum_size = Vector2(0, 240)
@@ -245,13 +245,13 @@ theme_override_constants/separation = 10
 [node name="HeroFrameTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Key Art / Ambient Scene Slot"
+text = "Hero Art"
 
 [node name="HeroFrameBody" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
-text = "This placeholder frame reserves the final space for logo treatment, atmospheric illustration, animated silhouettes, or event art. The layout is locked now so later PNG/VFX swaps do not force a UI rewrite."
+text = "This framed stage is reserved for the final key art, logo treatment, or animated ambient scene that sells the frontier before the run begins."
 
 [node name="HeroFramePlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 custom_minimum_size = Vector2(0, 118)
@@ -273,7 +273,7 @@ offset_bottom = 13.0
 grow_horizontal = 2
 grow_vertical = 2
 horizontal_alignment = 1
-text = "Future artwork slot / safe placeholder region"
+text = "Featured artwork slot"
 
 [node name="ActionPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -294,7 +294,7 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Start Run -> Character Select"
+text = "Start Run"
 
 [node name="ArmoryButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)
@@ -320,13 +320,13 @@ text = "Quit"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.760784, 0.784314, 0.835294, 0.85)
 autowrap_mode = 3
-text = "Start Run enters the proper menu flow. Armory and Options stay lightweight placeholders until their dedicated phases land."
+text = "Start a run now, or browse the Armory and Options while the rest of the front door keeps taking shape."
 
 [node name="FooterLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.603922, 0.631373, 0.705882, 0.95)
 autowrap_mode = 3
-text = "Input: Up/Down moves, Enter confirms, Esc closes dialogs. This structure is built to survive future logo, portrait, and panel-art swaps."
+text = "Input: Up/Down moves, Enter confirms, Esc closes dialogs."
 
 [node name="InfoColumn" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(400, 0)
@@ -356,7 +356,7 @@ text = "Featured Roster"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "The current slice already supports six active characters. This preview calls out the front-door identities without leaving the main menu."
+text = "Six active characters are already playable. This roster preview gives a fast read on who is ready for the arena."
 
 [node name="FeaturedRosterList" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
 layout_mode = 2
@@ -379,13 +379,13 @@ theme_override_constants/separation = 10
 [node name="StatusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Current Slice"
+text = "Current Build"
 
 [node name="StatusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "The shipped foundation now includes six active characters, starter weapon selection, first-pass passive identity, tag groundwork, portal phase A, and the current arena art pass."
+text = "The current build already includes six active characters, starter weapon choice, first-pass passives, tag groundwork, portal events, and the live arena shell."
 
 [node name="FlowPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
 layout_mode = 2
@@ -410,7 +410,7 @@ text = "Run Flow"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "1. Enter through Main Menu\n2. Choose a character\n3. Lock the starting weapon\n4. Enter the arena\n\nLater phases upgrade these screens visually without rewriting the flow contract."
+text = "1. Enter through the main menu\n2. Choose a character\n3. Lock the opening weapon\n4. Enter the arena"
 
 [node name="FlowPlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
 custom_minimum_size = Vector2(0, 92)
@@ -431,7 +431,7 @@ offset_bottom = 13.0
 grow_horizontal = 2
 grow_vertical = 2
 horizontal_alignment = 1
-text = "Future run-preview, logo, or unlock summary slot"
+text = "Future unlock or run-preview slot"
 
 [node name="NotesPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
 layout_mode = 2
@@ -450,13 +450,13 @@ theme_override_constants/separation = 10
 [node name="NotesTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Design Notes"
+text = "Front Door Notes"
 
 [node name="NotesBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "This menu is intentionally built like the final shell: clear title hierarchy, action priority, future art slots, and stable navigation. That lets us go all-in on later art without re-laying the screen."
+text = "This front door is built around the final route and panel hierarchy first, so later art and motion can land without rewriting the whole screen."
 
 [node name="FooterRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
 layout_mode = 2
@@ -465,7 +465,7 @@ theme_override_constants/separation = 12
 [node name="VersionLabel" type="Label" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.596078, 0.627451, 0.705882, 0.9)
-text = "Build focus: Main Menu Final Structure"
+text = "Current focus: Main Menu shell"
 
 [node name="FooterSpacer" type="Control" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
@@ -474,7 +474,7 @@ size_flags_horizontal = 3
 [node name="FooterPrompt" type="Label" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.713726, 0.741176, 0.815686, 0.92)
-text = "Start Run opens the character pipeline."
+text = "Start Run opens character selection."
 
 [node name="ModalScrim" type="ColorRect" parent="."]
 visible = false
@@ -524,7 +524,7 @@ custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "Placeholder body."
+text = "Menu dialog body."
 
 [node name="DialogResolutionLabel" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
 visible = false

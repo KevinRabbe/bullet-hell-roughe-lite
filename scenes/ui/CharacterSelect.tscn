@@ -151,7 +151,7 @@ text = "Character Select"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Choose who enters the arena. The next step locks the exact starting weapon before the run begins."
+text = "Choose the character who enters the frontier. The next step locks the opening weapon for the run."
 
 [node name="RosterStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
@@ -183,7 +183,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
-text = "Choose your fighter."
+text = "Choose your hunter."
 
 [node name="PortraitPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
 custom_minimum_size = Vector2(0, 380)
@@ -272,7 +272,7 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.772549, 0.8, 0.878431, 0.84)
 horizontal_alignment = 1
-text = "Runtime portrait preview"
+text = "Selected character portrait"
 
 [node name="HeroMeta" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
@@ -330,7 +330,7 @@ text = "Back"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down browse, Enter continue, R random character, Esc back."
+text = "Shortcuts: Up/Down browse, Enter continue, R randomize, Esc back."
 
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 layout_mode = 2
@@ -352,7 +352,7 @@ custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Summary"
+text = "Identity"
 
 [node name="FantasyHook" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 56)
@@ -423,4 +423,4 @@ text = "Tradeoffs: -"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Step 2 of 4. Confirm moves to starting weapon selection. Back returns to Main Menu."
+text = "Confirm to choose a starting weapon. Back returns to the main menu."

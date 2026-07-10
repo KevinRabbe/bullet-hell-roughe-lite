@@ -84,7 +84,7 @@ func _load_state() -> void:
 	var selection_state := CharacterSelectionRuntime.build_starting_weapon_selection_state(data_registry, current_character_id)
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
-	title_label.text = "Starting Weapon"
+	title_label.text = "Choose Your Starting Weapon"
 	var display_name := str(selection_state.get("display_name", current_character_id))
 	var family_count := 0
 	if not current_character_entry.is_empty():
@@ -94,9 +94,9 @@ func _load_state() -> void:
 		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
 	var selection_source := str(selection_state.get("selection_source", "default_starter"))
 	if selection_state_label != null:
-		selection_state_label.text = "Default starter selected."
+		selection_state_label.text = "Default opening weapon selected."
 		if selection_source == "remembered_choice":
-			selection_state_label.text = "Restored your previous weapon choice."
+			selection_state_label.text = "Restored your previous opening weapon."
 	_apply_character_summary(display_name)
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
@@ -182,9 +182,9 @@ func _refresh_selection() -> void:
 	var starter_label := str(detail.get("starter_weapon_label", "Starting Weapon"))
 	if selection_state_label != null:
 		if option.get("default_selected", false) == true:
-			selection_state_label.text = "Default starter selected."
+			selection_state_label.text = "Default opening weapon selected."
 		else:
-			selection_state_label.text = "Alternate valid starter selected."
+			selection_state_label.text = "Alternate starting weapon selected."
 	selection_summary_label.text = "%s: %s\nThis weapon will be written into the run-start payload for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
