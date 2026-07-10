@@ -24,22 +24,24 @@ const STARTING_WEAPON_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/
 @onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PassiveLabel
 @onready var character_tags_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterTags
 @onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/FantasyHook
-@onready var title_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Title
-@onready var headline_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/Headline
-@onready var selection_state_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionState
-@onready var selection_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectionSummary
+@onready var title_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/Title
+@onready var headline_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/Headline
+@onready var selection_state_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectionState
+@onready var selection_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectionSummary
 @onready var character_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel
 @onready var weapon_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel
 @onready var weapon_panel_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponFrameArtSlot
-@onready var weapon_list: GridContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponList
+@onready var weapon_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponScroll
+@onready var weapon_list: GridContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponScroll/WeaponList
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
 @onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
-@onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedName
-@onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedDescription
-@onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/SelectedTags
-@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/ConfirmButton
-@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
-@onready var default_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/DefaultButton
+@onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll
+@onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedName
+@onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedDescription
+@onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedTags
+@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/ConfirmButton
+@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/BackButton
+@onready var default_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/DefaultButton
 
 var current_character_id: String = ""
 var weapon_options: Array[Dictionary] = []
@@ -400,12 +402,16 @@ func _apply_responsive_layout() -> void:
 		weapon_panel.custom_minimum_size = Vector2(200 if tight else (280 if compact else 360), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if weapon_scroll != null:
+		weapon_scroll.custom_minimum_size = Vector2(0, 0)
+	if detail_scroll != null:
+		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(0, 190 if tight else (280 if compact else 330))
+		hero_panel.custom_minimum_size = Vector2(0, 180 if tight else (280 if compact else 330))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 130 if tight else (180 if compact else 210))
+		portrait_stage.custom_minimum_size = Vector2(0, 118 if tight else (180 if compact else 210))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 115 if tight else (150 if compact else 180))
+		portrait_rect.custom_minimum_size = Vector2(0, 104 if tight else (150 if compact else 180))
 	if weapon_list != null:
 		weapon_list.columns = 1 if tight else (1 if viewport_size.x < 1360.0 else 2)
 	if character_name_label != null:
@@ -423,11 +429,11 @@ func _apply_responsive_layout() -> void:
 	if selected_name_label != null:
 		selected_name_label.add_theme_font_size_override("font_size", 22 if tight else (30 if compact else 36))
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(190 if tight else 220, 46 if tight else 50)
+		confirm_button.custom_minimum_size = Vector2(170 if tight else 220, 42 if tight else 50)
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(120 if tight else 160, 46 if tight else 50)
+		back_button.custom_minimum_size = Vector2(104 if tight else 160, 42 if tight else 50)
 	if default_button != null:
-		default_button.custom_minimum_size = Vector2(120 if tight else 160, 46 if tight else 50)
+		default_button.custom_minimum_size = Vector2(132 if tight else 160, 42 if tight else 50)
 	_refresh_weapon_buttons()
 
 func _weapon_card_height() -> float:
