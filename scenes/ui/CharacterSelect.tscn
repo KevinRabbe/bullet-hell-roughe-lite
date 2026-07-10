@@ -131,6 +131,18 @@ theme_override_constants/separation = 28
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
 
+[node name="RosterFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/RosterPanel"]
+visible = false
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
 [node name="RosterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
@@ -167,6 +179,18 @@ theme_override_constants/separation = 10
 [node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
+
+[node name="HeroFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel"]
+visible = false
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="HeroMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel"]
 layout_mode = 2
@@ -233,6 +257,18 @@ anchor_right = 1.0
 offset_bottom = 6.0
 grow_horizontal = 2
 color = Color(0.992157, 0.560784, 0.560784, 0.8)
+
+[node name="PortraitFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
+visible = false
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="PortraitFloor" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
 layout_mode = 1
@@ -335,6 +371,18 @@ text = "Shortcuts: Up/Down browse, Enter continue, R randomize, Esc back."
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="DetailFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
+visible = false
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
 layout_mode = 2
