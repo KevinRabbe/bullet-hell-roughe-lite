@@ -519,8 +519,15 @@ func _build_run_results_state(copy: Dictionary) -> Dictionary:
 	if enemy_spawner != null and "current_wave" in enemy_spawner:
 		stats.append("Wave reached: %s" % str(enemy_spawner.get("current_wave")))
 	if player != null:
-		stats.append("Gold carried: %s" % str(player.get("gold")))
-		stats.append("Level reached: %s" % str(player.get("level")))
+		var player_snapshot: Dictionary = {}
+		if player.has_method("get_ui_snapshot"):
+			var snapshot_variant: Variant = player.call("get_ui_snapshot")
+			if snapshot_variant is Dictionary:
+				player_snapshot = snapshot_variant
+		var gold_value: Variant = player_snapshot.get("gold", player.get("current_gold"))
+		var level_value: Variant = player_snapshot.get("level", player.get("current_level"))
+		stats.append("Gold carried: %s" % str(gold_value))
+		stats.append("Level reached: %s" % str(level_value))
 	if stats.is_empty():
 		stats = [
 			"Wave reached: -",
