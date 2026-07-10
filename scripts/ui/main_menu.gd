@@ -5,6 +5,7 @@ const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_run
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
+const CREDITS_SCENE_PATH := "res://scenes/ui/CreditsMenu.tscn"
 const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenu.tscn"
 const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 const MAIN_MENU_LOGO_ART_PATH := "res://assets/sprites/ui/menu/logos/main_menu_logo.png"
@@ -74,7 +75,7 @@ func _on_options_button_pressed() -> void:
 	get_tree().change_scene_to_file(OPTIONS_SCENE_PATH)
 
 func _on_credits_button_pressed() -> void:
-	_show_dialog("Credits", CREDITS_COPY)
+	get_tree().change_scene_to_file(CREDITS_SCENE_PATH)
 
 func _on_quit_button_pressed() -> void:
 	get_tree().quit()
