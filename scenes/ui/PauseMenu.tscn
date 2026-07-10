@@ -51,6 +51,13 @@ theme_override_constants/margin_bottom = 32
 layout_mode = 2
 theme_override_constants/separation = 18
 
+[node name="Eyebrow" type="Label" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+text = "RUN PAUSED"
+
 [node name="Title" type="Label" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 42
