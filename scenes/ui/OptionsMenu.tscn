@@ -155,213 +155,224 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="ContentVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin"]
+[node name="ContentShell" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 18
 
-[node name="TabTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
+[node name="ContentScroll" type="ScrollContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell"]
+layout_mode = 2
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="ContentVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 18
+
+[node name="TabTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
 text = "Video"
 
-[node name="TabSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
+[node name="TabSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Pick a realistic window size and display mode for the current menu shell."
 
-[node name="VideoContent" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
+[node name="VideoContent" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="ResolutionBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent"]
+[node name="ResolutionBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent"]
 layout_mode = 2
 
-[node name="ResolutionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock"]
+[node name="ResolutionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="ResolutionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin"]
+[node name="ResolutionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResolutionTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+[node name="ResolutionTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Window Resolution"
 
-[node name="ResolutionBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+[node name="ResolutionBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
 text = "Choose one of the supported baseline menu sizes for crisp UI and stable layout."
 
-[node name="ResolutionValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+[node name="ResolutionValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "1280x720"
 
-[node name="SavedProfileValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+[node name="SavedProfileValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 text = "Saved profile: Windowed / 1280x720"
 
-[node name="ResolutionControls" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
+[node name="ResolutionControls" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ResolutionPrevButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls"]
+[node name="ResolutionPrevButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls"]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 text = "Previous"
 
-[node name="ResolutionNextButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls"]
+[node name="ResolutionNextButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls"]
 custom_minimum_size = Vector2(180, 48)
 layout_mode = 2
 text = "Next"
 
-[node name="FullscreenBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent"]
+[node name="FullscreenBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent"]
 layout_mode = 2
 
-[node name="FullscreenMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock"]
+[node name="FullscreenMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="FullscreenVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin"]
+[node name="FullscreenVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="FullscreenTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
+[node name="FullscreenTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Display Mode"
 
-[node name="FullscreenBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
+[node name="FullscreenBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
 text = "Switch between windowed and fullscreen without leaving the front-door menu shell."
 
-[node name="FullscreenValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
+[node name="FullscreenValue" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 22
 text = "Windowed"
 
-[node name="FullscreenToggleButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
+[node name="FullscreenToggleButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox"]
 custom_minimum_size = Vector2(220, 48)
 layout_mode = 2
 text = "Switch to Fullscreen"
 
-[node name="DirtyState" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent"]
+[node name="DirtyState" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 autowrap_mode = 3
 text = "Display settings match the saved profile."
 
-[node name="PreviewSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent"]
+[node name="PreviewSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Preview after apply: Windowed / 1280x720"
 
-[node name="PlaceholderContent" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
+[node name="PlaceholderContent" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox"]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="PlaceholderTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+[node name="PlaceholderTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Foundation Pending"
 
-[node name="PlaceholderBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+[node name="PlaceholderBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
 text = "This category will be filled in once the shared front-door menu shell is fully stable."
 
-[node name="FocusBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+[node name="FocusBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent"]
 layout_mode = 2
 
-[node name="FocusMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock"]
+[node name="FocusMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="FocusVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin"]
+[node name="FocusVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="FocusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
+[node name="FocusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Planned first pass"
 
-[node name="FocusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
+[node name="FocusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
 text = "This category will expose its first real settings in a later focused pass."
 
-[node name="ChecklistBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+[node name="ChecklistBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent"]
 layout_mode = 2
 
-[node name="ChecklistMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock"]
+[node name="ChecklistMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
 theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
-[node name="ChecklistVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin"]
+[node name="ChecklistVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ChecklistTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
+[node name="ChecklistTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "What belongs here"
 
-[node name="ChecklistBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
+[node name="ChecklistBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "- Future settings are listed here so the route feels intentional now."
 
-[node name="StatusLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+[node name="StatusLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 autowrap_mode = 3
 text = "Status: shell ready, settings deferred."
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="ApplyButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow"]
+[node name="ApplyButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow"]
 custom_minimum_size = Vector2(180, 54)
 layout_mode = 2
 text = "Applied"
 
-[node name="ResetButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow"]
+[node name="ResetButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow"]
 custom_minimum_size = Vector2(180, 54)
 layout_mode = 2
 text = "Reset to Defaults"
 
-[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow"]
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow"]
 custom_minimum_size = Vector2(180, 54)
 layout_mode = 2
 text = "Back to Main Menu"
