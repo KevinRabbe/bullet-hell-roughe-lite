@@ -1,0 +1,214 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/armory_menu.gd" id="1_4pv3w"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_6jlwm"]
+
+[node name="ArmoryMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4pv3w")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0313726, 0.0352941, 0.0588235, 1)
+
+[node name="ArenaTexture" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_6jlwm")
+expand_mode = 1
+stretch_mode = 6
+modulate = Color(0.44, 0.34, 0.37, 0.46)
+
+[node name="PrimaryDimmer" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0196078, 0.0235294, 0.0392157, 0.82)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 36.0
+offset_right = -40.0
+offset_bottom = -36.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeaderRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StepChip" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+
+[node name="StepChipMargin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="StepChipLabel" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip/StepChipMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
+text = "Armory"
+
+[node name="HeaderCopy" type="Label" parent="RootMargin/RootVBox/HeaderRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
+text = "Build the codex shell now so later discovery screens slot in cleanly."
+
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 28
+
+[node name="NavPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+
+[node name="NavMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/NavPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="NavVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="NavTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Armory"
+
+[node name="NavBody" type="Label" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Use the Armory as the long-term discovery route for roster identity, weapons, items, and set bonuses."
+
+[node name="NavButtons" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.9)
+autowrap_mode = 3
+text = "Hotkeys: 1 Characters, 2 Weapons, 3 Items, 4 Sets, Esc Back"
+
+[node name="CollectionPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CollectionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/CollectionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="CollectionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="CollectionTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Collection Overview"
+
+[node name="CollectionBody" type="Label" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "The Armory home should make future discovery routes feel deliberate even before the codex data is fully populated."
+
+[node name="CollectionGrid" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="DetailTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Character Codex"
+
+[node name="DetailSubtitle" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.92)
+autowrap_mode = 3
+text = "Subtitle"
+
+[node name="DetailSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 92)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Summary"
+
+[node name="DetailBullets" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.81, 0.88, 0.92)
+autowrap_mode = 3
+text = "- Detail one"
+
+[node name="DetailStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
+autowrap_mode = 3
+text = "Status"
+
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+custom_minimum_size = Vector2(200, 54)
+layout_mode = 2
+text = "Back to Main Menu"
