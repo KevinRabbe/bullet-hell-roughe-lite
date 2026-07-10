@@ -1,0 +1,101 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="1_jke31"]
+
+[node name="PauseMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_jke31")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0117647, 0.0156863, 0.027451, 0.72)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 36.0
+offset_top = 34.0
+offset_right = -36.0
+offset_bottom = -34.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="RootMargin"]
+custom_minimum_size = Vector2(720, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="PanelMargin" type="MarginContainer" parent="RootMargin/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 32
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 32
+
+[node name="PanelVBox" type="VBoxContainer" parent="RootMargin/Panel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+horizontal_alignment = 1
+text = "Paused"
+
+[node name="Body" type="Label" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.94)
+horizontal_alignment = 1
+autowrap_mode = 3
+text = "Hold the run here, adjust settings, restart the arena, or return to the main menu."
+
+[node name="ActionRow1" type="HBoxContainer" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="ResumeButton" type="Button" parent="RootMargin/Panel/PanelMargin/PanelVBox/ActionRow1"]
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Resume"
+
+[node name="OptionsButton" type="Button" parent="RootMargin/Panel/PanelMargin/PanelVBox/ActionRow1"]
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Options"
+
+[node name="ActionRow2" type="HBoxContainer" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="RestartButton" type="Button" parent="RootMargin/Panel/PanelMargin/PanelVBox/ActionRow2"]
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Restart Run"
+
+[node name="MainMenuButton" type="Button" parent="RootMargin/Panel/PanelMargin/PanelVBox/ActionRow2"]
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Quit to Main Menu"
+
+[node name="HintLabel" type="Label" parent="RootMargin/Panel/PanelMargin/PanelVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.88)
+horizontal_alignment = 1
+text = "Hotkeys: Esc Resume, R Restart"
