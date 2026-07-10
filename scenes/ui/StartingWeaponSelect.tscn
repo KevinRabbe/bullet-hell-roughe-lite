@@ -335,9 +335,15 @@ theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 autowrap_mode = 3
 text = "Each card shows role, tags, and whether it is the default opener."
 
-[node name="WeaponList" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
+[node name="WeaponScroll" type="ScrollContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="WeaponList" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
 columns = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
@@ -365,79 +371,91 @@ theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
 theme_override_constants/margin_bottom = 24
 
-[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
+[node name="DetailShell" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/separation = 16
 
-[node name="Title" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="DetailScroll" type="ScrollContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
+layout_mode = 2
+size_flags_vertical = 3
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
 text = "Starter Choice"
 
-[node name="Headline" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="Headline" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Pick the opener that shapes the first minute of the run."
 
-[node name="SelectionState" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectionState" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Default starter selected."
 
-[node name="SelectionSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectionSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Selection status"
 
-[node name="SelectedSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 theme_override_font_sizes/font_size = 16
 text = "Selected Weapon"
 
-[node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "Weapon"
 
-[node name="SelectedDescription" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedDescription" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
 text = "Description"
 
-[node name="SelectedTags" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="SelectedTags" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Tags: None"
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow"]
 custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Enter Arena"
 
-[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Back"
 
-[node name="DefaultButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
+[node name="DefaultButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
 text = "Default Starter"
 
-[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
