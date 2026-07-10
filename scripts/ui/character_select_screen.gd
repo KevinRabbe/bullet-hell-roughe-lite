@@ -172,6 +172,8 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	var passive_name := str(presentation.get("passive_name", "Passive"))
 	var difficulty := str(presentation.get("difficulty", "medium")).capitalize()
 	var prefix := "> " if is_selected else ""
+	if _is_tight_viewport():
+		return "%s%s\n%s" % [prefix, display_name, difficulty]
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
 
 func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
@@ -415,28 +417,42 @@ func _on_back_pressed() -> void:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
-	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var tight := _is_tight_viewport()
 	if root_margin != null:
-		root_margin.offset_left = 12.0 if tight else (20.0 if compact else 40.0)
-		root_margin.offset_top = 12.0 if tight else (18.0 if compact else 36.0)
-		root_margin.offset_right = -12.0 if tight else (-20.0 if compact else -40.0)
-		root_margin.offset_bottom = -12.0 if tight else (-18.0 if compact else -36.0)
+		root_margin.offset_left = 8.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_top = 8.0 if tight else (18.0 if compact else 36.0)
+		root_margin.offset_right = -8.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_bottom = -8.0 if tight else (-18.0 if compact else -36.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
+		main_hbox.add_theme_constant_override("separation", 8 if tight else (18 if compact else 28))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(210 if tight else (260 if compact else 320), 0)
+		roster_panel.custom_minimum_size = Vector2(190 if tight else (260 if compact else 320), 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(240 if tight else (300 if compact else 360), 0)
+		hero_panel.custom_minimum_size = Vector2(220 if tight else (300 if compact else 360), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 220 if tight else (300 if compact else 360))
+		portrait_panel.custom_minimum_size = Vector2(0, 190 if tight else (300 if compact else 360))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 190 if tight else (260 if compact else 320))
+		portrait_stage.custom_minimum_size = Vector2(0, 165 if tight else (260 if compact else 320))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 165 if tight else (220 if compact else 280))
+		portrait_rect.custom_minimum_size = Vector2(0, 140 if tight else (220 if compact else 280))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", 26 if tight else (32 if compact else 40))
+		name_label.add_theme_font_size_override("font_size", 22 if tight else (32 if compact else 40))
+	if heading_label != null:
+		heading_label.add_theme_font_size_override("font_size", 16 if tight else 18)
+	if family_label != null:
+		family_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+	if passive_label != null:
+		passive_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+	if starter_weapon_label != null:
+		starter_weapon_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+	if arsenal_label != null:
+		arsenal_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+	if strengths_label != null:
+		strengths_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+	if tradeoffs_label != null:
+		tradeoffs_label.add_theme_font_size_override("font_size", 15 if tight else 17)
 	if confirm_button != null:
 		confirm_button.custom_minimum_size = Vector2(180 if tight else 220, 46 if tight else 50)
 	if random_button != null:
@@ -448,7 +464,11 @@ func _apply_responsive_layout() -> void:
 func _roster_button_height() -> float:
 	var viewport_size := get_viewport_rect().size
 	if viewport_size.x < 1280.0 or viewport_size.y < 720.0:
-		return 78.0
+		return 68.0
 	if viewport_size.x < 1360.0:
 		return 86.0
 	return 94.0
+
+func _is_tight_viewport() -> bool:
+	var viewport_size := get_viewport_rect().size
+	return viewport_size.x < 1280.0 or viewport_size.y < 720.0
