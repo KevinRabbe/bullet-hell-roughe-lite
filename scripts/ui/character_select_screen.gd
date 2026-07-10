@@ -1,7 +1,7 @@
 extends Control
 
-const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
-const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
+const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
@@ -44,7 +44,7 @@ var details: Dictionary = {}
 var selected_index: int = 0
 
 func _ready() -> void:
-	DisplaySettingsRuntime.apply_saved_settings()
+	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_selection_state()
 	_apply_responsive_layout()
 	_rebuild_roster_buttons()
@@ -79,10 +79,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _load_selection_state() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var ids_variant: Variant = selection_state.get("ids", [])
 	if ids_variant is Array:
-		selectable_ids = CharacterSelectionRuntime.normalize_character_ids(ids_variant)
+		selectable_ids = CharacterSelectionRuntimeRef.normalize_character_ids(ids_variant)
 	var entries_variant: Variant = selection_state.get("entries", [])
 	if entries_variant is Array:
 		for entry_variant in entries_variant:
@@ -94,7 +94,7 @@ func _load_selection_state() -> void:
 	presentations = presentations_variant if presentations_variant is Dictionary else {}
 	var details_variant: Variant = selection_state.get("details", {})
 	details = details_variant if details_variant is Dictionary else {}
-	var pending_id := CharacterSelectionRuntime.get_pending_character_id()
+	var pending_id := CharacterSelectionRuntimeRef.get_pending_character_id()
 	if pending_id != "":
 		var pending_index := selectable_ids.find(pending_id)
 		if pending_index >= 0:
@@ -105,7 +105,7 @@ func _rebuild_roster_buttons() -> void:
 		return
 	for child in roster_list.get_children():
 		child.queue_free()
-	for index in selectable_ids.size():
+	for index in range(selectable_ids.size()):
 		var character_id := selectable_ids[index]
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, 94)
@@ -347,8 +347,8 @@ func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():
 		return
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	var payload := CharacterSelectionRuntime.build_run_start_payload(data_registry, selectable_ids[selected_index])
-	CharacterSelectionRuntime.set_pending_run_start_payload(payload)
+	var payload := CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
+	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
 
 func _on_random_pressed() -> void:

@@ -1,7 +1,7 @@
 extends Control
 
-const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
-const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
+const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 const ARMORY_COPY := "The Armory will become the long-term home for character, weapon, item, and set-bonus discovery. For now, Start Run remains the primary route into the arena."
@@ -29,7 +29,7 @@ var current_display_settings: Dictionary = {}
 var dialog_mode: String = ""
 
 func _ready() -> void:
-	current_display_settings = DisplaySettingsRuntime.apply_saved_settings()
+	current_display_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
 	_hide_dialog()
 	_apply_responsive_layout()
 	_rebuild_featured_roster()
@@ -97,7 +97,7 @@ func _rebuild_featured_roster() -> void:
 	for child in featured_roster_list.get_children():
 		child.queue_free()
 	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var entries_variant: Variant = selection_state.get("entries", [])
 	if not (entries_variant is Array):
 		return
@@ -179,26 +179,26 @@ func _format_tags(tags_variant: Variant) -> String:
 
 func _refresh_display_settings_ui() -> void:
 	if dialog_resolution_label != null:
-		dialog_resolution_label.text = "Display: %s" % DisplaySettingsRuntime.build_summary(current_display_settings)
+		dialog_resolution_label.text = "Display: %s" % DisplaySettingsRuntimeRef.build_summary(current_display_settings)
 	if fullscreen_button != null:
 		fullscreen_button.text = "Mode: %s" % ("Fullscreen" if current_display_settings.get("fullscreen", false) == true else "Windowed")
 
 func _apply_display_settings() -> void:
-	DisplaySettingsRuntime.apply_settings(current_display_settings)
-	DisplaySettingsRuntime.save_settings(current_display_settings)
+	DisplaySettingsRuntimeRef.apply_settings(current_display_settings)
+	DisplaySettingsRuntimeRef.save_settings(current_display_settings)
 	_apply_responsive_layout()
 	_refresh_display_settings_ui()
 
 func _on_resolution_prev_pressed() -> void:
-	current_display_settings = DisplaySettingsRuntime.cycle_resolution(current_display_settings, -1)
+	current_display_settings = DisplaySettingsRuntimeRef.cycle_resolution(current_display_settings, -1)
 	_apply_display_settings()
 
 func _on_resolution_next_pressed() -> void:
-	current_display_settings = DisplaySettingsRuntime.cycle_resolution(current_display_settings, 1)
+	current_display_settings = DisplaySettingsRuntimeRef.cycle_resolution(current_display_settings, 1)
 	_apply_display_settings()
 
 func _on_fullscreen_toggled() -> void:
-	current_display_settings = DisplaySettingsRuntime.toggle_fullscreen(current_display_settings)
+	current_display_settings = DisplaySettingsRuntimeRef.toggle_fullscreen(current_display_settings)
 	_apply_display_settings()
 
 func _apply_responsive_layout() -> void:
