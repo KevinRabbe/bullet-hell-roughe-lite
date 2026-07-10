@@ -268,25 +268,26 @@ func _on_fullscreen_toggled() -> void:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1360.0
-	var tight := _is_tight_viewport()
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1360.0
+	var tight: bool = _is_tight_viewport()
+	var very_tight: bool = viewport_size.x < 1180.0 or viewport_size.y < 680.0
 	if root_margin != null:
-		root_margin.offset_left = 10.0 if tight else (24.0 if compact else 52.0)
-		root_margin.offset_top = 10.0 if tight else (20.0 if compact else 40.0)
-		root_margin.offset_right = -10.0 if tight else (-24.0 if compact else -52.0)
-		root_margin.offset_bottom = -10.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_left = 6.0 if very_tight else (10.0 if tight else (24.0 if compact else 52.0))
+		root_margin.offset_top = 6.0 if very_tight else (10.0 if tight else (20.0 if compact else 40.0))
+		root_margin.offset_right = -6.0 if very_tight else (-10.0 if tight else (-24.0 if compact else -52.0))
+		root_margin.offset_bottom = -6.0 if very_tight else (-10.0 if tight else (-20.0 if compact else -40.0))
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 10 if tight else (22 if compact else 34))
+		main_hbox.add_theme_constant_override("separation", 6 if very_tight else (10 if tight else (22 if compact else 34)))
 	if hero_column != null:
-		hero_column.custom_minimum_size = Vector2(320 if tight else (420 if compact else 580), 0)
+		hero_column.custom_minimum_size = Vector2(260 if very_tight else (320 if tight else (420 if compact else 580)), 0)
 	if info_column != null:
-		info_column.custom_minimum_size = Vector2(240 if tight else (300 if compact else 400), 0)
+		info_column.custom_minimum_size = Vector2(210 if very_tight else (240 if tight else (300 if compact else 400)), 0)
 	if title_label != null:
 		title_label.add_theme_font_size_override("font_size", int(round((34 if tight else (42 if compact else 54)) * font_scale)))
 	if subtitle_label != null:
-		subtitle_label.add_theme_font_size_override("font_size", int(round((16 if tight else (18 if compact else 20)) * font_scale)))
-		subtitle_label.custom_minimum_size = Vector2(0, 64 if tight else (78 if compact else 94))
+		subtitle_label.add_theme_font_size_override("font_size", int(round(((14 if very_tight else 16) if tight else (18 if compact else 20)) * font_scale)))
+		subtitle_label.custom_minimum_size = Vector2(0, 52 if very_tight else (64 if tight else (78 if compact else 94)))
 		subtitle_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(1.0, 1.0, 1.0, 1.0)
 	if eyebrow_label != null:
 		eyebrow_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
@@ -306,11 +307,12 @@ func _apply_responsive_layout() -> void:
 	if action_hint_label != null:
 		action_hint_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
 		action_hint_label.modulate = Color(0.86, 0.90, 0.98, 0.98) if high_contrast else Color(1.0, 1.0, 1.0, 1.0)
+		action_hint_label.visible = not very_tight
 	for button in [start_button, armory_button, options_button, credits_button, quit_button]:
 		if button != null:
-			button.custom_minimum_size = Vector2(0, 42 if tight else (48 if compact else 54))
+			button.custom_minimum_size = Vector2(0, 38 if very_tight else (42 if tight else (48 if compact else 54)))
 			button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 
 func _is_tight_viewport() -> bool:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x < 1280.0 or viewport_size.y < 720.0
