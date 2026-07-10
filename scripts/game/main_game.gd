@@ -9,6 +9,7 @@ const LevelUpRuntime = preload("res://scripts/game/level_up_runtime.gd")
 const LevelUpPanelRuntime = preload("res://scripts/game/level_up_panel_runtime.gd")
 const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelup_state_runtime.gd")
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
+const RunResultsScene = preload("res://scenes/ui/RunResults.tscn")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
@@ -61,6 +62,7 @@ var active_level_up_choices: Array[Dictionary] = []
 var level_up_reroll_count: int = 0
 var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
+var active_run_results: Control = null
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -358,13 +360,15 @@ func _enter_run_end_state(state: String) -> void:
 	waiting_for_level_up_choice = transition.get("waiting_for_level_up_choice", false) == true
 	_set_combat_active(false)
 	_hide_run_overlays()
-	RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
+	_show_run_results(state)
 
 func _restart_run() -> void:
+	_hide_run_results()
 	print("Restarting current scene...")
 	RunEndRuntime.restart_run(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _return_to_main_menu() -> void:
+	_hide_run_results()
 	RunEndRuntime.return_to_main_menu(get_tree(), get_node_or_null("/root/RunRng"))
 
 func _clear_combat_entities() -> void:
@@ -473,3 +477,52 @@ func _has_live_group_members(group_name: String) -> bool:
 		if node != null and is_instance_valid(node):
 			return true
 	return false
+
+func _show_run_results(state: String) -> void:
+	if run_end_layer != null:
+		run_end_layer.visible = false
+	if run_end_panel != null:
+		run_end_panel.visible = false
+	var copy := RunFlowRuntime.get_run_end_copy(state)
+	var results_scene := RunResultsScene.instantiate()
+	if not (results_scene is Control):
+		RunEndRuntime.apply_run_end_copy(state, run_end_panel, run_end_title, run_end_body)
+		return
+	active_run_results = results_scene
+	add_child(active_run_results)
+	if active_run_results.has_method("set_standalone_mode"):
+		active_run_results.call("set_standalone_mode", false)
+	if active_run_results.has_method("apply_result_state"):
+		active_run_results.call("apply_result_state", _build_run_results_state(copy))
+	if active_run_results.has_signal("retry_requested"):
+		active_run_results.connect("retry_requested", _restart_run)
+	if active_run_results.has_signal("new_character_requested"):
+		active_run_results.connect("new_character_requested", _open_character_select_scene)
+	if active_run_results.has_signal("main_menu_requested"):
+		active_run_results.connect("main_menu_requested", _return_to_main_menu)
+
+func _hide_run_results() -> void:
+	if active_run_results == null or not is_instance_valid(active_run_results):
+		active_run_results = null
+		return
+	active_run_results.queue_free()
+	active_run_results = null
+
+func _build_run_results_state(copy: Dictionary) -> Dictionary:
+	var stats: Array[String] = []
+	if enemy_spawner != null and "current_wave" in enemy_spawner:
+		stats.append("Wave reached: %s" % str(enemy_spawner.get("current_wave")))
+	if player != null:
+		stats.append("Gold carried: %s" % str(player.get("gold")))
+		stats.append("Level reached: %s" % str(player.get("level")))
+	if stats.is_empty():
+		stats = [
+			"Wave reached: -",
+			"Gold carried: -",
+			"Level reached: -"
+		]
+	return {
+		"title": str(copy.get("title", "Run Complete")),
+		"summary": str(copy.get("body", "The arena is clear. Press Retry or choose a new hunter.")),
+		"stats": stats
+	}
