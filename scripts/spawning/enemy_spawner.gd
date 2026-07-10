@@ -14,6 +14,7 @@ const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spaw
 @export var min_spawn_interval_seconds: float = 0.7
 @export var wave_config_path: String = "res://data/waves/wave_spawn_config.json"
 @export var log_wave_countdown: bool = false
+@export var log_wave_events: bool = false
 @export var external_move_speed_multiplier: float = 1.0
 
 var target: Node2D
@@ -56,7 +57,8 @@ func _process(delta: float) -> void:
 
 	if wave_elapsed_seconds >= wave_duration_seconds:
 		spawn_timer.stop()
-		print("Wave complete.")
+		if log_wave_events:
+			print("Wave complete.")
 		if not completion_emitted:
 			completion_emitted = true
 			wave_completed.emit(current_wave_index)
@@ -133,7 +135,8 @@ func start_next_wave() -> void:
 	completion_emitted = false
 	spawn_timer.wait_time = spawn_interval_seconds
 	spawn_timer.start()
-	print("Wave %d started." % current_wave_index)
+	if log_wave_events:
+		print("Wave %d started." % current_wave_index)
 
 func stop_spawning_for_victory() -> void:
 	wave_elapsed_seconds = maxf(wave_elapsed_seconds, wave_duration_seconds)
