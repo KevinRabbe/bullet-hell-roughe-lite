@@ -10,6 +10,10 @@ const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelit
 
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
 @onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
+@onready var root_margin: MarginContainer = $RootMargin
+@onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var hero_column: VBoxContainer = $RootMargin/RootVBox/MainHBox/HeroColumn
+@onready var info_column: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn
 @onready var modal_scrim: ColorRect = $ModalScrim
 @onready var dialog_panel: PanelContainer = $DialogPanel
 @onready var dialog_title: Label = $DialogPanel/DialogMargin/DialogVBox/DialogTitle
@@ -27,7 +31,9 @@ var dialog_mode: String = ""
 func _ready() -> void:
 	current_display_settings = DisplaySettingsRuntime.apply_saved_settings()
 	_hide_dialog()
+	_apply_responsive_layout()
 	_rebuild_featured_roster()
+	resized.connect(_apply_responsive_layout)
 	if start_button != null:
 		start_button.grab_focus()
 	if resolution_prev_button != null:
@@ -180,6 +186,7 @@ func _refresh_display_settings_ui() -> void:
 func _apply_display_settings() -> void:
 	DisplaySettingsRuntime.apply_settings(current_display_settings)
 	DisplaySettingsRuntime.save_settings(current_display_settings)
+	_apply_responsive_layout()
 	_refresh_display_settings_ui()
 
 func _on_resolution_prev_pressed() -> void:
@@ -193,3 +200,18 @@ func _on_resolution_next_pressed() -> void:
 func _on_fullscreen_toggled() -> void:
 	current_display_settings = DisplaySettingsRuntime.toggle_fullscreen(current_display_settings)
 	_apply_display_settings()
+
+func _apply_responsive_layout() -> void:
+	var viewport_size := get_viewport_rect().size
+	var compact := viewport_size.x < 1360.0
+	if root_margin != null:
+		root_margin.offset_left = 24.0 if compact else 52.0
+		root_margin.offset_top = 20.0 if compact else 40.0
+		root_margin.offset_right = -24.0 if compact else -52.0
+		root_margin.offset_bottom = -20.0 if compact else -40.0
+	if main_hbox != null:
+		main_hbox.add_theme_constant_override("separation", 22 if compact else 34)
+	if hero_column != null:
+		hero_column.custom_minimum_size = Vector2(420 if compact else 580, 0)
+	if info_column != null:
+		info_column.custom_minimum_size = Vector2(300 if compact else 400, 0)
