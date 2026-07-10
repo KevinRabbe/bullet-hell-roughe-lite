@@ -2,6 +2,7 @@ extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
+const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 const MAIN_MENU_LOGO_ART_PATH := "res://assets/sprites/ui/menu/logos/main_menu_logo.png"
@@ -41,6 +42,7 @@ func _ready() -> void:
 	_apply_menu_art_slots()
 	_apply_responsive_layout()
 	_rebuild_featured_roster()
+	MenuAnimationRuntimeRef.play_screen_intro([hero_column, info_column])
 	resized.connect(_apply_responsive_layout)
 	if start_button != null:
 		start_button.grab_focus()
@@ -89,13 +91,20 @@ func _show_dialog(title: String, body: String) -> void:
 		fullscreen_button.visible = options_mode
 	modal_scrim.visible = true
 	dialog_panel.visible = true
+	MenuAnimationRuntimeRef.animate_modal_open(modal_scrim, dialog_panel)
 	if dialog_close_button != null:
 		dialog_close_button.grab_focus()
 
 func _hide_dialog() -> void:
 	dialog_mode = ""
-	modal_scrim.visible = false
-	dialog_panel.visible = false
+	MenuAnimationRuntimeRef.animate_modal_close(modal_scrim, dialog_panel)
+	if dialog_panel != null:
+		get_tree().create_timer(0.12).timeout.connect(func() -> void:
+			if modal_scrim != null:
+				modal_scrim.visible = false
+			if dialog_panel != null:
+				dialog_panel.visible = false
+		)
 	if start_button != null:
 		start_button.grab_focus()
 

@@ -2,6 +2,7 @@ extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
+const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const STARTING_WEAPON_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/starting_weapon_background.png"
@@ -52,6 +53,7 @@ func _ready() -> void:
 	_apply_responsive_layout()
 	_rebuild_weapon_buttons()
 	_refresh_selection()
+	MenuAnimationRuntimeRef.play_screen_intro([character_panel, weapon_panel, detail_panel])
 	resized.connect(_apply_responsive_layout)
 	if confirm_button != null:
 		confirm_button.pressed.connect(_on_confirm_pressed)
@@ -136,6 +138,7 @@ func _rebuild_weapon_buttons() -> void:
 		var selected_button := weapon_list.get_child(selected_index) as Button
 		if selected_button != null:
 			selected_button.grab_focus()
+			MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.015)
 
 func _on_weapon_button_pressed(index: int) -> void:
 	_select_index(index)
@@ -150,6 +153,7 @@ func _select_index(index: int) -> void:
 	var selected_button := weapon_list.get_child(selected_index) as Button
 	if selected_button != null:
 		selected_button.grab_focus()
+		MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.015)
 
 func _refresh_weapon_buttons() -> void:
 	if weapon_list == null:
@@ -223,6 +227,8 @@ func _apply_character_summary(display_name: String) -> void:
 		return
 	var texture_variant: Variant = load(visual_path)
 	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
+	if portrait_rect.texture != null:
+		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)
