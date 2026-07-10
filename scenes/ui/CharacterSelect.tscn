@@ -186,7 +186,7 @@ theme_override_font_sizes/font_size = 18
 text = "Choose your fighter."
 
 [node name="PortraitPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
-custom_minimum_size = Vector2(0, 360)
+custom_minimum_size = Vector2(0, 380)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -198,6 +198,7 @@ theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 18
 
 [node name="PortraitStage" type="Control" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin"]
+custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -253,9 +254,10 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter"]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 320)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 

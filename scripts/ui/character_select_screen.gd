@@ -12,6 +12,8 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var roster_status_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
 @onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel
 @onready var heading_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
+@onready var portrait_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel
+@onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
 @onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
@@ -380,5 +382,11 @@ func _apply_responsive_layout() -> void:
 		hero_panel.custom_minimum_size = Vector2(300 if compact else 360, 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
+	if portrait_panel != null:
+		portrait_panel.custom_minimum_size = Vector2(0, 300 if compact else 360)
+	if portrait_stage != null:
+		portrait_stage.custom_minimum_size = Vector2(0, 260 if compact else 320)
+	if portrait_rect != null:
+		portrait_rect.custom_minimum_size = Vector2(0, 220 if compact else 280)
 	if name_label != null:
 		name_label.add_theme_font_size_override("font_size", 32 if compact else 40)
