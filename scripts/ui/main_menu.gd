@@ -4,9 +4,9 @@ const CharacterSelectionRuntime = preload("res://scripts/game/character_selectio
 const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
-const ARMORY_COPY := "The Armory lands in a later menu phase. For now we keep the front door stable: Start Run -> Character Select -> Starting Weapon -> Arena."
-const OPTIONS_COPY := "Use these display settings to keep the front-door menu readable while we lock the final shell and art slots."
-const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelite prototype. Current focus: stronger menu identity, readable character discovery, and a clean run-start flow that can absorb final art later."
+const ARMORY_COPY := "The Armory will become the long-term home for character, weapon, item, and set-bonus discovery. For now, Start Run remains the primary route into the arena."
+const OPTIONS_COPY := "Tune the display settings here so the front-door menu stays readable while we finish the final art pass."
+const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six active characters, weapon identity passes, portal hooks, and a growing tag-driven build layer."
 
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
 @onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
