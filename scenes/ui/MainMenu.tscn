@@ -226,6 +226,14 @@ theme_override_font_sizes/font_size = 20
 autowrap_mode = 3
 text = "Choose a hunter, lock an opening weapon, and carve through a hell-torn frontier where each run grows through portals, tags, and dangerous build pivots."
 
+[node name="LogoArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
+visible = false
+custom_minimum_size = Vector2(0, 104)
+layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
 [node name="HeroFramePanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 custom_minimum_size = Vector2(0, 240)
 layout_mode = 2
@@ -258,6 +266,17 @@ custom_minimum_size = Vector2(0, 118)
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0.0745098, 0.0823529, 0.129412, 0.9)
+
+[node name="HeroArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
 
 [node name="HeroFramePlaceholderLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder"]
 layout_mode = 1
