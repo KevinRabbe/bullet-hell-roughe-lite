@@ -1,5 +1,9 @@
 extends Control
 
+signal retry_requested
+signal new_character_requested
+signal main_menu_requested
+
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
@@ -16,6 +20,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var new_character_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/NewCharacterButton
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
 
+var standalone_mode := true
 var result_state := {
 	"title": "Run Complete",
 	"summary": "Use this shell for victory and defeat handoff once the in-run results flow is wired.",
@@ -38,6 +43,9 @@ func _ready() -> void:
 		new_character_button.pressed.connect(_on_new_character_pressed)
 	if main_menu_button != null:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
+
+func set_standalone_mode(enabled: bool) -> void:
+	standalone_mode = enabled
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -74,13 +82,19 @@ func _refresh() -> void:
 	result_stats_label.text = "\n".join(lines)
 
 func _on_retry_pressed() -> void:
-	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+	emit_signal("retry_requested")
+	if standalone_mode:
+		get_tree().change_scene_to_file(GAME_SCENE_PATH)
 
 func _on_new_character_pressed() -> void:
-	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
+	emit_signal("new_character_requested")
+	if standalone_mode:
+		get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_main_menu_pressed() -> void:
-	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+	emit_signal("main_menu_requested")
+	if standalone_mode:
+		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
