@@ -1,10 +1,11 @@
 extends Control
 
 const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
+const DisplaySettingsRuntime = preload("res://scripts/ui/display_settings_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 const ARMORY_COPY := "The Armory lands in a later menu phase. For now we keep the front door stable: Start Run -> Character Select -> Starting Weapon -> Arena."
-const OPTIONS_COPY := "Options stay intentionally lightweight until the full menu stack is visually locked. This phase focuses on final structure, action priority, and clean placeholder art slots."
+const OPTIONS_COPY := "Use these display settings to keep the front-door menu readable while we lock the final shell and art slots."
 const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelite prototype. Current focus: stronger menu identity, readable character discovery, and a clean run-start flow that can absorb final art later."
 
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
@@ -13,13 +14,28 @@ const CREDITS_COPY := "Built in Godot as a Brotato-inspired bullet-hell roguelit
 @onready var dialog_panel: PanelContainer = $DialogPanel
 @onready var dialog_title: Label = $DialogPanel/DialogMargin/DialogVBox/DialogTitle
 @onready var dialog_body: Label = $DialogPanel/DialogMargin/DialogVBox/DialogBody
+@onready var dialog_resolution_label: Label = $DialogPanel/DialogMargin/DialogVBox/DialogResolutionLabel
+@onready var dialog_resolution_row: HBoxContainer = $DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow
+@onready var resolution_prev_button: Button = $DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow/ResolutionPrevButton
+@onready var resolution_next_button: Button = $DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow/ResolutionNextButton
+@onready var fullscreen_button: Button = $DialogPanel/DialogMargin/DialogVBox/DialogFullscreenButton
 @onready var dialog_close_button: Button = $DialogPanel/DialogMargin/DialogVBox/DialogCloseButton
 
+var current_display_settings: Dictionary = {}
+var dialog_mode: String = ""
+
 func _ready() -> void:
+	current_display_settings = DisplaySettingsRuntime.apply_saved_settings()
 	_hide_dialog()
 	_rebuild_featured_roster()
 	if start_button != null:
 		start_button.grab_focus()
+	if resolution_prev_button != null:
+		resolution_prev_button.pressed.connect(_on_resolution_prev_pressed)
+	if resolution_next_button != null:
+		resolution_next_button.pressed.connect(_on_resolution_next_pressed)
+	if fullscreen_button != null:
+		fullscreen_button.pressed.connect(_on_fullscreen_toggled)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
@@ -37,6 +53,8 @@ func _on_armory_button_pressed() -> void:
 	_show_dialog("Armory", ARMORY_COPY)
 
 func _on_options_button_pressed() -> void:
+	dialog_mode = "options"
+	_refresh_display_settings_ui()
 	_show_dialog("Options", OPTIONS_COPY)
 
 func _on_credits_button_pressed() -> void:
@@ -48,12 +66,20 @@ func _on_quit_button_pressed() -> void:
 func _show_dialog(title: String, body: String) -> void:
 	dialog_title.text = title
 	dialog_body.text = body
+	var options_mode := dialog_mode == "options"
+	if dialog_resolution_label != null:
+		dialog_resolution_label.visible = options_mode
+	if dialog_resolution_row != null:
+		dialog_resolution_row.visible = options_mode
+	if fullscreen_button != null:
+		fullscreen_button.visible = options_mode
 	modal_scrim.visible = true
 	dialog_panel.visible = true
 	if dialog_close_button != null:
 		dialog_close_button.grab_focus()
 
 func _hide_dialog() -> void:
+	dialog_mode = ""
 	modal_scrim.visible = false
 	dialog_panel.visible = false
 	if start_button != null:
@@ -144,3 +170,26 @@ func _format_tags(tags_variant: Variant) -> String:
 		if tag_text != "":
 			parts.append(tag_text.capitalize())
 	return "Tags: %s" % ", ".join(parts) if not parts.is_empty() else ""
+
+func _refresh_display_settings_ui() -> void:
+	if dialog_resolution_label != null:
+		dialog_resolution_label.text = "Display: %s" % DisplaySettingsRuntime.build_summary(current_display_settings)
+	if fullscreen_button != null:
+		fullscreen_button.text = "Mode: %s" % ("Fullscreen" if current_display_settings.get("fullscreen", false) == true else "Windowed")
+
+func _apply_display_settings() -> void:
+	DisplaySettingsRuntime.apply_settings(current_display_settings)
+	DisplaySettingsRuntime.save_settings(current_display_settings)
+	_refresh_display_settings_ui()
+
+func _on_resolution_prev_pressed() -> void:
+	current_display_settings = DisplaySettingsRuntime.cycle_resolution(current_display_settings, -1)
+	_apply_display_settings()
+
+func _on_resolution_next_pressed() -> void:
+	current_display_settings = DisplaySettingsRuntime.cycle_resolution(current_display_settings, 1)
+	_apply_display_settings()
+
+func _on_fullscreen_toggled() -> void:
+	current_display_settings = DisplaySettingsRuntime.toggle_fullscreen(current_display_settings)
+	_apply_display_settings()

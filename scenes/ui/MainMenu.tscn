@@ -526,6 +526,35 @@ theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
 text = "Placeholder body."
 
+[node name="DialogResolutionLabel" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
+text = "Display: Windowed / 1280x720"
+
+[node name="DialogResolutionRow" type="HBoxContainer" parent="DialogPanel/DialogMargin/DialogVBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ResolutionPrevButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Previous Resolution"
+
+[node name="ResolutionNextButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Next Resolution"
+
+[node name="DialogFullscreenButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox"]
+visible = false
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Mode: Windowed"
+
 [node name="DialogCloseButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
