@@ -67,6 +67,7 @@ var audio_value_labels: Dictionary = {}
 var audio_mute_value_label: Label = null
 var audio_status_label: Label = null
 var audio_preview_label: Label = null
+var controls_runtime_box: VBoxContainer = null
 
 func _ready() -> void:
 	saved_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -75,6 +76,7 @@ func _ready() -> void:
 	staged_audio_settings = AudioSettingsRuntimeRef.clone_settings(saved_audio_settings)
 	_apply_optional_texture(arena_texture, OPTIONS_BACKGROUND_ART_PATH)
 	_ensure_audio_runtime_content()
+	_ensure_controls_runtime_content()
 	_apply_responsive_layout()
 	_connect_buttons()
 	_refresh_tab_styles()
@@ -185,7 +187,7 @@ func _refresh_content() -> void:
 		video_content.visible = showing_video
 	if placeholder_content != null:
 		placeholder_content.visible = not showing_video
-	_toggle_audio_runtime_content(current_tab == TAB_AUDIO)
+	_set_placeholder_shell_mode("audio" if current_tab == TAB_AUDIO else ("controls" if current_tab == TAB_CONTROLS else "placeholder"))
 	match current_tab:
 		TAB_AUDIO:
 			tab_title_label.text = "Audio"
@@ -197,15 +199,8 @@ func _refresh_content() -> void:
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
-			tab_summary_label.text = "Controls need a clear layout before full rebinding arrives. This screen now signals where keyboard, mouse, and controller support will live."
-			_apply_placeholder_content(
-				"Controls Foundation Pending",
-				"Keyboard, mouse, and controller remapping can be added later without rebuilding the options route or touching the run-start menu stack again.",
-				"Planned first pass",
-				"Movement, confirm/back bindings, pause, starter-random shortcuts, and controller navigation all belong here.",
-				"- Keyboard action list with remap state\n- Mouse aim / cursor sensitivity options\n- Controller navigation and focus behavior\n- Reset-to-default bindings",
-				"Status: route locked, full remapping intentionally deferred."
-			)
+			tab_summary_label.text = "See the live keyboard route for arena movement and the front-door menu stack before we tackle full remapping."
+			_refresh_controls_content()
 		TAB_ACCESSIBILITY:
 			tab_title_label.text = "Accessibility"
 			tab_summary_label.text = "Accessibility deserves a first-class route. This shell now frames the practical groups we should support once readability and motion tuning begins."
@@ -278,6 +273,48 @@ func _refresh_audio_content() -> void:
 		audio_status_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
 	if audio_preview_label != null:
 		audio_preview_label.text = "Current preview: %s" % AudioSettingsRuntimeRef.build_summary(staged_audio_settings)
+	_refresh_action_row_state()
+
+func _refresh_controls_content() -> void:
+	if controls_runtime_box == null:
+		return
+	_clear_runtime_box(controls_runtime_box)
+	_add_controls_group(
+		controls_runtime_box,
+		"Movement & Arena Actions",
+		[
+			{"label": "Move Left", "binding": _format_action_bindings("move_left")},
+			{"label": "Move Right", "binding": _format_action_bindings("move_right")},
+			{"label": "Move Up", "binding": _format_action_bindings("move_up")},
+			{"label": "Move Down", "binding": _format_action_bindings("move_down")},
+			{"label": "Interact", "binding": _format_action_bindings("interact")}
+		]
+	)
+	_add_controls_group(
+		controls_runtime_box,
+		"Menu Flow Shortcuts",
+		[
+			{"label": "Browse roster or starters", "binding": "Up / Down"},
+			{"label": "Confirm selection", "binding": "Enter / Space"},
+			{"label": "Back / close", "binding": "Esc"},
+			{"label": "Random character / starter", "binding": "R"},
+			{"label": "Default starter", "binding": "T (starter screen)"}
+		]
+	)
+	_add_controls_group(
+		controls_runtime_box,
+		"In-Run Essentials",
+		[
+			{"label": "Pause", "binding": "Esc / P"},
+			{"label": "Retry end state", "binding": "R"},
+			{"label": "Continue wave/shop prompts", "binding": "Enter / Space"}
+		]
+	)
+	var status_label := Label.new()
+	status_label.text = "Status: live keyboard reference is in place, full rebinding stays deferred to a dedicated controls pass."
+	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_label.modulate = Color(0.992157, 0.560784, 0.560784, 0.95)
+	controls_runtime_box.add_child(status_label)
 	_refresh_action_row_state()
 
 func _cycle_resolution(direction: int) -> void:
@@ -537,20 +574,6 @@ func _add_audio_mute_block() -> void:
 	column.add_child(toggle_button)
 	audio_runtime_box.add_child(block)
 
-func _toggle_audio_runtime_content(show_audio_runtime: bool) -> void:
-	if audio_runtime_box != null:
-		audio_runtime_box.visible = show_audio_runtime
-	if placeholder_title_label != null:
-		placeholder_title_label.visible = not show_audio_runtime
-	if placeholder_body_label != null:
-		placeholder_body_label.visible = not show_audio_runtime
-	if placeholder_focus_block != null:
-		placeholder_focus_block.visible = not show_audio_runtime
-	if placeholder_checklist_block != null:
-		placeholder_checklist_block.visible = not show_audio_runtime
-	if placeholder_status_label != null:
-		placeholder_status_label.visible = not show_audio_runtime
-
 func _cycle_audio_channel(channel_id: String, direction: int) -> void:
 	staged_audio_settings = AudioSettingsRuntimeRef.cycle_level(staged_audio_settings, channel_id, direction)
 	_apply_staged_audio_preview()
@@ -558,3 +581,75 @@ func _cycle_audio_channel(channel_id: String, direction: int) -> void:
 
 func _format_audio_percent(settings: Dictionary, channel_id: String) -> String:
 	return "%d%%" % int(round(float(settings.get(channel_id, 1.0)) * 100.0))
+
+func _ensure_controls_runtime_content() -> void:
+	if placeholder_content == null or controls_runtime_box != null:
+		return
+	controls_runtime_box = VBoxContainer.new()
+	controls_runtime_box.name = "ControlsRuntimeContent"
+	controls_runtime_box.theme_override_constants.separation = 14
+	controls_runtime_box.visible = false
+	placeholder_content.add_child(controls_runtime_box)
+	placeholder_content.move_child(controls_runtime_box, placeholder_content.get_child_count() - 1)
+
+func _set_placeholder_shell_mode(mode: String) -> void:
+	var show_placeholder: bool = mode == "placeholder"
+	if audio_runtime_box != null:
+		audio_runtime_box.visible = mode == "audio"
+	if controls_runtime_box != null:
+		controls_runtime_box.visible = mode == "controls"
+	if placeholder_title_label != null:
+		placeholder_title_label.visible = show_placeholder
+	if placeholder_body_label != null:
+		placeholder_body_label.visible = show_placeholder
+	if placeholder_focus_block != null:
+		placeholder_focus_block.visible = show_placeholder
+	if placeholder_checklist_block != null:
+		placeholder_checklist_block.visible = show_placeholder
+	if placeholder_status_label != null:
+		placeholder_status_label.visible = show_placeholder
+
+func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Array) -> void:
+	var block := PanelContainer.new()
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	block.add_child(margin)
+	var column := VBoxContainer.new()
+	column.theme_override_constants.separation = 10
+	margin.add_child(column)
+	var title := Label.new()
+	title.text = title_text
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+	for row_variant in rows:
+		if not (row_variant is Dictionary):
+			continue
+		var row: Dictionary = row_variant
+		var row_label := Label.new()
+		row_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+		row_label.text = "%s: %s" % [str(row.get("label", "")), str(row.get("binding", "-"))]
+		column.add_child(row_label)
+	target_box.add_child(block)
+
+func _clear_runtime_box(target_box: VBoxContainer) -> void:
+	for child in target_box.get_children():
+		child.queue_free()
+
+func _format_action_bindings(action_name: String) -> String:
+	if not InputMap.has_action(action_name):
+		return "-"
+	var parts: Array[String] = []
+	for event_variant in InputMap.action_get_events(action_name):
+		if event_variant is InputEventKey:
+			var key_event: InputEventKey = event_variant
+			var key_label: String = OS.get_keycode_string(key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode)
+			if key_label != "":
+				parts.append(key_label)
+		elif event_variant is InputEventMouseButton:
+			var mouse_event: InputEventMouseButton = event_variant
+			parts.append("Mouse %d" % mouse_event.button_index)
+	return ", ".join(parts) if not parts.is_empty() else "-"
