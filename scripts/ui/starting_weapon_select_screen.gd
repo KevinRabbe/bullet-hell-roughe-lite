@@ -1,6 +1,7 @@
 extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
@@ -47,9 +48,11 @@ var current_character_id: String = ""
 var weapon_options: Array[Dictionary] = []
 var current_character_entry: Dictionary = {}
 var selected_index: int = 0
+var accessibility_settings: Dictionary = {}
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_load_state()
 	_apply_screen_art_slots()
 	_apply_responsive_layout()
@@ -125,6 +128,7 @@ func _rebuild_weapon_buttons() -> void:
 	for child in weapon_list.get_children():
 		child.queue_free()
 	var card_height := _weapon_card_height()
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	for index in range(weapon_options.size()):
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
@@ -133,7 +137,7 @@ func _rebuild_weapon_buttons() -> void:
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", 17)
+		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
 		_apply_weapon_button_style(button, option, index == selected_index)
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
 		weapon_list.add_child(button)
@@ -162,12 +166,14 @@ func _refresh_weapon_buttons() -> void:
 	if weapon_list == null:
 		return
 	var card_height := _weapon_card_height()
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	for index in range(weapon_list.get_child_count()):
 		var button := weapon_list.get_child(index) as Button
 		if button == null or index >= weapon_options.size():
 			continue
 		button.custom_minimum_size = Vector2(0, card_height)
 		var option: Dictionary = weapon_options[index]
+		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		_apply_weapon_button_style(button, option, index == selected_index)
 
@@ -283,6 +289,7 @@ func _summarize_description(description: String) -> String:
 	return "%s..." % normalized.substr(0, 69).rstrip(" ")
 
 func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected: bool) -> void:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var accent := _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
@@ -298,11 +305,11 @@ func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected:
 	style.content_margin_right = 14
 	style.content_margin_bottom = 14
 	if is_selected:
-		style.bg_color = Color(accent.r, accent.g, accent.b, 0.24)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.72)
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.24)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.94) if high_contrast else Color(accent.r, accent.g, accent.b, 0.72)
 	else:
-		style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.20)
+		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.40) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("hover", style)
 	button.add_theme_stylebox_override("pressed", style)
@@ -386,6 +393,7 @@ func _persist_pending_selection() -> void:
 	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 
 func _apply_responsive_layout() -> void:
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1440.0
 	var tight := _is_tight_viewport()
@@ -415,25 +423,28 @@ func _apply_responsive_layout() -> void:
 	if weapon_list != null:
 		weapon_list.columns = 1 if tight else (1 if viewport_size.x < 1360.0 else 2)
 	if character_name_label != null:
-		character_name_label.add_theme_font_size_override("font_size", 24 if tight else (28 if compact else 32))
+		character_name_label.add_theme_font_size_override("font_size", int(round((24 if tight else (28 if compact else 32)) * font_scale)))
 	if title_label != null:
-		title_label.add_theme_font_size_override("font_size", 24 if tight else (30 if compact else 36))
+		title_label.add_theme_font_size_override("font_size", int(round((24 if tight else (30 if compact else 36)) * font_scale)))
 	if headline_label != null:
-		headline_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		headline_label.add_theme_font_size_override("font_size", int(round((15 if tight else 17) * font_scale)))
 	if selected_description_label != null:
-		selected_description_label.add_theme_font_size_override("font_size", 14 if tight else 16)
+		selected_description_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
 	if fantasy_hook_label != null:
-		fantasy_hook_label.add_theme_font_size_override("font_size", 14 if tight else 16)
+		fantasy_hook_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
 	if passive_label != null:
-		passive_label.add_theme_font_size_override("font_size", 14 if tight else 16)
+		passive_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
 	if selected_name_label != null:
-		selected_name_label.add_theme_font_size_override("font_size", 22 if tight else (30 if compact else 36))
+		selected_name_label.add_theme_font_size_override("font_size", int(round((22 if tight else (30 if compact else 36)) * font_scale)))
 	if confirm_button != null:
 		confirm_button.custom_minimum_size = Vector2(170 if tight else 220, 42 if tight else 50)
+		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if back_button != null:
 		back_button.custom_minimum_size = Vector2(104 if tight else 160, 42 if tight else 50)
+		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if default_button != null:
 		default_button.custom_minimum_size = Vector2(132 if tight else 160, 42 if tight else 50)
+		default_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_refresh_weapon_buttons()
 
 func _weapon_card_height() -> float:

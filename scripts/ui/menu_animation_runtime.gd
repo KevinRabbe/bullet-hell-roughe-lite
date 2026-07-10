@@ -1,7 +1,16 @@
 class_name MenuAnimationRuntime
 extends RefCounted
 
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+
 static func play_screen_intro(panels: Array[Control]) -> void:
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		for panel_variant in panels:
+			if panel_variant == null or not is_instance_valid(panel_variant):
+				continue
+			panel_variant.modulate.a = 1.0
+			panel_variant.position.y = panel_variant.position.y
+		return
 	for index in range(panels.size()):
 		var panel := panels[index]
 		if panel == null or not is_instance_valid(panel):
@@ -17,6 +26,9 @@ static func play_screen_intro(panels: Array[Control]) -> void:
 static func pulse_focus(control: Control, scale_amount: float = 1.02) -> void:
 	if control == null or not is_instance_valid(control):
 		return
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		control.scale = Vector2.ONE
+		return
 	control.pivot_offset = control.size * 0.5
 	control.scale = Vector2.ONE
 	var tween := control.create_tween()
@@ -27,12 +39,22 @@ static func pulse_focus(control: Control, scale_amount: float = 1.02) -> void:
 static func fade_swap_texture(target: CanvasItem) -> void:
 	if target == null or not is_instance_valid(target):
 		return
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		target.modulate.a = 1.0
+		return
 	target.modulate.a = 0.0
 	var tween := target.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(target, "modulate:a", 1.0, 0.18)
 
 static func animate_modal_open(scrim: CanvasItem, panel: Control) -> void:
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		if scrim != null and is_instance_valid(scrim):
+			scrim.modulate.a = 1.0
+		if panel != null and is_instance_valid(panel):
+			panel.modulate.a = 1.0
+			panel.scale = Vector2.ONE
+		return
 	if scrim != null and is_instance_valid(scrim):
 		scrim.modulate.a = 0.0
 		var scrim_tween := scrim.create_tween()
@@ -47,6 +69,13 @@ static func animate_modal_open(scrim: CanvasItem, panel: Control) -> void:
 		panel_tween.parallel().tween_property(panel, "scale", Vector2.ONE, 0.2)
 
 static func animate_modal_close(scrim: CanvasItem, panel: Control) -> void:
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		if scrim != null and is_instance_valid(scrim):
+			scrim.modulate.a = 0.0
+		if panel != null and is_instance_valid(panel):
+			panel.modulate.a = 0.0
+			panel.scale = Vector2.ONE
+		return
 	if scrim != null and is_instance_valid(scrim):
 		var scrim_tween := scrim.create_tween()
 		scrim_tween.tween_property(scrim, "modulate:a", 0.0, 0.12)

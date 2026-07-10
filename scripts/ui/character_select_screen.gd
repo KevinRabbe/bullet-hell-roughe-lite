@@ -1,6 +1,7 @@
 extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
@@ -53,9 +54,11 @@ var display_names: Dictionary = {}
 var presentations: Dictionary = {}
 var details: Dictionary = {}
 var selected_index: int = 0
+var accessibility_settings: Dictionary = {}
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_load_selection_state()
 	_apply_screen_art_slots()
 	_apply_responsive_layout()
@@ -119,6 +122,7 @@ func _rebuild_roster_buttons() -> void:
 	for child in roster_list.get_children():
 		child.queue_free()
 	var roster_button_height := _roster_button_height()
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	for index in range(selectable_ids.size()):
 		var character_id := selectable_ids[index]
 		var button := Button.new()
@@ -128,7 +132,7 @@ func _rebuild_roster_buttons() -> void:
 		button.focus_mode = Control.FOCUS_ALL
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", 18)
+		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
 		_apply_roster_button_style(button, character_id, index == selected_index)
 		button.pressed.connect(_on_character_button_pressed.bind(index))
 		roster_list.add_child(button)
@@ -156,12 +160,14 @@ func _refresh_roster_buttons() -> void:
 	if roster_list == null:
 		return
 	var roster_button_height := _roster_button_height()
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	for index in range(roster_list.get_child_count()):
 		var button := roster_list.get_child(index) as Button
 		if button == null or index >= selectable_ids.size():
 			continue
 		button.custom_minimum_size = Vector2(0, roster_button_height)
 		var character_id := selectable_ids[index]
+		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
 		button.text = _build_roster_button_text(character_id, index == selected_index)
 		_apply_roster_button_style(button, character_id, index == selected_index)
 
@@ -178,6 +184,7 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
 
 func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var entry := _find_character_entry(character_id)
 	var accent := _family_accent_color(str(entry.get("preferred_weapon_family", "")))
 	var style := StyleBoxFlat.new()
@@ -194,11 +201,11 @@ func _apply_roster_button_style(button: Button, character_id: String, is_selecte
 	style.content_margin_right = 16
 	style.content_margin_bottom = 14
 	if is_selected:
-		style.bg_color = Color(accent.r, accent.g, accent.b, 0.22)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.78)
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.22)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.95) if high_contrast else Color(accent.r, accent.g, accent.b, 0.78)
 	else:
-		style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.22)
+		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+		style.border_color = Color(accent.r, accent.g, accent.b, 0.42) if high_contrast else Color(accent.r, accent.g, accent.b, 0.22)
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("hover", style)
 	button.add_theme_stylebox_override("pressed", style)
@@ -416,6 +423,7 @@ func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_responsive_layout() -> void:
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
 	var tight := _is_tight_viewport()
@@ -441,27 +449,30 @@ func _apply_responsive_layout() -> void:
 	if portrait_rect != null:
 		portrait_rect.custom_minimum_size = Vector2(0, 120 if tight else (220 if compact else 280))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", 20 if tight else (32 if compact else 40))
+		name_label.add_theme_font_size_override("font_size", int(round((20 if tight else (32 if compact else 40)) * font_scale)))
 	if heading_label != null:
-		heading_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+		heading_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
 	if family_label != null:
-		family_label.add_theme_font_size_override("font_size", 14 if tight else 17)
+		family_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if passive_label != null:
-		passive_label.add_theme_font_size_override("font_size", 14 if tight else 17)
+		passive_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if starter_weapon_label != null:
-		starter_weapon_label.add_theme_font_size_override("font_size", 14 if tight else 18)
+		starter_weapon_label.add_theme_font_size_override("font_size", int(round((14 if tight else 18) * font_scale)))
 	if arsenal_label != null:
-		arsenal_label.add_theme_font_size_override("font_size", 14 if tight else 18)
+		arsenal_label.add_theme_font_size_override("font_size", int(round((14 if tight else 18) * font_scale)))
 	if strengths_label != null:
-		strengths_label.add_theme_font_size_override("font_size", 14 if tight else 17)
+		strengths_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if tradeoffs_label != null:
-		tradeoffs_label.add_theme_font_size_override("font_size", 14 if tight else 17)
+		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if confirm_button != null:
 		confirm_button.custom_minimum_size = Vector2(150 if tight else 220, 42 if tight else 50)
+		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if random_button != null:
 		random_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
+		random_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if back_button != null:
 		back_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
+		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_refresh_roster_buttons()
 
 func _roster_button_height() -> float:
