@@ -12,9 +12,14 @@ const TAB_ACCESSIBILITY := "accessibility"
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
+@onready var root_vbox: VBoxContainer = $RootMargin/RootVBox
+@onready var header_row: HBoxContainer = $RootMargin/RootVBox/HeaderRow
+@onready var header_copy_label: Label = $RootMargin/RootVBox/HeaderRow/HeaderCopy
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var nav_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/NavPanel
 @onready var content_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/ContentPanel
+@onready var nav_margin: MarginContainer = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin
+@onready var nav_vbox: VBoxContainer = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox
 @onready var nav_title_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavTitle
 @onready var nav_body_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavBody
 @onready var hint_label: Label = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/HintLabel
@@ -22,27 +27,32 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var tab_video_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/VideoButton
 @onready var tab_controls_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/ControlsButton
 @onready var tab_accessibility_button: Button = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/TabButtons/AccessibilityButton
-@onready var tab_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/TabTitle
-@onready var tab_summary_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/TabSummary
-@onready var video_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent
-@onready var placeholder_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent
-@onready var placeholder_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderTitle
-@onready var placeholder_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/PlaceholderBody
-@onready var placeholder_focus_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusTitle
-@onready var placeholder_focus_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusBody
-@onready var placeholder_checklist_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox/ChecklistBody
-@onready var placeholder_status_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/StatusLabel
-@onready var resolution_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionValue
-@onready var saved_profile_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/SavedProfileValue
-@onready var fullscreen_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox/FullscreenValue
-@onready var dirty_state_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/DirtyState
-@onready var preview_summary_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/PreviewSummary
-@onready var resolution_prev_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls/ResolutionPrevButton
-@onready var resolution_next_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls/ResolutionNextButton
-@onready var fullscreen_toggle_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox/FullscreenToggleButton
-@onready var apply_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow/ApplyButton
-@onready var reset_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow/ResetButton
-@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/ActionRow/BackButton
+@onready var content_margin: MarginContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin
+@onready var content_shell: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell
+@onready var content_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll
+@onready var content_vbox: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox
+@onready var tab_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/TabTitle
+@onready var tab_summary_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/TabSummary
+@onready var video_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent
+@onready var placeholder_content: VBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent
+@onready var placeholder_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/PlaceholderTitle
+@onready var placeholder_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/PlaceholderBody
+@onready var placeholder_focus_title_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusTitle
+@onready var placeholder_focus_body_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox/FocusBody
+@onready var placeholder_checklist_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox/ChecklistBody
+@onready var placeholder_status_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/PlaceholderContent/StatusLabel
+@onready var resolution_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionValue
+@onready var saved_profile_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/SavedProfileValue
+@onready var fullscreen_value_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox/FullscreenValue
+@onready var dirty_state_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/DirtyState
+@onready var preview_summary_label: Label = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/PreviewSummary
+@onready var resolution_prev_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls/ResolutionPrevButton
+@onready var resolution_next_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/ResolutionBlock/ResolutionMargin/ResolutionVBox/ResolutionControls/ResolutionNextButton
+@onready var fullscreen_toggle_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ContentScroll/ContentVBox/VideoContent/FullscreenBlock/FullscreenMargin/FullscreenVBox/FullscreenToggleButton
+@onready var action_row: HBoxContainer = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow
+@onready var apply_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow/ApplyButton
+@onready var reset_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow/ResetButton
+@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentShell/ActionRow/BackButton
 
 var saved_settings: Dictionary = {}
 var staged_settings: Dictionary = {}
@@ -276,36 +286,71 @@ func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
 	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var very_tight := viewport_size.y < 700.0 or viewport_size.x < 1180.0
 	if root_margin != null:
-		root_margin.offset_left = 10.0 if tight else (20.0 if compact else 40.0)
-		root_margin.offset_top = 10.0 if tight else (18.0 if compact else 36.0)
-		root_margin.offset_right = -10.0 if tight else (-20.0 if compact else -40.0)
-		root_margin.offset_bottom = -10.0 if tight else (-18.0 if compact else -36.0)
+		root_margin.offset_left = 6.0 if very_tight else (10.0 if tight else (20.0 if compact else 40.0))
+		root_margin.offset_top = 6.0 if very_tight else (10.0 if tight else (18.0 if compact else 36.0))
+		root_margin.offset_right = -6.0 if very_tight else (-10.0 if tight else (-20.0 if compact else -40.0))
+		root_margin.offset_bottom = -6.0 if very_tight else (-10.0 if tight else (-18.0 if compact else -36.0))
+	if root_vbox != null:
+		root_vbox.add_theme_constant_override("separation", 12 if very_tight else (16 if tight else 20))
+	if header_row != null:
+		header_row.add_theme_constant_override("separation", 8 if very_tight else 12)
+	if header_copy_label != null:
+		header_copy_label.visible = not very_tight
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
+		main_hbox.add_theme_constant_override("separation", 8 if very_tight else (12 if tight else (18 if compact else 28)))
 	if nav_panel != null:
-		nav_panel.custom_minimum_size = Vector2(220 if tight else (260 if compact else 320), 0)
+		nav_panel.custom_minimum_size = Vector2(180 if very_tight else (220 if tight else (260 if compact else 320)), 0)
 	if content_panel != null:
 		content_panel.custom_minimum_size = Vector2(0, 0)
+	if nav_margin != null:
+		var nav_pad := 10 if very_tight else (14 if tight else 18)
+		nav_margin.add_theme_constant_override("margin_left", nav_pad)
+		nav_margin.add_theme_constant_override("margin_top", nav_pad)
+		nav_margin.add_theme_constant_override("margin_right", nav_pad)
+		nav_margin.add_theme_constant_override("margin_bottom", nav_pad)
+	if nav_vbox != null:
+		nav_vbox.add_theme_constant_override("separation", 10 if very_tight else 14)
+	if content_margin != null:
+		var content_pad := 12 if very_tight else (18 if tight else 24)
+		content_margin.add_theme_constant_override("margin_left", content_pad)
+		content_margin.add_theme_constant_override("margin_top", content_pad)
+		content_margin.add_theme_constant_override("margin_right", content_pad)
+		content_margin.add_theme_constant_override("margin_bottom", content_pad)
+	if content_vbox != null:
+		content_vbox.add_theme_constant_override("separation", 12 if very_tight else 18)
+	if content_shell != null:
+		content_shell.add_theme_constant_override("separation", 10 if very_tight else 14)
+	if content_scroll != null:
+		content_scroll.custom_minimum_size = Vector2(0, 0)
 	if nav_title_label != null:
-		nav_title_label.add_theme_font_size_override("font_size", 24 if tight else (26 if compact else 30))
+		nav_title_label.add_theme_font_size_override("font_size", 20 if very_tight else (24 if tight else (26 if compact else 30)))
 	if nav_body_label != null:
+		nav_body_label.visible = not very_tight
 		nav_body_label.add_theme_font_size_override("font_size", 15 if tight else 17)
 	if hint_label != null:
+		hint_label.visible = not very_tight
 		hint_label.add_theme_font_size_override("font_size", 13 if tight else 15)
 	if tab_title_label != null:
-		tab_title_label.add_theme_font_size_override("font_size", 28 if tight else (30 if compact else 34))
+		tab_title_label.add_theme_font_size_override("font_size", 24 if very_tight else (28 if tight else (30 if compact else 34)))
 	if tab_summary_label != null:
-		tab_summary_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		tab_summary_label.add_theme_font_size_override("font_size", 14 if very_tight else (15 if tight else 17))
+	if video_content != null:
+		video_content.add_theme_constant_override("separation", 12 if very_tight else 16)
+	if placeholder_content != null:
+		placeholder_content.add_theme_constant_override("separation", 10 if very_tight else 14)
 	if resolution_value_label != null:
-		resolution_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
+		resolution_value_label.add_theme_font_size_override("font_size", 16 if very_tight else (18 if tight else (20 if compact else 22)))
 	if fullscreen_value_label != null:
-		fullscreen_value_label.add_theme_font_size_override("font_size", 18 if tight else (20 if compact else 22))
-	var nav_button_size: Vector2 = Vector2(0, 56 if tight else 64)
+		fullscreen_value_label.add_theme_font_size_override("font_size", 16 if very_tight else (18 if tight else (20 if compact else 22)))
+	var nav_button_size: Vector2 = Vector2(0, 44 if very_tight else (56 if tight else 64))
 	for tab_button in [tab_audio_button, tab_video_button, tab_controls_button, tab_accessibility_button]:
 		if tab_button != null:
 			tab_button.custom_minimum_size = nav_button_size
-	var action_button_size: Vector2 = Vector2(160 if tight else 180, 48 if tight else 54)
+	var action_button_size: Vector2 = Vector2(120 if very_tight else (160 if tight else 180), 40 if very_tight else (48 if tight else 54))
 	for action_button in [resolution_prev_button, resolution_next_button, fullscreen_toggle_button, apply_button, reset_button, back_button]:
 		if action_button != null:
 			action_button.custom_minimum_size = action_button_size
+	if action_row != null:
+		action_row.add_theme_constant_override("separation", 8 if very_tight else 12)
