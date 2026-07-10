@@ -81,11 +81,14 @@ var selected_character_id := ""
 var character_entries: Array[Dictionary] = []
 var selected_weapon_id := ""
 var weapon_entries: Array[Dictionary] = []
+var selected_item_id := ""
+var item_entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	_load_character_codex_entries()
 	_load_weapon_codex_entries()
+	_load_item_codex_entries()
 	_apply_responsive_layout()
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
@@ -143,6 +146,10 @@ func _rebuild_collection_cards() -> void:
 	if selected_section_id == "weapons":
 		for entry in weapon_entries:
 			collection_grid.add_child(_build_weapon_card(entry))
+		return
+	if selected_section_id == "items":
+		for entry in item_entries:
+			collection_grid.add_child(_build_item_card(entry))
 		return
 	for section_id in SECTION_ORDER:
 		collection_grid.add_child(_build_collection_card(section_id))
@@ -292,6 +299,76 @@ func _build_weapon_card(entry: Dictionary) -> PanelContainer:
 
 	return card
 
+func _build_item_card(entry: Dictionary) -> PanelContainer:
+	var item_id := str(entry.get("id", ""))
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 190)
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	var selected := item_id == selected_item_id
+	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	style.border_color = Color(0.97, 0.83, 0.65, 0.72) if selected else Color(0.97, 0.83, 0.65, 0.18)
+	card.add_theme_stylebox_override("panel", style)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_PASS
+	button.anchors_preset = Control.PRESET_FULL_RECT
+	button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	button.grow_vertical = Control.GROW_DIRECTION_BOTH
+	button.pressed.connect(_on_item_card_pressed.bind(item_id))
+	card.add_child(button)
+
+	var margin := MarginContainer.new()
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	card.add_child(margin)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 8)
+	margin.add_child(column)
+
+	var title := Label.new()
+	title.text = str(entry.get("name", item_id))
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "%s / %s" % [
+		str(entry.get("category_label", "Utility")),
+		str(entry.get("rarity", "common")).capitalize()
+	]
+	subtitle.modulate = Color(0.972549, 0.831373, 0.654902, 0.92)
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(subtitle)
+
+	var summary := Label.new()
+	summary.text = str(entry.get("description", ""))
+	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(summary)
+
+	var footer := Label.new()
+	footer.text = "Item tags: %s" % ", ".join(_string_array_from_variant(entry.get("tags", [])))
+	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(footer)
+
+	return card
+
 func _build_collection_card(section_id: String) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 190)
@@ -365,6 +442,9 @@ func _refresh_detail() -> void:
 		return
 	if selected_section_id == "weapons":
 		_refresh_weapon_detail()
+		return
+	if selected_section_id == "items":
+		_refresh_item_detail()
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Collection Overview"
@@ -471,6 +551,40 @@ func _refresh_weapon_detail() -> void:
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
 
+func _refresh_item_detail() -> void:
+	var entry := _find_item_entry(selected_item_id)
+	if entry.is_empty():
+		detail_title.text = "Item Codex"
+		detail_subtitle.text = "No item entry selected."
+		detail_summary.text = "Item tags, stat hooks, and build-bridging notes will appear here once an item entry is selected."
+		detail_bullets.text = ""
+		detail_status.text = "Status: waiting for valid item data."
+		return
+	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
+	collection_title.text = "Item Codex"
+	collection_body.text = "Browse support items, stat hooks, and cross-build nudges without needing a live shop roll."
+	detail_title.text = str(entry.get("name", selected_item_id))
+	detail_subtitle.text = "%s / %s" % [
+		str(entry.get("category_label", "Utility")),
+		str(entry.get("rarity", "common")).capitalize()
+	]
+	detail_summary.text = str(entry.get("description", ""))
+	var bullet_lines: Array[String] = []
+	var item_tags := _string_array_from_variant(entry.get("tags", []))
+	if not item_tags.is_empty():
+		bullet_lines.append("Item Tags - %s" % ", ".join(item_tags))
+	for line in _string_array_from_variant(entry.get("stat_lines", [])):
+		bullet_lines.append("Stat - %s" % line)
+	for line in _string_array_from_variant(entry.get("tag_bonus_lines", [])):
+		bullet_lines.append("Tag Bonus - %s" % line)
+	detail_bullets.text = "\n".join(bullet_lines)
+	var status_lines: Array[String] = []
+	status_lines.append("Price - %dG" % int(entry.get("price", 0)))
+	status_lines.append("Stack Limit - %d" % int(entry.get("stack_limit", 1)))
+	detail_status.text = "\n".join(status_lines)
+	_rebuild_nav_buttons()
+	_rebuild_collection_cards()
+
 func _select_section(section_id: String) -> void:
 	if not SECTION_DATA.has(section_id):
 		return
@@ -479,6 +593,8 @@ func _select_section(section_id: String) -> void:
 		selected_character_id = str(character_entries[0].get("id", ""))
 	if selected_section_id == "weapons" and selected_weapon_id == "" and not weapon_entries.is_empty():
 		selected_weapon_id = str(weapon_entries[0].get("id", ""))
+	if selected_section_id == "items" and selected_item_id == "" and not item_entries.is_empty():
+		selected_item_id = str(item_entries[0].get("id", ""))
 	_refresh_detail()
 
 func _on_character_card_pressed(character_id: String) -> void:
@@ -491,6 +607,12 @@ func _on_weapon_card_pressed(weapon_id: String) -> void:
 	if weapon_id == "":
 		return
 	selected_weapon_id = weapon_id
+	_refresh_detail()
+
+func _on_item_card_pressed(item_id: String) -> void:
+	if item_id == "":
+		return
+	selected_item_id = item_id
 	_refresh_detail()
 
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
@@ -626,6 +748,73 @@ func _find_weapon_entry(weapon_id: String) -> Dictionary:
 			return entry
 	return {}
 
+func _load_item_codex_entries() -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		item_entries = []
+		selected_item_id = ""
+		return
+	var entries: Array[Dictionary] = []
+	if "items" in data_registry:
+		var items_variant: Variant = data_registry.get("items")
+		if items_variant is Dictionary:
+			var items_dict: Dictionary = items_variant
+			for item_id_variant in items_dict.keys():
+				var item_id := str(item_id_variant)
+				var item_variant: Variant = items_dict[item_id_variant]
+				var entry := _build_item_entry(item_id, item_variant)
+				if not entry.is_empty():
+					entries.append(entry)
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var rarity_a := str(a.get("rarity", "common"))
+		var rarity_b := str(b.get("rarity", "common"))
+		if rarity_a == rarity_b:
+			return str(a.get("name", "")) < str(b.get("name", ""))
+		return rarity_a < rarity_b
+	)
+	item_entries = entries
+	if selected_item_id == "" and not item_entries.is_empty():
+		selected_item_id = str(item_entries[0].get("id", ""))
+
+func _build_item_entry(item_id: String, item_variant: Variant) -> Dictionary:
+	if item_variant is ItemData:
+		var item: ItemData = item_variant
+		return {
+			"id": item_id,
+			"name": item.name if item.name != "" else item_id,
+			"description": item.description,
+			"category_label": _humanize_family_id(item.category),
+			"category": item.category,
+			"rarity": item.rarity,
+			"tags": item.tags,
+			"price": item.price,
+			"stack_limit": item.stack_limit,
+			"stat_lines": _build_item_stat_lines(item.stat_modifiers),
+			"tag_bonus_lines": _build_item_tag_bonus_lines(item.weapon_tag_stat_bonuses)
+		}
+	if item_variant is Dictionary:
+		var item_data: Dictionary = item_variant
+		return {
+			"id": item_id,
+			"name": str(item_data.get("name", item_id)),
+			"description": str(item_data.get("description", "")),
+			"category_label": _humanize_family_id(str(item_data.get("category", ""))),
+			"category": str(item_data.get("category", "")),
+			"rarity": str(item_data.get("rarity", "common")),
+			"tags": item_data.get("tags", []),
+			"price": int(item_data.get("price", 0)),
+			"stack_limit": int(item_data.get("stack_limit", 1)),
+			"stat_lines": _build_item_stat_lines(item_data.get("stat_modifiers", {})),
+			"tag_bonus_lines": _build_item_tag_bonus_lines(item_data.get("weapon_tag_stat_bonuses", []))
+		}
+	return {}
+
+func _find_item_entry(item_id: String) -> Dictionary:
+	for entry in item_entries:
+		if str(entry.get("id", "")) == item_id:
+			return entry
+	return {}
+
 func _string_array_from_variant(values_variant: Variant) -> Array[String]:
 	var values: Array[String] = []
 	if not (values_variant is Array):
@@ -655,6 +844,8 @@ func _apply_responsive_layout() -> void:
 			collection_grid.columns = 1
 		elif selected_section_id == "weapons":
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+		elif selected_section_id == "items":
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
 		else:
 			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
 
@@ -668,3 +859,33 @@ func _humanize_family_id(family_id: String) -> String:
 		if word != "":
 			words[index] = word.capitalize()
 	return " ".join(words)
+
+func _build_item_stat_lines(stat_modifiers_variant: Variant) -> Array[String]:
+	var lines: Array[String] = []
+	if not (stat_modifiers_variant is Dictionary):
+		return lines
+	var stat_modifiers: Dictionary = stat_modifiers_variant
+	for stat_id_variant in stat_modifiers.keys():
+		var stat_id := str(stat_id_variant)
+		var amount := float(stat_modifiers[stat_id_variant])
+		lines.append("%s %+0.2f" % [_humanize_family_id(stat_id), amount])
+	lines.sort()
+	return lines
+
+func _build_item_tag_bonus_lines(bonus_rules_variant: Variant) -> Array[String]:
+	var lines: Array[String] = []
+	if not (bonus_rules_variant is Array):
+		return lines
+	var bonus_rules: Array = bonus_rules_variant
+	for rule_variant in bonus_rules:
+		if not (rule_variant is Dictionary):
+			continue
+		var rule: Dictionary = rule_variant
+		var tag := str(rule.get("tag", ""))
+		var stat_id := str(rule.get("stat_id", ""))
+		var amount := float(rule.get("amount", 0.0))
+		if tag == "" or stat_id == "":
+			continue
+		lines.append("%s weapons: %s %+0.2f" % [_humanize_family_id(tag), _humanize_family_id(stat_id), amount])
+	lines.sort()
+	return lines
