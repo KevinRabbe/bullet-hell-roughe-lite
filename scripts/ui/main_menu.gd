@@ -3,11 +3,18 @@ extends Control
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
+const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
+const MAIN_MENU_LOGO_ART_PATH := "res://assets/sprites/ui/menu/logos/main_menu_logo.png"
+const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_hero_art.png"
 
 const ARMORY_COPY := "The Armory will become the long-term home for character, weapon, item, and set-bonus discovery. For now, Start Run remains the primary route into the arena."
 const OPTIONS_COPY := "Tune the display settings here so the front-door menu stays readable while we finish the final art pass."
 const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six active characters, weapon identity passes, portal hooks, and a growing tag-driven build layer."
 
+@onready var arena_texture: TextureRect = $ArenaTexture
+@onready var logo_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/LogoArtSlot
+@onready var hero_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder/HeroArtSlot
+@onready var hero_placeholder_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder/HeroFramePlaceholderLabel
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
 @onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
 @onready var root_margin: MarginContainer = $RootMargin
@@ -31,6 +38,7 @@ var dialog_mode: String = ""
 func _ready() -> void:
 	current_display_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
 	_hide_dialog()
+	_apply_menu_art_slots()
 	_apply_responsive_layout()
 	_rebuild_featured_roster()
 	resized.connect(_apply_responsive_layout)
@@ -112,6 +120,30 @@ func _rebuild_featured_roster() -> void:
 		shown += 1
 		if shown >= 4:
 			break
+
+func _apply_menu_art_slots() -> void:
+	_apply_optional_texture(arena_texture, MAIN_MENU_BACKGROUND_ART_PATH)
+	var logo_loaded := _apply_optional_texture(logo_art_slot, MAIN_MENU_LOGO_ART_PATH)
+	if logo_art_slot != null:
+		logo_art_slot.visible = logo_loaded
+	var hero_loaded := _apply_optional_texture(hero_art_slot, MAIN_MENU_HERO_ART_PATH)
+	if hero_art_slot != null:
+		hero_art_slot.visible = hero_loaded
+	if hero_placeholder_label != null:
+		hero_placeholder_label.visible = not hero_loaded
+
+func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
+	if target == null:
+		return false
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		target.texture = null
+		return false
+	var texture_variant: Variant = load(texture_path)
+	if texture_variant is Texture2D:
+		target.texture = texture_variant
+		return true
+	target.texture = null
+	return false
 
 func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	var card := PanelContainer.new()
