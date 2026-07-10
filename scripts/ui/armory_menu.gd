@@ -1,5 +1,6 @@
 extends Control
 
+const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
@@ -64,6 +65,8 @@ const SECTION_DATA := {
 @onready var nav_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/NavPanel
 @onready var nav_buttons: VBoxContainer = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavButtons
 @onready var collection_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CollectionPanel
+@onready var collection_title: Label = $RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox/CollectionTitle
+@onready var collection_body: Label = $RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox/CollectionBody
 @onready var collection_grid: GridContainer = $RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox/CollectionGrid
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
 @onready var detail_title: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/DetailTitle
@@ -74,9 +77,12 @@ const SECTION_DATA := {
 @onready var back_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow/BackButton
 
 var selected_section_id := "characters"
+var selected_character_id := ""
+var character_entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	_load_character_codex_entries()
 	_apply_responsive_layout()
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
@@ -127,8 +133,87 @@ func _rebuild_collection_cards() -> void:
 		return
 	for child in collection_grid.get_children():
 		child.queue_free()
+	if selected_section_id == "characters":
+		for entry in character_entries:
+			collection_grid.add_child(_build_character_card(entry))
+		return
 	for section_id in SECTION_ORDER:
 		collection_grid.add_child(_build_collection_card(section_id))
+
+func _build_character_card(entry: Dictionary) -> PanelContainer:
+	var character_id := str(entry.get("id", ""))
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(0, 220)
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	var selected := character_id == selected_character_id
+	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	style.border_color = Color(0.72, 0.47, 0.92, 0.72) if selected else Color(0.72, 0.47, 0.92, 0.18)
+	card.add_theme_stylebox_override("panel", style)
+
+	var button := Button.new()
+	button.flat = true
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_PASS
+	button.anchors_preset = Control.PRESET_FULL_RECT
+	button.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	button.grow_vertical = Control.GROW_DIRECTION_BOTH
+	button.pressed.connect(_on_character_card_pressed.bind(character_id))
+	card.add_child(button)
+
+	var margin := MarginContainer.new()
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	margin.grow_vertical = Control.GROW_DIRECTION_BOTH
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	card.add_child(margin)
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 10)
+	margin.add_child(column)
+
+	var presentation_variant: Variant = entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+
+	var title := Label.new()
+	title.text = str(entry.get("display_name", character_id))
+	title.add_theme_font_size_override("font_size", 26)
+	column.add_child(title)
+
+	var subtitle := Label.new()
+	subtitle.text = "%s / %s" % [
+		str(presentation.get("passive_name", "Passive")),
+		str(presentation.get("difficulty", "medium")).capitalize()
+	]
+	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(subtitle)
+
+	var summary := Label.new()
+	summary.text = str(presentation.get("fantasy_hook", ""))
+	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(summary)
+
+	var footer := Label.new()
+	footer.text = str(detail.get("starter_weapon_summary", ""))
+	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(footer)
+
+	return card
 
 func _build_collection_card(section_id: String) -> PanelContainer:
 	var card := PanelContainer.new()
@@ -198,6 +283,12 @@ func _build_collection_card(section_id: String) -> PanelContainer:
 	return card
 
 func _refresh_detail() -> void:
+	if selected_section_id == "characters":
+		_refresh_character_detail()
+		return
+	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
+	collection_title.text = "Collection Overview"
+	collection_body.text = "The Armory home should make future discovery routes feel deliberate even before the codex data is fully populated."
 	var data: Dictionary = SECTION_DATA.get(selected_section_id, {})
 	detail_title.text = str(data.get("title", "Armory"))
 	detail_subtitle.text = str(data.get("subtitle", ""))
@@ -214,10 +305,66 @@ func _refresh_detail() -> void:
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
 
+func _refresh_character_detail() -> void:
+	var entry := _find_character_entry(selected_character_id)
+	if entry.is_empty():
+		detail_title.text = "Character Codex"
+		detail_subtitle.text = "No roster entry selected."
+		detail_summary.text = "Character presentation data will appear here once a roster entry is selected."
+		detail_bullets.text = ""
+		detail_status.text = "Status: waiting for valid character data."
+		return
+	collection_grid.columns = 1
+	collection_title.text = "Character Codex"
+	collection_body.text = "Review the active roster, passive baseline, opening weapon, and strengths/tradeoffs before entering a run."
+	var presentation_variant: Variant = entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	detail_title.text = str(entry.get("display_name", selected_character_id))
+	detail_subtitle.text = str(presentation.get("fantasy_hook", ""))
+	detail_summary.text = str(presentation.get("identity_summary", ""))
+	var bullet_lines: Array[String] = []
+	var passive_name := str(presentation.get("passive_name", "Passive"))
+	var passive_summary := str(presentation.get("passive_summary", ""))
+	if passive_summary != "":
+		bullet_lines.append("Passive - %s: %s" % [passive_name, passive_summary])
+	var playstyle_tags := _string_array_from_variant(presentation.get("playstyle_tags", []))
+	if not playstyle_tags.is_empty():
+		bullet_lines.append("Tags - %s" % ", ".join(playstyle_tags))
+	var strengths := _string_array_from_variant(detail.get("strengths", []))
+	for strength in strengths:
+		bullet_lines.append("Strength - %s" % strength)
+	var tradeoffs := _string_array_from_variant(detail.get("tradeoffs", []))
+	for tradeoff in tradeoffs:
+		bullet_lines.append("Tradeoff - %s" % tradeoff)
+	detail_bullets.text = "\n".join(bullet_lines)
+	var arsenal_names := _string_array_from_variant(detail.get("arsenal_names", []))
+	var starter_summary := str(detail.get("starter_weapon_summary", ""))
+	var status_lines: Array[String] = []
+	if starter_summary != "":
+		status_lines.append("Opening Weapon - %s" % starter_summary)
+	if not arsenal_names.is_empty():
+		status_lines.append("%s - %s" % [str(detail.get("arsenal_label", "Arsenal")), ", ".join(arsenal_names)])
+	var family_label := str(detail.get("family_label", ""))
+	if family_label != "":
+		status_lines.append("Family - %s" % family_label)
+	detail_status.text = "\n".join(status_lines)
+	_rebuild_nav_buttons()
+	_rebuild_collection_cards()
+
 func _select_section(section_id: String) -> void:
 	if not SECTION_DATA.has(section_id):
 		return
 	selected_section_id = section_id
+	if selected_section_id == "characters" and selected_character_id == "" and not character_entries.is_empty():
+		selected_character_id = str(character_entries[0].get("id", ""))
+	_refresh_detail()
+
+func _on_character_card_pressed(character_id: String) -> void:
+	if character_id == "":
+		return
+	selected_character_id = character_id
 	_refresh_detail()
 
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
@@ -255,6 +402,39 @@ func _on_section_button_pressed(section_id: String) -> void:
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
+func _load_character_codex_entries() -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry == null:
+		character_entries = []
+		selected_character_id = ""
+		return
+	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
+	var entries_variant: Variant = selection_state.get("entries", [])
+	var loaded_entries: Array[Dictionary] = []
+	if entries_variant is Array:
+		for entry_variant in entries_variant:
+			if entry_variant is Dictionary:
+				loaded_entries.append(entry_variant)
+	character_entries = loaded_entries
+	if selected_character_id == "" and not character_entries.is_empty():
+		selected_character_id = str(character_entries[0].get("id", ""))
+
+func _find_character_entry(character_id: String) -> Dictionary:
+	for entry in character_entries:
+		if str(entry.get("id", "")) == character_id:
+			return entry
+	return {}
+
+func _string_array_from_variant(values_variant: Variant) -> Array[String]:
+	var values: Array[String] = []
+	if not (values_variant is Array):
+		return values
+	for value_variant in values_variant:
+		var value := str(value_variant)
+		if value != "":
+			values.append(value)
+	return values
+
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1440.0
@@ -270,4 +450,7 @@ func _apply_responsive_layout() -> void:
 	if collection_panel != null:
 		collection_panel.custom_minimum_size = Vector2(360 if compact else 420, 0)
 	if collection_grid != null:
-		collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+		if selected_section_id == "characters":
+			collection_grid.columns = 1
+		else:
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
