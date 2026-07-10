@@ -19,8 +19,22 @@ const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six a
 @onready var logo_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/LogoArtSlot
 @onready var hero_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder/HeroArtSlot
 @onready var hero_placeholder_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder/HeroFramePlaceholderLabel
+@onready var eyebrow_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/Eyebrow
+@onready var title_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/Title
+@onready var subtitle_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/Subtitle
+@onready var hero_frame_title: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFrameTitle
+@onready var hero_frame_body: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFrameBody
 @onready var start_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton
+@onready var armory_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/ArmoryButton
+@onready var options_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/OptionsButton
+@onready var credits_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/CreditsButton
+@onready var quit_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/QuitButton
+@onready var action_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/ActionHint
 @onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
+@onready var featured_roster_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterTitle
+@onready var status_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox/StatusTitle
+@onready var flow_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox/FlowTitle
+@onready var notes_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox/NotesTitle
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var hero_column: VBoxContainer = $RootMargin/RootVBox/MainHBox/HeroColumn
@@ -246,14 +260,43 @@ func _on_fullscreen_toggled() -> void:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
+	var tight := _is_tight_viewport()
 	if root_margin != null:
-		root_margin.offset_left = 24.0 if compact else 52.0
-		root_margin.offset_top = 20.0 if compact else 40.0
-		root_margin.offset_right = -24.0 if compact else -52.0
-		root_margin.offset_bottom = -20.0 if compact else -40.0
+		root_margin.offset_left = 10.0 if tight else (24.0 if compact else 52.0)
+		root_margin.offset_top = 10.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_right = -10.0 if tight else (-24.0 if compact else -52.0)
+		root_margin.offset_bottom = -10.0 if tight else (-20.0 if compact else -40.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 22 if compact else 34)
+		main_hbox.add_theme_constant_override("separation", 10 if tight else (22 if compact else 34))
 	if hero_column != null:
-		hero_column.custom_minimum_size = Vector2(420 if compact else 580, 0)
+		hero_column.custom_minimum_size = Vector2(320 if tight else (420 if compact else 580), 0)
 	if info_column != null:
-		info_column.custom_minimum_size = Vector2(300 if compact else 400, 0)
+		info_column.custom_minimum_size = Vector2(240 if tight else (300 if compact else 400), 0)
+	if title_label != null:
+		title_label.add_theme_font_size_override("font_size", 34 if tight else (42 if compact else 54))
+	if subtitle_label != null:
+		subtitle_label.add_theme_font_size_override("font_size", 16 if tight else (18 if compact else 20))
+		subtitle_label.custom_minimum_size = Vector2(0, 64 if tight else (78 if compact else 94))
+	if eyebrow_label != null:
+		eyebrow_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+	if hero_frame_title != null:
+		hero_frame_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+	if hero_frame_body != null:
+		hero_frame_body.add_theme_font_size_override("font_size", 14 if tight else 16)
+	if featured_roster_title != null:
+		featured_roster_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+	if status_title != null:
+		status_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+	if flow_title != null:
+		flow_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+	if notes_title != null:
+		notes_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+	if action_hint_label != null:
+		action_hint_label.add_theme_font_size_override("font_size", 13 if tight else 15)
+	for button in [start_button, armory_button, options_button, credits_button, quit_button]:
+		if button != null:
+			button.custom_minimum_size = Vector2(0, 42 if tight else (48 if compact else 54))
+
+func _is_tight_viewport() -> bool:
+	var viewport_size := get_viewport_rect().size
+	return viewport_size.x < 1280.0 or viewport_size.y < 720.0
