@@ -1,6 +1,7 @@
 extends Control
 
 const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
@@ -61,6 +62,8 @@ var saved_settings: Dictionary = {}
 var staged_settings: Dictionary = {}
 var saved_audio_settings: Dictionary = {}
 var staged_audio_settings: Dictionary = {}
+var saved_accessibility_settings: Dictionary = {}
+var staged_accessibility_settings: Dictionary = {}
 var current_tab: String = TAB_VIDEO
 var audio_runtime_box: VBoxContainer = null
 var audio_value_labels: Dictionary = {}
@@ -68,15 +71,22 @@ var audio_mute_value_label: Label = null
 var audio_status_label: Label = null
 var audio_preview_label: Label = null
 var controls_runtime_box: VBoxContainer = null
+var accessibility_runtime_box: VBoxContainer = null
+var accessibility_value_labels: Dictionary = {}
+var accessibility_status_label: Label = null
+var accessibility_preview_label: Label = null
 
 func _ready() -> void:
 	saved_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
 	staged_settings = DisplaySettingsRuntimeRef.clone_settings(saved_settings)
 	saved_audio_settings = AudioSettingsRuntimeRef.apply_saved_settings()
 	staged_audio_settings = AudioSettingsRuntimeRef.clone_settings(saved_audio_settings)
+	saved_accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
+	staged_accessibility_settings = AccessibilitySettingsRuntimeRef.clone_settings(saved_accessibility_settings)
 	_apply_optional_texture(arena_texture, OPTIONS_BACKGROUND_ART_PATH)
 	_ensure_audio_runtime_content()
 	_ensure_controls_runtime_content()
+	_ensure_accessibility_runtime_content()
 	_apply_responsive_layout()
 	_connect_buttons()
 	_refresh_tab_styles()
@@ -157,6 +167,7 @@ func _refresh_tab_styles() -> void:
 func _apply_tab_button_style(button: Button, is_selected: bool) -> void:
 	if button == null:
 		return
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(staged_accessibility_settings)
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
@@ -171,11 +182,11 @@ func _apply_tab_button_style(button: Button, is_selected: bool) -> void:
 	style.content_margin_right = 14
 	style.content_margin_bottom = 14
 	if is_selected:
-		style.bg_color = Color(0.33, 0.11, 0.18, 0.92)
-		style.border_color = Color(0.99, 0.56, 0.56, 0.85)
+		style.bg_color = Color(0.40, 0.13, 0.20, 0.96) if high_contrast else Color(0.33, 0.11, 0.18, 0.92)
+		style.border_color = Color(1.0, 0.76, 0.76, 0.95) if high_contrast else Color(0.99, 0.56, 0.56, 0.85)
 	else:
-		style.bg_color = Color(0.05, 0.055, 0.086, 0.92)
-		style.border_color = Color(0.99, 0.56, 0.56, 0.18)
+		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.05, 0.055, 0.086, 0.92)
+		style.border_color = Color(1.0, 0.76, 0.76, 0.40) if high_contrast else Color(0.99, 0.56, 0.56, 0.18)
 	button.add_theme_stylebox_override("normal", style)
 	button.add_theme_stylebox_override("hover", style)
 	button.add_theme_stylebox_override("pressed", style)
@@ -187,7 +198,11 @@ func _refresh_content() -> void:
 		video_content.visible = showing_video
 	if placeholder_content != null:
 		placeholder_content.visible = not showing_video
-	_set_placeholder_shell_mode("audio" if current_tab == TAB_AUDIO else ("controls" if current_tab == TAB_CONTROLS else "placeholder"))
+	_set_placeholder_shell_mode(
+		"audio" if current_tab == TAB_AUDIO \
+		else ("controls" if current_tab == TAB_CONTROLS \
+		else ("accessibility" if current_tab == TAB_ACCESSIBILITY else "placeholder"))
+	)
 	match current_tab:
 		TAB_AUDIO:
 			tab_title_label.text = "Audio"
@@ -203,15 +218,8 @@ func _refresh_content() -> void:
 			_refresh_controls_content()
 		TAB_ACCESSIBILITY:
 			tab_title_label.text = "Accessibility"
-			tab_summary_label.text = "Accessibility deserves a first-class route. This shell now frames the practical groups we should support once readability and motion tuning begins."
-			_apply_placeholder_content(
-				"Accessibility Foundation Pending",
-				"Future contrast, text size, motion, and readability options will live here so players can shape the front door before they enter a run.",
-				"Planned first pass",
-				"Text readability, reduced motion, contrast support, and calmer feedback modes should be the first accessibility wins.",
-				"- Larger menu text mode\n- Reduced menu motion / softer animation pass\n- Stronger contrast and highlight states\n- Cleaner combat readability options later",
-				"Status: category shell ready, settings follow after menu readability review."
-			)
+			tab_summary_label.text = "Stage the menu readability pass here: preview bigger text, calmer motion, and stronger contrast before you head into a run."
+			_refresh_accessibility_content()
 	_refresh_action_row_state()
 
 func _apply_placeholder_content(title: String, body: String, focus_title: String, focus_body: String, checklist: String, status: String) -> void:
@@ -317,6 +325,27 @@ func _refresh_controls_content() -> void:
 	controls_runtime_box.add_child(status_label)
 	_refresh_action_row_state()
 
+func _refresh_accessibility_content() -> void:
+	if accessibility_runtime_box == null:
+		return
+	var label_map := {
+		"large_text": "Large Menu Text",
+		"reduced_motion": "Reduced Motion",
+		"high_contrast": "High Contrast"
+	}
+	for setting_id in label_map.keys():
+		var label_variant: Variant = accessibility_value_labels.get(setting_id, null)
+		if label_variant is Label:
+			var value_label: Label = label_variant
+			value_label.text = "%s: %s" % [label_map[setting_id], "On" if staged_accessibility_settings.get(setting_id, false) == true else "Off"]
+	if accessibility_status_label != null:
+		var is_dirty: bool = not AccessibilitySettingsRuntimeRef.settings_match(saved_accessibility_settings, staged_accessibility_settings)
+		accessibility_status_label.text = "Preview differs from saved profile. Apply to keep it or Back to revert." if is_dirty else "Accessibility settings match the saved profile."
+		accessibility_status_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
+	if accessibility_preview_label != null:
+		accessibility_preview_label.text = "Current preview: %s" % AccessibilitySettingsRuntimeRef.build_summary(staged_accessibility_settings)
+	_refresh_action_row_state()
+
 func _cycle_resolution(direction: int) -> void:
 	staged_settings = DisplaySettingsRuntimeRef.cycle_resolution(staged_settings, direction)
 	_apply_staged_preview()
@@ -337,6 +366,10 @@ func _on_reset_pressed() -> void:
 			staged_audio_settings = AudioSettingsRuntimeRef.default_settings()
 			_apply_staged_audio_preview()
 			_refresh_audio_content()
+		TAB_ACCESSIBILITY:
+			staged_accessibility_settings = AccessibilitySettingsRuntimeRef.default_settings()
+			_apply_staged_accessibility_preview()
+			_refresh_accessibility_content()
 
 func _on_back_pressed() -> void:
 	if not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings):
@@ -345,6 +378,9 @@ func _on_back_pressed() -> void:
 	if not AudioSettingsRuntimeRef.settings_match(saved_audio_settings, staged_audio_settings):
 		staged_audio_settings = AudioSettingsRuntimeRef.clone_settings(saved_audio_settings)
 		AudioSettingsRuntimeRef.apply_settings(saved_audio_settings)
+	if not AccessibilitySettingsRuntimeRef.settings_match(saved_accessibility_settings, staged_accessibility_settings):
+		staged_accessibility_settings = AccessibilitySettingsRuntimeRef.clone_settings(saved_accessibility_settings)
+		AccessibilitySettingsRuntimeRef.apply_settings(saved_accessibility_settings)
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_staged_preview() -> void:
@@ -354,15 +390,24 @@ func _apply_staged_preview() -> void:
 func _apply_staged_audio_preview() -> void:
 	AudioSettingsRuntimeRef.apply_settings(staged_audio_settings)
 
+func _apply_staged_accessibility_preview() -> void:
+	AccessibilitySettingsRuntimeRef.apply_settings(staged_accessibility_settings)
+	_apply_responsive_layout()
+	_refresh_tab_styles()
+
 func _on_apply_pressed() -> void:
 	DisplaySettingsRuntimeRef.save_settings(staged_settings)
 	AudioSettingsRuntimeRef.save_settings(staged_audio_settings)
+	AccessibilitySettingsRuntimeRef.save_settings(staged_accessibility_settings)
 	saved_settings = DisplaySettingsRuntimeRef.clone_settings(staged_settings)
 	saved_audio_settings = AudioSettingsRuntimeRef.clone_settings(staged_audio_settings)
+	saved_accessibility_settings = AccessibilitySettingsRuntimeRef.clone_settings(staged_accessibility_settings)
 	DisplaySettingsRuntimeRef.apply_settings(saved_settings)
 	AudioSettingsRuntimeRef.apply_settings(saved_audio_settings)
+	AccessibilitySettingsRuntimeRef.apply_settings(saved_accessibility_settings)
 	_refresh_video_content()
 	_refresh_audio_content()
+	_refresh_accessibility_content()
 	_apply_responsive_layout()
 
 func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
@@ -379,6 +424,8 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	return false
 
 func _apply_responsive_layout() -> void:
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(staged_accessibility_settings)
+	var large_text: bool = AccessibilitySettingsRuntimeRef.is_large_text_enabled(staged_accessibility_settings)
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
 	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
@@ -421,41 +468,44 @@ func _apply_responsive_layout() -> void:
 	if content_scroll != null:
 		content_scroll.custom_minimum_size = Vector2(0, 0)
 	if nav_title_label != null:
-		nav_title_label.add_theme_font_size_override("font_size", 20 if very_tight else (24 if tight else (26 if compact else 30)))
+		nav_title_label.add_theme_font_size_override("font_size", int(round((20 if very_tight else (24 if tight else (26 if compact else 30))) * font_scale)))
 	if nav_body_label != null:
 		nav_body_label.visible = not very_tight
-		nav_body_label.add_theme_font_size_override("font_size", 15 if tight else 17)
+		nav_body_label.add_theme_font_size_override("font_size", int(round((15 if tight else 17) * font_scale)))
 	if hint_label != null:
 		hint_label.visible = not very_tight
-		hint_label.add_theme_font_size_override("font_size", 13 if tight else 15)
+		hint_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
 	if tab_title_label != null:
-		tab_title_label.add_theme_font_size_override("font_size", 24 if very_tight else (28 if tight else (30 if compact else 34)))
+		tab_title_label.add_theme_font_size_override("font_size", int(round((24 if very_tight else (28 if tight else (30 if compact else 34))) * font_scale)))
 	if tab_summary_label != null:
-		tab_summary_label.add_theme_font_size_override("font_size", 14 if very_tight else (15 if tight else 17))
+		tab_summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
 	if video_content != null:
 		video_content.add_theme_constant_override("separation", 12 if very_tight else 16)
 	if placeholder_content != null:
 		placeholder_content.add_theme_constant_override("separation", 10 if very_tight else 14)
 	if resolution_value_label != null:
-		resolution_value_label.add_theme_font_size_override("font_size", 16 if very_tight else (18 if tight else (20 if compact else 22)))
+		resolution_value_label.add_theme_font_size_override("font_size", int(round((16 if very_tight else (18 if tight else (20 if compact else 22))) * font_scale)))
 	if fullscreen_value_label != null:
-		fullscreen_value_label.add_theme_font_size_override("font_size", 16 if very_tight else (18 if tight else (20 if compact else 22)))
+		fullscreen_value_label.add_theme_font_size_override("font_size", int(round((16 if very_tight else (18 if tight else (20 if compact else 22))) * font_scale)))
 	var nav_button_size: Vector2 = Vector2(0, 44 if very_tight else (56 if tight else 64))
 	for tab_button in [tab_audio_button, tab_video_button, tab_controls_button, tab_accessibility_button]:
 		if tab_button != null:
 			tab_button.custom_minimum_size = nav_button_size
+			tab_button.add_theme_font_size_override("font_size", int(round((16 if large_text else 15) * font_scale)))
 	var action_button_size: Vector2 = Vector2(120 if very_tight else (160 if tight else 180), 40 if very_tight else (48 if tight else 54))
 	for action_button in [resolution_prev_button, resolution_next_button, fullscreen_toggle_button, apply_button, reset_button, back_button]:
 		if action_button != null:
 			action_button.custom_minimum_size = action_button_size
+			action_button.add_theme_font_size_override("font_size", int(round((15 if large_text else 14) * font_scale)))
 	if action_row != null:
 		action_row.add_theme_constant_override("separation", 8 if very_tight else 12)
 
 func _refresh_action_row_state() -> void:
 	var has_video_changes: bool = not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
 	var has_audio_changes: bool = not AudioSettingsRuntimeRef.settings_match(saved_audio_settings, staged_audio_settings)
+	var has_accessibility_changes: bool = not AccessibilitySettingsRuntimeRef.settings_match(saved_accessibility_settings, staged_accessibility_settings)
 	if apply_button != null:
-		apply_button.disabled = not (has_video_changes or has_audio_changes)
+		apply_button.disabled = not (has_video_changes or has_audio_changes or has_accessibility_changes)
 		apply_button.text = "Apply Changes" if not apply_button.disabled else "Applied"
 	if reset_button != null:
 		match current_tab:
@@ -463,6 +513,8 @@ func _refresh_action_row_state() -> void:
 				reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 			TAB_AUDIO:
 				reset_button.disabled = AudioSettingsRuntimeRef.settings_match(AudioSettingsRuntimeRef.default_settings(), staged_audio_settings)
+			TAB_ACCESSIBILITY:
+				reset_button.disabled = AccessibilitySettingsRuntimeRef.settings_match(AccessibilitySettingsRuntimeRef.default_settings(), staged_accessibility_settings)
 			_:
 				reset_button.disabled = true
 
@@ -592,12 +644,37 @@ func _ensure_controls_runtime_content() -> void:
 	placeholder_content.add_child(controls_runtime_box)
 	placeholder_content.move_child(controls_runtime_box, placeholder_content.get_child_count() - 1)
 
+func _ensure_accessibility_runtime_content() -> void:
+	if placeholder_content == null or accessibility_runtime_box != null:
+		return
+	accessibility_runtime_box = VBoxContainer.new()
+	accessibility_runtime_box.name = "AccessibilityRuntimeContent"
+	accessibility_runtime_box.theme_override_constants.separation = 14
+	accessibility_runtime_box.visible = false
+	placeholder_content.add_child(accessibility_runtime_box)
+	placeholder_content.move_child(accessibility_runtime_box, placeholder_content.get_child_count() - 1)
+	for setting_data in [
+		{"id": "large_text", "title": "Large Menu Text", "body": "Scale up menu typography for the front-door shell so the route stays readable at lower resolutions and from a distance.", "button": "Toggle Large Text"},
+		{"id": "reduced_motion", "title": "Reduced Motion", "body": "Calm menu intros, focus pulses, and texture fades so browsing the front door feels steadier.", "button": "Toggle Reduced Motion"},
+		{"id": "high_contrast", "title": "High Contrast", "body": "Strengthen menu borders, button contrast, and accent readability without changing gameplay visuals.", "button": "Toggle High Contrast"}
+	]:
+		_add_accessibility_toggle_block(setting_data)
+	accessibility_status_label = Label.new()
+	accessibility_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	accessibility_runtime_box.add_child(accessibility_status_label)
+	accessibility_preview_label = Label.new()
+	accessibility_preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	accessibility_preview_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+	accessibility_runtime_box.add_child(accessibility_preview_label)
+
 func _set_placeholder_shell_mode(mode: String) -> void:
 	var show_placeholder: bool = mode == "placeholder"
 	if audio_runtime_box != null:
 		audio_runtime_box.visible = mode == "audio"
 	if controls_runtime_box != null:
 		controls_runtime_box.visible = mode == "controls"
+	if accessibility_runtime_box != null:
+		accessibility_runtime_box.visible = mode == "accessibility"
 	if placeholder_title_label != null:
 		placeholder_title_label.visible = show_placeholder
 	if placeholder_body_label != null:
@@ -638,6 +715,44 @@ func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Ar
 func _clear_runtime_box(target_box: VBoxContainer) -> void:
 	for child in target_box.get_children():
 		child.queue_free()
+
+func _add_accessibility_toggle_block(setting_data: Dictionary) -> void:
+	if accessibility_runtime_box == null:
+		return
+	var block := PanelContainer.new()
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 18)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 18)
+	block.add_child(margin)
+	var column := VBoxContainer.new()
+	column.theme_override_constants.separation = 10
+	margin.add_child(column)
+	var title := Label.new()
+	title.text = str(setting_data.get("title", "Accessibility"))
+	title.add_theme_font_size_override("font_size", 24)
+	column.add_child(title)
+	var body := Label.new()
+	body.text = str(setting_data.get("body", ""))
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
+	column.add_child(body)
+	var value_label := Label.new()
+	value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	value_label.add_theme_font_size_override("font_size", 22)
+	column.add_child(value_label)
+	accessibility_value_labels[str(setting_data.get("id", ""))] = value_label
+	var toggle_button := Button.new()
+	toggle_button.custom_minimum_size = Vector2(240, 48)
+	toggle_button.text = str(setting_data.get("button", "Toggle"))
+	toggle_button.pressed.connect(func() -> void:
+		staged_accessibility_settings = AccessibilitySettingsRuntimeRef.toggle_flag(staged_accessibility_settings, str(setting_data.get("id", "")))
+		_apply_staged_accessibility_preview()
+		_refresh_accessibility_content()
+	)
+	column.add_child(toggle_button)
+	accessibility_runtime_box.add_child(block)
 
 func _format_action_bindings(action_name: String) -> String:
 	if not InputMap.has_action(action_name):

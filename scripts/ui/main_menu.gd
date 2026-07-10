@@ -1,6 +1,7 @@
 extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
@@ -51,10 +52,12 @@ const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six a
 @onready var dialog_close_button: Button = $DialogPanel/DialogMargin/DialogVBox/DialogCloseButton
 
 var current_display_settings: Dictionary = {}
+var accessibility_settings: Dictionary = {}
 var dialog_mode: String = ""
 
 func _ready() -> void:
 	current_display_settings = DisplaySettingsRuntimeRef.apply_saved_settings()
+	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_hide_dialog()
 	_apply_menu_art_slots()
 	_apply_responsive_layout()
@@ -170,14 +173,16 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	return false
 
 func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var card := PanelContainer.new()
 	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
+	card_style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
 	card_style.border_width_left = 1
 	card_style.border_width_top = 1
 	card_style.border_width_right = 1
 	card_style.border_width_bottom = 1
-	card_style.border_color = Color(0.992157, 0.560784, 0.560784, 0.22)
+	card_style.border_color = Color(1.0, 0.76, 0.76, 0.45) if high_contrast else Color(0.992157, 0.560784, 0.560784, 0.22)
 	card_style.corner_radius_top_left = 10
 	card_style.corner_radius_top_right = 10
 	card_style.corner_radius_bottom_right = 10
@@ -199,18 +204,20 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
 	var name_label := Label.new()
 	name_label.text = str(entry.get("display_name", entry.get("id", "Character")))
-	name_label.add_theme_font_size_override("font_size", 20)
+	name_label.add_theme_font_size_override("font_size", int(round(20.0 * font_scale)))
 	column.add_child(name_label)
 
 	var passive_label := Label.new()
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
-	passive_label.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	passive_label.modulate = Color(1.0, 0.76, 0.76, 0.98) if high_contrast else Color(0.992157, 0.560784, 0.560784, 0.92)
+	passive_label.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
 	column.add_child(passive_label)
 
 	var summary_label := Label.new()
 	summary_label.text = str(presentation.get("headline", ""))
 	summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	summary_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+	summary_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(0.84, 0.86, 0.91, 0.92)
+	summary_label.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
 	column.add_child(summary_label)
 
 	var tags_variant: Variant = presentation.get("playstyle_tags", [])
@@ -218,7 +225,8 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	if tags_text != "":
 		var tags_label := Label.new()
 		tags_label.text = tags_text
-		tags_label.modulate = Color(0.75, 0.79, 0.86, 0.92)
+		tags_label.modulate = Color(0.86, 0.90, 0.98, 0.98) if high_contrast else Color(0.75, 0.79, 0.86, 0.92)
+		tags_label.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
 		column.add_child(tags_label)
 
 	return card
@@ -258,6 +266,8 @@ func _on_fullscreen_toggled() -> void:
 	_apply_display_settings()
 
 func _apply_responsive_layout() -> void:
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1360.0
 	var tight := _is_tight_viewport()
@@ -273,29 +283,33 @@ func _apply_responsive_layout() -> void:
 	if info_column != null:
 		info_column.custom_minimum_size = Vector2(240 if tight else (300 if compact else 400), 0)
 	if title_label != null:
-		title_label.add_theme_font_size_override("font_size", 34 if tight else (42 if compact else 54))
+		title_label.add_theme_font_size_override("font_size", int(round((34 if tight else (42 if compact else 54)) * font_scale)))
 	if subtitle_label != null:
-		subtitle_label.add_theme_font_size_override("font_size", 16 if tight else (18 if compact else 20))
+		subtitle_label.add_theme_font_size_override("font_size", int(round((16 if tight else (18 if compact else 20)) * font_scale)))
 		subtitle_label.custom_minimum_size = Vector2(0, 64 if tight else (78 if compact else 94))
+		subtitle_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(1.0, 1.0, 1.0, 1.0)
 	if eyebrow_label != null:
-		eyebrow_label.add_theme_font_size_override("font_size", 15 if tight else 18)
+		eyebrow_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
 	if hero_frame_title != null:
-		hero_frame_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+		hero_frame_title.add_theme_font_size_override("font_size", int(round((18 if tight else 22) * font_scale)))
 	if hero_frame_body != null:
-		hero_frame_body.add_theme_font_size_override("font_size", 14 if tight else 16)
+		hero_frame_body.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
+		hero_frame_body.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(1.0, 1.0, 1.0, 1.0)
 	if featured_roster_title != null:
-		featured_roster_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+		featured_roster_title.add_theme_font_size_override("font_size", int(round((18 if tight else 22) * font_scale)))
 	if status_title != null:
-		status_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+		status_title.add_theme_font_size_override("font_size", int(round((18 if tight else 22) * font_scale)))
 	if flow_title != null:
-		flow_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+		flow_title.add_theme_font_size_override("font_size", int(round((18 if tight else 22) * font_scale)))
 	if notes_title != null:
-		notes_title.add_theme_font_size_override("font_size", 18 if tight else 22)
+		notes_title.add_theme_font_size_override("font_size", int(round((18 if tight else 22) * font_scale)))
 	if action_hint_label != null:
-		action_hint_label.add_theme_font_size_override("font_size", 13 if tight else 15)
+		action_hint_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
+		action_hint_label.modulate = Color(0.86, 0.90, 0.98, 0.98) if high_contrast else Color(1.0, 1.0, 1.0, 1.0)
 	for button in [start_button, armory_button, options_button, credits_button, quit_button]:
 		if button != null:
 			button.custom_minimum_size = Vector2(0, 42 if tight else (48 if compact else 54))
+			button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 
 func _is_tight_viewport() -> bool:
 	var viewport_size := get_viewport_rect().size
