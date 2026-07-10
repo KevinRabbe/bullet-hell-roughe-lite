@@ -99,7 +99,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	match key_event.keycode:
@@ -140,7 +140,7 @@ func _select_tab(tab_id: String) -> void:
 	current_tab = tab_id
 	_refresh_tab_styles()
 	_refresh_content()
-	var target_button := _button_for_tab(tab_id)
+	var target_button: Button = _button_for_tab(tab_id)
 	if target_button != null:
 		target_button.grab_focus()
 		MenuAnimationRuntimeRef.pulse_focus(target_button, 1.015)
@@ -246,7 +246,7 @@ func _refresh_video_content() -> void:
 		fullscreen_value_label.text = "Fullscreen" if staged_settings.get("fullscreen", false) == true else "Windowed"
 	if fullscreen_toggle_button != null:
 		fullscreen_toggle_button.text = "Switch to Windowed" if staged_settings.get("fullscreen", false) == true else "Switch to Fullscreen"
-	var is_dirty := not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
+	var is_dirty: bool = not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
 	if dirty_state_label != null:
 		dirty_state_label.text = "Preview differs from saved profile. Apply to keep it or Back to revert." if is_dirty else "Display settings match the saved profile."
 		dirty_state_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
@@ -426,10 +426,10 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(staged_accessibility_settings)
 	var large_text: bool = AccessibilitySettingsRuntimeRef.is_large_text_enabled(staged_accessibility_settings)
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1360.0
-	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
-	var very_tight := viewport_size.y < 700.0 or viewport_size.x < 1180.0
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1360.0
+	var tight: bool = viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var very_tight: bool = viewport_size.y < 700.0 or viewport_size.x < 1180.0
 	if root_margin != null:
 		root_margin.offset_left = 6.0 if very_tight else (10.0 if tight else (20.0 if compact else 40.0))
 		root_margin.offset_top = 6.0 if very_tight else (10.0 if tight else (18.0 if compact else 36.0))

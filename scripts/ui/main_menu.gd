@@ -76,7 +76,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	if key_event.keycode == KEY_ESCAPE and dialog_panel.visible:
@@ -131,12 +131,12 @@ func _rebuild_featured_roster() -> void:
 		return
 	for child in featured_roster_list.get_children():
 		child.queue_free()
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var selection_state: Dictionary = CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var entries_variant: Variant = selection_state.get("entries", [])
 	if not (entries_variant is Array):
 		return
-	var shown := 0
+	var shown: int = 0
 	for entry_variant in entries_variant:
 		if not (entry_variant is Dictionary):
 			continue
@@ -268,9 +268,9 @@ func _on_fullscreen_toggled() -> void:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1360.0
-	var tight := _is_tight_viewport()
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1360.0
+	var tight: bool = _is_tight_viewport()
 	if root_margin != null:
 		root_margin.offset_left = 10.0 if tight else (24.0 if compact else 52.0)
 		root_margin.offset_top = 10.0 if tight else (20.0 if compact else 40.0)
@@ -312,5 +312,5 @@ func _apply_responsive_layout() -> void:
 			button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 
 func _is_tight_viewport() -> bool:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x < 1280.0 or viewport_size.y < 720.0

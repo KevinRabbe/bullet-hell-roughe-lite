@@ -22,8 +22,8 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
 @onready var action_hint_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionHint
 
-var standalone_mode := true
-var result_state := {
+var standalone_mode: bool = true
+var result_state: Dictionary = {
 	"title": "Run Complete",
 	"summary": "Use this shell for victory and defeat handoff once the in-run results flow is wired.",
 	"stats": [
@@ -52,7 +52,7 @@ func set_standalone_mode(enabled: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	match key_event.keycode:
@@ -101,8 +101,8 @@ func _on_main_menu_pressed() -> void:
 		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_responsive_layout() -> void:
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1440.0
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1440.0
 	if root_margin != null:
 		root_margin.offset_left = 18.0 if compact else 36.0
 		root_margin.offset_top = 16.0 if compact else 34.0

@@ -22,7 +22,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var main_menu_button: Button = $RootMargin/Panel/PanelMargin/PanelVBox/ActionRow2/MainMenuButton
 @onready var hint_label: Label = $RootMargin/Panel/PanelMargin/PanelVBox/HintLabel
 
-var standalone_mode := true
+var standalone_mode: bool = true
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -52,7 +52,7 @@ func configure_copy(title: String, body: String) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	match key_event.keycode:
@@ -82,9 +82,9 @@ func _on_main_menu_pressed() -> void:
 		get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
 func _apply_responsive_layout() -> void:
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1440.0
-	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1440.0
+	var tight: bool = viewport_size.x < 1280.0 or viewport_size.y < 720.0
 	if root_margin != null:
 		root_margin.offset_left = 10.0 if tight else (18.0 if compact else 36.0)
 		root_margin.offset_top = 10.0 if tight else (16.0 if compact else 34.0)
