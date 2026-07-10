@@ -278,7 +278,7 @@ text = "Preview after apply: Windowed / 1280x720"
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 12
+theme_override_constants/separation = 14
 
 [node name="PlaceholderTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
 layout_mode = 2
@@ -290,6 +290,62 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
 text = "This category will be filled in once the shared front-door menu shell is fully stable."
+
+[node name="FocusBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+layout_mode = 2
+
+[node name="FocusMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="FocusVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FocusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Planned first pass"
+
+[node name="FocusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/FocusBlock/FocusMargin/FocusVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
+autowrap_mode = 3
+text = "This category will expose its first real settings in a later focused pass."
+
+[node name="ChecklistBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+layout_mode = 2
+
+[node name="ChecklistMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ChecklistVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ChecklistTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "What belongs here"
+
+[node name="ChecklistBody" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent/ChecklistBlock/ChecklistMargin/ChecklistVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "- Future settings are listed here so the route feels intentional now."
+
+[node name="StatusLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox/PlaceholderContent"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+autowrap_mode = 3
+text = "Status: shell ready, settings deferred."
 
 [node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ContentPanel/ContentMargin/ContentVBox"]
 layout_mode = 2
