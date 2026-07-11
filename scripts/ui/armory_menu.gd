@@ -583,9 +583,9 @@ func _refresh_character_detail() -> void:
 		status_lines.append("Opening Weapon - %s" % starter_summary)
 	if not arsenal_names.is_empty():
 		status_lines.append("%s - %s" % [str(detail.get("arsenal_label", "Arsenal")), ", ".join(arsenal_names)])
-	var family_label := str(detail.get("family_label", ""))
-	if family_label != "":
-		status_lines.append("Family - %s" % family_label)
+	var family_name := str(detail.get("family_label", ""))
+	if family_name != "":
+		status_lines.append("Family - %s" % family_name)
 	detail_status.text = "\n".join(status_lines)
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()

@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
-const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const PlayerPassiveRuntime = preload("res://scripts/player/player_passive_runtime.gd")
 
 @export var debug_starting_hp: float = 100.0
@@ -658,7 +658,7 @@ func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
 		var value := float(adjustment.get("value", 0.0))
 		if is_zero_approx(value):
 			continue
-		var effect_tags := WeaponTagRuntime.resolve_effect_tags(adjustment.get("effect_tags", []))
+		var effect_tags := WeaponTagRuntimeRef.resolve_effect_tags(adjustment.get("effect_tags", []))
 		if not effect_tags.is_empty():
 			_apply_passive_weapon_tag_bonus(stat_id, value, effect_tags)
 			continue
@@ -671,7 +671,7 @@ func _reset_passive_weapon_tag_bonus_state() -> void:
 func _apply_passive_weapon_tag_bonus(stat_id: String, value: float, effect_tags: Array[String]) -> void:
 	if stat_id == "" or effect_tags.is_empty() or is_zero_approx(value):
 		return
-	var normalized_tags := WeaponTagRuntime.normalize_tags(effect_tags)
+	var normalized_tags := WeaponTagRuntimeRef.normalize_tags(effect_tags)
 	if normalized_tags.is_empty():
 		return
 	var state_key := "%s|%s" % ["|".join(normalized_tags), stat_id]
@@ -895,7 +895,7 @@ func get_weapon_tag_counts() -> Dictionary:
 		var counts_variant: Variant = weapon_loadout.call("get_weapon_tag_counts")
 		if counts_variant is Dictionary:
 			return (counts_variant as Dictionary).duplicate(true)
-	return WeaponTagRuntime.build_weapon_tag_counts(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
+	return WeaponTagRuntimeRef.build_weapon_tag_counts(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
 
 func get_active_weapon_tags() -> Array[String]:
 	if weapon_loadout != null and weapon_loadout.has_method("get_active_weapon_tags"):
@@ -905,28 +905,28 @@ func get_active_weapon_tags() -> Array[String]:
 			for tag_variant in tags_variant:
 				tags.append(str(tag_variant))
 			return tags
-	return WeaponTagRuntime.build_active_weapon_tags(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
+	return WeaponTagRuntimeRef.build_active_weapon_tags(_get_loadout_entries(), Callable(self, "_load_weapon_resource"))
 
 func count_weapons_with_tag(tag: String) -> int:
 	if weapon_loadout != null and weapon_loadout.has_method("count_weapons_with_tag"):
 		return int(weapon_loadout.call("count_weapons_with_tag", tag))
-	return WeaponTagRuntime.count_equipped_weapons_with_tag(_get_loadout_entries(), Callable(self, "_load_weapon_resource"), tag)
+	return WeaponTagRuntimeRef.count_equipped_weapons_with_tag(_get_loadout_entries(), Callable(self, "_load_weapon_resource"), tag)
 
 func get_owned_item_tag_counts() -> Dictionary:
-	return WeaponTagRuntime.build_item_tag_counts(owned_items)
+	return WeaponTagRuntimeRef.build_item_tag_counts(owned_items)
 
 func count_owned_items_with_tag(tag: String) -> int:
-	return WeaponTagRuntime.count_owned_items_with_tag(owned_items, tag)
+	return WeaponTagRuntimeRef.count_owned_items_with_tag(owned_items, tag)
 
 func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
-	return WeaponTagRuntime.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+	return WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
 
 func get_passive_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
 	var bonus_rules: Array[Dictionary] = []
 	for state_entry_variant in _passive_weapon_tag_bonus_state.values():
 		if state_entry_variant is Dictionary:
 			bonus_rules.append((state_entry_variant as Dictionary).duplicate(true))
-	return WeaponTagRuntime.build_matching_weapon_stat_overrides(weapon_data, bonus_rules)
+	return WeaponTagRuntimeRef.build_matching_weapon_stat_overrides(weapon_data, bonus_rules)
 
 func get_passive_weapon_synergy_entries() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
@@ -946,7 +946,7 @@ func get_passive_weapon_synergy_entries() -> Array[Dictionary]:
 				if not (modifier_variant is Dictionary):
 					continue
 				var modifier: Dictionary = modifier_variant
-				var effect_tags := WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+				var effect_tags := WeaponTagRuntimeRef.resolve_effect_tags(modifier.get("effect_tags", []))
 				if effect_tags.is_empty():
 					continue
 				var stat_id := str(modifier.get("stat_id", ""))
@@ -960,7 +960,7 @@ func get_passive_weapon_synergy_entries() -> Array[Dictionary]:
 					"amount": amount
 				})
 			continue
-		var legacy_tags := WeaponTagRuntime.resolve_effect_tags(rule.get("effect_tags", []))
+		var legacy_tags := WeaponTagRuntimeRef.resolve_effect_tags(rule.get("effect_tags", []))
 		var legacy_stat_id := str(rule.get("stat_id", ""))
 		var legacy_amount := float(rule.get("amount", 0.0))
 		if legacy_tags.is_empty() or legacy_stat_id == "" or is_zero_approx(legacy_amount):
@@ -987,7 +987,7 @@ func get_set_bonus_weapon_synergy_entries() -> Array[Dictionary]:
 		var rule: Dictionary = rule_variant
 		var stat_id := str(rule.get("stat_id", ""))
 		var amount := float(rule.get("value", 0.0))
-		var effect_tags := WeaponTagRuntime.resolve_effect_tags(rule.get("effect_tags", []))
+		var effect_tags := WeaponTagRuntimeRef.resolve_effect_tags(rule.get("effect_tags", []))
 		if stat_id == "" or effect_tags.is_empty() or is_zero_approx(amount):
 			continue
 		entries.append({

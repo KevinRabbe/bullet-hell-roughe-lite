@@ -1,7 +1,7 @@
 extends Node
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
-const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 @export var weapon_loadout_path: NodePath
 @export var log_set_bonus_changes: bool = false
@@ -196,7 +196,7 @@ func _get_set_bonus_definition(family_id: String) -> Dictionary:
 	return {}
 
 func _effect_applies_to_weapon(effect: Dictionary, weapon_data: WeaponData) -> bool:
-	return WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, effect)
+	return WeaponTagRuntimeRef.weapon_matches_effect_tags(weapon_data, effect)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")

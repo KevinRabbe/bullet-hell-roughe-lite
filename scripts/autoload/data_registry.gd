@@ -1,7 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
-const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
@@ -263,8 +263,8 @@ func _validate_character_passive_runtime_tags(character_id: String, rules_varian
 			if not (modifier_variant is Dictionary):
 				continue
 			var modifier: Dictionary = modifier_variant
-			var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(
-				WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+			var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(
+				WeaponTagRuntimeRef.resolve_effect_tags(modifier.get("effect_tags", []))
 			)
 			if invalid_tags.is_empty():
 				continue
@@ -398,7 +398,7 @@ func _is_placeholder_weapon(weapon: Variant) -> bool:
 func _validate_weapon_tags(weapon_id: String, tags_variant: Variant) -> void:
 	if not (tags_variant is Array):
 		return
-	var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(tags_variant)
+	var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(tags_variant)
 	if invalid_tags.is_empty():
 		return
 	push_warning(
@@ -416,8 +416,8 @@ func _validate_item_weapon_tag_bonus_rules(item_id: String, rules_variant: Varia
 		if not (rule_variant is Dictionary):
 			continue
 		var rule: Dictionary = rule_variant
-		var rule_tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
-		if rule_tag == "" or WeaponTagRuntime.is_canonical_gameplay_tag(rule_tag):
+		var rule_tag := WeaponTagRuntimeRef.normalize_tag(str(rule.get("tag", "")))
+		if rule_tag == "" or WeaponTagRuntimeRef.is_canonical_gameplay_tag(rule_tag):
 			continue
 		if rule_tag in invalid_tags:
 			continue
@@ -435,7 +435,7 @@ func _validate_set_bonus_effect_tags(family_id: String, pieces: int, effect: Dic
 	var effect_tags_variant: Variant = effect.get("effect_tags", [])
 	if not (effect_tags_variant is Array):
 		return
-	var invalid_tags := WeaponTagRuntime.list_noncanonical_gameplay_tags(effect_tags_variant)
+	var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(effect_tags_variant)
 	if invalid_tags.is_empty():
 		return
 	push_warning(

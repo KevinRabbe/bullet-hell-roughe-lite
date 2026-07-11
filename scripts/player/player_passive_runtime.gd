@@ -1,6 +1,6 @@
 extends RefCounted
 
-const WeaponTagRuntime = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 const DEFAULT_EFFECT := "temporary_stat_bonus"
 
@@ -95,7 +95,7 @@ func _build_adjustment(rule: Dictionary, modifier: Dictionary, value: float, exp
 		"value": value,
 		"label": label
 	}
-	var effect_tags := WeaponTagRuntime.resolve_effect_tags(modifier.get("effect_tags", []))
+	var effect_tags := WeaponTagRuntimeRef.resolve_effect_tags(modifier.get("effect_tags", []))
 	if not effect_tags.is_empty():
 		adjustment["effect_tags"] = effect_tags
 	return adjustment
