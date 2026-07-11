@@ -245,6 +245,9 @@ func _apply_character_summary(display_name: String) -> void:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
+	if portrait_rect != null:
+		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % current_character_id
 	var visual_path: String = str(detail.get("visual_path", ""))
 	if portrait_path == "" and visual_path == "":

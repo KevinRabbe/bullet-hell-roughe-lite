@@ -297,6 +297,8 @@ func _refresh_selection_details() -> void:
 func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	if portrait_rect == null:
 		return
+	portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
 	if portrait_backdrop != null:
 		portrait_backdrop.color = Color(0.05, 0.06, 0.1, 0.94)
