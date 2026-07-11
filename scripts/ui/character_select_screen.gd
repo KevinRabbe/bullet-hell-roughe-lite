@@ -478,7 +478,7 @@ func _apply_responsive_layout() -> void:
 
 func _roster_button_height() -> float:
 	var viewport_size: Vector2 = get_viewport_rect().size
-	if viewport_size.x < 1280.0 or viewport_size.y < 720.0:
+	if viewport_size.x <= 1280.0 or viewport_size.y <= 720.0:
 		return 68.0
 	if viewport_size.x < 1360.0:
 		return 86.0
@@ -486,4 +486,4 @@ func _roster_button_height() -> float:
 
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
-	return viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	return viewport_size.x <= 1280.0 or viewport_size.y <= 720.0
