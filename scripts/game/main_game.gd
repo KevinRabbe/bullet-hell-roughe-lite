@@ -524,8 +524,20 @@ func _build_run_results_state(copy: Dictionary) -> Dictionary:
 			var snapshot_variant: Variant = player.call("get_ui_snapshot")
 			if snapshot_variant is Dictionary:
 				player_snapshot = snapshot_variant
-		var gold_value: Variant = player_snapshot.get("gold", player.get("current_gold"))
-		var level_value: Variant = player_snapshot.get("level", player.get("current_level"))
+		var gold_value: Variant = _resolve_run_results_stat_value(
+			player_snapshot,
+			"gold",
+			player,
+			["current_gold", "gold", "gold_count"],
+			0
+		)
+		var level_value: Variant = _resolve_run_results_stat_value(
+			player_snapshot,
+			"level",
+			player,
+			["current_level", "level"],
+			1
+		)
 		stats.append("Gold carried: %s" % str(gold_value))
 		stats.append("Level reached: %s" % str(level_value))
 	if stats.is_empty():
@@ -539,6 +551,17 @@ func _build_run_results_state(copy: Dictionary) -> Dictionary:
 		"summary": str(copy.get("body", "The arena is clear. Press Retry or choose a new hunter.")),
 		"stats": stats
 	}
+
+func _resolve_run_results_stat_value(snapshot: Dictionary, snapshot_key: String, target: Node, property_names: Array[String], fallback_value: Variant) -> Variant:
+	var snapshot_value: Variant = snapshot.get(snapshot_key, null)
+	if snapshot_value != null:
+		return snapshot_value
+	for property_name in property_names:
+		if property_name in target:
+			var property_value: Variant = target.get(property_name)
+			if property_value != null:
+				return property_value
+	return fallback_value
 
 func _show_pause_menu() -> void:
 	if active_pause_menu != null and is_instance_valid(active_pause_menu):
