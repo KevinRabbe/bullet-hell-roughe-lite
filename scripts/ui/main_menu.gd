@@ -131,6 +131,7 @@ func _rebuild_featured_roster() -> void:
 		return
 	for child in featured_roster_list.get_children():
 		child.queue_free()
+	var max_cards: int = 3 if _is_tight_viewport() else 4
 	var data_registry: Node = get_node_or_null("/root/DataRegistry")
 	var selection_state: Dictionary = CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var entries_variant: Variant = selection_state.get("entries", [])
@@ -145,7 +146,7 @@ func _rebuild_featured_roster() -> void:
 			continue
 		featured_roster_list.add_child(_build_featured_roster_card(entry))
 		shown += 1
-		if shown >= 4:
+		if shown >= max_cards:
 			break
 
 func _apply_menu_art_slots() -> void:
@@ -175,6 +176,7 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var tight: bool = _is_tight_viewport()
 	var card := PanelContainer.new()
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
@@ -204,7 +206,7 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
 	var name_label := Label.new()
 	name_label.text = str(entry.get("display_name", entry.get("id", "Character")))
-	name_label.add_theme_font_size_override("font_size", int(round(20.0 * font_scale)))
+	name_label.add_theme_font_size_override("font_size", int(round((18.0 if tight else 20.0) * font_scale)))
 	column.add_child(name_label)
 
 	var passive_label := Label.new()
@@ -215,9 +217,11 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 
 	var summary_label := Label.new()
 	summary_label.text = str(presentation.get("headline", ""))
+	if tight and summary_label.text.length() > 72:
+		summary_label.text = "%s..." % summary_label.text.substr(0, 69).rstrip(" ")
 	summary_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	summary_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(0.84, 0.86, 0.91, 0.92)
-	summary_label.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	summary_label.add_theme_font_size_override("font_size", int(round((13.0 if tight else 14.0) * font_scale)))
 	column.add_child(summary_label)
 
 	var tags_variant: Variant = presentation.get("playstyle_tags", [])

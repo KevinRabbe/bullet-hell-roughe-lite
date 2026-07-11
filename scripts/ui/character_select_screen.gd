@@ -278,7 +278,7 @@ func _refresh_selection_details() -> void:
 		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
 		confirm_button.disabled = not run_ready
 		if run_ready:
-			confirm_button.text = "Choose %s Loadout" % str(display_names.get(character_id, character_id))
+			confirm_button.text = "Choose Starter" if _is_tight_viewport() else "Choose %s Loadout" % str(display_names.get(character_id, character_id))
 		else:
 			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
 
@@ -436,19 +436,19 @@ func _apply_responsive_layout() -> void:
 	if main_hbox != null:
 		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(150 if very_tight else (190 if tight else (260 if compact else 320)), 0)
+		roster_panel.custom_minimum_size = Vector2(138 if very_tight else (170 if tight else (250 if compact else 320)), 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(190 if very_tight else (220 if tight else (300 if compact else 360)), 0)
+		hero_panel.custom_minimum_size = Vector2(170 if very_tight else (200 if tight else (280 if compact else 360)), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
 	if detail_scroll != null:
 		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 150 if very_tight else (170 if tight else (300 if compact else 360)))
+		portrait_panel.custom_minimum_size = Vector2(0, 128 if very_tight else (150 if tight else (280 if compact else 360)))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 130 if very_tight else (145 if tight else (260 if compact else 320)))
+		portrait_stage.custom_minimum_size = Vector2(0, 114 if very_tight else (132 if tight else (230 if compact else 320)))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 110 if very_tight else (120 if tight else (220 if compact else 280)))
+		portrait_rect.custom_minimum_size = Vector2(0, 96 if very_tight else (108 if tight else (200 if compact else 280)))
 	if name_label != null:
 		name_label.add_theme_font_size_override("font_size", int(round(((18 if very_tight else 20) if tight else (32 if compact else 40)) * font_scale)))
 	if heading_label != null:
@@ -466,13 +466,13 @@ func _apply_responsive_layout() -> void:
 	if tradeoffs_label != null:
 		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(120 if very_tight else (150 if tight else 220), 40 if very_tight else (42 if tight else 50))
+		confirm_button.custom_minimum_size = Vector2(108 if very_tight else (132 if tight else 220), 40 if very_tight else (42 if tight else 50))
 		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if random_button != null:
-		random_button.custom_minimum_size = Vector2(72 if very_tight else (86 if tight else 120), 40 if very_tight else (42 if tight else 50))
+		random_button.custom_minimum_size = Vector2(64 if very_tight else (78 if tight else 120), 40 if very_tight else (42 if tight else 50))
 		random_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(72 if very_tight else (86 if tight else 120), 40 if very_tight else (42 if tight else 50))
+		back_button.custom_minimum_size = Vector2(64 if very_tight else (78 if tight else 120), 40 if very_tight else (42 if tight else 50))
 		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_refresh_roster_buttons()
 
