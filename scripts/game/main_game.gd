@@ -524,14 +524,14 @@ func _build_run_results_state(copy: Dictionary) -> Dictionary:
 			var snapshot_variant: Variant = player.call("get_ui_snapshot")
 			if snapshot_variant is Dictionary:
 				player_snapshot = snapshot_variant
-		var gold_value: Variant = _resolve_run_results_stat_value(
+		var gold_value: int = _resolve_run_results_int(
 			player_snapshot,
 			"gold",
 			player,
 			["current_gold", "gold", "gold_count"],
 			0
 		)
-		var level_value: Variant = _resolve_run_results_stat_value(
+		var level_value: int = _resolve_run_results_int(
 			player_snapshot,
 			"level",
 			player,
@@ -552,15 +552,23 @@ func _build_run_results_state(copy: Dictionary) -> Dictionary:
 		"stats": stats
 	}
 
-func _resolve_run_results_stat_value(snapshot: Dictionary, snapshot_key: String, target: Node, property_names: Array[String], fallback_value: Variant) -> Variant:
-	var snapshot_value: Variant = snapshot.get(snapshot_key, null)
-	if snapshot_value != null:
-		return snapshot_value
+func _resolve_run_results_int(snapshot: Dictionary, snapshot_key: String, target: Node, property_names: Array[String], fallback_value: int) -> int:
+	if snapshot.has(snapshot_key):
+		return _coerce_run_results_int(snapshot.get(snapshot_key, fallback_value), fallback_value)
 	for property_name in property_names:
 		if property_name in target:
-			var property_value: Variant = target.get(property_name)
-			if property_value != null:
-				return property_value
+			return _coerce_run_results_int(target.get(property_name), fallback_value)
+	return fallback_value
+
+func _coerce_run_results_int(value: Variant, fallback_value: int) -> int:
+	if value == null:
+		return fallback_value
+	if value is int:
+		return value
+	if value is float:
+		return int(round(value))
+	if value is String and str(value).is_valid_int():
+		return int(str(value))
 	return fallback_value
 
 func _show_pause_menu() -> void:
