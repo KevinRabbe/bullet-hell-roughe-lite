@@ -420,11 +420,11 @@ func _apply_responsive_layout() -> void:
 	if main_hbox != null:
 		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
 	if character_panel != null:
-		character_panel.custom_minimum_size = Vector2(136 if very_tight else (168 if tight else (250 if compact else 320)), 0)
+		character_panel.custom_minimum_size = Vector2(156 if very_tight else (212 if tight else (270 if compact else 320)), 0)
 	if weapon_panel != null:
-		weapon_panel.custom_minimum_size = Vector2(154 if very_tight else (184 if tight else (260 if compact else 360)), 0)
+		weapon_panel.custom_minimum_size = Vector2(168 if very_tight else (228 if tight else (280 if compact else 360)), 0)
 	if detail_panel != null:
-		detail_panel.custom_minimum_size = Vector2(0, 0)
+		detail_panel.custom_minimum_size = Vector2(220 if very_tight else (270 if tight else (320 if compact else 360)), 0)
 	if weapon_scroll != null:
 		weapon_scroll.custom_minimum_size = Vector2(0, 0)
 	if detail_scroll != null:
