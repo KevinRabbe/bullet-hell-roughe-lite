@@ -211,6 +211,8 @@ func _refresh_content() -> void:
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
 			tab_summary_label.text = "Pick a realistic windowed baseline and display mode for the current menu shell. Windowed previews update immediately; fullscreen keeps the desktop size and remembers the staged windowed preset."
+			if _is_editor_preview_session():
+				tab_summary_label.text += "\nEditor note: the embedded game tab keeps the editor viewport size, so use Apply to save the profile and verify real window resizing in a standalone run."
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
@@ -250,9 +252,14 @@ func _refresh_video_content() -> void:
 	var is_dirty: bool = not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
 	if dirty_state_label != null:
 		if is_dirty:
-			dirty_state_label.text = "Fullscreen keeps the desktop size; the staged resolution becomes your saved windowed preset." if fullscreen_enabled else "Preview differs from the saved profile. Apply to keep it or Back to revert."
+			if _is_editor_preview_session():
+				dirty_state_label.text = "Apply saves this profile now. The embedded editor tab keeps its own size, so confirm true window resizing in a standalone run."
+			else:
+				dirty_state_label.text = "Fullscreen keeps the desktop size; the staged resolution becomes your saved windowed preset." if fullscreen_enabled else "Preview differs from the saved profile. Apply to keep it or Back to revert."
 		else:
 			dirty_state_label.text = "Display settings match the saved profile."
+			if _is_editor_preview_session():
+				dirty_state_label.text = "Saved profile updated. The embedded editor tab keeps its own size; standalone runs use this profile."
 		dirty_state_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
 	if apply_button != null:
 		apply_button.disabled = not is_dirty
@@ -261,6 +268,8 @@ func _refresh_video_content() -> void:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 	if preview_summary_label != null:
 		preview_summary_label.text = _build_video_preview_summary(staged_settings)
+		if _is_editor_preview_session():
+			preview_summary_label.text += "\nEditor preview stays inside the game tab."
 	_refresh_action_row_state()
 
 func _build_saved_video_profile_summary(settings: Dictionary) -> String:
@@ -536,6 +545,9 @@ func _refresh_action_row_state() -> void:
 				reset_button.disabled = AccessibilitySettingsRuntimeRef.settings_match(AccessibilitySettingsRuntimeRef.default_settings(), staged_accessibility_settings)
 			_:
 				reset_button.disabled = true
+
+func _is_editor_preview_session() -> bool:
+	return OS.has_feature("editor")
 
 func _ensure_audio_runtime_content() -> void:
 	if placeholder_content == null or audio_runtime_box != null:
