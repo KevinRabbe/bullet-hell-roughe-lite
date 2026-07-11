@@ -194,7 +194,8 @@ func _apply_roster_button_icon(button: Button, character_id: String) -> void:
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
 	var visual_path: String = str(detail.get("visual_path", ""))
 	button.icon = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
-	button.expand_icon = true
+	button.expand_icon = false
+	button.add_theme_constant_override("h_separation", 10)
 
 func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
@@ -450,11 +451,11 @@ func _apply_responsive_layout() -> void:
 	if main_hbox != null:
 		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(138 if very_tight else (170 if tight else (250 if compact else 320)), 0)
+		roster_panel.custom_minimum_size = Vector2(156 if very_tight else (210 if tight else (270 if compact else 320)), 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(170 if very_tight else (200 if tight else (280 if compact else 360)), 0)
+		hero_panel.custom_minimum_size = Vector2(186 if very_tight else (240 if tight else (300 if compact else 360)), 0)
 	if detail_panel != null:
-		detail_panel.custom_minimum_size = Vector2(0, 0)
+		detail_panel.custom_minimum_size = Vector2(220 if very_tight else (270 if tight else (320 if compact else 360)), 0)
 	if detail_scroll != null:
 		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
