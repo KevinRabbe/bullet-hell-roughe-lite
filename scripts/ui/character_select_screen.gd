@@ -424,32 +424,33 @@ func _on_back_pressed() -> void:
 
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1360.0
-	var tight := _is_tight_viewport()
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1360.0
+	var tight: bool = _is_tight_viewport()
+	var very_tight: bool = viewport_size.x < 1180.0 or viewport_size.y < 680.0
 	if root_margin != null:
-		root_margin.offset_left = 8.0 if tight else (20.0 if compact else 40.0)
-		root_margin.offset_top = 8.0 if tight else (18.0 if compact else 36.0)
-		root_margin.offset_right = -8.0 if tight else (-20.0 if compact else -40.0)
-		root_margin.offset_bottom = -8.0 if tight else (-18.0 if compact else -36.0)
+		root_margin.offset_left = 4.0 if very_tight else (8.0 if tight else (20.0 if compact else 40.0))
+		root_margin.offset_top = 4.0 if very_tight else (8.0 if tight else (18.0 if compact else 36.0))
+		root_margin.offset_right = -4.0 if very_tight else (-8.0 if tight else (-20.0 if compact else -40.0))
+		root_margin.offset_bottom = -4.0 if very_tight else (-8.0 if tight else (-18.0 if compact else -36.0))
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 8 if tight else (18 if compact else 28))
+		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(190 if tight else (260 if compact else 320), 0)
+		roster_panel.custom_minimum_size = Vector2(150 if very_tight else (190 if tight else (260 if compact else 320)), 0)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(220 if tight else (300 if compact else 360), 0)
+		hero_panel.custom_minimum_size = Vector2(190 if very_tight else (220 if tight else (300 if compact else 360)), 0)
 	if detail_panel != null:
 		detail_panel.custom_minimum_size = Vector2(0, 0)
 	if detail_scroll != null:
 		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 170 if tight else (300 if compact else 360))
+		portrait_panel.custom_minimum_size = Vector2(0, 150 if very_tight else (170 if tight else (300 if compact else 360)))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 145 if tight else (260 if compact else 320))
+		portrait_stage.custom_minimum_size = Vector2(0, 130 if very_tight else (145 if tight else (260 if compact else 320)))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 120 if tight else (220 if compact else 280))
+		portrait_rect.custom_minimum_size = Vector2(0, 110 if very_tight else (120 if tight else (220 if compact else 280)))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", int(round((20 if tight else (32 if compact else 40)) * font_scale)))
+		name_label.add_theme_font_size_override("font_size", int(round(((18 if very_tight else 20) if tight else (32 if compact else 40)) * font_scale)))
 	if heading_label != null:
 		heading_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
 	if family_label != null:
@@ -465,18 +466,18 @@ func _apply_responsive_layout() -> void:
 	if tradeoffs_label != null:
 		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(150 if tight else 220, 42 if tight else 50)
+		confirm_button.custom_minimum_size = Vector2(120 if very_tight else (150 if tight else 220), 40 if very_tight else (42 if tight else 50))
 		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if random_button != null:
-		random_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
+		random_button.custom_minimum_size = Vector2(72 if very_tight else (86 if tight else 120), 40 if very_tight else (42 if tight else 50))
 		random_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(86 if tight else 120, 42 if tight else 50)
+		back_button.custom_minimum_size = Vector2(72 if very_tight else (86 if tight else 120), 40 if very_tight else (42 if tight else 50))
 		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_refresh_roster_buttons()
 
 func _roster_button_height() -> float:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size: Vector2 = get_viewport_rect().size
 	if viewport_size.x < 1280.0 or viewport_size.y < 720.0:
 		return 68.0
 	if viewport_size.x < 1360.0:
@@ -484,5 +485,5 @@ func _roster_button_height() -> float:
 	return 94.0
 
 func _is_tight_viewport() -> bool:
-	var viewport_size := get_viewport_rect().size
+	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x < 1280.0 or viewport_size.y < 720.0
