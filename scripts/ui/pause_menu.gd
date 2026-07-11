@@ -23,7 +23,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var main_menu_button: Button = $RootMargin/Panel/PanelMargin/PanelVBox/ActionRow2/MainMenuButton
 @onready var hint_label: Label = $RootMargin/Panel/PanelMargin/PanelVBox/HintLabel
 
-var standalone_mode := true
+var standalone_mode: bool = true
 var accessibility_settings: Dictionary = {}
 
 func _ready() -> void:
@@ -63,7 +63,7 @@ func _refresh_hint_copy() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	match key_event.keycode:
@@ -95,9 +95,9 @@ func _on_main_menu_pressed() -> void:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var viewport_size := get_viewport_rect().size
-	var compact := viewport_size.x < 1440.0
-	var tight := viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var compact: bool = viewport_size.x < 1440.0
+	var tight: bool = viewport_size.x < 1280.0 or viewport_size.y < 720.0
 	if root_margin != null:
 		root_margin.offset_left = 10.0 if tight else (18.0 if compact else 36.0)
 		root_margin.offset_top = 10.0 if tight else (16.0 if compact else 34.0)

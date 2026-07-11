@@ -23,9 +23,9 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
 @onready var action_hint_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionHint
 
-var standalone_mode := true
+var standalone_mode: bool = true
 var accessibility_settings: Dictionary = {}
-var result_state := {
+var result_state: Dictionary = {
 	"title": "Run Complete",
 	"summary": "Use this shell for victory and defeat handoff once the in-run results flow is wired.",
 	"stats": [
@@ -57,7 +57,7 @@ func set_standalone_mode(enabled: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	match key_event.keycode:

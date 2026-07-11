@@ -70,7 +70,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	if weapon_options.is_empty():
@@ -92,12 +92,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_back_pressed()
 
 func _load_state() -> void:
-	var pending_payload := CharacterSelectionRuntimeRef.get_pending_run_start_payload()
+	var pending_payload: Dictionary = CharacterSelectionRuntimeRef.get_pending_run_start_payload()
 	current_character_id = str(pending_payload.get("character_id", ""))
 	if current_character_id == "":
 		return
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(data_registry, current_character_id)
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var selection_state: Dictionary = CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(data_registry, current_character_id)
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
 	title_label.text = "Choose Your Starting Weapon"
@@ -290,7 +290,7 @@ func _summarize_description(description: String) -> String:
 
 func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected: bool) -> void:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var accent := _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
+	var accent: Color = _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
@@ -388,8 +388,8 @@ func _persist_pending_selection() -> void:
 	if current_character_id == "" or weapon_options.is_empty():
 		return
 	var option: Dictionary = weapon_options[selected_index]
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var payload := CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, current_character_id, str(option.get("id", "")))
 	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 
 func _apply_responsive_layout() -> void:

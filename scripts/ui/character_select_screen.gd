@@ -76,7 +76,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	if selectable_ids.is_empty():
@@ -94,8 +94,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_back_pressed()
 
 func _load_selection_state() -> void:
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var selection_state: Dictionary = CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var ids_variant: Variant = selection_state.get("ids", [])
 	if ids_variant is Array:
 		selectable_ids = CharacterSelectionRuntimeRef.normalize_character_ids(ids_variant)

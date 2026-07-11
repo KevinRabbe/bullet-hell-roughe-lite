@@ -76,7 +76,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event := event as InputEventKey
+	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
 	if key_event.keycode == KEY_ESCAPE and dialog_panel.visible:
@@ -131,12 +131,12 @@ func _rebuild_featured_roster() -> void:
 		return
 	for child in featured_roster_list.get_children():
 		child.queue_free()
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var selection_state: Dictionary = CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	var entries_variant: Variant = selection_state.get("entries", [])
 	if not (entries_variant is Array):
 		return
-	var shown := 0
+	var shown: int = 0
 	for entry_variant in entries_variant:
 		if not (entry_variant is Dictionary):
 			continue
