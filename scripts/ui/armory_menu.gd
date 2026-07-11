@@ -3,6 +3,7 @@ extends Control
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 const SECTION_ORDER: Array[String] = [
@@ -199,14 +200,24 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	card.add_child(margin)
 
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 10)
-	margin.add_child(column)
+	var layout := HBoxContainer.new()
+	layout.add_theme_constant_override("separation", 14)
+	margin.add_child(layout)
 
 	var presentation_variant: Variant = entry.get("presentation", {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
 	var detail_variant: Variant = entry.get("detail", {})
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var accent: Color = _family_accent_color(str(entry.get("preferred_weapon_family", "")))
+	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var fallback_visual_path: String = str(detail.get("visual_path", ""))
+	var portrait_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, fallback_visual_path)
+	layout.add_child(_build_card_art_frame(portrait_texture, accent, Vector2(84, 112)))
+
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 10)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.add_child(column)
 
 	var title := Label.new()
 	title.text = str(entry.get("display_name", character_id))
@@ -274,9 +285,19 @@ func _build_weapon_card(entry: Dictionary) -> PanelContainer:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	card.add_child(margin)
 
+	var layout := HBoxContainer.new()
+	layout.add_theme_constant_override("separation", 14)
+	margin.add_child(layout)
+
+	var accent: Color = _family_accent_color(str(entry.get("family_id", "")))
+	var icon_variant: Variant = entry.get("icon", null)
+	var icon_texture: Texture2D = icon_variant if icon_variant is Texture2D else null
+	layout.add_child(_build_card_art_frame(icon_texture, accent, Vector2(72, 72)))
+
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 8)
-	margin.add_child(column)
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	layout.add_child(column)
 
 	var title := Label.new()
 	title.text = str(entry.get("display_name", weapon_id))
@@ -836,7 +857,8 @@ func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictiona
 			"cooldown": weapon.get_cooldown_value(),
 			"range": weapon.get_attack_range_value(),
 			"projectile_speed": weapon.projectile_speed,
-			"special_effect_id": weapon.special_effect_id
+			"special_effect_id": weapon.special_effect_id,
+			"icon": weapon.icon
 		}
 	if weapon_variant is Dictionary:
 		var weapon_data: Dictionary = weapon_variant
@@ -855,9 +877,40 @@ func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictiona
 			"cooldown": float(weapon_data.get("cooldown", weapon_data.get("cooldown_seconds", 0.0))),
 			"range": float(weapon_data.get("range", weapon_data.get("attack_range", 0.0))),
 			"projectile_speed": float(weapon_data.get("projectile_speed", 0.0)),
-			"special_effect_id": str(weapon_data.get("special_effect_id", ""))
+			"special_effect_id": str(weapon_data.get("special_effect_id", "")),
+			"icon": weapon_data.get("icon", null)
 		}
 	return {}
+
+func _build_card_art_frame(texture: Texture2D, accent: Color, frame_size: Vector2) -> PanelContainer:
+	var frame := PanelContainer.new()
+	frame.custom_minimum_size = frame_size
+	var frame_style := StyleBoxFlat.new()
+	frame_style.bg_color = Color(0.06, 0.07, 0.11, 0.96)
+	frame_style.border_width_left = 1
+	frame_style.border_width_top = 1
+	frame_style.border_width_right = 1
+	frame_style.border_width_bottom = 1
+	frame_style.border_color = Color(accent.r, accent.g, accent.b, 0.32)
+	frame_style.corner_radius_top_left = 12
+	frame_style.corner_radius_top_right = 12
+	frame_style.corner_radius_bottom_right = 12
+	frame_style.corner_radius_bottom_left = 12
+	frame.add_theme_stylebox_override("panel", frame_style)
+
+	var texture_rect := TextureRect.new()
+	texture_rect.texture = texture
+	texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	texture_rect.anchors_preset = Control.PRESET_FULL_RECT
+	texture_rect.offset_left = 8
+	texture_rect.offset_top = 8
+	texture_rect.offset_right = -8
+	texture_rect.offset_bottom = -8
+	texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	frame.add_child(texture_rect)
+
+	return frame
 
 func _find_weapon_entry(weapon_id: String) -> Dictionary:
 	for entry in weapon_entries:
