@@ -210,7 +210,7 @@ func _refresh_content() -> void:
 			_refresh_audio_content()
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
-			tab_summary_label.text = "Pick a realistic window size and display mode for the current menu shell. Changes preview immediately and save only when you apply them."
+			tab_summary_label.text = "Pick a realistic windowed baseline and display mode for the current menu shell. Windowed previews update immediately; fullscreen keeps the desktop size and remembers the staged windowed preset."
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
@@ -238,17 +238,21 @@ func _apply_placeholder_content(title: String, body: String, focus_title: String
 
 func _refresh_video_content() -> void:
 	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(staged_settings)
+	var fullscreen_enabled: bool = staged_settings.get("fullscreen", false) == true
 	if resolution_value_label != null:
 		resolution_value_label.text = "%dx%d" % [resolution.x, resolution.y]
 	if saved_profile_value_label != null:
-		saved_profile_value_label.text = "Saved profile: %s" % DisplaySettingsRuntimeRef.build_summary(saved_settings)
+		saved_profile_value_label.text = _build_saved_video_profile_summary(saved_settings)
 	if fullscreen_value_label != null:
-		fullscreen_value_label.text = "Fullscreen" if staged_settings.get("fullscreen", false) == true else "Windowed"
+		fullscreen_value_label.text = "Fullscreen" if fullscreen_enabled else "Windowed"
 	if fullscreen_toggle_button != null:
-		fullscreen_toggle_button.text = "Switch to Windowed" if staged_settings.get("fullscreen", false) == true else "Switch to Fullscreen"
+		fullscreen_toggle_button.text = "Switch to Windowed" if fullscreen_enabled else "Switch to Fullscreen"
 	var is_dirty := not DisplaySettingsRuntimeRef.settings_match(saved_settings, staged_settings)
 	if dirty_state_label != null:
-		dirty_state_label.text = "Preview differs from saved profile. Apply to keep it or Back to revert." if is_dirty else "Display settings match the saved profile."
+		if is_dirty:
+			dirty_state_label.text = "Fullscreen keeps the desktop size; the staged resolution becomes your saved windowed preset." if fullscreen_enabled else "Preview differs from the saved profile. Apply to keep it or Back to revert."
+		else:
+			dirty_state_label.text = "Display settings match the saved profile."
 		dirty_state_label.modulate = Color(0.99, 0.83, 0.65, 0.96) if is_dirty else Color(0.75, 0.79, 0.86, 0.92)
 	if apply_button != null:
 		apply_button.disabled = not is_dirty
@@ -256,8 +260,23 @@ func _refresh_video_content() -> void:
 	if reset_button != null:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 	if preview_summary_label != null:
-		preview_summary_label.text = "Current preview: %s" % DisplaySettingsRuntimeRef.build_summary(staged_settings)
+		preview_summary_label.text = _build_video_preview_summary(staged_settings)
 	_refresh_action_row_state()
+
+func _build_saved_video_profile_summary(settings: Dictionary) -> String:
+	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(settings)
+	var mode: String = "Fullscreen" if settings.get("fullscreen", false) == true else "Windowed"
+	var windowed_summary := "%dx%d" % [resolution.x, resolution.y]
+	if mode == "Fullscreen":
+		return "Saved profile: Fullscreen / windowed preset %s" % windowed_summary
+	return "Saved profile: Windowed / %s" % windowed_summary
+
+func _build_video_preview_summary(settings: Dictionary) -> String:
+	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(settings)
+	var windowed_summary := "%dx%d" % [resolution.x, resolution.y]
+	if settings.get("fullscreen", false) == true:
+		return "Preview after apply: Fullscreen (desktop) / windowed preset %s" % windowed_summary
+	return "Preview after apply: Windowed / %s" % windowed_summary
 
 func _refresh_audio_content() -> void:
 	if audio_runtime_box == null:
