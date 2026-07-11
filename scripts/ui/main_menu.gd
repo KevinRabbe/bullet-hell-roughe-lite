@@ -4,6 +4,7 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
 const CREDITS_SCENE_PATH := "res://scenes/ui/CreditsMenu.tscn"
@@ -177,6 +178,7 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var tight: bool = _is_tight_viewport()
+	var character_id: String = str(entry.get("id", ""))
 	var card := PanelContainer.new()
 	var card_style := StyleBoxFlat.new()
 	card_style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
@@ -198,9 +200,46 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 	margin.add_theme_constant_override("margin_bottom", 12)
 	card.add_child(margin)
 
+	var layout := HBoxContainer.new()
+	layout.add_theme_constant_override("separation", 12 if tight else 14)
+	margin.add_child(layout)
+
+	var portrait_frame := PanelContainer.new()
+	portrait_frame.custom_minimum_size = Vector2(74 if tight else 84, 74 if tight else 84)
+	var portrait_style := StyleBoxFlat.new()
+	portrait_style.bg_color = Color(0.09, 0.10, 0.15, 0.98) if high_contrast else Color(0.08, 0.085, 0.13, 0.94)
+	portrait_style.border_width_left = 1
+	portrait_style.border_width_top = 1
+	portrait_style.border_width_right = 1
+	portrait_style.border_width_bottom = 1
+	portrait_style.border_color = Color(1.0, 0.76, 0.76, 0.45) if high_contrast else Color(0.99, 0.56, 0.56, 0.20)
+	portrait_style.corner_radius_top_left = 10
+	portrait_style.corner_radius_top_right = 10
+	portrait_style.corner_radius_bottom_right = 10
+	portrait_style.corner_radius_bottom_left = 10
+	portrait_frame.add_theme_stylebox_override("panel", portrait_style)
+	layout.add_child(portrait_frame)
+
+	var portrait_texture_rect := TextureRect.new()
+	portrait_texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_texture_rect.anchors_preset = Control.PRESET_FULL_RECT
+	portrait_texture_rect.offset_left = 8
+	portrait_texture_rect.offset_top = 8
+	portrait_texture_rect.offset_right = -8
+	portrait_texture_rect.offset_bottom = -8
+	portrait_texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_frame.add_child(portrait_texture_rect)
+
+	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var fallback_visual_path: String = str(entry.get("visual_path", ""))
+	var portrait_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, fallback_visual_path)
+	portrait_texture_rect.texture = portrait_texture
+
 	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation", 4)
-	margin.add_child(column)
+	layout.add_child(column)
 
 	var presentation_variant: Variant = entry.get("presentation", {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
