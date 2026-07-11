@@ -134,6 +134,7 @@ func _rebuild_roster_buttons() -> void:
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
+		_apply_roster_button_icon(button, character_id)
 		_apply_roster_button_style(button, character_id, index == selected_index)
 		button.pressed.connect(_on_character_button_pressed.bind(index))
 		roster_list.add_child(button)
@@ -170,6 +171,7 @@ func _refresh_roster_buttons() -> void:
 		var character_id := selectable_ids[index]
 		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
 		button.text = _build_roster_button_text(character_id, index == selected_index)
+		_apply_roster_button_icon(button, character_id)
 		_apply_roster_button_style(button, character_id, index == selected_index)
 
 func _build_roster_button_text(character_id: String, is_selected: bool) -> String:
@@ -183,6 +185,16 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	if _is_tight_viewport():
 		return "%s%s\n%s" % [prefix, display_name, difficulty]
 	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
+
+func _apply_roster_button_icon(button: Button, character_id: String) -> void:
+	if button == null:
+		return
+	var detail_variant: Variant = details.get(character_id, {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var visual_path: String = str(detail.get("visual_path", ""))
+	button.icon = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	button.expand_icon = true
 
 func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
