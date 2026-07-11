@@ -141,6 +141,7 @@ func _rebuild_weapon_buttons() -> void:
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
+		_apply_weapon_button_icon(button, option)
 		_apply_weapon_button_style(button, option, index == selected_index)
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
 		weapon_list.add_child(button)
@@ -178,6 +179,7 @@ func _refresh_weapon_buttons() -> void:
 		var option: Dictionary = weapon_options[index]
 		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
 		button.text = _build_weapon_button_text(option, index == selected_index)
+		_apply_weapon_button_icon(button, option)
 		_apply_weapon_button_style(button, option, index == selected_index)
 
 func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
@@ -191,6 +193,13 @@ func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
 	if description == "":
 		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
 	return "%s%s%s\n%s\n%s" % [prefix, badge, display_name, description, tags_text]
+
+func _apply_weapon_button_icon(button: Button, option: Dictionary) -> void:
+	if button == null:
+		return
+	var icon_variant: Variant = option.get("icon", null)
+	button.icon = icon_variant if icon_variant is Texture2D else null
+	button.expand_icon = true
 
 func _refresh_selection() -> void:
 	if weapon_options.is_empty():
