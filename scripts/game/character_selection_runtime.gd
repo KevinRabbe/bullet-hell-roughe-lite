@@ -590,6 +590,7 @@ static func _build_weapon_option(data_registry: Node, weapon_id: String, default
 		"display_name": weapon_id,
 		"description": "",
 		"tags": [],
+		"icon": null,
 		"default_selected": default_selected
 	}
 	if data_registry == null or not data_registry.has_method("get_weapon"):
@@ -601,6 +602,7 @@ static func _build_weapon_option(data_registry: Node, weapon_id: String, default
 			option["display_name"] = weapon_resource.display_name
 		option["description"] = weapon_resource.description
 		option["tags"] = _normalize_string_array(weapon_resource.tags)
+		option["icon"] = weapon_resource.icon
 	elif weapon_variant is Dictionary:
 		var weapon_data: Dictionary = weapon_variant
 		option["display_name"] = str(weapon_data.get("display_name", weapon_id))
