@@ -1,6 +1,6 @@
 extends Node2D
 
-const CharacterSelectionRuntime = preload("res://scripts/game/character_selection_runtime.gd")
+const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const DebugRunPresetRuntime = preload("res://scripts/game/debug_run_preset_runtime.gd")
 const IntermissionRuntime = preload("res://scripts/game/intermission_runtime.gd")
@@ -187,7 +187,7 @@ func _on_start_pressed() -> void:
 		character_select_layer.visible = false
 
 func _try_auto_start_from_pending_selection() -> void:
-	var pending_payload := CharacterSelectionRuntime.consume_pending_run_start_payload()
+	var pending_payload := CharacterSelectionRuntimeRef.consume_pending_run_start_payload()
 	var pending_character_id := str(pending_payload.get("character_id", ""))
 	if pending_character_id == "":
 		return
@@ -271,14 +271,14 @@ func _load_selectable_characters() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	if data_registry == null:
 		return
-	var selection_state := CharacterSelectionRuntime.load_selection_state(data_registry)
+	var selection_state := CharacterSelectionRuntimeRef.load_selection_state(data_registry)
 	if selection_state.is_empty():
 		return
 	var ids_variant: Variant = selection_state.get("ids", [])
 	if not (ids_variant is Array):
 		return
 	var ids: Array = ids_variant
-	var normalized := CharacterSelectionRuntime.normalize_character_ids(ids)
+	var normalized := CharacterSelectionRuntimeRef.normalize_character_ids(ids)
 	if normalized.is_empty():
 		return
 	selectable_characters = normalized
@@ -295,7 +295,7 @@ func _update_character_debug_label() -> void:
 	character_label.text = "Debug Quick Start: %s (C to cycle, Enter to start, M for full select)" % display_name
 
 func _open_character_select_scene() -> void:
-	CharacterSelectionRuntime.clear_pending_character_id()
+		CharacterSelectionRuntimeRef.clear_pending_character_id()
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_wave_completed(wave_index: int) -> void:
