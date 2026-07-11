@@ -4,6 +4,7 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/character_select_background.png"
@@ -292,12 +293,11 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
-	var visual_path: String = portrait_path if ResourceLoader.exists(portrait_path) else str(detail.get("visual_path", ""))
-	if visual_path == "":
+	var visual_path: String = str(detail.get("visual_path", ""))
+	if portrait_path == "" and visual_path == "":
 		portrait_rect.texture = null
 		return
-	var texture_variant: Variant = load(visual_path)
-	portrait_rect.texture = texture_variant if texture_variant is Texture2D else null
+	portrait_rect.texture = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
 	if portrait_rect.texture != null:
 		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
 
