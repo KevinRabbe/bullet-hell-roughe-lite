@@ -14,9 +14,12 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
+@onready var flow_header: HBoxContainer = $RootMargin/RootVBox/FlowHeader
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var roster_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/RosterPanel
 @onready var roster_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterFrameArtSlot
+@onready var roster_title_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterTitle
+@onready var roster_body_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterBody
 @onready var roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
 @onready var roster_status_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
 @onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel
@@ -48,6 +51,7 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 @onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
 @onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
 @onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
+@onready var hero_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HintLabel
 
 var selectable_ids: Array[String] = []
 var character_entries: Array[Dictionary] = []
@@ -178,24 +182,24 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 	var entry := _find_character_entry(character_id)
 	var presentation_variant: Variant = entry.get("presentation", {})
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
 	var display_name: String = str(display_names.get(character_id, character_id))
-	var passive_name: String = str(presentation.get("passive_name", "Passive"))
 	var difficulty: String = str(presentation.get("difficulty", "medium")).capitalize()
+	var family_label: String = str(detail.get("family_label", ""))
 	var prefix: String = "> " if is_selected else ""
 	if _is_tight_viewport():
 		return "%s%s\n%s" % [prefix, display_name, difficulty]
-	return "%s%s\n%s / %s" % [prefix, display_name, passive_name, difficulty]
+	if family_label == "":
+		return "%s%s\n%s" % [prefix, display_name, difficulty]
+	return "%s%s\n%s · %s" % [prefix, display_name, family_label, difficulty]
 
 func _apply_roster_button_icon(button: Button, character_id: String) -> void:
 	if button == null:
 		return
-	var detail_variant: Variant = details.get(character_id, {})
-	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
-	var visual_path: String = str(detail.get("visual_path", ""))
-	button.icon = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	button.icon = null
 	button.expand_icon = false
-	button.add_theme_constant_override("h_separation", 10)
+	button.add_theme_constant_override("h_separation", 0)
 
 func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
@@ -440,46 +444,78 @@ func _on_back_pressed() -> void:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var viewport_size: Vector2 = get_viewport_rect().size
-	var compact: bool = viewport_size.x < 1360.0
-	var tight: bool = _is_tight_viewport()
-	var very_tight: bool = viewport_size.x < 1180.0 or viewport_size.y < 680.0
+	var compact: bool = viewport_size.x < 1500.0
+	var tight: bool = viewport_size.x <= 1366.0 or viewport_size.y <= 768.0
+	var very_tight: bool = viewport_size.x < 1220.0 or viewport_size.y < 700.0
 	if root_margin != null:
 		root_margin.offset_left = 4.0 if very_tight else (8.0 if tight else (20.0 if compact else 40.0))
 		root_margin.offset_top = 4.0 if very_tight else (8.0 if tight else (18.0 if compact else 36.0))
 		root_margin.offset_right = -4.0 if very_tight else (-8.0 if tight else (-20.0 if compact else -40.0))
 		root_margin.offset_bottom = -4.0 if very_tight else (-8.0 if tight else (-18.0 if compact else -36.0))
+	if flow_header != null:
+		flow_header.visible = not very_tight
+		flow_header.add_theme_constant_override("separation", 8 if tight else 12)
 	if main_hbox != null:
 		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
 	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(156 if very_tight else (210 if tight else (270 if compact else 320)), 0)
+		roster_panel.custom_minimum_size = Vector2(164 if very_tight else (192 if tight else (228 if compact else 280)), 0)
+		roster_panel.size_flags_stretch_ratio = 0.9 if tight else 1.0
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(186 if very_tight else (240 if tight else (300 if compact else 360)), 0)
+		hero_panel.custom_minimum_size = Vector2(220 if very_tight else (250 if tight else (320 if compact else 380)), 0)
+		hero_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		hero_panel.size_flags_stretch_ratio = 1.2 if tight else 1.15
 	if detail_panel != null:
-		detail_panel.custom_minimum_size = Vector2(220 if very_tight else (270 if tight else (320 if compact else 360)), 0)
+		detail_panel.custom_minimum_size = Vector2(210 if very_tight else (238 if tight else (292 if compact else 340)), 0)
+		detail_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		detail_panel.size_flags_stretch_ratio = 1.1 if tight else 1.0
 	if detail_scroll != null:
 		detail_scroll.custom_minimum_size = Vector2(0, 0)
 	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 128 if very_tight else (150 if tight else (280 if compact else 360)))
+		portrait_panel.custom_minimum_size = Vector2(0, 152 if very_tight else (188 if tight else (270 if compact else 360)))
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 114 if very_tight else (132 if tight else (230 if compact else 320)))
+		portrait_stage.custom_minimum_size = Vector2(0, 132 if very_tight else (164 if tight else (224 if compact else 320)))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 96 if very_tight else (108 if tight else (200 if compact else 280)))
+		portrait_rect.custom_minimum_size = Vector2(0, 112 if very_tight else (132 if tight else (190 if compact else 280)))
+	if roster_title_label != null:
+		roster_title_label.add_theme_font_size_override("font_size", int(round((20 if very_tight else (23 if tight else 28)) * font_scale)))
+	if roster_body_label != null:
+		roster_body_label.visible = not tight
+		roster_body_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
+	if roster_status_label != null:
+		roster_status_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
 	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", int(round(((18 if very_tight else 20) if tight else (32 if compact else 40)) * font_scale)))
+		name_label.add_theme_font_size_override("font_size", int(round(((18 if very_tight else 22) if tight else (32 if compact else 40)) * font_scale)))
 	if heading_label != null:
 		heading_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
 	if family_label != null:
-		family_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
+		family_label.add_theme_font_size_override("font_size", int(round((13 if tight else 17) * font_scale)))
+	if difficulty_label != null:
+		difficulty_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
+	if tags_label != null:
+		tags_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
+	if summary_label != null:
+		summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 18)) * font_scale)))
+		summary_label.custom_minimum_size = Vector2(0, 56 if very_tight else (68 if tight else 80))
+	if fantasy_hook_label != null:
+		fantasy_hook_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 18)) * font_scale)))
+		fantasy_hook_label.custom_minimum_size = Vector2(0, 42 if very_tight else (50 if tight else 56))
 	if passive_label != null:
-		passive_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
+		passive_label.add_theme_font_size_override("font_size", int(round((15 if tight else 20) * font_scale)))
+	if passive_summary_label != null:
+		passive_summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
+		passive_summary_label.custom_minimum_size = Vector2(0, 48 if very_tight else (54 if tight else 60))
 	if starter_weapon_label != null:
-		starter_weapon_label.add_theme_font_size_override("font_size", int(round((14 if tight else 18) * font_scale)))
+		starter_weapon_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
+		starter_weapon_label.custom_minimum_size = Vector2(0, 46 if very_tight else (52 if tight else 58))
 	if arsenal_label != null:
-		arsenal_label.add_theme_font_size_override("font_size", int(round((14 if tight else 18) * font_scale)))
+		arsenal_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
+		arsenal_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
 	if strengths_label != null:
-		strengths_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
+		strengths_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
+		strengths_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
 	if tradeoffs_label != null:
-		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if tight else 17) * font_scale)))
+		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
+		tradeoffs_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
 	if confirm_button != null:
 		confirm_button.custom_minimum_size = Vector2(108 if very_tight else (132 if tight else 220), 40 if very_tight else (42 if tight else 50))
 		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
@@ -489,6 +525,9 @@ func _apply_responsive_layout() -> void:
 	if back_button != null:
 		back_button.custom_minimum_size = Vector2(64 if very_tight else (78 if tight else 120), 40 if very_tight else (42 if tight else 50))
 		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
+	if hero_hint_label != null:
+		hero_hint_label.visible = not very_tight
+		hero_hint_label.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
 	_refresh_roster_buttons()
 
 func _roster_button_height() -> float:
@@ -501,4 +540,4 @@ func _roster_button_height() -> float:
 
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
-	return viewport_size.x <= 1280.0 or viewport_size.y <= 720.0
+	return viewport_size.x <= 1366.0 or viewport_size.y <= 768.0
