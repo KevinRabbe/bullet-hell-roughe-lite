@@ -280,10 +280,10 @@ func _refresh_portrait_fallback(resolved_texture: Texture2D) -> void:
 	if portrait_fallback_title != null:
 		portrait_fallback_title.text = character_name_label.text if character_name_label != null else "Opening Hunter"
 	if portrait_fallback_meta != null:
-		portrait_fallback_meta.text = "%s · %s" % [family_text if family_text != "" else "Family", passive_text]
+		portrait_fallback_meta.text = "%s - %s" % [family_text if family_text != "" else "Family", passive_text]
 	if portrait_fallback_body != null:
 		var hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
-		portrait_fallback_body.text = hook if hook != "" else "Menu portrait art can drop into this frame later without changing the shipped layout."
+		portrait_fallback_body.text = hook if hook != "" else "Portrait art will land in this frame later. The run-start layout is already locked."
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)
