@@ -10,6 +10,8 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const STARTING_WEAPON_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/starting_weapon_background.png"
 const STARTING_WEAPON_CHARACTER_FRAME_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_character_frame.png"
 const STARTING_WEAPON_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_detail_frame.png"
+const STARTING_WEAPON_CARD_FRAME_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_card_frame.png"
+const STARTING_WEAPON_CARD_FRAME_SELECTED_PATH := "res://assets/sprites/ui/menu/frames/starting_weapon_card_frame_selected.png"
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
@@ -55,6 +57,7 @@ var weapon_options: Array[Dictionary] = []
 var current_character_entry: Dictionary = {}
 var selected_index: int = 0
 var accessibility_settings: Dictionary = {}
+var frame_texture_cache: Dictionary = {}
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -311,6 +314,37 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	target.texture = null
 	return false
 
+func _build_texture_stylebox(texture_path: String, border_margin: int, content_left: int, content_top: int, content_right: int, content_bottom: int) -> StyleBoxTexture:
+	var texture: Texture2D = _load_frame_texture(texture_path)
+	if texture == null:
+		return null
+	var style := StyleBoxTexture.new()
+	style.texture = texture
+	style.texture_margin_left = border_margin
+	style.texture_margin_top = border_margin
+	style.texture_margin_right = border_margin
+	style.texture_margin_bottom = border_margin
+	style.content_margin_left = content_left
+	style.content_margin_top = content_top
+	style.content_margin_right = content_right
+	style.content_margin_bottom = content_bottom
+	style.draw_center = true
+	return style
+
+func _load_frame_texture(texture_path: String) -> Texture2D:
+	if texture_path == "":
+		return null
+	if frame_texture_cache.has(texture_path):
+		var cached_variant: Variant = frame_texture_cache.get(texture_path, null)
+		return cached_variant if cached_variant is Texture2D else null
+	if not ResourceLoader.exists(texture_path):
+		return null
+	var texture_variant: Variant = load(texture_path)
+	if texture_variant is Texture2D:
+		frame_texture_cache[texture_path] = texture_variant
+		return texture_variant
+	return null
+
 func _join_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
 		return "None"
@@ -333,29 +367,41 @@ func _summarize_description(description: String) -> String:
 func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected: bool) -> void:
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
 	var accent: Color = _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.content_margin_left = 14
-	style.content_margin_top = 14
-	style.content_margin_right = 14
-	style.content_margin_bottom = 14
-	if is_selected:
-		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.24)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.94) if high_contrast else Color(accent.r, accent.g, accent.b, 0.72)
+	var texture_path: String = STARTING_WEAPON_CARD_FRAME_SELECTED_PATH if is_selected else STARTING_WEAPON_CARD_FRAME_PATH
+	var texture_style: StyleBoxTexture = _build_texture_stylebox(texture_path, 28, 16, 14, 16, 14)
+	if texture_style != null:
+		button.add_theme_stylebox_override("normal", texture_style)
+		button.add_theme_stylebox_override("hover", texture_style)
+		button.add_theme_stylebox_override("pressed", texture_style)
+		button.add_theme_stylebox_override("focus", texture_style)
 	else:
-		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.40) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+		var style := StyleBoxFlat.new()
+		style.corner_radius_top_left = 12
+		style.corner_radius_top_right = 12
+		style.corner_radius_bottom_right = 12
+		style.corner_radius_bottom_left = 12
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.content_margin_left = 14
+		style.content_margin_top = 14
+		style.content_margin_right = 14
+		style.content_margin_bottom = 14
+		if is_selected:
+			style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.24)
+			style.border_color = Color(accent.r, accent.g, accent.b, 0.94) if high_contrast else Color(accent.r, accent.g, accent.b, 0.72)
+		else:
+			style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
+			style.border_color = Color(accent.r, accent.g, accent.b, 0.40) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
+		button.add_theme_stylebox_override("normal", style)
+		button.add_theme_stylebox_override("hover", style)
+		button.add_theme_stylebox_override("pressed", style)
+		button.add_theme_stylebox_override("focus", style)
+	button.add_theme_color_override("font_color", Color(1, 1, 1, 0.98))
+	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
+	button.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
+	button.add_theme_color_override("font_focus_color", Color(1, 1, 1, 1))
 
 func _family_accent_color(family_label: String) -> Color:
 	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
