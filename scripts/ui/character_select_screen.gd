@@ -38,17 +38,22 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
 @onready var family_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
 @onready var name_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
-@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Summary
-@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FantasyHook
-@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveName
-@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveSummary
+@onready var identity_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard
+@onready var passive_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard
+@onready var starter_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard
+@onready var tradeoff_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard
+@onready var flow_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard
+@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/Summary
+@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/FantasyHook
+@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveName
+@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveSummary
 @onready var tags_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
 @onready var tag_chips: FlowContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
 @onready var difficulty_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
-@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterWeapon
-@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Arsenal
-@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Strengths
-@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/Tradeoffs
+@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/StarterWeapon
+@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/Arsenal
+@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox/Strengths
+@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox/Tradeoffs
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
 @onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
 @onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll
@@ -581,6 +586,11 @@ func _apply_shell_panel_styles() -> void:
 	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
 	_apply_panel_style(portrait_panel, Color(0.0411765, 0.0470588, 0.0745098, 0.97), Color(0.992157, 0.560784, 0.560784, 0.18))
 	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_panel_style(identity_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
+	_apply_panel_style(passive_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
+	_apply_panel_style(starter_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
+	_apply_panel_style(tradeoff_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
+	_apply_panel_style(flow_card, Color(0.0392157, 0.0431373, 0.0666667, 0.9), Color(0.56, 0.62, 0.76, 0.16))
 	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
 	_apply_action_button_style(random_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
 	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
