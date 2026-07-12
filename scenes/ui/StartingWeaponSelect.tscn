@@ -42,6 +42,34 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0196078, 0.0235294, 0.0431373, 0.8)
 
+[node name="LeftGlow" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 11
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_right = 120.0
+grow_vertical = 2
+color = Color(0.301961, 0.0784314, 0.145098, 0.16)
+
+[node name="TopBand" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 170.0
+grow_horizontal = 2
+color = Color(0.341176, 0.0901961, 0.14902, 0.18)
+
+[node name="BottomBand" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.00784314, 0.0117647, 0.0235294, 0.28)
+
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -157,13 +185,13 @@ theme_override_constants/separation = 14
 [node name="CharacterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Choose Your Opener"
+text = "Chosen Hunter"
 
 [node name="CharacterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Lock the weapon that opens this run before you step into the arena."
+text = "Confirm the exact opener that this hunter carries into the frontier."
 
 [node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 custom_minimum_size = Vector2(0, 360)
@@ -260,7 +288,7 @@ stretch_mode = 5
 [node name="CharacterName" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "Selected Character"
+text = "Hunter Name"
 
 [node name="CharacterFamily" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
@@ -289,7 +317,7 @@ text = "Identity"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Back returns to character select. Confirm carries this exact opener into the arena."
+text = "Back returns to Hunter Select. Confirm carries this exact opener into the arena."
 
 [node name="WeaponPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(360, 0)
@@ -327,7 +355,7 @@ text = "Starter Arsenal"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Only valid openers appear here. Use R for a random start or T to snap back to the default."
+text = "Only approved openers appear here. Use R for a random start or T to snap back to the default."
 
 [node name="WeaponStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
@@ -391,7 +419,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
-text = "Ready Check"
+text = "Run Check"
 
 [node name="Headline" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
@@ -415,7 +443,7 @@ text = "Selection status"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 theme_override_font_sizes/font_size = 16
-text = "Weapon Profile"
+text = "Selected Weapon"
 
 [node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
@@ -448,15 +476,15 @@ text = "Enter Arena"
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
-text = "Back"
+text = "Back to Hunter Select"
 
 [node name="DefaultButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow"]
 custom_minimum_size = Vector2(160, 50)
 layout_mode = 2
-text = "Default Starter"
+text = "Use Default"
 
 [node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up or Down browse, Enter start, R random, T default, Esc back."
+text = "Shortcuts: Up/Down browse, Enter start, R random starter, T default starter, Esc back."

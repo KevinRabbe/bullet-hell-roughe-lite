@@ -42,6 +42,34 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0196078, 0.0235294, 0.0431373, 0.8)
 
+[node name="LeftGlow" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 11
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_right = 120.0
+grow_vertical = 2
+color = Color(0.301961, 0.0784314, 0.145098, 0.16)
+
+[node name="TopBand" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 170.0
+grow_horizontal = 2
+color = Color(0.341176, 0.0901961, 0.14902, 0.18)
+
+[node name="BottomBand" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -120.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.00784314, 0.0117647, 0.0235294, 0.28)
+
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -157,13 +185,13 @@ theme_override_constants/separation = 14
 [node name="RosterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Character Select"
+text = "Hunter Roster"
 
 [node name="RosterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Choose the character who enters the frontier. The next step locks the opening weapon for the run."
+text = "Pick the hunter who enters the frontier. The next step locks the starting weapon for this run."
 
 [node name="RosterStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
 layout_mode = 2
@@ -207,7 +235,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
-text = "Choose your hunter."
+text = "Chosen Hunter"
 
 [node name="PortraitPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
 custom_minimum_size = Vector2(0, 380)
@@ -308,7 +336,7 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.772549, 0.8, 0.878431, 0.84)
 horizontal_alignment = 1
-text = "Selected character portrait"
+text = "Hunter portrait preview"
 
 [node name="HeroMeta" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
@@ -350,23 +378,23 @@ custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
-text = "Choose Starting Weapon"
+text = "Lock Starting Weapon"
 
 [node name="RandomButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
-text = "Random"
+text = "Random Hunter"
 
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
-text = "Back"
+text = "Back to Menu"
 
 [node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down browse, Enter continue, R randomize, Esc back."
+text = "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back."
 
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 layout_mode = 2

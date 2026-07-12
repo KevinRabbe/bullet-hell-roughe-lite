@@ -67,6 +67,7 @@ func _ready() -> void:
 	_load_selection_state()
 	_apply_screen_art_slots()
 	_apply_responsive_layout()
+	_apply_shell_panel_styles()
 	_rebuild_roster_buttons()
 	_refresh_selection_details()
 	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, hero_panel, detail_panel])
@@ -192,7 +193,7 @@ func _build_roster_button_text(character_id: String, is_selected: bool) -> Strin
 		return "%s%s\n%s" % [prefix, display_name, difficulty]
 	if family_label == "":
 		return "%s%s\n%s" % [prefix, display_name, difficulty]
-	return "%s%s\n%s · %s" % [prefix, display_name, family_label, difficulty]
+	return "%s%s\n%s - %s" % [prefix, display_name, family_label, difficulty]
 
 func _apply_roster_button_icon(button: Button, character_id: String) -> void:
 	if button == null:
@@ -231,7 +232,7 @@ func _apply_roster_button_style(button: Button, character_id: String, is_selecte
 
 func _refresh_selection_details() -> void:
 	if selectable_ids.is_empty():
-		heading_label.text = "No selectable characters found."
+		heading_label.text = "No active hunters are available right now."
 		family_label.text = "Family: -"
 		name_label.text = ""
 		summary_label.text = ""
@@ -247,6 +248,7 @@ func _refresh_selection_details() -> void:
 		portrait_rect.texture = null
 		if confirm_button != null:
 			confirm_button.disabled = true
+			confirm_button.text = "Lock Starting Weapon"
 		return
 	var character_id := selectable_ids[selected_index]
 	var current_entry := _find_character_entry(character_id)
@@ -273,7 +275,7 @@ func _refresh_selection_details() -> void:
 			var tag_text := str(tag_variant)
 			if tag_text != "":
 				tags.append(tag_text.capitalize())
-	tags_label.text = "Build Tags"
+	tags_label.text = "Build Signature"
 	_rebuild_tag_chips(tags, _family_accent_color(str(current_entry.get("preferred_weapon_family", ""))))
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
 	var starter_title: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
@@ -290,12 +292,12 @@ func _refresh_selection_details() -> void:
 		for entry in character_entries:
 			if entry.get("is_ready_for_run_start", true) != false:
 				ready_count += 1
-		roster_status_label.text = "%d active roster entries. %d ready for run start." % [selectable_ids.size(), ready_count]
+		roster_status_label.text = "%d active hunters. %d ready to enter the frontier." % [selectable_ids.size(), ready_count]
 	if confirm_button != null:
 		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
 		confirm_button.disabled = not run_ready
 		if run_ready:
-			confirm_button.text = "Choose Starter" if _is_tight_viewport() else "Choose %s Loadout" % str(display_names.get(character_id, character_id))
+			confirm_button.text = "Lock Starter" if _is_tight_viewport() else "Lock Starting Weapon"
 		else:
 			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
 
@@ -364,7 +366,7 @@ func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 		child.queue_free()
 	if tags.is_empty():
 		var empty_label := Label.new()
-		empty_label.text = "No build tags yet"
+		empty_label.text = "Build signature still forming"
 		empty_label.modulate = Color(0.72, 0.76, 0.84, 0.9)
 		tag_chips.add_child(empty_label)
 		return
@@ -528,6 +530,7 @@ func _apply_responsive_layout() -> void:
 	if hero_hint_label != null:
 		hero_hint_label.visible = not very_tight
 		hero_hint_label.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
+	_apply_shell_panel_styles()
 	_refresh_roster_buttons()
 
 func _roster_button_height() -> float:
@@ -541,3 +544,56 @@ func _roster_button_height() -> float:
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x <= 1366.0 or viewport_size.y <= 768.0
+
+func _apply_shell_panel_styles() -> void:
+	_apply_panel_style(roster_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
+	_apply_panel_style(portrait_panel, Color(0.0411765, 0.0470588, 0.0745098, 0.97), Color(0.992157, 0.560784, 0.560784, 0.18))
+	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
+	_apply_action_button_style(random_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+
+func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
+	if panel == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = border_color
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_right = 18
+	style.corner_radius_bottom_left = 18
+	style.shadow_color = Color(0, 0, 0, 0.24)
+	style.shadow_size = 10
+	panel.add_theme_stylebox_override("panel", style)
+
+func _apply_action_button_style(button: Button, bg_color: Color, border_color: Color) -> void:
+	if button == null:
+		return
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = bg_color
+	normal.border_width_left = 1
+	normal.border_width_top = 1
+	normal.border_width_right = 1
+	normal.border_width_bottom = 1
+	normal.border_color = border_color
+	normal.corner_radius_top_left = 14
+	normal.corner_radius_top_right = 14
+	normal.corner_radius_bottom_right = 14
+	normal.corner_radius_bottom_left = 14
+	normal.content_margin_left = 18
+	normal.content_margin_top = 12
+	normal.content_margin_right = 18
+	normal.content_margin_bottom = 12
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = Color(bg_color.r, bg_color.g, bg_color.b, min(bg_color.a + 0.08, 1.0))
+	hover.border_color = Color(border_color.r, border_color.g, border_color.b, min(border_color.a + 0.12, 1.0))
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", hover)

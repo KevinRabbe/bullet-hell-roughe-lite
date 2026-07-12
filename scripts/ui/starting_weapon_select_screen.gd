@@ -58,6 +58,7 @@ func _ready() -> void:
 	_load_state()
 	_apply_screen_art_slots()
 	_apply_responsive_layout()
+	_apply_shell_panel_styles()
 	_rebuild_weapon_buttons()
 	_refresh_selection()
 	MenuAnimationRuntimeRef.play_screen_intro([character_panel, weapon_panel, detail_panel])
@@ -102,7 +103,7 @@ func _load_state() -> void:
 	var selection_state: Dictionary = CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(data_registry, current_character_id)
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
-	title_label.text = "Ready Check"
+	title_label.text = "Run Check"
 	var display_name: String = str(selection_state.get("display_name", current_character_id))
 	var family_count := 0
 	if not current_character_entry.is_empty():
@@ -114,7 +115,7 @@ func _load_state() -> void:
 		headline_label.text = "%s\nStarter pool: %d weapon%s" % [headline_label.text, family_count, "" if family_count == 1 else "s"]
 	var selection_source: String = str(selection_state.get("selection_source", "default_starter"))
 	if selection_state_label != null:
-		selection_state_label.text = "Default opener selected."
+		selection_state_label.text = "Default opener locked in."
 		if selection_source == "remembered_choice":
 			selection_state_label.text = "Restored your previous opener."
 	_apply_character_summary(display_name)
@@ -227,7 +228,7 @@ func _refresh_selection() -> void:
 	selection_summary_label.text = "%s: %s\nThis exact choice will be carried into the run for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
-		confirm_button.text = "Start Run" if _is_tight_viewport() else "Enter Arena - %s" % display_name
+		confirm_button.text = "Start Run" if _is_tight_viewport() else "Enter Arena with %s" % display_name
 	if default_button != null:
 		default_button.disabled = option.get("default_selected", false) == true
 
@@ -464,6 +465,7 @@ func _apply_responsive_layout() -> void:
 	if default_button != null:
 		default_button.custom_minimum_size = Vector2(96 if very_tight else (124 if tight else 160), 40 if very_tight else (42 if tight else 50))
 		default_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
+	_apply_shell_panel_styles()
 	_refresh_weapon_buttons()
 
 func _weapon_card_height() -> float:
@@ -477,3 +479,56 @@ func _weapon_card_height() -> float:
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x <= 1280.0 or viewport_size.y <= 720.0
+
+func _apply_shell_panel_styles() -> void:
+	_apply_panel_style(character_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
+	_apply_panel_style(weapon_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
+	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+	_apply_action_button_style(default_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+
+func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
+	if panel == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg_color
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = border_color
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_right = 18
+	style.corner_radius_bottom_left = 18
+	style.shadow_color = Color(0, 0, 0, 0.24)
+	style.shadow_size = 10
+	panel.add_theme_stylebox_override("panel", style)
+
+func _apply_action_button_style(button: Button, bg_color: Color, border_color: Color) -> void:
+	if button == null:
+		return
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = bg_color
+	normal.border_width_left = 1
+	normal.border_width_top = 1
+	normal.border_width_right = 1
+	normal.border_width_bottom = 1
+	normal.border_color = border_color
+	normal.corner_radius_top_left = 14
+	normal.corner_radius_top_right = 14
+	normal.corner_radius_bottom_right = 14
+	normal.corner_radius_bottom_left = 14
+	normal.content_margin_left = 18
+	normal.content_margin_top = 12
+	normal.content_margin_right = 18
+	normal.content_margin_bottom = 12
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = Color(bg_color.r, bg_color.g, bg_color.b, min(bg_color.a + 0.08, 1.0))
+	hover.border_color = Color(border_color.r, border_color.g, border_color.b, min(border_color.a + 0.12, 1.0))
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", hover)
