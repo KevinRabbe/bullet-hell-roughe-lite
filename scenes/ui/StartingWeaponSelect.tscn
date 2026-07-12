@@ -157,13 +157,13 @@ theme_override_constants/separation = 14
 [node name="CharacterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Choose Your Starting Weapon"
+text = "Choose Your Opener"
 
 [node name="CharacterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Pick the weapon that opens this run before you step into the arena."
+text = "Lock the weapon that opens this run before you step into the arena."
 
 [node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox"]
 custom_minimum_size = Vector2(0, 360)
@@ -289,7 +289,7 @@ text = "Identity"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Back returns to character select. Confirm carries this exact opener into the run."
+text = "Back returns to character select. Confirm carries this exact opener into the arena."
 
 [node name="WeaponPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(360, 0)
@@ -321,19 +321,19 @@ theme_override_constants/separation = 14
 [node name="WeaponTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-text = "Starter Weapons"
+text = "Starter Arsenal"
 
 [node name="WeaponBody" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Only valid starting weapons appear here. Use R for a random opener or T to snap back to the default choice."
+text = "Only valid openers appear here. Use R for a random start or T to snap back to the default."
 
 [node name="WeaponStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
 autowrap_mode = 3
-text = "Each card shows role, tags, and whether it is the default opener."
+text = "Each card shows the role, tags, and whether it is the default opener."
 
 [node name="WeaponScroll" type="ScrollContainer" parent="RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox"]
 layout_mode = 2
@@ -391,19 +391,19 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
 theme_override_font_sizes/font_size = 18
-text = "Starter Choice"
+text = "Ready Check"
 
 [node name="Headline" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Pick the opener that shapes the first minute of the run."
+text = "Pick the opener that defines your first minute in the arena."
 
 [node name="SelectionState" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
-text = "Default starter selected."
+text = "Default opener selected."
 
 [node name="SelectionSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
@@ -415,7 +415,7 @@ text = "Selection status"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 theme_override_font_sizes/font_size = 16
-text = "Selected Weapon"
+text = "Weapon Profile"
 
 [node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox"]
 layout_mode = 2
@@ -435,7 +435,7 @@ theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
 autowrap_mode = 3
 text = "Tags: None"
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
+[node name="ActionRow" type="FlowContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
@@ -459,4 +459,4 @@ text = "Default Starter"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
-text = "Shortcuts: Up/Down browse, Enter start, R random starter, T default starter, Esc back."
+text = "Shortcuts: Up or Down browse, Enter start, R random, T default, Esc back."

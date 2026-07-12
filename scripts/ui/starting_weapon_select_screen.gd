@@ -41,6 +41,7 @@ const STARTING_WEAPON_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/
 @onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedName
 @onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedDescription
 @onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedTags
+@onready var action_row: FlowContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow
 @onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/ConfirmButton
 @onready var back_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/BackButton
 @onready var default_button: Button = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow/DefaultButton
@@ -101,21 +102,21 @@ func _load_state() -> void:
 	var selection_state: Dictionary = CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(data_registry, current_character_id)
 	var character_entry_variant: Variant = selection_state.get("character_entry", {})
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
-	title_label.text = "Choose Your Starting Weapon"
+	title_label.text = "Ready Check"
 	var display_name: String = str(selection_state.get("display_name", current_character_id))
 	var family_count := 0
 	if not current_character_entry.is_empty():
 		family_count = int(current_character_entry.get("family_weapon_count", 0))
-	headline_label.text = "%s - choose the weapon that opens this run." % display_name
+	headline_label.text = "%s - choose the opener that shapes your first minute." % display_name
 	if _is_tight_viewport():
 		headline_label.text = "%s - choose your opening weapon." % display_name
 	if family_count > 0:
-		headline_label.text = "%s\nFamily arsenal: %d weapons" % [headline_label.text, family_count]
+		headline_label.text = "%s\nStarter pool: %d weapon%s" % [headline_label.text, family_count, "" if family_count == 1 else "s"]
 	var selection_source: String = str(selection_state.get("selection_source", "default_starter"))
 	if selection_state_label != null:
-		selection_state_label.text = "Default opening weapon selected."
+		selection_state_label.text = "Default opener selected."
 		if selection_source == "remembered_choice":
-			selection_state_label.text = "Restored your previous opening weapon."
+			selection_state_label.text = "Restored your previous opener."
 	_apply_character_summary(display_name)
 	var options_variant: Variant = selection_state.get("weapon_options", [])
 	if options_variant is Array:
@@ -186,7 +187,7 @@ func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
 	var display_name: String = str(option.get("display_name", option.get("id", "Weapon")))
 	var description: String = _summarize_description(str(option.get("description", "")))
 	var tags_text: String = "Tags: %s" % _join_tags(option.get("tags", []))
-	var badge: String = "[Default] " if option.get("default_selected", false) == true else ""
+	var badge: String = "Default opener / " if option.get("default_selected", false) == true else ""
 	var prefix: String = "> " if is_selected else ""
 	if _is_tight_viewport():
 		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
@@ -220,13 +221,13 @@ func _refresh_selection() -> void:
 	var starter_label: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
 	if selection_state_label != null:
 		if option.get("default_selected", false) == true:
-			selection_state_label.text = "Default opening weapon selected."
+			selection_state_label.text = "Default opener selected."
 		else:
-			selection_state_label.text = "Alternate starting weapon selected."
-	selection_summary_label.text = "%s: %s\nThis weapon will be written into the run-start payload for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
+			selection_state_label.text = "Alternate opener selected."
+	selection_summary_label.text = "%s: %s\nThis exact choice will be carried into the run for %s." % [starter_label, display_name, str(current_character_entry.get("display_name", current_character_id))]
 	if confirm_button != null:
 		confirm_button.disabled = false
-		confirm_button.text = "Start Run" if _is_tight_viewport() else "Enter Arena with %s" % display_name
+		confirm_button.text = "Start Run" if _is_tight_viewport() else "Enter Arena - %s" % display_name
 	if default_button != null:
 		default_button.disabled = option.get("default_selected", false) == true
 
@@ -429,6 +430,9 @@ func _apply_responsive_layout() -> void:
 		weapon_scroll.custom_minimum_size = Vector2(0, 0)
 	if detail_scroll != null:
 		detail_scroll.custom_minimum_size = Vector2(0, 0)
+	if action_row != null:
+		action_row.add_theme_constant_override("h_separation", 10 if tight else 14)
+		action_row.add_theme_constant_override("v_separation", 10 if tight else 12)
 	if hero_panel != null:
 		hero_panel.custom_minimum_size = Vector2(0, 140 if very_tight else (164 if tight else (260 if compact else 330)))
 	if portrait_stage != null:
@@ -452,13 +456,13 @@ func _apply_responsive_layout() -> void:
 	if selected_name_label != null:
 		selected_name_label.add_theme_font_size_override("font_size", int(round((22 if tight else (30 if compact else 36)) * font_scale)))
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(96 if very_tight else (126 if tight else 220), 40 if very_tight else (42 if tight else 50))
+		confirm_button.custom_minimum_size = Vector2(116 if very_tight else (156 if tight else 220), 40 if very_tight else (42 if tight else 50))
 		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(72 if very_tight else (92 if tight else 160), 40 if very_tight else (42 if tight else 50))
+		back_button.custom_minimum_size = Vector2(84 if very_tight else (112 if tight else 160), 40 if very_tight else (42 if tight else 50))
 		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if default_button != null:
-		default_button.custom_minimum_size = Vector2(78 if very_tight else (100 if tight else 160), 40 if very_tight else (42 if tight else 50))
+		default_button.custom_minimum_size = Vector2(96 if very_tight else (124 if tight else 160), 40 if very_tight else (42 if tight else 50))
 		default_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_refresh_weapon_buttons()
 
