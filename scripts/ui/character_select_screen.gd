@@ -318,7 +318,8 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	if portrait_halo != null:
 		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
-	var visual_path: String = str(detail.get("visual_path", ""))
+	var entry: Dictionary = _find_character_entry(character_id)
+	var visual_path: String = str(entry.get("visual_path", ""))
 	if portrait_path == "" and visual_path == "":
 		portrait_rect.texture = null
 		_refresh_portrait_fallback(detail, null)

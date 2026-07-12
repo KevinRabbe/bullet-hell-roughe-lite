@@ -210,7 +210,7 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
 	var accent: Color = _family_accent_color(str(entry.get("preferred_weapon_family", "")))
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
-	var fallback_visual_path: String = str(detail.get("visual_path", ""))
+	var fallback_visual_path: String = str(entry.get("visual_path", ""))
 	var portrait_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, fallback_visual_path)
 	layout.add_child(_build_card_art_frame(portrait_texture, accent, Vector2(84, 112)))
 

@@ -255,7 +255,7 @@ func _apply_character_summary(display_name: String) -> void:
 		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % current_character_id
-	var visual_path: String = str(detail.get("visual_path", ""))
+	var visual_path: String = str(current_character_entry.get("visual_path", ""))
 	if portrait_path == "" and visual_path == "":
 		portrait_rect.texture = null
 		_refresh_portrait_fallback(null)
