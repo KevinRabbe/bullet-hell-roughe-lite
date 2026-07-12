@@ -18,6 +18,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var result_title_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultTitle
 @onready var result_summary_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultSummary
 @onready var result_stats_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultStats
+@onready var action_row: FlowContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow
 @onready var retry_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/RetryButton
 @onready var new_character_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/NewCharacterButton
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
@@ -27,7 +28,7 @@ var standalone_mode: bool = true
 var accessibility_settings: Dictionary = {}
 var result_state: Dictionary = {
 	"title": "Run Complete",
-	"summary": "Use this shell for victory and defeat handoff once the in-run results flow is wired.",
+	"summary": "This screen closes the run cleanly and points you back toward the next frontier decision.",
 	"stats": [
 		"Wave reached: -",
 		"Gold earned: -",
@@ -133,6 +134,9 @@ func _apply_responsive_layout() -> void:
 	if result_stats_label != null:
 		result_stats_label.add_theme_font_size_override("font_size", int(round((14 if tight else (15 if compact else 17)) * font_scale)))
 		result_stats_label.modulate = Color(0.90, 0.92, 0.98, 0.98) if high_contrast else Color(0.80, 0.84, 0.90, 0.95)
+	if action_row != null:
+		action_row.add_theme_constant_override("h_separation", 10 if tight else 14)
+		action_row.add_theme_constant_override("v_separation", 10 if tight else 12)
 	var button_size := Vector2(150 if tight else (180 if compact else 220), 46 if tight else (50 if compact else 54))
 	for action_button in [retry_button, new_character_button, main_menu_button]:
 		if action_button != null:
@@ -178,7 +182,7 @@ func _apply_action_button_style(button: Button, accent: Color, is_primary: bool 
 func _refresh_action_hint() -> void:
 	if action_hint_label == null:
 		return
-	action_hint_label.text = "Shortcuts: R retry, Enter new character, Esc main menu." if standalone_mode else "Shortcuts: R retry, Enter new character, Esc return to main menu."
+	action_hint_label.text = "Shortcuts: R retry / Enter new hunter / Esc main menu." if standalone_mode else "Shortcuts: R retry / Enter new hunter / Esc return to main menu."
 
 func _build_result_eyebrow() -> String:
 	var title_text: String = str(result_state.get("title", "Run Complete")).to_lower()

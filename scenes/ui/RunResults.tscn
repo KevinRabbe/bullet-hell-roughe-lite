@@ -95,7 +95,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.94)
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Use this shell for victory and defeat handoff once the in-run results flow is wired."
+text = "This screen closes the run cleanly and points you back toward the next frontier decision."
 
 [node name="ResultStats" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 custom_minimum_size = Vector2(0, 180)
@@ -106,7 +106,7 @@ vertical_alignment = 1
 autowrap_mode = 3
 text = "Wave reached: -\nGold earned: -\nBuild focus: -"
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
+[node name="ActionRow" type="FlowContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
 alignment = 1
 theme_override_constants/separation = 14
@@ -114,12 +114,12 @@ theme_override_constants/separation = 14
 [node name="RetryButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-text = "Retry Run"
+text = "Retry Frontier"
 
 [node name="NewCharacterButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(260, 54)
 layout_mode = 2
-text = "Choose New Character"
+text = "Choose New Hunter"
 
 [node name="MainMenuButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 54)
