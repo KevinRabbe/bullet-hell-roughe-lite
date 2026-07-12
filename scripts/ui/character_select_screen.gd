@@ -29,6 +29,10 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 @onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage
 @onready var portrait_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFrameArtSlot
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_fallback: VBoxContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback
+@onready var portrait_fallback_title: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackTitle
+@onready var portrait_fallback_meta: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackMeta
+@onready var portrait_fallback_body: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackBody
 @onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
@@ -317,10 +321,31 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	var visual_path: String = str(detail.get("visual_path", ""))
 	if portrait_path == "" and visual_path == "":
 		portrait_rect.texture = null
+		_refresh_portrait_fallback(detail, null)
 		return
-	portrait_rect.texture = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	portrait_rect.texture = resolved_texture
+	_refresh_portrait_fallback(detail, resolved_texture)
 	if portrait_rect.texture != null:
 		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
+
+func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D) -> void:
+	if portrait_fallback == null:
+		return
+	var has_texture: bool = resolved_texture != null
+	portrait_fallback.visible = not has_texture
+	if has_texture:
+		return
+	var display_name: String = name_label.text if name_label != null else "Selected Hunter"
+	var family_text: String = str(detail.get("family_label", "Unknown"))
+	var difficulty_text: String = difficulty_label.text.replace("Difficulty: ", "") if difficulty_label != null else "Unknown"
+	if portrait_fallback_title != null:
+		portrait_fallback_title.text = display_name
+	if portrait_fallback_meta != null:
+		portrait_fallback_meta.text = "%s · %s" % [family_text, difficulty_text]
+	if portrait_fallback_body != null:
+		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
+		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else "Portrait preview will swap in here once menu-specific art is ready."
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
@@ -478,6 +503,12 @@ func _apply_responsive_layout() -> void:
 		portrait_stage.custom_minimum_size = Vector2(0, 132 if very_tight else (164 if tight else (224 if compact else 320)))
 	if portrait_rect != null:
 		portrait_rect.custom_minimum_size = Vector2(0, 112 if very_tight else (132 if tight else (190 if compact else 280)))
+	if portrait_fallback_title != null:
+		portrait_fallback_title.add_theme_font_size_override("font_size", int(round((18 if very_tight else (20 if tight else 26)) * font_scale)))
+	if portrait_fallback_meta != null:
+		portrait_fallback_meta.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
+	if portrait_fallback_body != null:
+		portrait_fallback_body.add_theme_font_size_override("font_size", int(round((12 if very_tight else (13 if tight else 15)) * font_scale)))
 	if roster_title_label != null:
 		roster_title_label.add_theme_font_size_override("font_size", int(round((20 if very_tight else (23 if tight else 28)) * font_scale)))
 	if roster_body_label != null:

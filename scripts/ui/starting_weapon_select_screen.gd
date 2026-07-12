@@ -19,6 +19,10 @@ const STARTING_WEAPON_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/
 @onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage
 @onready var portrait_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFrameArtSlot
 @onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_fallback: VBoxContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFallback
+@onready var portrait_fallback_title: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFallback/PortraitFallbackTitle
+@onready var portrait_fallback_meta: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFallback/PortraitFallbackMeta
+@onready var portrait_fallback_body: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitFallback/PortraitFallbackBody
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/PortraitStage/PortraitAccentBar
 @onready var character_name_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/HeroPanel/HeroMargin/HeroVBox/CharacterName
@@ -254,10 +258,32 @@ func _apply_character_summary(display_name: String) -> void:
 	var visual_path: String = str(detail.get("visual_path", ""))
 	if portrait_path == "" and visual_path == "":
 		portrait_rect.texture = null
+		_refresh_portrait_fallback(null)
 		return
-	portrait_rect.texture = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	portrait_rect.texture = resolved_texture
+	_refresh_portrait_fallback(resolved_texture)
 	if portrait_rect.texture != null:
 		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
+
+func _refresh_portrait_fallback(resolved_texture: Texture2D) -> void:
+	if portrait_fallback == null:
+		return
+	var has_texture: bool = resolved_texture != null
+	portrait_fallback.visible = not has_texture
+	if has_texture:
+		return
+	var detail_variant: Variant = current_character_entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var family_text: String = str(detail.get("family_label", "")).strip_edges()
+	var passive_text: String = passive_label.text.replace("Passive: ", "") if passive_label != null else "-"
+	if portrait_fallback_title != null:
+		portrait_fallback_title.text = character_name_label.text if character_name_label != null else "Opening Hunter"
+	if portrait_fallback_meta != null:
+		portrait_fallback_meta.text = "%s · %s" % [family_text if family_text != "" else "Family", passive_text]
+	if portrait_fallback_body != null:
+		var hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
+		portrait_fallback_body.text = hook if hook != "" else "Menu portrait art can drop into this frame later without changing the shipped layout."
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)
@@ -440,6 +466,12 @@ func _apply_responsive_layout() -> void:
 		portrait_stage.custom_minimum_size = Vector2(0, 92 if very_tight else (108 if tight else (170 if compact else 210)))
 	if portrait_rect != null:
 		portrait_rect.custom_minimum_size = Vector2(0, 82 if very_tight else (94 if tight else (142 if compact else 180)))
+	if portrait_fallback_title != null:
+		portrait_fallback_title.add_theme_font_size_override("font_size", int(round((17 if very_tight else (18 if tight else 24)) * font_scale)))
+	if portrait_fallback_meta != null:
+		portrait_fallback_meta.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
+	if portrait_fallback_body != null:
+		portrait_fallback_body.add_theme_font_size_override("font_size", int(round((11 if very_tight else (12 if tight else 14)) * font_scale)))
 	if weapon_list != null:
 		weapon_list.columns = 1 if tight else (1 if viewport_size.x < 1360.0 else 2)
 	if character_name_label != null:
