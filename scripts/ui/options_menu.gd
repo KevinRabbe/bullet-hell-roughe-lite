@@ -241,6 +241,7 @@ func _apply_placeholder_content(title: String, body: String, focus_title: String
 func _refresh_video_content() -> void:
 	var resolution: Vector2i = DisplaySettingsRuntimeRef.get_resolution(staged_settings)
 	var fullscreen_enabled: bool = staged_settings.get("fullscreen", false) == true
+	var live_viewport: Vector2i = get_viewport_rect().size
 	if resolution_value_label != null:
 		resolution_value_label.text = "%dx%d" % [resolution.x, resolution.y]
 	if saved_profile_value_label != null:
@@ -268,8 +269,9 @@ func _refresh_video_content() -> void:
 		reset_button.disabled = DisplaySettingsRuntimeRef.settings_match(DisplaySettingsRuntimeRef.default_settings(), staged_settings)
 	if preview_summary_label != null:
 		preview_summary_label.text = _build_video_preview_summary(staged_settings)
+		preview_summary_label.text += "\n%s" % DisplaySettingsRuntimeRef.build_runtime_summary(live_viewport)
 		if _is_editor_preview_session():
-			preview_summary_label.text += "\nEditor preview stays inside the game tab."
+			preview_summary_label.text += "\nEditor preview stays inside the game tab, so Apply saves the profile but does not resize the embedded tab."
 	_refresh_action_row_state()
 
 func _build_saved_video_profile_summary(settings: Dictionary) -> String:
