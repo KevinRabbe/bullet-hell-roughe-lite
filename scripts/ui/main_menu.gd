@@ -4,6 +4,7 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
@@ -32,6 +33,12 @@ const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six a
 @onready var credits_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/CreditsButton
 @onready var quit_button: Button = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/QuitButton
 @onready var action_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/ActionHint
+@onready var step_chip_1: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip1
+@onready var step_chip_2: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip2
+@onready var step_chip_3: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip3
+@onready var step_chip_4: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip4
+@onready var build_chip: PanelContainer = $RootMargin/RootVBox/HeaderRow/BuildChip
+@onready var flow_chip: PanelContainer = $RootMargin/RootVBox/HeaderRow/FlowChip
 @onready var featured_roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterList
 @onready var featured_roster_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox/FeaturedRosterTitle
 @onready var status_title: Label = $RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox/StatusTitle
@@ -61,6 +68,7 @@ func _ready() -> void:
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_hide_dialog()
 	_apply_menu_art_slots()
+	_apply_shared_frame_styles()
 	_apply_responsive_layout()
 	_rebuild_featured_roster()
 	MenuAnimationRuntimeRef.play_screen_intro([hero_column, info_column])
@@ -273,6 +281,14 @@ func _build_featured_roster_card(entry: Dictionary) -> PanelContainer:
 		column.add_child(tags_label)
 
 	return card
+
+func _apply_shared_frame_styles() -> void:
+	MenuFrameRuntimeRef.apply_button_frame(start_button, MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH, Color(1.0, 0.97, 0.97, 1.0), Color(1.0, 1.0, 1.0, 1.0))
+	for button in [armory_button, options_button, credits_button, quit_button]:
+		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH, Color(0.90, 0.93, 1.0, 0.98), Color(1.0, 1.0, 1.0, 1.0))
+	for panel in [step_chip_1, step_chip_2, step_chip_3, step_chip_4, flow_chip]:
+		MenuFrameRuntimeRef.apply_chip_frame(panel, Color(0.82, 0.88, 0.98, 0.95))
+	MenuFrameRuntimeRef.apply_chip_frame(build_chip, Color(0.98, 0.88, 0.70, 0.98))
 
 func _format_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):

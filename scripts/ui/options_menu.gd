@@ -4,6 +4,7 @@ const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const OPTIONS_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 
@@ -16,6 +17,7 @@ const TAB_ACCESSIBILITY := "accessibility"
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var root_vbox: VBoxContainer = $RootMargin/RootVBox
 @onready var header_row: HBoxContainer = $RootMargin/RootVBox/HeaderRow
+@onready var step_chip: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip
 @onready var header_copy_label: Label = $RootMargin/RootVBox/HeaderRow/HeaderCopy
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
 @onready var nav_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/NavPanel
@@ -87,6 +89,7 @@ func _ready() -> void:
 	_ensure_audio_runtime_content()
 	_ensure_controls_runtime_content()
 	_ensure_accessibility_runtime_content()
+	_apply_shared_frame_styles()
 	_apply_responsive_layout()
 	_connect_buttons()
 	_refresh_tab_styles()
@@ -167,30 +170,10 @@ func _refresh_tab_styles() -> void:
 func _apply_tab_button_style(button: Button, is_selected: bool) -> void:
 	if button == null:
 		return
-	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(staged_accessibility_settings)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.content_margin_left = 14
-	style.content_margin_top = 14
-	style.content_margin_right = 14
-	style.content_margin_bottom = 14
 	if is_selected:
-		style.bg_color = Color(0.40, 0.13, 0.20, 0.96) if high_contrast else Color(0.33, 0.11, 0.18, 0.92)
-		style.border_color = Color(1.0, 0.76, 0.76, 0.95) if high_contrast else Color(0.99, 0.56, 0.56, 0.85)
+		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH, Color(1.0, 0.96, 0.96, 1.0), Color(1.0, 1.0, 1.0, 1.0))
 	else:
-		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.05, 0.055, 0.086, 0.92)
-		style.border_color = Color(1.0, 0.76, 0.76, 0.40) if high_contrast else Color(0.99, 0.56, 0.56, 0.18)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH, Color(0.90, 0.93, 1.0, 0.98), Color(1.0, 1.0, 1.0, 1.0))
 
 func _refresh_content() -> void:
 	var showing_video: bool = current_tab == TAB_VIDEO
@@ -452,6 +435,12 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 		return true
 	target.texture = null
 	return false
+
+func _apply_shared_frame_styles() -> void:
+	MenuFrameRuntimeRef.apply_chip_frame(step_chip, Color(0.98, 0.88, 0.70, 0.98))
+	MenuFrameRuntimeRef.apply_button_frame(apply_button, MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH, Color(1.0, 0.97, 0.97, 1.0), Color(1.0, 1.0, 1.0, 1.0))
+	for button in [reset_button, back_button]:
+		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH, Color(0.90, 0.93, 1.0, 0.98), Color(1.0, 1.0, 1.0, 1.0))
 
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(staged_accessibility_settings)
