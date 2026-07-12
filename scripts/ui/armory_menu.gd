@@ -23,7 +23,7 @@ const SECTION_DATA := {
 			"Keep strengths, tradeoffs, and starter identity readable for future codex expansion.",
 			"Later passes can add unlocks, completion marks, and deeper progression notes."
 		],
-		"status": "Status: shell ready, deeper codex content planned."
+		"status": "Current route: active roster notes are live. Unlock history and progression layers can slot in later."
 	},
 	"weapons": {
 		"title": "Weapon Codex",
@@ -34,7 +34,7 @@ const SECTION_DATA := {
 			"Keep later tag-driven build guidance separate from live shop logic.",
 			"Reserve room for rarity, starter pools, and future unlock notes."
 		],
-		"status": "Status: shell ready, data display still to come."
+		"status": "Current route: active weapons, tags, and feel notes are live. Deeper mastery breakdowns can arrive later."
 	},
 	"items": {
 		"title": "Item Codex",
@@ -45,7 +45,7 @@ const SECTION_DATA := {
 			"Keep room for tag synergies and recommended pairings later.",
 			"Do not promise unlock/progression systems until they actually exist."
 		],
-		"status": "Status: route reserved, codex entries deferred."
+		"status": "Current route: item notes stay intentionally lightweight while the active item catalog keeps growing."
 	},
 	"set_bonuses": {
 		"title": "Set Bonus Codex",
@@ -56,7 +56,7 @@ const SECTION_DATA := {
 			"Keep family identity visible without hiding cross-tag build options.",
 			"Reserve visual space for future family icons and threshold breakdowns."
 		],
-		"status": "Status: shell ready, effect catalog to follow."
+		"status": "Current route: family thresholds and effect summaries are live. Deeper synergy callouts can follow later."
 	}
 }
 
@@ -525,7 +525,7 @@ func _build_collection_card(section_id: String) -> PanelContainer:
 	column.add_child(summary)
 
 	var footer := Label.new()
-	footer.text = "Open section overview"
+	footer.text = "Browse this route"
 	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
 	column.add_child(footer)
 
@@ -545,8 +545,8 @@ func _refresh_detail() -> void:
 		_refresh_set_bonus_detail()
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
-	collection_title.text = "Collection Overview"
-	collection_body.text = "The Armory home should make future discovery routes feel deliberate even before the codex data is fully populated."
+	collection_title.text = "Armory Overview"
+	collection_body.text = "Use the Armory to study roster identity, weapon roles, item hooks, and family rewards before you commit to a frontier run."
 	var data: Dictionary = SECTION_DATA.get(selected_section_id, {})
 	detail_title.text = str(data.get("title", "Armory"))
 	detail_subtitle.text = str(data.get("subtitle", ""))
@@ -570,7 +570,7 @@ func _refresh_character_detail() -> void:
 		detail_subtitle.text = "No roster entry selected."
 		detail_summary.text = "Character presentation data will appear here once a roster entry is selected."
 		detail_bullets.text = ""
-		detail_status.text = "Status: waiting for valid character data."
+		detail_status.text = "Current route: no valid character entry is available yet."
 		return
 	collection_grid.columns = 1
 	collection_title.text = "Character Codex"
@@ -618,7 +618,7 @@ func _refresh_weapon_detail() -> void:
 		detail_subtitle.text = "No weapon entry selected."
 		detail_summary.text = "Weapon family, tag, and cadence details will appear here once a weapon entry is selected."
 		detail_bullets.text = ""
-		detail_status.text = "Status: waiting for valid weapon data."
+		detail_status.text = "Current route: no valid weapon entry is available yet."
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Weapon Codex"
@@ -656,7 +656,7 @@ func _refresh_item_detail() -> void:
 		detail_subtitle.text = "No item entry selected."
 		detail_summary.text = "Item tags, stat hooks, and build-bridging notes will appear here once an item entry is selected."
 		detail_bullets.text = ""
-		detail_status.text = "Status: waiting for valid item data."
+		detail_status.text = "Current route: no valid item entry is available yet."
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Item Codex"
@@ -690,7 +690,7 @@ func _refresh_set_bonus_detail() -> void:
 		detail_subtitle.text = "No set bonus entry selected."
 		detail_summary.text = "Family threshold rewards and tag-facing bonus notes will appear here once a set bonus entry is selected."
 		detail_bullets.text = ""
-		detail_status.text = "Status: waiting for valid set bonus data."
+		detail_status.text = "Current route: no valid set bonus entry is available yet."
 		return
 	collection_grid.columns = 1 if get_viewport_rect().size.x < 1500.0 else 2
 	collection_title.text = "Set Bonus Codex"
