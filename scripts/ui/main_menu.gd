@@ -13,9 +13,9 @@ const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds
 const MAIN_MENU_LOGO_ART_PATH := "res://assets/sprites/ui/menu/logos/main_menu_logo.png"
 const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_hero_art.png"
 
-const ARMORY_COPY := "The Armory will become the long-term home for character, weapon, item, and set-bonus discovery. For now, Start Run remains the primary route into the arena."
-const OPTIONS_COPY := "Tune the display settings here so the front-door menu stays readable while we finish the final art pass."
-const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six active characters, weapon identity passes, portal hooks, and a growing tag-driven build layer."
+const ARMORY_COPY := "The Armory is the reference room for hunters, weapons, items, and set bonuses. Start Frontier Run remains the fastest path back into the arena."
+const OPTIONS_COPY := "Tune display settings here so the front door stays crisp and readable while the final art pass catches up."
+const CREDITS_COPY := "Built in Godot as a dark bullet-hell roguelite with six active hunters, weapon identity passes, portal hooks, and a growing tag-driven build layer."
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var logo_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox/LogoArtSlot
