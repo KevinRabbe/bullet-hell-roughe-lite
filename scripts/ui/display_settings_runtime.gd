@@ -77,6 +77,16 @@ static func build_summary(settings: Dictionary) -> String:
 	var mode: String = "Fullscreen" if settings.get("fullscreen", false) == true else "Windowed"
 	return "%s / %dx%d" % [mode, resolution.x, resolution.y]
 
+static func build_runtime_summary(viewport_size: Vector2i = Vector2i.ZERO) -> String:
+	var window_mode: int = DisplayServer.window_get_mode()
+	var fullscreen: bool = window_mode == DisplayServer.WINDOW_MODE_FULLSCREEN or window_mode == DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN
+	var window_size: Vector2i = DisplayServer.window_get_size()
+	var size_summary: String = "%dx%d" % [window_size.x, window_size.y]
+	if viewport_size.x > 0 and viewport_size.y > 0 and viewport_size != window_size:
+		size_summary = "%s (viewport %dx%d)" % [size_summary, viewport_size.x, viewport_size.y]
+	var mode: String = "Fullscreen" if fullscreen else "Windowed"
+	return "Live shell: %s / %s" % [mode, size_summary]
+
 static func get_resolution(settings: Dictionary) -> Vector2i:
 	return _normalize_resolution(_extract_resolution(settings))
 
