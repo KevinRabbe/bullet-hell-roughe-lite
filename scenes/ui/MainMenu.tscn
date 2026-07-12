@@ -224,7 +224,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.94)
 theme_override_font_sizes/font_size = 20
 autowrap_mode = 3
-text = "Choose a hunter, lock an opening weapon, and carve through a hell-torn frontier where each run grows through portals, tags, and dangerous build pivots."
+text = "Choose a hunter, lock an opening weapon, and step into a hell-torn frontier where each run grows through portals, tags, and dangerous pivots."
 
 [node name="LogoArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
 visible = false
@@ -253,13 +253,13 @@ theme_override_constants/separation = 10
 [node name="HeroFrameTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
-text = "Hero Art"
+text = "Frontier Preview"
 
 [node name="HeroFrameBody" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
 autowrap_mode = 3
-text = "This framed stage is reserved for the final key art, logo treatment, or animated ambient scene that sells the frontier before the run begins."
+text = "This stage holds the frontier mood piece and keeps room for later key art without changing the shipped front-door route."
 
 [node name="HeroFramePlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
 custom_minimum_size = Vector2(0, 118)
@@ -292,7 +292,7 @@ offset_bottom = 13.0
 grow_horizontal = 2
 grow_vertical = 2
 horizontal_alignment = 1
-text = "Featured artwork slot"
+text = "Frontier preview art"
 
 [node name="ActionPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -313,33 +313,33 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(0, 58)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Start Run"
+text = "Start Frontier Run"
 
 [node name="ArmoryButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "Armory"
+text = "Open Armory"
 
 [node name="OptionsButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "Options"
+text = "Open Options"
 
 [node name="CreditsButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "Credits"
+text = "View Credits"
 
 [node name="QuitButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-text = "Quit"
+text = "Quit to Desktop"
 
 [node name="ActionHint" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.760784, 0.784314, 0.835294, 0.85)
 autowrap_mode = 3
-text = "Start a run now, or browse the Armory and Options while the rest of the front door keeps taking shape."
+text = "Start a run now, or check the Armory and Options before you head into the frontier."
 
 [node name="FooterLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
 layout_mode = 2
@@ -369,13 +369,13 @@ theme_override_constants/separation = 10
 [node name="FeaturedRosterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Featured Roster"
+text = "Active Hunters"
 
 [node name="FeaturedRosterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "Six active characters are already playable. This roster preview gives a fast read on who is ready for the arena."
+text = "Six hunters are already live. This preview gives a fast read on who is ready to enter the arena."
 
 [node name="FeaturedRosterList" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
 layout_mode = 2
@@ -398,13 +398,13 @@ theme_override_constants/separation = 10
 [node name="StatusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Current Build"
+text = "Frontier Status"
 
 [node name="StatusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "The current build already includes six active characters, starter weapon choice, first-pass passives, tag groundwork, portal events, and the live arena shell."
+text = "This build already supports six active hunters, starting weapon choice, first-pass passives, tag groundwork, portal events, and the live arena shell."
 
 [node name="FlowPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
 layout_mode = 2
@@ -423,13 +423,13 @@ theme_override_constants/separation = 10
 [node name="FlowTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Run Flow"
+text = "Run Route"
 
 [node name="FlowBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "1. Enter through the main menu\n2. Choose a character\n3. Lock the opening weapon\n4. Enter the arena"
+text = "1. Start from the front door\n2. Choose a hunter\n3. Lock the opener\n4. Enter the arena"
 
 [node name="FlowPlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
 custom_minimum_size = Vector2(0, 92)
@@ -450,7 +450,7 @@ offset_bottom = 13.0
 grow_horizontal = 2
 grow_vertical = 2
 horizontal_alignment = 1
-text = "Future unlock or run-preview slot"
+text = "Menu > Character > Starter > Arena"
 
 [node name="NotesPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
 layout_mode = 2
@@ -469,13 +469,13 @@ theme_override_constants/separation = 10
 [node name="NotesTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
-text = "Front Door Notes"
+text = "Before You Enter"
 
 [node name="NotesBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
 autowrap_mode = 3
-text = "This front door is built around the final route and panel hierarchy first, so later art and motion can land without rewriting the whole screen."
+text = "Each menu step locks only one decision at a time so the run starts clear, readable, and harder to break."
 
 [node name="FooterRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
 layout_mode = 2
@@ -484,7 +484,7 @@ theme_override_constants/separation = 12
 [node name="VersionLabel" type="Label" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.596078, 0.627451, 0.705882, 0.9)
-text = "Current focus: Main Menu shell"
+text = "Current focus: Front door polish"
 
 [node name="FooterSpacer" type="Control" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
@@ -493,7 +493,7 @@ size_flags_horizontal = 3
 [node name="FooterPrompt" type="Label" parent="RootMargin/RootVBox/FooterRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.713726, 0.741176, 0.815686, 0.92)
-text = "Start Run opens character selection."
+text = "Start Frontier Run opens hunter selection."
 
 [node name="ModalScrim" type="ColorRect" parent="."]
 visible = false
