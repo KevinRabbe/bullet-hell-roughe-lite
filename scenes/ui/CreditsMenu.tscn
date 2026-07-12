@@ -81,7 +81,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
-text = "SLICE CREDITS"
+text = "FRONTIER CREDITS"
 
 [node name="Title" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
@@ -95,7 +95,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.94)
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Built in Godot as a dark bullet-hell roguelite with a six-character roster, tag-driven build foundations, and a menu shell that is finally starting to feel like a real front door."
+text = "A dark bullet-hell roguelite built in Godot, centered on six distinct hunters, tag-driven build growth, and a front door that now feels like part of the game instead of a placeholder shell."
 
 [node name="CreditsBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
@@ -120,7 +120,7 @@ text = "Project"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Bullet Hell Roguelite Prototype by KevinRabbe. Current focus: stable vertical slice shell, clear roster identity, and scalable tag-driven build systems."
+text = "Bullet Hell Roughe Lite by KevinRabbe. Current focus: a stable vertical slice, stronger roster identity, and systems that stay scalable as the build depth grows."
 
 [node name="Section2" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
@@ -131,7 +131,7 @@ text = "Engine & Tooling"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Made with Godot. Built through small, scoped iteration across gameplay, UI shell, data-driven content, and art integration passes."
+text = "Built with Godot through small, scoped passes across gameplay, menu shell, data-driven content, and art integration so each layer stays reviewable and shippable."
 
 [node name="Section3" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
@@ -142,7 +142,7 @@ text = "Current Slice"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Front-door menu shell, active roster baseline, starting weapon flow, options foundation, portal route, set-bonus baseline, and evolving codex/menu routes."
+text = "Current slice includes the front-door menu flow, six active hunters, starting weapon choice, first-pass passives, tag groundwork, portal events, and the evolving Armory/Options routes."
 
 [node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
@@ -151,4 +151,4 @@ alignment = 1
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-text = "Back to Main Menu"
+text = "Back to Frontier Menu"

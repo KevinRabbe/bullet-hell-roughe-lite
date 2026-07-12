@@ -80,7 +80,7 @@ text = "Armory"
 [node name="HeaderCopy" type="Label" parent="RootMargin/RootVBox/HeaderRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "Build the codex shell now so later discovery screens slot in cleanly."
+text = "Browse roster identity, weapon roles, item hooks, and family rewards without leaving the front door."
 
 [node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
 layout_mode = 2
@@ -111,7 +111,7 @@ text = "Armory"
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "Use the Armory as the long-term discovery route for roster identity, weapons, items, and set bonuses."
+text = "Use the Armory as the codex route for hunters, arsenals, item hooks, and set bonuses before you enter a run."
 
 [node name="NavButtons" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox"]
 layout_mode = 2
@@ -122,7 +122,7 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.9)
 autowrap_mode = 3
-text = "Hotkeys: 1 Characters, 2 Weapons, 3 Items, 4 Sets, Esc Back"
+text = "Hotkeys: 1 Roster, 2 Weapons, 3 Items, 4 Set Bonuses, Esc Back"
 
 [node name="CollectionPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(420, 0)
@@ -143,13 +143,13 @@ theme_override_constants/separation = 16
 [node name="CollectionTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 34
-text = "Collection Overview"
+text = "Armory Overview"
 
 [node name="CollectionBody" type="Label" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
 autowrap_mode = 3
-text = "The Armory home should make future discovery routes feel deliberate even before the codex data is fully populated."
+text = "Use this hub to review what each route already offers now, then branch into deeper codex detail as the slice expands."
 
 [node name="CollectionGrid" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/CollectionPanel/CollectionMargin/CollectionVBox"]
 layout_mode = 2
@@ -211,4 +211,4 @@ theme_override_constants/separation = 12
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/ActionRow"]
 custom_minimum_size = Vector2(200, 54)
 layout_mode = 2
-text = "Back to Main Menu"
+text = "Back to Frontier Menu"
