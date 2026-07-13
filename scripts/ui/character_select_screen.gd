@@ -56,6 +56,11 @@ const ROSTER_EMBER_NODE := "RosterCardEmber"
 @onready var starter_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard
 @onready var tradeoff_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard
 @onready var flow_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard
+@onready var identity_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityAccent
+@onready var passive_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveAccent
+@onready var starter_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterAccent
+@onready var tradeoff_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffAccent
+@onready var flow_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard/FlowAccent
 @onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/Summary
 @onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/FantasyHook
 @onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveName
@@ -409,6 +414,7 @@ func _refresh_selection_details() -> void:
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
 	if current_entry.get("detail", null) is Dictionary:
 		detail = current_entry.get("detail", {})
+	var accent: Color = _family_accent_color(str(current_entry.get("preferred_weapon_family", "")))
 	heading_label.text = str(presentation.get("headline", "Choose your fighter."))
 	_apply_portrait(character_id, detail)
 	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
@@ -425,7 +431,7 @@ func _refresh_selection_details() -> void:
 			if tag_text != "":
 				tags.append(tag_text.capitalize())
 	tags_label.text = "Combat Signature"
-	_rebuild_tag_chips(tags, _family_accent_color(str(current_entry.get("preferred_weapon_family", ""))))
+	_rebuild_tag_chips(tags, accent)
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
 	var starter_title: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
 	starter_weapon_label.text = "%s: %s" % [starter_title, _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")]
@@ -435,8 +441,9 @@ func _refresh_selection_details() -> void:
 	var arsenal_title: String = str(detail.get("arsenal_label", "Arsenal"))
 	var compact_lists: bool = _is_tight_viewport()
 	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list_limited(detail.get("arsenal_names", []), "Unknown", 4 if compact_lists else 6)]
-	strengths_label.text = "Strengths: %s" % _join_detail_list_limited(detail.get("strengths", []), "None", 2 if compact_lists else 3)
-	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list_limited(detail.get("tradeoffs", []), "None", 2 if compact_lists else 3)
+	strengths_label.text = _format_detail_bullets("Strengths", detail.get("strengths", []), "No standout edge listed yet.", 2 if compact_lists else 3)
+	tradeoffs_label.text = _format_detail_bullets("Tradeoffs", detail.get("tradeoffs", []), "No major drawback listed yet.", 2 if compact_lists else 3)
+	_apply_detail_panel_accents(accent)
 	if roster_status_label != null:
 		var ready_count: int = 0
 		for entry in character_entries:
@@ -491,6 +498,18 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 			portrait_caption.text = "Runtime portrait preview"
 		else:
 			portrait_caption.text = "Frontier dossier preview"
+
+func _apply_detail_panel_accents(accent: Color) -> void:
+	_apply_card_accent(identity_accent, accent, 0.92)
+	_apply_card_accent(passive_accent, accent, 0.86)
+	_apply_card_accent(starter_accent, accent, 0.78)
+	_apply_card_accent(tradeoff_accent, accent, 0.70)
+	_apply_card_accent(flow_accent, Color(0.56, 0.62, 0.76, 1.0), 0.68)
+
+func _apply_card_accent(target: ColorRect, accent: Color, alpha: float) -> void:
+	if target == null:
+		return
+	target.color = Color(accent.r, accent.g, accent.b, alpha)
 
 func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D) -> void:
 	if portrait_fallback == null:
@@ -565,6 +584,25 @@ func _join_detail_list_limited(values_variant: Variant, empty_text: String, limi
 	for index in range(limit):
 		visible.append(parts[index])
 	return "%s +%d more" % [", ".join(visible), parts.size() - limit]
+
+func _format_detail_bullets(title: String, values_variant: Variant, empty_text: String, limit: int) -> String:
+	if not (values_variant is Array):
+		return "%s: %s" % [title, empty_text]
+	var values: Array = values_variant
+	var parts: Array[String] = []
+	for value_variant in values:
+		var value: String = str(value_variant).strip_edges()
+		if value != "":
+			parts.append(value)
+	if parts.is_empty():
+		return "%s: %s" % [title, empty_text]
+	var visible: Array[String] = []
+	var max_count: int = parts.size() if limit <= 0 else min(limit, parts.size())
+	for index in range(max_count):
+		visible.append("• %s" % parts[index])
+	if parts.size() > max_count:
+		visible.append("• +%d more" % (parts.size() - max_count))
+	return "%s\n%s" % [title, "\n".join(visible)]
 
 func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 	if tag_chips == null:
