@@ -264,7 +264,7 @@ func _apply_character_summary(display_name: String) -> void:
 		portrait_rect.texture = null
 		_refresh_portrait_fallback(null)
 		return
-	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(portrait_path)
 	portrait_rect.texture = resolved_texture
 	_refresh_portrait_fallback(resolved_texture)
 	if portrait_rect.texture != null:
@@ -287,7 +287,7 @@ func _refresh_portrait_fallback(resolved_texture: Texture2D) -> void:
 		portrait_fallback_meta.text = "%s - %s" % [family_text if family_text != "" else "Family", passive_text]
 	if portrait_fallback_body != null:
 		var hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
-		portrait_fallback_body.text = hook if hook != "" else "Portrait art will land in this frame later. The run-start layout is already locked."
+		portrait_fallback_body.text = hook if hook != "" else "Portrait art is still pending. Focus on the opener, passive, and tags while the final character card art catches up."
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)

@@ -330,7 +330,7 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 		portrait_rect.texture = null
 		_refresh_portrait_fallback(detail, null)
 		return
-	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(portrait_path)
 	portrait_rect.texture = resolved_texture
 	_refresh_portrait_fallback(detail, resolved_texture)
 	if portrait_rect.texture != null:
@@ -352,7 +352,7 @@ func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D)
 		portrait_fallback_meta.text = "%s - %s" % [family_text, difficulty_text]
 	if portrait_fallback_body != null:
 		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
-		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else "Portrait preview will swap in here once menu-specific art is ready."
+		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else "Portrait art is still pending. For now, use the passive, opener, and tradeoff notes to judge the pick."
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
