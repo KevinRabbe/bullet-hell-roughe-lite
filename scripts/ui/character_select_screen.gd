@@ -4,6 +4,7 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
@@ -348,7 +349,7 @@ func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D)
 	if portrait_fallback_title != null:
 		portrait_fallback_title.text = display_name
 	if portrait_fallback_meta != null:
-		portrait_fallback_meta.text = "%s · %s" % [family_text, difficulty_text]
+		portrait_fallback_meta.text = "%s - %s" % [family_text, difficulty_text]
 	if portrait_fallback_body != null:
 		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
 		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else "Portrait preview will swap in here once menu-specific art is ready."
@@ -616,6 +617,24 @@ func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Co
 
 func _apply_action_button_style(button: Button, bg_color: Color, border_color: Color) -> void:
 	if button == null:
+		return
+	var primary: bool = button == confirm_button
+	var framed: bool = false
+	if primary:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
+			Color(1.0, 0.97, 0.97, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	else:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	if framed:
 		return
 	var normal := StyleBoxFlat.new()
 	normal.bg_color = bg_color
