@@ -2,6 +2,7 @@ extends Control
 
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var root_margin: MarginContainer = $RootMargin
@@ -13,6 +14,7 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	_apply_shell_panel_style()
 	_apply_responsive_layout()
 	MenuAnimationRuntimeRef.play_screen_intro([main_panel])
 	resized.connect(_apply_responsive_layout)
@@ -31,6 +33,29 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+func _apply_shell_panel_style() -> void:
+	if main_panel == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.06, 0.09, 0.95)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.97, 0.83, 0.65, 0.22)
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_right = 18
+	style.corner_radius_bottom_left = 18
+	main_panel.add_theme_stylebox_override("panel", style)
+	if back_button != null:
+		MenuFrameRuntimeRef.apply_button_frame(
+			back_button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
 
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
@@ -51,3 +76,4 @@ func _apply_responsive_layout() -> void:
 		summary_label.add_theme_font_size_override("font_size", 15 if tight else 17)
 	if back_button != null:
 		back_button.custom_minimum_size = Vector2(150 if tight else (180 if compact else 220), 46 if tight else (50 if compact else 54))
+		back_button.add_theme_font_size_override("font_size", 15 if tight else 16)
