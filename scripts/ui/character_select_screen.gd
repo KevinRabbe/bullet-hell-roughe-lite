@@ -12,6 +12,14 @@ const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/back
 const CHARACTER_SELECT_ROSTER_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_roster_frame.png"
 const CHARACTER_SELECT_HERO_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_hero_frame.png"
 const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_detail_frame.png"
+const ROSTER_CONTENT_NODE := "RosterCardContent"
+const ROSTER_MARKER_NODE := "RosterCardMarker"
+const ROSTER_NAME_NODE := "RosterCardName"
+const ROSTER_META_NODE := "RosterCardMeta"
+const ROSTER_HINT_NODE := "RosterCardHint"
+const ROSTER_ACCENT_NODE := "RosterCardAccent"
+const ROSTER_FLARE_NODE := "RosterCardFlare"
+const ROSTER_EMBER_NODE := "RosterCardEmber"
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
@@ -144,13 +152,15 @@ func _rebuild_roster_buttons() -> void:
 		var character_id := selectable_ids[index]
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, roster_button_height)
-		button.text = _build_roster_button_text(character_id, index == selected_index)
+		button.text = ""
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.focus_mode = Control.FOCUS_ALL
-		button.clip_text = true
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
+		button.clip_text = false
+		button.autowrap_mode = TextServer.AUTOWRAP_OFF
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		_apply_roster_button_icon(button, character_id)
+		_build_roster_button_content(button, character_id, index == selected_index, font_scale)
 		_apply_roster_button_style(button, character_id, index == selected_index)
 		button.pressed.connect(_on_character_button_pressed.bind(index))
 		roster_list.add_child(button)
@@ -185,10 +195,133 @@ func _refresh_roster_buttons() -> void:
 			continue
 		button.custom_minimum_size = Vector2(0, roster_button_height)
 		var character_id := selectable_ids[index]
-		button.add_theme_font_size_override("font_size", int(round(18.0 * font_scale)))
-		button.text = _build_roster_button_text(character_id, index == selected_index)
 		_apply_roster_button_icon(button, character_id)
+		_refresh_roster_button_content(button, character_id, index == selected_index, font_scale)
 		_apply_roster_button_style(button, character_id, index == selected_index)
+
+func _build_roster_button_content(button: Button, character_id: String, is_selected: bool, font_scale: float) -> void:
+	if button == null:
+		return
+	var accent_bar := ColorRect.new()
+	accent_bar.name = ROSTER_ACCENT_NODE
+	accent_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	accent_bar.layout_mode = 1
+	accent_bar.anchor_bottom = 1.0
+	accent_bar.offset_left = 0.0
+	accent_bar.offset_top = 10.0
+	accent_bar.offset_right = 6.0
+	accent_bar.offset_bottom = -10.0
+	button.add_child(accent_bar)
+	var flare := ColorRect.new()
+	flare.name = ROSTER_FLARE_NODE
+	flare.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flare.layout_mode = 1
+	flare.anchor_left = 1.0
+	flare.anchor_right = 1.0
+	flare.offset_left = -34.0
+	flare.offset_top = 8.0
+	flare.offset_right = -8.0
+	flare.offset_bottom = 20.0
+	flare.rotation_degrees = -12.0
+	button.add_child(flare)
+	var ember := ColorRect.new()
+	ember.name = ROSTER_EMBER_NODE
+	ember.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ember.layout_mode = 1
+	ember.anchor_left = 1.0
+	ember.anchor_top = 1.0
+	ember.anchor_right = 1.0
+	ember.anchor_bottom = 1.0
+	ember.offset_left = -56.0
+	ember.offset_top = -10.0
+	ember.offset_right = -18.0
+	ember.offset_bottom = -6.0
+	button.add_child(ember)
+	var margin := MarginContainer.new()
+	margin.name = ROSTER_CONTENT_NODE
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	margin.layout_mode = 1
+	margin.anchor_right = 1.0
+	margin.anchor_bottom = 1.0
+	margin.offset_left = 18.0
+	margin.offset_top = 10.0
+	margin.offset_right = -18.0
+	margin.offset_bottom = -10.0
+	button.add_child(margin)
+	var content_row := HBoxContainer.new()
+	content_row.name = "RosterCardRow"
+	content_row.alignment = BoxContainer.ALIGNMENT_BEGIN
+	content_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content_row.add_theme_constant_override("separation", 12)
+	margin.add_child(content_row)
+	var marker := Label.new()
+	marker.name = ROSTER_MARKER_NODE
+	marker.custom_minimum_size = Vector2(16, 0)
+	marker.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	content_row.add_child(marker)
+	var text_vbox := VBoxContainer.new()
+	text_vbox.name = "RosterCardTextVBox"
+	text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_vbox.add_theme_constant_override("separation", 3)
+	content_row.add_child(text_vbox)
+	var name_label := Label.new()
+	name_label.name = ROSTER_NAME_NODE
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text_vbox.add_child(name_label)
+	var meta_label := Label.new()
+	meta_label.name = ROSTER_META_NODE
+	meta_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text_vbox.add_child(meta_label)
+	var hint_label := Label.new()
+	hint_label.name = ROSTER_HINT_NODE
+	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text_vbox.add_child(hint_label)
+	_refresh_roster_button_content(button, character_id, is_selected, font_scale)
+
+func _refresh_roster_button_content(button: Button, character_id: String, is_selected: bool, font_scale: float) -> void:
+	if button == null:
+		return
+	var marker := button.find_child(ROSTER_MARKER_NODE, true, false) as Label
+	var name_label := button.find_child(ROSTER_NAME_NODE, true, false) as Label
+	var meta_label := button.find_child(ROSTER_META_NODE, true, false) as Label
+	var hint_label := button.find_child(ROSTER_HINT_NODE, true, false) as Label
+	var accent_bar := button.find_child(ROSTER_ACCENT_NODE, true, false) as ColorRect
+	var flare := button.find_child(ROSTER_FLARE_NODE, true, false) as ColorRect
+	var ember := button.find_child(ROSTER_EMBER_NODE, true, false) as ColorRect
+	var entry := _find_character_entry(character_id)
+	var presentation_variant: Variant = entry.get("presentation", {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = entry.get("detail", {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var accent: Color = _family_accent_color(str(entry.get("preferred_weapon_family", "")))
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var name_text: String = str(display_names.get(character_id, character_id))
+	var difficulty_text: String = str(presentation.get("difficulty", "medium")).capitalize()
+	var family_text: String = str(detail.get("family_label", "")).strip_edges()
+	var hook_text: String = str(detail.get("fantasy_hook", "")).strip_edges()
+	if marker != null:
+		marker.text = ">" if is_selected else ""
+		marker.add_theme_font_size_override("font_size", int(round(22.0 * font_scale)))
+		marker.modulate = Color(1, 0.98, 0.94, 0.96) if is_selected else Color(accent.r, accent.g, accent.b, 0.9)
+	if name_label != null:
+		name_label.text = name_text
+		name_label.add_theme_font_size_override("font_size", int(round((20.0 if _is_tight_viewport() else 22.0) * font_scale)))
+		name_label.modulate = Color(1, 1, 1, 0.98)
+	if meta_label != null:
+		meta_label.text = difficulty_text if family_text == "" else "%s • %s" % [family_text, difficulty_text]
+		meta_label.add_theme_font_size_override("font_size", int(round((14.0 if _is_tight_viewport() else 15.0) * font_scale)))
+		meta_label.modulate = Color(0.90, 0.92, 0.98, 0.92) if is_selected else Color(0.78, 0.81, 0.88, 0.88)
+	if hint_label != null:
+		hint_label.text = _truncate_copy(hook_text, 54 if _is_tight_viewport() else 78)
+		hint_label.visible = not _is_tight_viewport() and hook_text != ""
+		hint_label.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
+		hint_label.modulate = Color(accent.r, accent.g, accent.b, 0.88) if is_selected else Color(accent.r, accent.g, accent.b, 0.74)
+	if accent_bar != null:
+		accent_bar.color = Color(accent.r, accent.g, accent.b, 0.95 if is_selected else (0.72 if high_contrast else 0.58))
+	if flare != null:
+		flare.color = Color(accent.r, accent.g, accent.b, 0.34 if is_selected else 0.18)
+	if ember != null:
+		ember.color = Color(accent.r, accent.g, accent.b, 0.58 if is_selected else 0.28)
 
 func _build_roster_button_text(character_id: String, is_selected: bool) -> String:
 	var entry := _find_character_entry(character_id)
@@ -218,20 +351,22 @@ func _apply_roster_button_style(button: Button, character_id: String, is_selecte
 	var entry := _find_character_entry(character_id)
 	var accent := _family_accent_color(str(entry.get("preferred_weapon_family", "")))
 	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
+	style.corner_radius_top_left = 22
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 12
+	style.border_width_left = 2
 	style.border_width_top = 1
 	style.border_width_right = 1
 	style.border_width_bottom = 1
-	style.content_margin_left = 16
-	style.content_margin_top = 14
-	style.content_margin_right = 16
-	style.content_margin_bottom = 14
+	style.content_margin_left = 14
+	style.content_margin_top = 10
+	style.content_margin_right = 14
+	style.content_margin_bottom = 10
+	style.shadow_size = 8 if is_selected else 4
+	style.shadow_color = Color(accent.r, accent.g, accent.b, 0.16) if is_selected else Color(0, 0, 0, 0.18)
 	if is_selected:
-		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.22)
+		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
 		style.border_color = Color(accent.r, accent.g, accent.b, 0.95) if high_contrast else Color(accent.r, accent.g, accent.b, 0.78)
 	else:
 		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
@@ -598,10 +733,10 @@ func _apply_responsive_layout() -> void:
 func _roster_button_height() -> float:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	if viewport_size.x <= 1280.0 or viewport_size.y <= 720.0:
-		return 68.0
+		return 92.0
 	if viewport_size.x < 1360.0:
-		return 86.0
-	return 94.0
+		return 104.0
+	return 118.0
 
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
@@ -620,6 +755,12 @@ func _apply_shell_panel_styles() -> void:
 	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
 	_apply_action_button_style(random_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
 	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+
+func _truncate_copy(text: String, max_length: int) -> String:
+	var trimmed: String = text.strip_edges()
+	if max_length <= 0 or trimmed.length() <= max_length:
+		return trimmed
+	return "%s…" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
 	if panel == null:
