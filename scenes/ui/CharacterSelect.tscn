@@ -527,10 +527,19 @@ theme_override_constants/separation = 16
 [node name="IdentityCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 
+[node name="IdentityAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.82)
+
 [node name="IdentityMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 16
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
@@ -561,10 +570,19 @@ text = "Fantasy hook"
 [node name="PassiveCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 
+[node name="PassiveAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.82)
+
 [node name="PassiveMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 16
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
@@ -593,10 +611,19 @@ text = "Passive summary"
 [node name="StarterCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 
+[node name="StarterAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.82)
+
 [node name="StarterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 16
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
@@ -627,10 +654,19 @@ text = "Arsenal: -"
 [node name="TradeoffCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 
+[node name="TradeoffAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.82)
+
 [node name="TradeoffMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 16
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 16
 
@@ -661,10 +697,19 @@ text = "Tradeoffs: -"
 [node name="FlowCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
 layout_mode = 2
 
+[node name="FlowAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.56, 0.62, 0.76, 0.74)
+
 [node name="FlowMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard"]
 layout_mode = 2
 theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 14
+theme_override_constants/margin_top = 18
 theme_override_constants/margin_right = 18
 theme_override_constants/margin_bottom = 14
 
