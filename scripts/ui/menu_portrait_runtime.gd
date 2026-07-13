@@ -2,6 +2,9 @@ extends RefCounted
 
 static var _cached_textures: Dictionary = {}
 
+static func resolve_menu_portrait(preferred_path: String) -> Texture2D:
+	return _load_texture(preferred_path)
+
 static func resolve_portrait_texture(preferred_path: String, fallback_path: String) -> Texture2D:
 	var preferred_texture: Texture2D = _load_texture(preferred_path)
 	if preferred_texture != null:
