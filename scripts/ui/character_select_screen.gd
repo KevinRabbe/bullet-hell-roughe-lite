@@ -68,6 +68,9 @@ const ROSTER_EMBER_NODE := "RosterCardEmber"
 @onready var tags_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
 @onready var tag_chips: FlowContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
 @onready var difficulty_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
+@onready var action_card: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard
+@onready var action_accent: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionAccent
+@onready var action_lead_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionLead
 @onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/StarterWeapon
 @onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/Arsenal
 @onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox/Strengths
@@ -75,10 +78,10 @@ const ROSTER_EMBER_NODE := "RosterCardEmber"
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
 @onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
 @onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll
-@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/ConfirmButton
-@onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/RandomButton
-@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow/BackButton
-@onready var hero_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HintLabel
+@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/ConfirmButton
+@onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/RandomButton
+@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/BackButton
+@onready var hero_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/HintLabel
 
 var selectable_ids: Array[String] = []
 var character_entries: Array[Dictionary] = []
@@ -400,6 +403,8 @@ func _refresh_selection_details() -> void:
 		strengths_label.text = "Strengths: -"
 		tradeoffs_label.text = "Tradeoffs: -"
 		portrait_rect.texture = null
+		if action_lead_label != null:
+			action_lead_label.text = "No hunter is ready yet. Return once the frontier roster is active."
 		if confirm_button != null:
 			confirm_button.disabled = true
 			confirm_button.text = "Choose Opening Weapon"
@@ -444,6 +449,8 @@ func _refresh_selection_details() -> void:
 	strengths_label.text = _format_detail_bullets("Strengths", detail.get("strengths", []), "No standout edge listed yet.", 2 if compact_lists else 3)
 	tradeoffs_label.text = _format_detail_bullets("Tradeoffs", detail.get("tradeoffs", []), "No major drawback listed yet.", 2 if compact_lists else 3)
 	_apply_detail_panel_accents(accent)
+	if action_lead_label != null:
+		action_lead_label.text = _build_action_lead(name_label.text, str(detail.get("starter_weapon_label", "Starting Weapon")))
 	if roster_status_label != null:
 		var ready_count: int = 0
 		for entry in character_entries:
@@ -505,6 +512,7 @@ func _apply_detail_panel_accents(accent: Color) -> void:
 	_apply_card_accent(starter_accent, accent, 0.78)
 	_apply_card_accent(tradeoff_accent, accent, 0.70)
 	_apply_card_accent(flow_accent, Color(0.56, 0.62, 0.76, 1.0), 0.68)
+	_apply_card_accent(action_accent, accent, 0.82)
 
 func _apply_card_accent(target: ColorRect, accent: Color, alpha: float) -> void:
 	if target == null:
@@ -603,6 +611,15 @@ func _format_detail_bullets(title: String, values_variant: Variant, empty_text: 
 	if parts.size() > max_count:
 		visible.append("• +%d more" % (parts.size() - max_count))
 	return "%s\n%s" % [title, "\n".join(visible)]
+
+func _build_action_lead(display_name: String, starter_label: String) -> String:
+	var hunter_name: String = display_name.strip_edges()
+	var opener_label: String = starter_label.strip_edges()
+	if hunter_name == "":
+		hunter_name = "this hunter"
+	if opener_label == "":
+		opener_label = "starting weapon"
+	return "Lock %s, then choose the %s that opens the run." % [hunter_name, opener_label.to_lower()]
 
 func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 	if tag_chips == null:
@@ -746,6 +763,8 @@ func _apply_responsive_layout() -> void:
 		difficulty_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
 	if tags_label != null:
 		tags_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
+	if action_lead_label != null:
+		action_lead_label.add_theme_font_size_override("font_size", int(round((13 if very_tight else (14 if tight else 16)) * font_scale)))
 	if summary_label != null:
 		summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 18)) * font_scale)))
 		summary_label.custom_minimum_size = Vector2(0, 56 if very_tight else (68 if tight else 80))
@@ -781,7 +800,7 @@ func _apply_responsive_layout() -> void:
 	if hero_hint_label != null:
 		hero_hint_label.visible = not very_tight
 		hero_hint_label.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
-		hero_hint_label.text = "Up/Down browse, Enter continue, R random, Esc back." if tight else "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back."
+		hero_hint_label.text = "Up/Down browse, Enter continue, R random, Esc back." if tight else "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back to the main menu."
 	_apply_shell_panel_styles()
 	_refresh_roster_buttons()
 
@@ -802,6 +821,7 @@ func _apply_shell_panel_styles() -> void:
 	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
 	_apply_panel_style(portrait_panel, Color(0.0411765, 0.0470588, 0.0745098, 0.97), Color(0.992157, 0.560784, 0.560784, 0.18))
 	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
+	_apply_panel_style(action_card, Color(0.0431373, 0.0470588, 0.0745098, 0.95), Color(0.992157, 0.560784, 0.560784, 0.18))
 	_apply_panel_style(identity_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
 	_apply_panel_style(passive_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
 	_apply_panel_style(starter_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))

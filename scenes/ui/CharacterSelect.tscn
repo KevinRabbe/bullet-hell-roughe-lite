@@ -463,28 +463,57 @@ layout_mode = 2
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="ActionCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+layout_mode = 2
+
+[node name="ActionAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard"]
+mouse_filter = 2
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 5.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.82)
+
+[node name="ActionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="ActionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ActionLead" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+autowrap_mode = 3
+text = "Lock this hunter, then choose the weapon that opens the run."
+
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
 text = "Lock Starting Weapon"
 
-[node name="RandomButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+[node name="RandomButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
 text = "Random Hunter"
 
-[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionRow"]
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
 custom_minimum_size = Vector2(120, 50)
 layout_mode = 2
 text = "Back to Menu"
 
-[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
 autowrap_mode = 3
