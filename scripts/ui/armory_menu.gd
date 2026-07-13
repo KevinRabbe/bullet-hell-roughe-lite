@@ -3,8 +3,10 @@ extends Control
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
+const ARMORY_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 
 const SECTION_ORDER: Array[String] = [
 	"characters",
@@ -63,6 +65,8 @@ const SECTION_DATA := {
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var step_chip: PanelContainer = $RootMargin/RootVBox/HeaderRow/StepChip
+@onready var header_copy_label: Label = $RootMargin/RootVBox/HeaderRow/HeaderCopy
 @onready var nav_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/NavPanel
 @onready var nav_buttons: VBoxContainer = $RootMargin/RootVBox/MainHBox/NavPanel/NavMargin/NavVBox/NavButtons
 @onready var collection_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CollectionPanel
@@ -89,10 +93,12 @@ var set_bonus_entries: Array[Dictionary] = []
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	_apply_optional_texture(arena_texture, ARMORY_BACKGROUND_ART_PATH)
 	_load_character_codex_entries()
 	_load_weapon_codex_entries()
 	_load_item_codex_entries()
 	_load_set_bonus_codex_entries()
+	_apply_shared_shell_styles()
 	_apply_responsive_layout()
 	_rebuild_nav_buttons()
 	_rebuild_collection_cards()
@@ -754,6 +760,25 @@ func _on_set_bonus_card_pressed(set_bonus_id: String) -> void:
 	_refresh_detail()
 
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
+	if button == null:
+		return
+	var framed: bool = false
+	if is_selected:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
+			Color(1.0, 0.97, 0.97, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	else:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	if framed:
+		return
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
@@ -777,6 +802,50 @@ func _apply_section_button_style(button: Button, is_selected: bool) -> void:
 	button.add_theme_stylebox_override("hover", style)
 	button.add_theme_stylebox_override("pressed", style)
 	button.add_theme_stylebox_override("focus", style)
+
+func _apply_shared_shell_styles() -> void:
+	MenuFrameRuntimeRef.apply_chip_frame(step_chip, Color(0.98, 0.88, 0.70, 0.98))
+	_apply_shell_panel_style(nav_panel, Color(0.99, 0.56, 0.56, 0.22), Color(0.05, 0.05, 0.08, 0.94))
+	_apply_shell_panel_style(collection_panel, Color(0.72, 0.47, 0.92, 0.22), Color(0.05, 0.06, 0.09, 0.94))
+	_apply_shell_panel_style(detail_panel, Color(0.58, 0.83, 0.98, 0.22), Color(0.05, 0.06, 0.09, 0.94))
+	if header_copy_label != null:
+		header_copy_label.modulate = Color(0.82, 0.88, 0.98, 0.92)
+	if back_button != null:
+		MenuFrameRuntimeRef.apply_button_frame(
+			back_button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+
+func _apply_shell_panel_style(panel: PanelContainer, border_color: Color, background_color: Color) -> void:
+	if panel == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = background_color
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = border_color
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	panel.add_theme_stylebox_override("panel", style)
+
+func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
+	if target == null:
+		return false
+	if texture_path == "" or not ResourceLoader.exists(texture_path):
+		target.texture = null
+		return false
+	var texture_variant: Variant = load(texture_path)
+	if texture_variant is Texture2D:
+		target.texture = texture_variant
+		return true
+	target.texture = null
+	return false
 
 func _build_section_button_text(section_id: String) -> String:
 	var data: Dictionary = SECTION_DATA.get(section_id, {})
@@ -1043,28 +1112,55 @@ func _string_array_from_variant(values_variant: Variant) -> Array[String]:
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
 	var compact := viewport_size.x < 1440.0
+	var tight := viewport_size.x < 1260.0 or viewport_size.y < 760.0
 	if root_margin != null:
-		root_margin.offset_left = 20.0 if compact else 40.0
-		root_margin.offset_top = 18.0 if compact else 36.0
-		root_margin.offset_right = -20.0 if compact else -40.0
-		root_margin.offset_bottom = -18.0 if compact else -36.0
+		root_margin.offset_left = 12.0 if tight else (20.0 if compact else 40.0)
+		root_margin.offset_top = 12.0 if tight else (18.0 if compact else 36.0)
+		root_margin.offset_right = -12.0 if tight else (-20.0 if compact else -40.0)
+		root_margin.offset_bottom = -12.0 if tight else (-18.0 if compact else -36.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 18 if compact else 28)
+		main_hbox.add_theme_constant_override("separation", 12 if tight else (18 if compact else 28))
+	if step_chip != null:
+		step_chip.add_theme_constant_override("minimum_height", 0)
+	if header_copy_label != null:
+		header_copy_label.add_theme_font_size_override("font_size", 13 if tight else (15 if compact else 16))
+		header_copy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if nav_panel != null:
-		nav_panel.custom_minimum_size = Vector2(250 if compact else 320, 0)
+		nav_panel.custom_minimum_size = Vector2(220 if tight else (250 if compact else 320), 0)
 	if collection_panel != null:
-		collection_panel.custom_minimum_size = Vector2(360 if compact else 420, 0)
+		collection_panel.custom_minimum_size = Vector2(320 if tight else (360 if compact else 420), 0)
+	if detail_panel != null:
+		detail_panel.custom_minimum_size = Vector2(300 if tight else (340 if compact else 360), 0)
+	if collection_title != null:
+		collection_title.add_theme_font_size_override("font_size", 28 if tight else (30 if compact else 34))
+	if collection_body != null:
+		collection_body.add_theme_font_size_override("font_size", 14 if tight else 15)
+	if detail_title != null:
+		detail_title.add_theme_font_size_override("font_size", 28 if tight else (30 if compact else 34))
+	if detail_subtitle != null:
+		detail_subtitle.add_theme_font_size_override("font_size", 16 if tight else 18)
+	if detail_summary != null:
+		detail_summary.add_theme_font_size_override("font_size", 14 if tight else 15)
+		detail_summary.custom_minimum_size = Vector2(0, 72 if tight else 92)
+	if detail_bullets != null:
+		detail_bullets.add_theme_font_size_override("font_size", 13 if tight else 14)
+		detail_bullets.custom_minimum_size = Vector2(0, 126 if tight else 160)
+	if detail_status != null:
+		detail_status.add_theme_font_size_override("font_size", 13 if tight else 14)
+	if back_button != null:
+		back_button.custom_minimum_size = Vector2(160 if tight else 200, 46 if tight else 54)
+		back_button.add_theme_font_size_override("font_size", 15 if tight else 16)
 	if collection_grid != null:
 		if selected_section_id == "characters":
 			collection_grid.columns = 1
 		elif selected_section_id == "weapons":
-			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 or tight else 2
 		elif selected_section_id == "items":
-			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 or tight else 2
 		elif selected_section_id == "set_bonuses":
-			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 or tight else 2
 		else:
-			collection_grid.columns = 1 if viewport_size.x < 1500.0 else 2
+			collection_grid.columns = 1 if viewport_size.x < 1500.0 or tight else 2
 
 func _humanize_family_id(family_id: String) -> String:
 	if family_id == "":
