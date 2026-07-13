@@ -8,6 +8,7 @@ signal main_menu_requested
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenu.tscn"
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
@@ -29,6 +30,7 @@ var accessibility_settings: Dictionary = {}
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
+	_apply_shell_panel_style()
 	_apply_responsive_layout()
 	_apply_action_styles()
 	_refresh_hint_copy()
@@ -111,6 +113,7 @@ func _apply_responsive_layout() -> void:
 	if body_label != null:
 		body_label.add_theme_font_size_override("font_size", int(round((15 if tight else 17) * font_scale)))
 		body_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(0.84, 0.86, 0.91, 0.94)
+		body_label.custom_minimum_size = Vector2(0, 64 if tight else 80)
 	if panel != null:
 		panel.custom_minimum_size = Vector2(560 if tight else 720, 0)
 	if resume_button != null:
@@ -135,10 +138,43 @@ func _apply_action_styles() -> void:
 	_apply_action_button_style(restart_button, Color(0.96, 0.72, 0.33, 1.0))
 	_apply_action_button_style(main_menu_button, Color(0.99, 0.56, 0.56, 1.0))
 
+func _apply_shell_panel_style() -> void:
+	if panel == null:
+		return
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.06, 0.09, 0.95)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.99, 0.56, 0.56, 0.18)
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_right = 18
+	style.corner_radius_bottom_left = 18
+	panel.add_theme_stylebox_override("panel", style)
+
 func _apply_action_button_style(button: Button, accent: Color, is_primary: bool = false) -> void:
 	if button == null:
 		return
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var framed: bool = false
+	if is_primary:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
+			Color(1.0, 0.97, 0.97, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	else:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	if framed:
+		return
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
