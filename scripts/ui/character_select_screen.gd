@@ -37,6 +37,7 @@ const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames
 @onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
+@onready var portrait_caption: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCaption
 @onready var family_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
 @onready var name_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
 @onready var identity_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard
@@ -258,7 +259,7 @@ func _refresh_selection_details() -> void:
 		portrait_rect.texture = null
 		if confirm_button != null:
 			confirm_button.disabled = true
-			confirm_button.text = "Lock Starting Weapon"
+			confirm_button.text = "Choose Opening Weapon"
 		return
 	var character_id := selectable_ids[selected_index]
 	var current_entry := _find_character_entry(character_id)
@@ -285,7 +286,7 @@ func _refresh_selection_details() -> void:
 			var tag_text := str(tag_variant)
 			if tag_text != "":
 				tags.append(tag_text.capitalize())
-	tags_label.text = "Build Signature"
+	tags_label.text = "Combat Signature"
 	_rebuild_tag_chips(tags, _family_accent_color(str(current_entry.get("preferred_weapon_family", ""))))
 	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
 	var starter_title: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
@@ -294,9 +295,10 @@ func _refresh_selection_details() -> void:
 	if starter_summary != "":
 		starter_weapon_label.text = "%s\n%s" % [starter_weapon_label.text, starter_summary]
 	var arsenal_title: String = str(detail.get("arsenal_label", "Arsenal"))
-	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list(detail.get("arsenal_names", []), "Unknown")]
-	strengths_label.text = "Strengths: %s" % _join_detail_list(detail.get("strengths", []), "None")
-	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list(detail.get("tradeoffs", []), "None")
+	var compact_lists: bool = _is_tight_viewport()
+	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list_limited(detail.get("arsenal_names", []), "Unknown", 4 if compact_lists else 6)]
+	strengths_label.text = "Strengths: %s" % _join_detail_list_limited(detail.get("strengths", []), "None", 2 if compact_lists else 3)
+	tradeoffs_label.text = "Tradeoffs: %s" % _join_detail_list_limited(detail.get("tradeoffs", []), "None", 2 if compact_lists else 3)
 	if roster_status_label != null:
 		var ready_count: int = 0
 		for entry in character_entries:
@@ -307,7 +309,7 @@ func _refresh_selection_details() -> void:
 		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
 		confirm_button.disabled = not run_ready
 		if run_ready:
-			confirm_button.text = "Lock Starter" if _is_tight_viewport() else "Lock Starting Weapon"
+			confirm_button.text = "Choose Starter" if _is_tight_viewport() else "Choose Opening Weapon"
 		else:
 			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
 
@@ -352,7 +354,10 @@ func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D)
 		portrait_fallback_meta.text = "%s - %s" % [family_text, difficulty_text]
 	if portrait_fallback_body != null:
 		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
-		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else "Portrait art is still pending. For now, use the passive, opener, and tradeoff notes to judge the pick."
+		var fallback_copy: String = "Final portrait art is still pending. Use the passive, opener, and tradeoffs on the right to judge the hunter."
+		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else fallback_copy
+	if portrait_caption != null:
+		portrait_caption.text = "Menu portrait ready" if has_texture else "Frontier dossier preview"
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
@@ -390,6 +395,24 @@ func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
 		if value != "":
 			parts.append(value)
 	return ", ".join(parts) if not parts.is_empty() else empty_text
+
+func _join_detail_list_limited(values_variant: Variant, empty_text: String, limit: int) -> String:
+	if not (values_variant is Array):
+		return empty_text
+	var values: Array = values_variant
+	var parts: Array[String] = []
+	for value_variant in values:
+		var value := str(value_variant).strip_edges()
+		if value != "":
+			parts.append(value)
+	if parts.is_empty():
+		return empty_text
+	if limit <= 0 or parts.size() <= limit:
+		return ", ".join(parts)
+	var visible: Array[String] = []
+	for index in range(limit):
+		visible.append(parts[index])
+	return "%s +%d more" % [", ".join(visible), parts.size() - limit]
 
 func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 	if tag_chips == null:
@@ -519,7 +542,7 @@ func _apply_responsive_layout() -> void:
 	if roster_title_label != null:
 		roster_title_label.add_theme_font_size_override("font_size", int(round((20 if very_tight else (23 if tight else 28)) * font_scale)))
 	if roster_body_label != null:
-		roster_body_label.visible = not tight
+		roster_body_label.visible = not very_tight
 		roster_body_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
 	if roster_status_label != null:
 		roster_status_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
@@ -568,6 +591,7 @@ func _apply_responsive_layout() -> void:
 	if hero_hint_label != null:
 		hero_hint_label.visible = not very_tight
 		hero_hint_label.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
+		hero_hint_label.text = "Up/Down browse, Enter continue, R random, Esc back." if tight else "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back."
 	_apply_shell_panel_styles()
 	_refresh_roster_buttons()
 
