@@ -17,7 +17,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var result_eyebrow_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultEyebrow
 @onready var result_title_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultTitle
 @onready var result_summary_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultSummary
-@onready var result_stats_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultStats
+@onready var result_stats_grid: FlowContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/StatsGrid
 @onready var action_row: FlowContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow
 @onready var retry_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/RetryButton
 @onready var new_character_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/NewCharacterButton
@@ -40,6 +40,7 @@ func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_apply_responsive_layout()
+	_apply_shell_styles()
 	_apply_action_styles()
 	_refresh()
 	MenuAnimationRuntimeRef.play_screen_intro([main_panel])
@@ -88,11 +89,10 @@ func _refresh() -> void:
 	var stats_variant: Variant = result_state.get("stats", [])
 	if stats_variant is Array:
 		for line_variant in stats_variant:
-			var line_text := str(line_variant)
+			var line_text := _sanitize_stat_line(str(line_variant))
 			if line_text != "":
 				lines.append(line_text)
-	if result_stats_label != null:
-		result_stats_label.text = "\n".join(lines)
+	_refresh_stats_grid(lines)
 	_refresh_action_hint()
 
 func _on_retry_pressed() -> void:
@@ -131,9 +131,9 @@ func _apply_responsive_layout() -> void:
 	if result_summary_label != null:
 		result_summary_label.add_theme_font_size_override("font_size", int(round((14 if tight else (15 if compact else 17)) * font_scale)))
 		result_summary_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(0.84, 0.86, 0.91, 0.94)
-	if result_stats_label != null:
-		result_stats_label.add_theme_font_size_override("font_size", int(round((14 if tight else (15 if compact else 17)) * font_scale)))
-		result_stats_label.modulate = Color(0.90, 0.92, 0.98, 0.98) if high_contrast else Color(0.80, 0.84, 0.90, 0.95)
+	if result_stats_grid != null:
+		result_stats_grid.add_theme_constant_override("h_separation", 10 if tight else 14)
+		result_stats_grid.add_theme_constant_override("v_separation", 10 if tight else 12)
 	if action_row != null:
 		action_row.add_theme_constant_override("h_separation", 10 if tight else 14)
 		action_row.add_theme_constant_override("v_separation", 10 if tight else 12)
@@ -150,6 +150,22 @@ func _apply_action_styles() -> void:
 	_apply_action_button_style(retry_button, Color(0.96, 0.72, 0.33, 1.0), true)
 	_apply_action_button_style(new_character_button, Color(0.62, 0.73, 1.0, 1.0))
 	_apply_action_button_style(main_menu_button, Color(0.99, 0.56, 0.56, 1.0))
+
+func _apply_shell_styles() -> void:
+	if main_panel == null:
+		return
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.03, 0.035, 0.055, 0.92)
+	panel_style.border_color = Color(0.99, 0.56, 0.56, 0.16)
+	panel_style.border_width_left = 1
+	panel_style.border_width_top = 1
+	panel_style.border_width_right = 1
+	panel_style.border_width_bottom = 1
+	panel_style.corner_radius_top_left = 18
+	panel_style.corner_radius_top_right = 18
+	panel_style.corner_radius_bottom_right = 18
+	panel_style.corner_radius_bottom_left = 18
+	main_panel.add_theme_stylebox_override("panel", panel_style)
 
 func _apply_action_button_style(button: Button, accent: Color, is_primary: bool = false) -> void:
 	if button == null:
@@ -183,6 +199,69 @@ func _refresh_action_hint() -> void:
 	if action_hint_label == null:
 		return
 	action_hint_label.text = "Shortcuts: R retry / Enter new hunter / Esc main menu." if standalone_mode else "Shortcuts: R retry / Enter new hunter / Esc return to main menu."
+
+func _refresh_stats_grid(lines: Array[String]) -> void:
+	if result_stats_grid == null:
+		return
+	for child in result_stats_grid.get_children():
+		child.queue_free()
+	for line_text in lines:
+		result_stats_grid.add_child(_build_stat_card(line_text))
+
+func _build_stat_card(line_text: String) -> PanelContainer:
+	var title_text := line_text
+	var value_text := "-"
+	if line_text.contains(":"):
+		var parts := line_text.split(":", false, 1)
+		title_text = str(parts[0]).strip_edges()
+		value_text = str(parts[1]).strip_edges()
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(180, 96)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.07, 0.11, 0.86)
+	style.border_color = Color(0.99, 0.56, 0.56, 0.18)
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.corner_radius_top_left = 14
+	style.corner_radius_top_right = 14
+	style.corner_radius_bottom_right = 14
+	style.corner_radius_bottom_left = 14
+	card.add_theme_stylebox_override("panel", style)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 16)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 16)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	card.add_child(margin)
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	margin.add_child(vbox)
+	var title := Label.new()
+	title.text = title_text
+	title.modulate = Color(0.76, 0.80, 0.88, 0.92)
+	title.add_theme_font_size_override("font_size", 14)
+	vbox.add_child(title)
+	var value := Label.new()
+	value.text = value_text
+	value.modulate = Color(0.97, 0.97, 1.0, 1.0)
+	value.add_theme_font_size_override("font_size", 24)
+	vbox.add_child(value)
+	return card
+
+func _sanitize_stat_line(line_text: String) -> String:
+	var text := line_text.strip_edges()
+	if text == "":
+		return ""
+	if not text.contains(":"):
+		return "" if text == "<null>" or text == "null" else text
+	var parts := text.split(":", false, 1)
+	var left := str(parts[0]).strip_edges()
+	var right := str(parts[1]).strip_edges()
+	if right == "" or right == "<null>" or right == "null":
+		right = "-"
+	return "%s: %s" % [left, right]
 
 func _build_result_eyebrow() -> String:
 	var title_text: String = str(result_state.get("title", "Run Complete")).to_lower()
