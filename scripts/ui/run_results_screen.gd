@@ -216,7 +216,7 @@ func _apply_action_button_style(button: Button, accent: Color, is_primary: bool 
 func _refresh_action_hint() -> void:
 	if action_hint_label == null:
 		return
-	action_hint_label.text = "Shortcuts: R retry / Enter new hunter / Esc main menu." if standalone_mode else "Shortcuts: R retry / Enter new hunter / Esc return to main menu."
+	action_hint_label.text = "Shortcuts: R retry / Enter choose character / Esc main menu." if standalone_mode else "Shortcuts: R retry / Enter choose character / Esc return to main menu."
 
 func _refresh_stats_grid(lines: Array[String]) -> void:
 	if result_stats_grid == null:
@@ -273,13 +273,19 @@ func _sanitize_stat_line(line_text: String) -> String:
 	if text == "":
 		return ""
 	if not text.contains(":"):
-		return "" if text == "<null>" or text == "null" else text
+		return "" if _is_missing_stat_value(text) else text
 	var parts := text.split(":", false, 1)
 	var left := str(parts[0]).strip_edges()
 	var right := str(parts[1]).strip_edges()
-	if right == "" or right == "<null>" or right == "null":
+	if left == "":
+		return ""
+	if _is_missing_stat_value(right):
 		right = "-"
 	return "%s: %s" % [left, right]
+
+func _is_missing_stat_value(value_text: String) -> bool:
+	var normalized: String = value_text.strip_edges().to_lower()
+	return normalized == "" or normalized == "null" or normalized == "<null>" or normalized == "nil" or normalized == "<nil>" or normalized == "none" or normalized == "undefined"
 
 func _build_result_eyebrow() -> String:
 	var title_text: String = str(result_state.get("title", "Run Complete")).to_lower()
