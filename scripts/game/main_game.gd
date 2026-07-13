@@ -295,7 +295,7 @@ func _update_character_debug_label() -> void:
 	character_label.text = "Debug Quick Start: %s (C to cycle, Enter to start, M for full select)" % display_name
 
 func _open_character_select_scene() -> void:
-		CharacterSelectionRuntimeRef.clear_pending_character_id()
+	CharacterSelectionRuntimeRef.clear_pending_character_id()
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_wave_completed(wave_index: int) -> void:
