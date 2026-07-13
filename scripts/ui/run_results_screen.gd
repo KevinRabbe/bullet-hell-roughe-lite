@@ -7,6 +7,7 @@ signal main_menu_requested
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
@@ -171,6 +172,23 @@ func _apply_action_button_style(button: Button, accent: Color, is_primary: bool 
 	if button == null:
 		return
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var framed: bool = false
+	if is_primary:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
+			Color(1.0, 0.97, 0.97, 1.0),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	else:
+		framed = MenuFrameRuntimeRef.apply_button_frame(
+			button,
+			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
+			Color(0.90, 0.93, 1.0, 0.98),
+			Color(1.0, 1.0, 1.0, 1.0)
+		)
+	if framed:
+		return
 	var style := StyleBoxFlat.new()
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
