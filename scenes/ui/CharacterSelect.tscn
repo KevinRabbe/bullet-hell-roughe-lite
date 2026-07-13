@@ -263,6 +263,26 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0588235, 0.0666667, 0.105882, 0.94)
 
+[node name="PortraitTopShade" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 96.0
+grow_horizontal = 2
+color = Color(0.341176, 0.0901961, 0.14902, 0.12)
+
+[node name="PortraitFocusPillar" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -132.0
+offset_right = 132.0
+grow_horizontal = 2
+color = Color(0.992157, 0.560784, 0.560784, 0.1)
+
 [node name="PortraitHalo" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
 layout_mode = 1
 anchors_preset = 8
@@ -305,6 +325,17 @@ offset_bottom = 104.0
 grow_horizontal = 0
 grow_vertical = 2
 color = Color(0.992157, 0.560784, 0.560784, 0.08)
+
+[node name="PortraitMist" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -142.0
+grow_horizontal = 2
+grow_vertical = 0
+color = Color(0.992157, 0.560784, 0.560784, 0.14)
 
 [node name="PortraitAccentBar" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
 layout_mode = 1

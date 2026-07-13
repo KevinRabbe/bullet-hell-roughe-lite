@@ -43,6 +43,9 @@ const ROSTER_EMBER_NODE := "RosterCardEmber"
 @onready var portrait_fallback_meta: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackMeta
 @onready var portrait_fallback_body: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackBody
 @onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
+@onready var portrait_top_shade: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitTopShade
+@onready var portrait_focus_pillar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFocusPillar
+@onready var portrait_mist: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitMist
 @onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
 @onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
 @onready var portrait_caption: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCaption
@@ -308,7 +311,7 @@ func _refresh_roster_button_content(button: Button, character_id: String, is_sel
 		name_label.add_theme_font_size_override("font_size", int(round((20.0 if _is_tight_viewport() else 22.0) * font_scale)))
 		name_label.modulate = Color(1, 1, 1, 0.98)
 	if meta_label != null:
-		meta_label.text = difficulty_text if family_text == "" else "%s • %s" % [family_text, difficulty_text]
+		meta_label.text = difficulty_text if family_text == "" else "%s - %s" % [family_text, difficulty_text]
 		meta_label.add_theme_font_size_override("font_size", int(round((14.0 if _is_tight_viewport() else 15.0) * font_scale)))
 		meta_label.modulate = Color(0.90, 0.92, 0.98, 0.92) if is_selected else Color(0.78, 0.81, 0.88, 0.88)
 	if hint_label != null:
@@ -456,10 +459,16 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
 	if portrait_backdrop != null:
 		portrait_backdrop.color = Color(0.05, 0.06, 0.1, 0.94)
+	if portrait_top_shade != null:
+		portrait_top_shade.color = Color(accent.r * 0.45, accent.g * 0.45, accent.b * 0.45, 0.12)
+	if portrait_focus_pillar != null:
+		portrait_focus_pillar.color = Color(accent.r, accent.g, accent.b, 0.10)
+	if portrait_mist != null:
+		portrait_mist.color = Color(accent.r, accent.g, accent.b, 0.14)
 	if portrait_accent_bar != null:
 		portrait_accent_bar.color = accent
 	if portrait_halo != null:
-		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
+		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.22)
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
 	var entry: Dictionary = _find_character_entry(character_id)
 	var visual_path: String = str(entry.get("visual_path", ""))
@@ -467,11 +476,21 @@ func _apply_portrait(character_id: String, detail: Dictionary) -> void:
 		portrait_rect.texture = null
 		_refresh_portrait_fallback(detail, null)
 		return
-	var resolved_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(portrait_path)
+	var dedicated_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(portrait_path)
+	var resolved_texture: Texture2D = dedicated_texture
+	if resolved_texture == null:
+		resolved_texture = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
 	portrait_rect.texture = resolved_texture
 	_refresh_portrait_fallback(detail, resolved_texture)
 	if portrait_rect.texture != null:
 		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
+	if portrait_caption != null:
+		if dedicated_texture != null:
+			portrait_caption.text = "Selected character portrait"
+		elif resolved_texture != null:
+			portrait_caption.text = "Runtime portrait preview"
+		else:
+			portrait_caption.text = "Frontier dossier preview"
 
 func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D) -> void:
 	if portrait_fallback == null:
@@ -491,8 +510,6 @@ func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D)
 		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
 		var fallback_copy: String = "Final portrait art is still pending. Use the passive, opener, and tradeoffs on the right to judge the hunter."
 		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else fallback_copy
-	if portrait_caption != null:
-		portrait_caption.text = "Menu portrait ready" if has_texture else "Frontier dossier preview"
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
@@ -760,7 +777,7 @@ func _truncate_copy(text: String, max_length: int) -> String:
 	var trimmed: String = text.strip_edges()
 	if max_length <= 0 or trimmed.length() <= max_length:
 		return trimmed
-	return "%s…" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
+	return "%sâ€¦" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
 	if panel == null:
