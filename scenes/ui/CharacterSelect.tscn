@@ -93,10 +93,10 @@ layout_mode = 2
 
 [node name="RosterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
 [node name="RosterGrid" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin"]
 layout_mode = 2
@@ -112,17 +112,17 @@ layout_mode = 2
 
 [node name="ShowcaseMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="ShowcaseVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 6
 
 [node name="PortraitStage" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
-custom_minimum_size = Vector2(0, 224)
+custom_minimum_size = Vector2(0, 270)
 layout_mode = 2
 
 [node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
@@ -148,17 +148,19 @@ stretch_mode = 5
 [node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 26
 text = "The Gunslinger"
 clip_text = true
+horizontal_alignment = 1
 
 [node name="SelectedTagline" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.92)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 13
 text = "Baseline precision shooter with clean ranged tempo."
 autowrap_mode = 0
 clip_text = true
+horizontal_alignment = 1
 
 [node name="Divider" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 custom_minimum_size = Vector2(0, 1)
@@ -227,29 +229,29 @@ layout_mode = 2
 
 [node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="IdentityCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-custom_minimum_size = Vector2(0, 142)
+custom_minimum_size = Vector2(0, 172)
 layout_mode = 2
 
 [node name="IdentityMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="IdentityVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
 layout_mode = 2
@@ -269,19 +271,19 @@ text = "Fast, readable firearms make the Gunslinger the clean reference pick for
 autowrap_mode = 3
 
 [node name="PassiveCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-custom_minimum_size = Vector2(0, 122)
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
 [node name="PassiveMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="PassiveVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
 layout_mode = 2
@@ -300,20 +302,19 @@ text = "Killing an enemy briefly boosts attack speed, helping the Gunslinger cha
 autowrap_mode = 3
 
 [node name="OpeningWeaponCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
-custom_minimum_size = Vector2(0, 166)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
-size_flags_vertical = 3
 
 [node name="OpeningWeaponMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 14
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 14
-theme_override_constants/margin_bottom = 12
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
 [node name="OpeningWeaponVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 4
 
 [node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2

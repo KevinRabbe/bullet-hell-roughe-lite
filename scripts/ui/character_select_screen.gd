@@ -12,15 +12,23 @@ const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/arena/hellsh
 
 const ROSTER_CAPACITY: int = 30
 const ROSTER_COLUMNS: int = 5
-const ROSTER_ROWS: int = 6
 
 const COLOR_ALMOST_BLACK := Color("#120B10")
-const COLOR_BURNT_BROWN := Color("#2A1711")
+const COLOR_DARK_NEUTRAL := Color("#181218")
+const COLOR_BURNT_BROWN := Color("#3A241A")
 const COLOR_DEEP_BLOOD_RED := Color("#5A0F1B")
 const COLOR_RITUAL_CRIMSON := Color("#9E1B2F")
-const COLOR_OLD_PARCHMENT := Color("#B88A55")
-const COLOR_BONE_HIGHLIGHT := Color("#E8D6B0")
+const COLOR_OLD_PARCHMENT := Color("#D8C29A")
+const COLOR_BONE_HIGHLIGHT := Color("#F0E4C8")
 const COLOR_HELL_ORANGE := Color("#F06A1A")
+const COLOR_FOCUS_OUTLINE := Color("#EFE2BC")
+const COLOR_MUTED_PARCHMENT := Color("#8A7864")
+
+const TAGLINE_LIMIT := 60
+const IDENTITY_SUMMARY_LIMIT := 150
+const IDENTITY_FANTASY_LIMIT := 120
+const PASSIVE_SUMMARY_LIMIT := 150
+const WEAPON_DESCRIPTION_LIMIT := 100
 
 const ROSTER_TILE_NODE := "RosterTile"
 const ROSTER_TILE_NAME_NODE := "RosterTileName"
@@ -67,6 +75,13 @@ func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_load_selection_state()
+	if selectable_ids.size() > ROSTER_CAPACITY:
+		push_error(
+			"Character Select capacity exceeded: %d active hunters for %d slots."
+			% [selectable_ids.size(), ROSTER_CAPACITY]
+		)
+		set_process_unhandled_input(false)
+		return
 	_apply_background_art()
 	_apply_static_copy()
 	_apply_shell_styles()
@@ -107,9 +122,6 @@ func _load_selection_state() -> void:
 	var ids_variant: Variant = selection_state.get("ids", [])
 	if ids_variant is Array:
 		selectable_ids = CharacterSelectionRuntimeRef.normalize_character_ids(ids_variant)
-	if selectable_ids.size() > ROSTER_CAPACITY:
-		push_error("Character Select capacity exceeded: %d active hunters for %d slots." % [selectable_ids.size(), ROSTER_CAPACITY])
-		return
 	var entries_variant: Variant = selection_state.get("entries", [])
 	if entries_variant is Array:
 		for entry_variant in entries_variant:
@@ -143,27 +155,28 @@ func _apply_static_copy() -> void:
 	confirm_button.text = "CHOOSE STARTER"
 
 func _apply_shell_styles() -> void:
-	_apply_panel_style(roster_panel, COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN)
-	_apply_panel_style(showcase_panel, COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN)
-	_apply_panel_style(detail_panel, COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN)
-	_apply_panel_style(portrait_stage, Color(0.08, 0.05, 0.07, 0.92), Color(0.22, 0.16, 0.13, 1.0))
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	_apply_panel_style(roster_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(showcase_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(detail_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(portrait_stage, Color(0.08, 0.05, 0.07, 0.92), _panel_border_color(high_contrast))
 	for detail_card in [
 		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard,
 		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard,
 		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard
 	]:
-		_apply_panel_style(detail_card, Color(0.10, 0.07, 0.08, 0.94), Color(0.22, 0.16, 0.13, 1.0))
-	_apply_button_style(back_button, false)
-	_apply_button_style(random_button, false)
-	_apply_button_style(confirm_button, true)
+		_apply_panel_style(detail_card, Color(0.10, 0.07, 0.08, 0.94), _panel_border_color(high_contrast))
+	_apply_button_style(back_button, false, high_contrast)
+	_apply_button_style(random_button, false, high_contrast)
+	_apply_button_style(confirm_button, true, high_contrast)
 	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
 
 func _apply_accessibility_scaling() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	header_title.add_theme_font_size_override("font_size", int(round(34.0 * font_scale)))
 	header_status.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
-	selected_name.add_theme_font_size_override("font_size", int(round(22.0 * font_scale)))
-	selected_tagline.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	selected_name.add_theme_font_size_override("font_size", int(round(26.0 * font_scale)))
+	selected_tagline.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
 	family_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
 	difficulty_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
 	signature_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
@@ -195,7 +208,7 @@ func _rebuild_roster_grid() -> void:
 func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	var button := Button.new()
 	button.text = ""
-	button.custom_minimum_size = Vector2(74, 70)
+	button.custom_minimum_size = Vector2(72, 68)
 	button.focus_mode = Control.FOCUS_ALL
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -208,10 +221,10 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	margin.layout_mode = 1
 	margin.anchor_right = 1.0
 	margin.anchor_bottom = 1.0
-	margin.offset_left = 6.0
-	margin.offset_top = 6.0
-	margin.offset_right = -6.0
-	margin.offset_bottom = -6.0
+	margin.offset_left = 4.0
+	margin.offset_top = 4.0
+	margin.offset_right = -4.0
+	margin.offset_bottom = -4.0
 	button.add_child(margin)
 
 	var content := VBoxContainer.new()
@@ -220,17 +233,17 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	content.alignment = BoxContainer.ALIGNMENT_CENTER
 	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	content.add_theme_constant_override("separation", 6)
+	content.add_theme_constant_override("separation", 2)
 	margin.add_child(content)
 
 	var portrait_box := CenterContainer.new()
-	portrait_box.custom_minimum_size = Vector2(0, 26)
+	portrait_box.custom_minimum_size = Vector2(0, 20)
 	portrait_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(portrait_box)
 
 	var portrait_texture := TextureRect.new()
 	portrait_texture.name = ROSTER_TILE_PORTRAIT_NODE
-	portrait_texture.custom_minimum_size = Vector2(22, 22)
+	portrait_texture.custom_minimum_size = Vector2(18, 18)
 	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -238,7 +251,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 
 	var placeholder := ColorRect.new()
 	placeholder.name = ROSTER_TILE_PLACEHOLDER_NODE
-	placeholder.custom_minimum_size = Vector2(22, 22)
+	placeholder.custom_minimum_size = Vector2(18, 18)
 	placeholder.color = Color(0.22, 0.16, 0.13, 1.0)
 	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_box.add_child(placeholder)
@@ -249,7 +262,8 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name.clip_text = true
-	name.custom_minimum_size = Vector2(0, 28)
+	name.max_lines_visible = 2
+	name.custom_minimum_size = Vector2(0, 26)
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(name)
@@ -259,7 +273,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 
 func _build_sealed_roster_tile() -> Control:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(74, 70)
+	panel.custom_minimum_size = Vector2(72, 68)
 	panel.focus_mode = Control.FOCUS_NONE
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -278,18 +292,18 @@ func _build_sealed_roster_tile() -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 
 	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 6)
-	margin.add_theme_constant_override("margin_top", 6)
-	margin.add_theme_constant_override("margin_right", 6)
-	margin.add_theme_constant_override("margin_bottom", 6)
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
 	panel.add_child(margin)
 
 	var label := Label.new()
-	label.text = "SEALED"
+	label.text = "◈"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(12, accessibility_settings))
-	label.modulate = Color(0.56, 0.49, 0.45, 0.9)
+	label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(14, accessibility_settings))
+	label.modulate = COLOR_MUTED_PARCHMENT
 	margin.add_child(label)
 	return panel
 
@@ -298,16 +312,15 @@ func _refresh_roster_grid_styles() -> void:
 		var button := roster_grid.get_child(slot_index) as Button
 		if button == null:
 			continue
-		var is_selected: bool = slot_index == selected_index
-		_apply_roster_tile_style(button, is_selected)
+		_apply_roster_tile_style(button, slot_index == selected_index)
 
 func _refresh_roster_tile_content(button: Button, character_id: String) -> void:
 	var name := button.find_child(ROSTER_TILE_NAME_NODE, true, false) as Label
 	var portrait_texture := button.find_child(ROSTER_TILE_PORTRAIT_NODE, true, false) as TextureRect
 	var placeholder := button.find_child(ROSTER_TILE_PLACEHOLDER_NODE, true, false) as ColorRect
 	if name != null:
-		name.text = str(display_names.get(character_id, character_id))
-		name.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(12, accessibility_settings))
+		name.text = str(display_names.get(character_id, character_id)).to_upper()
+		name.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(11, accessibility_settings))
 		name.modulate = COLOR_BONE_HIGHLIGHT
 	var entry: Dictionary = _find_character_entry(character_id)
 	var visual_path: String = str(entry.get("visual_path", ""))
@@ -320,33 +333,15 @@ func _refresh_roster_tile_content(button: Button, character_id: String) -> void:
 		placeholder.visible = texture == null
 
 func _apply_roster_tile_style(button: Button, is_selected: bool) -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.05, 0.06, 0.94)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
-	style.content_margin_left = 0
-	style.content_margin_top = 0
-	style.content_margin_right = 0
-	style.content_margin_bottom = 0
-	if is_selected:
-		style.border_width_left = 2
-		style.border_width_top = 2
-		style.border_width_right = 2
-		style.border_width_bottom = 2
-		style.border_color = COLOR_HELL_ORANGE
-		style.bg_color = Color(0.15, 0.10, 0.08, 0.98)
-	else:
-		style.border_color = Color(0.33, 0.18, 0.15, 1.0)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	button.add_theme_stylebox_override("normal", _build_tile_style("normal", is_selected, high_contrast))
+	button.add_theme_stylebox_override("hover", _build_tile_style("hover", is_selected, high_contrast))
+	button.add_theme_stylebox_override("pressed", _build_tile_style("pressed", is_selected, high_contrast))
+	button.add_theme_stylebox_override("focus", _build_tile_style("focus", is_selected, high_contrast))
+	button.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_hover_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_focus_color", COLOR_BONE_HIGHLIGHT)
 
 func _refresh_selection_details() -> void:
 	var active_count: int = selectable_ids.size()
@@ -374,15 +369,15 @@ func _refresh_selection_details() -> void:
 	var entry: Dictionary = _find_character_entry(character_id)
 	var presentation: Dictionary = _get_character_presentation(character_id, entry)
 	var detail: Dictionary = _get_character_detail(character_id, entry)
-	selected_name.text = str(display_names.get(character_id, character_id))
-	selected_tagline.text = _truncate_text(str(presentation.get("headline", "")), 60)
+	selected_name.text = str(display_names.get(character_id, character_id)).to_upper()
+	selected_tagline.text = _truncate_text(str(presentation.get("headline", "")), TAGLINE_LIMIT)
 	family_value.text = str(detail.get("family_label", "Unknown")).to_upper()
 	difficulty_value.text = str(presentation.get("difficulty", "medium")).capitalize().to_upper()
-	signature_value.text = _truncate_text(str(detail.get("fantasy_hook", "")), 60)
-	identity_summary.text = str(presentation.get("identity_summary", ""))
-	identity_fantasy_hook.text = str(detail.get("fantasy_hook", ""))
+	signature_value.text = _resolve_signature_text(entry).to_upper()
+	identity_summary.text = _truncate_text(str(presentation.get("identity_summary", "")), IDENTITY_SUMMARY_LIMIT)
+	identity_fantasy_hook.text = _truncate_text(str(detail.get("fantasy_hook", "")), IDENTITY_FANTASY_LIMIT)
 	passive_name.text = str(presentation.get("passive_name", ""))
-	passive_summary.text = str(presentation.get("passive_summary", ""))
+	passive_summary.text = _truncate_text(str(presentation.get("passive_summary", "")), PASSIVE_SUMMARY_LIMIT)
 	_apply_showcase_portrait(character_id, entry)
 	_rebuild_tag_row(_build_display_tags(presentation))
 	_apply_opening_weapon_detail(entry)
@@ -451,7 +446,7 @@ func _apply_opening_weapon_detail(entry: Dictionary) -> void:
 		return
 	var opening_weapon_id: String = starting_ids[0]
 	opening_weapon_name.text = _resolve_weapon_name(data_registry, opening_weapon_id)
-	opening_weapon_summary.text = _resolve_weapon_description(data_registry, opening_weapon_id)
+	opening_weapon_summary.text = _truncate_text(_resolve_weapon_description(data_registry, opening_weapon_id), WEAPON_DESCRIPTION_LIMIT)
 	var family_weapon_ids: Array[String] = _normalize_string_array(entry.get("family_weapon_ids", []))
 	_rebuild_arsenal_preview(_resolve_arsenal_preview_textures(data_registry, family_weapon_ids))
 
@@ -460,7 +455,7 @@ func _rebuild_arsenal_preview(textures: Array[Texture2D]) -> void:
 		child.queue_free()
 	for slot_index in range(5):
 		var panel := PanelContainer.new()
-		panel.custom_minimum_size = Vector2(44, 44)
+		panel.custom_minimum_size = Vector2(30, 30)
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color(0.08, 0.06, 0.06, 0.94)
 		style.border_width_left = 1
@@ -468,15 +463,15 @@ func _rebuild_arsenal_preview(textures: Array[Texture2D]) -> void:
 		style.border_width_right = 1
 		style.border_width_bottom = 1
 		style.border_color = Color(0.22, 0.16, 0.13, 1.0)
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_right = 8
-		style.corner_radius_bottom_left = 8
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_right = 6
+		style.corner_radius_bottom_left = 6
 		panel.add_theme_stylebox_override("panel", style)
 		var center := CenterContainer.new()
 		panel.add_child(center)
 		var icon := TextureRect.new()
-		icon.custom_minimum_size = Vector2(28, 28)
+		icon.custom_minimum_size = Vector2(22, 22)
 		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		if slot_index < textures.size():
@@ -568,6 +563,7 @@ func _on_back_pressed() -> void:
 
 func _on_resized() -> void:
 	_apply_accessibility_scaling()
+	_apply_shell_styles()
 	_refresh_roster_grid_styles()
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
@@ -586,28 +582,39 @@ func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Co
 	style.corner_radius_bottom_left = 10
 	panel.add_theme_stylebox_override("panel", style)
 
-func _apply_button_style(button: Button, is_primary: bool) -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.10, 0.07, 0.08, 0.96)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.content_margin_left = 18
-	style.content_margin_top = 12
-	style.content_margin_right = 18
-	style.content_margin_bottom = 12
-	style.border_color = COLOR_HELL_ORANGE if is_primary else Color(0.33, 0.18, 0.15, 1.0)
+func _apply_button_style(button: Button, is_primary: bool, high_contrast: bool) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.10, 0.07, 0.08, 0.96)
+	normal.border_width_left = 1
+	normal.border_width_top = 1
+	normal.border_width_right = 1
+	normal.border_width_bottom = 1
+	normal.corner_radius_top_left = 12
+	normal.corner_radius_top_right = 12
+	normal.corner_radius_bottom_right = 12
+	normal.corner_radius_bottom_left = 12
+	normal.content_margin_left = 18
+	normal.content_margin_top = 12
+	normal.content_margin_right = 18
+	normal.content_margin_bottom = 12
+	normal.border_color = COLOR_HELL_ORANGE if is_primary else _panel_border_color(high_contrast)
 	if is_primary:
-		style.bg_color = Color(0.18, 0.10, 0.07, 0.98)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+		normal.bg_color = Color(0.18, 0.10, 0.07, 0.98)
+	var hover := normal.duplicate()
+	hover.bg_color = normal.bg_color.lightened(0.08)
+	hover.border_color = COLOR_FOCUS_OUTLINE if high_contrast else COLOR_OLD_PARCHMENT
+	var focus := normal.duplicate()
+	focus.border_width_left = 2
+	focus.border_width_top = 2
+	focus.border_width_right = 2
+	focus.border_width_bottom = 2
+	focus.border_color = COLOR_FOCUS_OUTLINE
+	var pressed := hover.duplicate()
+	pressed.bg_color = hover.bg_color.darkened(0.05)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", focus)
 	button.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_hover_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
@@ -634,6 +641,29 @@ func _find_character_entry(character_id: String) -> Dictionary:
 		if str(entry.get("id", "")) == character_id:
 			return entry
 	return {}
+
+func _resolve_signature_text(entry: Dictionary) -> String:
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var starting_ids: Array[String] = _normalize_string_array(entry.get("starting_weapon_ids", []))
+	if not starting_ids.is_empty() and data_registry != null and data_registry.has_method("get_weapon"):
+		var weapon_variant: Variant = data_registry.call("get_weapon", starting_ids[0])
+		var tags: Array[String] = []
+		var family: String = ""
+		if weapon_variant is WeaponData:
+			var weapon_resource: WeaponData = weapon_variant
+			tags = weapon_resource.tags
+			family = weapon_resource.family
+		elif weapon_variant is Dictionary:
+			var weapon_data: Dictionary = weapon_variant
+			tags = _normalize_string_array(weapon_data.get("tags", []))
+			family = str(weapon_data.get("family", ""))
+		for tag in tags:
+			var tag_text: String = str(tag).strip_edges()
+			if tag_text != "":
+				return tag_text
+		if family.strip_edges() != "":
+			return family
+	return "-"
 
 func _resolve_weapon_name(data_registry: Node, weapon_id: String) -> String:
 	if data_registry == null or not data_registry.has_method("get_weapon"):
@@ -676,3 +706,58 @@ func _truncate_text(text: String, max_length: int) -> String:
 	if trimmed.length() <= max_length:
 		return trimmed
 	return "%s…" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
+
+func _panel_border_color(high_contrast: bool) -> Color:
+	return COLOR_FOCUS_OUTLINE if high_contrast else COLOR_BURNT_BROWN
+
+func _build_tile_style(state: String, is_selected: bool, high_contrast: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	style.content_margin_left = 0
+	style.content_margin_top = 0
+	style.content_margin_right = 0
+	style.content_margin_bottom = 0
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.bg_color = COLOR_DARK_NEUTRAL
+	style.border_color = _panel_border_color(high_contrast)
+	match state:
+		"hover":
+			style.bg_color = Color(0.13, 0.10, 0.10, 0.98)
+			style.border_color = COLOR_FOCUS_OUTLINE if high_contrast else COLOR_OLD_PARCHMENT
+		"focus":
+			style.bg_color = Color(0.13, 0.10, 0.10, 0.98)
+			style.border_width_left = 2
+			style.border_width_top = 2
+			style.border_width_right = 2
+			style.border_width_bottom = 2
+			style.border_color = COLOR_FOCUS_OUTLINE
+		"pressed":
+			style.bg_color = Color(0.16, 0.11, 0.10, 0.98)
+			style.border_color = COLOR_OLD_PARCHMENT
+	if is_selected:
+		style.bg_color = Color(0.15, 0.10, 0.08, 0.98)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_blend = true
+		style.border_color = COLOR_HELL_ORANGE
+		if state == "focus":
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 2
+			style.border_color = COLOR_FOCUS_OUTLINE
+		elif state == "hover":
+			style.border_color = COLOR_HELL_ORANGE.lightened(0.12)
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 1
+		elif state == "pressed":
+			style.border_color = COLOR_HELL_ORANGE.darkened(0.05)
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 1
+	return style
