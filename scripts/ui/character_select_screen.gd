@@ -12,14 +12,15 @@ const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/arena/hellsh
 
 const ROSTER_CAPACITY: int = 30
 const ROSTER_COLUMNS: int = 5
+const ROSTER_ROWS: int = 6
 
 const COLOR_ALMOST_BLACK := Color("#120B10")
 const COLOR_DARK_NEUTRAL := Color("#181218")
-const COLOR_BURNT_BROWN := Color("#3A241A")
+const COLOR_BURNT_BROWN := Color("#2A1711")
 const COLOR_DEEP_BLOOD_RED := Color("#5A0F1B")
 const COLOR_RITUAL_CRIMSON := Color("#9E1B2F")
-const COLOR_OLD_PARCHMENT := Color("#D8C29A")
-const COLOR_BONE_HIGHLIGHT := Color("#F0E4C8")
+const COLOR_OLD_PARCHMENT := Color("#B88A55")
+const COLOR_BONE_HIGHLIGHT := Color("#E8D6B0")
 const COLOR_HELL_ORANGE := Color("#F06A1A")
 const COLOR_FOCUS_OUTLINE := Color("#EFE2BC")
 const COLOR_MUTED_PARCHMENT := Color("#8A7864")
@@ -663,6 +664,9 @@ func _resolve_signature_text(entry: Dictionary) -> String:
 				return tag_text
 		if family.strip_edges() != "":
 			return family
+	var preferred_family: String = str(entry.get("preferred_weapon_family", "")).strip_edges()
+	if preferred_family != "":
+		return preferred_family
 	return "-"
 
 func _resolve_weapon_name(data_registry: Node, weapon_id: String) -> String:
@@ -748,6 +752,8 @@ func _build_tile_style(state: String, is_selected: bool, high_contrast: bool) ->
 		style.border_width_bottom = 2
 		style.border_blend = true
 		style.border_color = COLOR_HELL_ORANGE
+		style.shadow_color = Color(COLOR_RITUAL_CRIMSON.r, COLOR_RITUAL_CRIMSON.g, COLOR_RITUAL_CRIMSON.b, 0.35)
+		style.shadow_size = 1
 		if state == "focus":
 			style.shadow_color = COLOR_RITUAL_CRIMSON
 			style.shadow_size = 2
