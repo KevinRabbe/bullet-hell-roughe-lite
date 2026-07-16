@@ -90,7 +90,7 @@ Conceptual layout:
 │                     │ METADATA       │ OPENING WEAPON        │
 │                     │ TAGS           │ ARSENAL PREVIEW       │
 ├─────────────────────┴────────────────┴───────────────────────┤
-│       BACK          RANDOM HUNTER          CHOOSE STARTER     │
+│              BACK                         CHOOSE STARTER     │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -263,6 +263,17 @@ Case:               uppercase
 Maximum lines:      2
 Reference size:     10–11 px
 
+Presented roster names remove a leading `The ` from the character display name.
+
+Required active roster labels:
+
+- GUNSLINGER
+- HARVESTER
+- DEMON LORD
+- RIFTWALKER
+- DEVIL
+- RITUALIST
+
 Long names may use two controlled lines.
 
 Do not allow uncontrolled paragraph wrapping.
@@ -418,6 +429,8 @@ Reference size:     26 px
 Case:               uppercase
 Color:              bone highlight
 Alignment:          centered
+
+Presented hunter names remove a leading `The ` from the character display name.
 
 Tagline:
 
@@ -618,15 +631,13 @@ It never scrolls.
 Exact button labels:
 
 BACK
-RANDOM HUNTER
 CHOOSE STARTER
 
 Reference dimensions:
 
-Back:             170 × 50 px
-Random Hunter:    220 × 50 px
-Choose Starter:   240 × 50 px
-Gap:               16 px
+Back:             190 × 50 px
+Choose Starter:   260 × 50 px
+Gap:               24 px
 Alignment:         centered
 
 CHOOSE STARTER is the primary action.
@@ -634,7 +645,6 @@ CHOOSE STARTER is the primary action.
 Button hierarchy:
 
 BACK:              secondary
-RANDOM HUNTER:     secondary
 CHOOSE STARTER:    primary
 
 No explanatory paragraph appears above the buttons.
@@ -647,8 +657,6 @@ Mouse behavior:
 - clicking an active hunter selects that hunter
 - selecting a hunter updates the center and detail areas
 - clicking a sealed slot does nothing
-- clicking RANDOM HUNTER selects a random active hunter
-- clicking RANDOM HUNTER does not continue automatically
 - clicking CHOOSE STARTER confirms the selected hunter
 - clicking BACK returns to the Main Menu
 
@@ -665,7 +673,6 @@ Actions:
 
 Enter:      choose starter
 Space:      choose starter
-R:          random hunter
 Escape:     back
 
 Navigation rules:
@@ -675,8 +682,6 @@ Navigation rules:
 - movement must not enter disabled placeholders
 - selecting a hunter updates the showcase
 - the selected hunter remains visually obvious
-- random selection updates focus to the selected hunter
-- random selection does not confirm automatically
 
 At incomplete final rows, navigation resolves to the nearest valid active character rather than entering a sealed slot.
 
@@ -854,8 +859,7 @@ The final implementation is accepted only when all conditions are true:
 - [ ] Identity, Passive and Opening Weapon remain fully visible.
 - [ ] The right detail area does not scroll.
 - [ ] The bottom action row remains fully visible.
-- [ ] The buttons read BACK, RANDOM HUNTER and CHOOSE STARTER.
-- [ ] Random Hunter selects but does not confirm.
+- [ ] The buttons read BACK and CHOOSE STARTER.
 - [ ] Choose Starter opens Starting Weapon Select.
 - [ ] Back returns to Main Menu.
 - [ ] Keyboard navigation follows the five-column grid.
