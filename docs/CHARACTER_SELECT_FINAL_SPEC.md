@@ -790,7 +790,6 @@ The redesign must preserve:
 - loading character presentation data
 - restoring the pending selected-character ID
 - selecting a character
-- random character selection
 - setting pending character state before continuing
 - returning to Main Menu
 - opening Starting Weapon Select
@@ -872,7 +871,7 @@ The final implementation is accepted only when all conditions are true:
 - [ ] No Tradeoff card remains.
 - [ ] No Flow card remains.
 - [ ] No development-facing fallback text remains.
-- [ ] Existing runtime selection behavior remains intact.
+- [ ] Existing character selection, pending-state, and navigation behavior remains intact.
 - [ ] Headless Godot startup passes.
 - [ ] `git diff --check` passes.
 - [ ] Only the two approved implementation files change in the later implementation PR.
