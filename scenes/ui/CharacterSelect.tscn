@@ -174,7 +174,7 @@ theme_override_constants/separation = 2
 
 [node name="FamilyRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="Label" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/FamilyRow"]
 layout_mode = 2
