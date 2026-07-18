@@ -25,7 +25,7 @@ const COLOR_HELL_ORANGE := Color("#F06A1A")
 const COLOR_FOCUS_OUTLINE := Color("#EFE2BC")
 const COLOR_MUTED_PARCHMENT := Color("#8A7864")
 
-const TAGLINE_LIMIT := 60
+const TAGLINE_DISPLAY_LIMIT: int = 42
 const IDENTITY_SUMMARY_LIMIT := 150
 const IDENTITY_FANTASY_LIMIT := 120
 const PASSIVE_SUMMARY_LIMIT := 150
@@ -61,7 +61,6 @@ const ROSTER_TILE_PLACEHOLDER_NODE := "RosterTilePlaceholder"
 @onready var arsenal_preview_row: HBoxContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox/ArsenalPreviewRow
 @onready var action_row: HBoxContainer = $RootMargin/RootVBox/ActionRow
 @onready var back_button: Button = $RootMargin/RootVBox/ActionRow/BackButton
-@onready var random_button: Button = $RootMargin/RootVBox/ActionRow/RandomButton
 @onready var confirm_button: Button = $RootMargin/RootVBox/ActionRow/ConfirmButton
 
 var selectable_ids: Array[String] = []
@@ -89,9 +88,9 @@ func _ready() -> void:
 	_apply_accessibility_scaling()
 	_rebuild_roster_grid()
 	_refresh_selection_details()
-	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, showcase_panel, detail_panel, action_row])
+	action_row.modulate.a = 1.0
+	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, showcase_panel, detail_panel])
 	back_button.pressed.connect(_on_back_pressed)
-	random_button.pressed.connect(_on_random_pressed)
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	resized.connect(_on_resized)
 
@@ -112,8 +111,6 @@ func _unhandled_input(event: InputEvent) -> void:
 			_move_selection_vertical(1)
 		KEY_ENTER, KEY_SPACE:
 			_on_confirm_pressed()
-		KEY_R:
-			_on_random_pressed()
 		KEY_ESCAPE:
 			_on_back_pressed()
 
@@ -140,6 +137,12 @@ func _load_selection_state() -> void:
 		if pending_index >= 0:
 			selected_index = pending_index
 
+func _character_display_name(character_id: String) -> String:
+	var display_name: String = str(display_names.get(character_id, character_id)).strip_edges()
+	if display_name.to_lower().begins_with("the "):
+		display_name = display_name.substr(4).strip_edges()
+	return display_name
+
 func _apply_background_art() -> void:
 	if arena_texture == null:
 		return
@@ -152,7 +155,6 @@ func _apply_background_art() -> void:
 func _apply_static_copy() -> void:
 	header_title.text = "CHOOSE YOUR HUNTER"
 	back_button.text = "BACK"
-	random_button.text = "RANDOM HUNTER"
 	confirm_button.text = "CHOOSE STARTER"
 
 func _apply_shell_styles() -> void:
@@ -168,12 +170,13 @@ func _apply_shell_styles() -> void:
 	]:
 		_apply_panel_style(detail_card, Color(0.10, 0.07, 0.08, 0.94), _panel_border_color(high_contrast))
 	_apply_button_style(back_button, false, high_contrast)
-	_apply_button_style(random_button, false, high_contrast)
 	_apply_button_style(confirm_button, true, high_contrast)
 	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
 
 func _apply_accessibility_scaling() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var large_text_enabled: bool = AccessibilitySettingsRuntimeRef.is_large_text_enabled(accessibility_settings)
+	portrait_stage.custom_minimum_size.y = 238.0 if large_text_enabled else 250.0
 	header_title.add_theme_font_size_override("font_size", int(round(34.0 * font_scale)))
 	header_status.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
 	selected_name.add_theme_font_size_override("font_size", int(round(26.0 * font_scale)))
@@ -188,7 +191,6 @@ func _apply_accessibility_scaling() -> void:
 	opening_weapon_name.add_theme_font_size_override("font_size", int(round(16.0 * font_scale)))
 	opening_weapon_summary.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
 	back_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
-	random_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
 	confirm_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
 
 func _rebuild_roster_grid() -> void:
@@ -320,8 +322,8 @@ func _refresh_roster_tile_content(button: Button, character_id: String) -> void:
 	var portrait_texture := button.find_child(ROSTER_TILE_PORTRAIT_NODE, true, false) as TextureRect
 	var placeholder := button.find_child(ROSTER_TILE_PLACEHOLDER_NODE, true, false) as ColorRect
 	if name != null:
-		name.text = str(display_names.get(character_id, character_id)).to_upper()
-		name.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(11, accessibility_settings))
+		name.text = _character_display_name(character_id).to_upper()
+		name.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(10, accessibility_settings))
 		name.modulate = COLOR_BONE_HIGHLIGHT
 	var entry: Dictionary = _find_character_entry(character_id)
 	var visual_path: String = str(entry.get("visual_path", ""))
@@ -370,8 +372,8 @@ func _refresh_selection_details() -> void:
 	var entry: Dictionary = _find_character_entry(character_id)
 	var presentation: Dictionary = _get_character_presentation(character_id, entry)
 	var detail: Dictionary = _get_character_detail(character_id, entry)
-	selected_name.text = str(display_names.get(character_id, character_id)).to_upper()
-	selected_tagline.text = _truncate_text(str(presentation.get("headline", "")), TAGLINE_LIMIT)
+	selected_name.text = _character_display_name(character_id).to_upper()
+	selected_tagline.text = _truncate_text(str(presentation.get("headline", "")), TAGLINE_DISPLAY_LIMIT)
 	family_value.text = str(detail.get("family_label", "Unknown")).to_upper()
 	difficulty_value.text = str(presentation.get("difficulty", "medium")).capitalize().to_upper()
 	signature_value.text = _resolve_signature_text(entry).to_upper()
@@ -552,12 +554,6 @@ func _on_confirm_pressed() -> void:
 	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
 	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
-
-func _on_random_pressed() -> void:
-	if selectable_ids.is_empty():
-		return
-	var random_index: int = randi_range(0, selectable_ids.size() - 1)
-	_select_index(random_index)
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)

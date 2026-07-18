@@ -113,16 +113,16 @@ layout_mode = 2
 [node name="ShowcaseMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
+theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
+theme_override_constants/margin_bottom = 6
 
 [node name="ShowcaseVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 4
 
 [node name="PortraitStage" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
-custom_minimum_size = Vector2(0, 270)
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 
 [node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
@@ -149,7 +149,7 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
 theme_override_font_sizes/font_size = 26
-text = "The Gunslinger"
+text = "GUNSLINGER"
 clip_text = true
 horizontal_alignment = 1
 
@@ -159,7 +159,8 @@ theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.92)
 theme_override_font_sizes/font_size = 13
 text = "Baseline precision shooter with clean ranged tempo."
 autowrap_mode = 0
-clip_text = true
+clip_text = false
+text_overrun_behavior = 3
 horizontal_alignment = 1
 
 [node name="Divider" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
@@ -169,11 +170,11 @@ color = Color(0.184314, 0.0901961, 0.105882, 1)
 
 [node name="MetaRows" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 2
 
 [node name="FamilyRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="Label" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/FamilyRow"]
 layout_mode = 2
@@ -221,7 +222,7 @@ clip_text = true
 
 [node name="TagRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
 custom_minimum_size = Vector2(336, 462)
@@ -345,19 +346,14 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 16
+theme_override_constants/separation = 24
 
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/ActionRow"]
-custom_minimum_size = Vector2(170, 50)
+custom_minimum_size = Vector2(190, 50)
 layout_mode = 2
 text = "BACK"
 
-[node name="RandomButton" type="Button" parent="RootMargin/RootVBox/ActionRow"]
-custom_minimum_size = Vector2(220, 50)
-layout_mode = 2
-text = "RANDOM HUNTER"
-
 [node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/ActionRow"]
-custom_minimum_size = Vector2(240, 50)
+custom_minimum_size = Vector2(260, 50)
 layout_mode = 2
 text = "CHOOSE STARTER"
