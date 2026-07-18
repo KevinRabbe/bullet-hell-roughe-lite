@@ -4,84 +4,64 @@ const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selec
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
-const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
+
 const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
-const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/character_select_background.png"
-const CHARACTER_SELECT_ROSTER_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_roster_frame.png"
-const CHARACTER_SELECT_HERO_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_hero_frame.png"
-const CHARACTER_SELECT_DETAIL_FRAME_PATH := "res://assets/sprites/ui/menu/frames/character_select_detail_frame.png"
-const ROSTER_CONTENT_NODE := "RosterCardContent"
-const ROSTER_MARKER_NODE := "RosterCardMarker"
-const ROSTER_NAME_NODE := "RosterCardName"
-const ROSTER_META_NODE := "RosterCardMeta"
-const ROSTER_HINT_NODE := "RosterCardHint"
-const ROSTER_ACCENT_NODE := "RosterCardAccent"
-const ROSTER_FLARE_NODE := "RosterCardFlare"
-const ROSTER_EMBER_NODE := "RosterCardEmber"
+const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png"
+
+const ROSTER_CAPACITY: int = 30
+const ROSTER_COLUMNS: int = 5
+const ROSTER_ROWS: int = 6
+
+const COLOR_ALMOST_BLACK := Color("#120B10")
+const COLOR_DARK_NEUTRAL := Color("#181218")
+const COLOR_BURNT_BROWN := Color("#2A1711")
+const COLOR_DEEP_BLOOD_RED := Color("#5A0F1B")
+const COLOR_RITUAL_CRIMSON := Color("#9E1B2F")
+const COLOR_OLD_PARCHMENT := Color("#B88A55")
+const COLOR_BONE_HIGHLIGHT := Color("#E8D6B0")
+const COLOR_HELL_ORANGE := Color("#F06A1A")
+const COLOR_FOCUS_OUTLINE := Color("#EFE2BC")
+const COLOR_MUTED_PARCHMENT := Color("#8A7864")
+
+const TAGLINE_DISPLAY_LIMIT: int = 42
+const IDENTITY_SUMMARY_LIMIT := 150
+const IDENTITY_FANTASY_LIMIT := 120
+const PASSIVE_SUMMARY_LIMIT := 150
+const WEAPON_DESCRIPTION_LIMIT := 100
+
+const ROSTER_TILE_NODE := "RosterTile"
+const ROSTER_TILE_NAME_NODE := "RosterTileName"
+const ROSTER_TILE_PORTRAIT_NODE := "RosterTilePortrait"
+const ROSTER_TILE_PLACEHOLDER_NODE := "RosterTilePlaceholder"
 
 @onready var arena_texture: TextureRect = $ArenaTexture
-@onready var root_margin: MarginContainer = $RootMargin
-@onready var flow_header: HBoxContainer = $RootMargin/RootVBox/FlowHeader
-@onready var main_hbox: HBoxContainer = $RootMargin/RootVBox/MainHBox
+@onready var header_title: Label = $RootMargin/RootVBox/Header/HeaderVBox/Title
+@onready var header_status: Label = $RootMargin/RootVBox/Header/HeaderVBox/Status
 @onready var roster_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/RosterPanel
-@onready var roster_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterFrameArtSlot
-@onready var roster_title_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterTitle
-@onready var roster_body_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterBody
-@onready var roster_list: VBoxContainer = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterList
-@onready var roster_status_label: Label = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox/RosterStatus
-@onready var hero_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel
-@onready var hero_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroFrameArtSlot
-@onready var heading_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroHeading
-@onready var portrait_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel
-@onready var portrait_stage: Control = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage
-@onready var portrait_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFrameArtSlot
-@onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter/PortraitRect
-@onready var portrait_fallback: VBoxContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback
-@onready var portrait_fallback_title: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackTitle
-@onready var portrait_fallback_meta: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackMeta
-@onready var portrait_fallback_body: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback/PortraitFallbackBody
-@onready var portrait_backdrop: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitBackdrop
-@onready var portrait_top_shade: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitTopShade
-@onready var portrait_focus_pillar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFocusPillar
-@onready var portrait_mist: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitMist
-@onready var portrait_halo: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitHalo
-@onready var portrait_accent_bar: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitAccentBar
-@onready var portrait_caption: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCaption
-@onready var family_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Family
-@onready var name_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Name
-@onready var identity_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard
-@onready var passive_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard
-@onready var starter_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard
-@onready var tradeoff_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard
-@onready var flow_card: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard
-@onready var identity_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityAccent
-@onready var passive_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveAccent
-@onready var starter_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterAccent
-@onready var tradeoff_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffAccent
-@onready var flow_accent: ColorRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard/FlowAccent
-@onready var summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/Summary
-@onready var fantasy_hook_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/FantasyHook
-@onready var passive_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveName
-@onready var passive_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveSummary
-@onready var tags_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Tags
-@onready var tag_chips: FlowContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/TagChips
-@onready var difficulty_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta/Difficulty
-@onready var action_card: PanelContainer = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard
-@onready var action_accent: ColorRect = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionAccent
-@onready var action_lead_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionLead
-@onready var starter_weapon_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/StarterWeapon
-@onready var arsenal_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox/Arsenal
-@onready var strengths_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox/Strengths
-@onready var tradeoffs_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox/Tradeoffs
+@onready var roster_grid: GridContainer = $RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterGrid
+@onready var showcase_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/ShowcasePanel
+@onready var portrait_stage: PanelContainer = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage
+@onready var portrait_rect: TextureRect = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter/PortraitRect
+@onready var portrait_placeholder: ColorRect = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter/PortraitPlaceholder
+@onready var selected_name: Label = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/SelectedName
+@onready var selected_tagline: Label = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/SelectedTagline
+@onready var family_value: Label = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/FamilyRow/Value
+@onready var difficulty_value: Label = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/DifficultyRow/Value
+@onready var signature_value: Label = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/SignatureRow/Value
+@onready var tag_row: HBoxContainer = $RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/TagRow
 @onready var detail_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/DetailPanel
-@onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
-@onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll
-@onready var confirm_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/ConfirmButton
-@onready var random_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/RandomButton
-@onready var back_button: Button = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow/BackButton
-@onready var hero_hint_label: Label = $RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/HintLabel
+@onready var identity_summary: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/IdentitySummary
+@onready var identity_fantasy_hook: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/IdentityFantasyHook
+@onready var passive_name: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveName
+@onready var passive_summary: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox/PassiveSummary
+@onready var opening_weapon_name: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox/OpeningWeaponName
+@onready var opening_weapon_summary: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox/OpeningWeaponSummary
+@onready var arsenal_preview_row: HBoxContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox/ArsenalPreviewRow
+@onready var action_row: HBoxContainer = $RootMargin/RootVBox/ActionRow
+@onready var back_button: Button = $RootMargin/RootVBox/ActionRow/BackButton
+@onready var confirm_button: Button = $RootMargin/RootVBox/ActionRow/ConfirmButton
 
 var selectable_ids: Array[String] = []
 var character_entries: Array[Dictionary] = []
@@ -95,37 +75,42 @@ func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_load_selection_state()
-	_apply_screen_art_slots()
-	_apply_responsive_layout()
-	_apply_shell_panel_styles()
-	_rebuild_roster_buttons()
+	if selectable_ids.size() > ROSTER_CAPACITY:
+		push_error(
+			"Character Select capacity exceeded: %d active hunters for %d slots."
+			% [selectable_ids.size(), ROSTER_CAPACITY]
+		)
+		set_process_unhandled_input(false)
+		return
+	_apply_background_art()
+	_apply_static_copy()
+	_apply_shell_styles()
+	_apply_accessibility_scaling()
+	_rebuild_roster_grid()
 	_refresh_selection_details()
-	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, hero_panel, detail_panel])
-	resized.connect(_apply_responsive_layout)
-	if confirm_button != null:
-		confirm_button.pressed.connect(_on_confirm_pressed)
-	if random_button != null:
-		random_button.pressed.connect(_on_random_pressed)
-	if back_button != null:
-		back_button.pressed.connect(_on_back_pressed)
+	action_row.modulate.a = 1.0
+	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, showcase_panel, detail_panel])
+	back_button.pressed.connect(_on_back_pressed)
+	confirm_button.pressed.connect(_on_confirm_pressed)
+	resized.connect(_on_resized)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey):
 		return
-	var key_event: InputEventKey = event as InputEventKey
+	var key_event: InputEventKey = event
 	if not key_event.pressed or key_event.echo:
 		return
-	if selectable_ids.is_empty():
-		return
 	match key_event.keycode:
+		KEY_LEFT:
+			_move_selection_horizontal(-1)
+		KEY_RIGHT:
+			_move_selection_horizontal(1)
 		KEY_UP:
-			_select_index(max(selected_index - 1, 0))
+			_move_selection_vertical(-1)
 		KEY_DOWN:
-			_select_index(min(selected_index + 1, selectable_ids.size() - 1))
+			_move_selection_vertical(1)
 		KEY_ENTER, KEY_SPACE:
 			_on_confirm_pressed()
-		KEY_R:
-			_on_random_pressed()
 		KEY_ESCAPE:
 			_on_back_pressed()
 
@@ -152,500 +137,294 @@ func _load_selection_state() -> void:
 		if pending_index >= 0:
 			selected_index = pending_index
 
-func _rebuild_roster_buttons() -> void:
-	if roster_list == null:
+func _character_display_name(character_id: String) -> String:
+	var display_name: String = str(display_names.get(character_id, character_id)).strip_edges()
+	if display_name.to_lower().begins_with("the "):
+		display_name = display_name.substr(4).strip_edges()
+	return display_name
+
+func _apply_background_art() -> void:
+	if arena_texture == null:
 		return
-	for child in roster_list.get_children():
+	if CHARACTER_SELECT_BACKGROUND_ART_PATH == "" or not ResourceLoader.exists(CHARACTER_SELECT_BACKGROUND_ART_PATH):
+		arena_texture.texture = null
+		return
+	var texture_variant: Variant = load(CHARACTER_SELECT_BACKGROUND_ART_PATH)
+	arena_texture.texture = texture_variant if texture_variant is Texture2D else null
+
+func _apply_static_copy() -> void:
+	header_title.text = "CHOOSE YOUR HUNTER"
+	back_button.text = "BACK"
+	confirm_button.text = "CHOOSE STARTER"
+
+func _apply_shell_styles() -> void:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	_apply_panel_style(roster_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(showcase_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(detail_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(portrait_stage, Color(0.08, 0.05, 0.07, 0.92), _panel_border_color(high_contrast))
+	for detail_card in [
+		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard,
+		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard,
+		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard
+	]:
+		_apply_panel_style(detail_card, Color(0.10, 0.07, 0.08, 0.94), _panel_border_color(high_contrast))
+	_apply_button_style(back_button, false, high_contrast)
+	_apply_button_style(confirm_button, true, high_contrast)
+	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
+
+func _apply_accessibility_scaling() -> void:
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var large_text_enabled: bool = AccessibilitySettingsRuntimeRef.is_large_text_enabled(accessibility_settings)
+	portrait_stage.custom_minimum_size.y = 238.0 if large_text_enabled else 250.0
+	header_title.add_theme_font_size_override("font_size", int(round(34.0 * font_scale)))
+	header_status.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
+	selected_name.add_theme_font_size_override("font_size", int(round(26.0 * font_scale)))
+	selected_tagline.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
+	family_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
+	difficulty_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
+	signature_value.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
+	identity_summary.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+	identity_fantasy_hook.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	passive_name.add_theme_font_size_override("font_size", int(round(16.0 * font_scale)))
+	passive_summary.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	opening_weapon_name.add_theme_font_size_override("font_size", int(round(16.0 * font_scale)))
+	opening_weapon_summary.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	back_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+	confirm_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+
+func _rebuild_roster_grid() -> void:
+	if roster_grid == null:
+		return
+	for child in roster_grid.get_children():
 		child.queue_free()
-	var roster_button_height := _roster_button_height()
-	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
-	for index in range(selectable_ids.size()):
-		var character_id := selectable_ids[index]
-		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, roster_button_height)
-		button.text = ""
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.focus_mode = Control.FOCUS_ALL
-		button.clip_text = false
-		button.autowrap_mode = TextServer.AUTOWRAP_OFF
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		_apply_roster_button_icon(button, character_id)
-		_build_roster_button_content(button, character_id, index == selected_index, font_scale)
-		_apply_roster_button_style(button, character_id, index == selected_index)
-		button.pressed.connect(_on_character_button_pressed.bind(index))
-		roster_list.add_child(button)
-	if roster_list.get_child_count() > 0:
-		var selected_button := roster_list.get_child(selected_index) as Button
-		if selected_button != null:
-			selected_button.grab_focus()
-			MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.015)
+	for slot_index in range(ROSTER_CAPACITY):
+		if slot_index < selectable_ids.size():
+			var character_id: String = selectable_ids[slot_index]
+			var button: Button = _build_active_roster_tile(character_id, slot_index)
+			roster_grid.add_child(button)
+		else:
+			roster_grid.add_child(_build_sealed_roster_tile())
+	_refresh_roster_grid_styles()
+	_focus_selected_tile()
 
-func _on_character_button_pressed(index: int) -> void:
-	_select_index(index)
+func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
+	var button := Button.new()
+	button.text = ""
+	button.custom_minimum_size = Vector2(72, 68)
+	button.focus_mode = Control.FOCUS_ALL
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	button.clip_text = true
+	button.set_meta("slot_index", slot_index)
+	button.pressed.connect(_on_character_button_pressed.bind(slot_index))
 
-func _select_index(index: int) -> void:
-	selected_index = clampi(index, 0, max(selectable_ids.size() - 1, 0))
-	_refresh_roster_buttons()
-	_refresh_selection_details()
-	if roster_list == null or roster_list.get_child_count() == 0:
-		return
-	var selected_button := roster_list.get_child(selected_index) as Button
-	if selected_button != null:
-		selected_button.grab_focus()
-		MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.015)
-
-func _refresh_roster_buttons() -> void:
-	if roster_list == null:
-		return
-	var roster_button_height := _roster_button_height()
-	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
-	for index in range(roster_list.get_child_count()):
-		var button := roster_list.get_child(index) as Button
-		if button == null or index >= selectable_ids.size():
-			continue
-		button.custom_minimum_size = Vector2(0, roster_button_height)
-		var character_id := selectable_ids[index]
-		_apply_roster_button_icon(button, character_id)
-		_refresh_roster_button_content(button, character_id, index == selected_index, font_scale)
-		_apply_roster_button_style(button, character_id, index == selected_index)
-
-func _build_roster_button_content(button: Button, character_id: String, is_selected: bool, font_scale: float) -> void:
-	if button == null:
-		return
-	var accent_bar := ColorRect.new()
-	accent_bar.name = ROSTER_ACCENT_NODE
-	accent_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	accent_bar.layout_mode = 1
-	accent_bar.anchor_bottom = 1.0
-	accent_bar.offset_left = 0.0
-	accent_bar.offset_top = 10.0
-	accent_bar.offset_right = 6.0
-	accent_bar.offset_bottom = -10.0
-	button.add_child(accent_bar)
-	var flare := ColorRect.new()
-	flare.name = ROSTER_FLARE_NODE
-	flare.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	flare.layout_mode = 1
-	flare.anchor_left = 1.0
-	flare.anchor_right = 1.0
-	flare.offset_left = -34.0
-	flare.offset_top = 8.0
-	flare.offset_right = -8.0
-	flare.offset_bottom = 20.0
-	flare.rotation_degrees = -12.0
-	button.add_child(flare)
-	var ember := ColorRect.new()
-	ember.name = ROSTER_EMBER_NODE
-	ember.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ember.layout_mode = 1
-	ember.anchor_left = 1.0
-	ember.anchor_top = 1.0
-	ember.anchor_right = 1.0
-	ember.anchor_bottom = 1.0
-	ember.offset_left = -56.0
-	ember.offset_top = -10.0
-	ember.offset_right = -18.0
-	ember.offset_bottom = -6.0
-	button.add_child(ember)
 	var margin := MarginContainer.new()
-	margin.name = ROSTER_CONTENT_NODE
 	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	margin.layout_mode = 1
 	margin.anchor_right = 1.0
 	margin.anchor_bottom = 1.0
-	margin.offset_left = 18.0
-	margin.offset_top = 10.0
-	margin.offset_right = -18.0
-	margin.offset_bottom = -10.0
+	margin.offset_left = 4.0
+	margin.offset_top = 4.0
+	margin.offset_right = -4.0
+	margin.offset_bottom = -4.0
 	button.add_child(margin)
-	var content_row := HBoxContainer.new()
-	content_row.name = "RosterCardRow"
-	content_row.alignment = BoxContainer.ALIGNMENT_BEGIN
-	content_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	content_row.add_theme_constant_override("separation", 12)
-	margin.add_child(content_row)
-	var marker := Label.new()
-	marker.name = ROSTER_MARKER_NODE
-	marker.custom_minimum_size = Vector2(16, 0)
-	marker.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	content_row.add_child(marker)
-	var text_vbox := VBoxContainer.new()
-	text_vbox.name = "RosterCardTextVBox"
-	text_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	text_vbox.add_theme_constant_override("separation", 3)
-	content_row.add_child(text_vbox)
-	var name_label := Label.new()
-	name_label.name = ROSTER_NAME_NODE
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_vbox.add_child(name_label)
-	var meta_label := Label.new()
-	meta_label.name = ROSTER_META_NODE
-	meta_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_vbox.add_child(meta_label)
-	var hint_label := Label.new()
-	hint_label.name = ROSTER_HINT_NODE
-	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_vbox.add_child(hint_label)
-	_refresh_roster_button_content(button, character_id, is_selected, font_scale)
 
-func _refresh_roster_button_content(button: Button, character_id: String, is_selected: bool, font_scale: float) -> void:
-	if button == null:
-		return
-	var marker := button.find_child(ROSTER_MARKER_NODE, true, false) as Label
-	var name_label := button.find_child(ROSTER_NAME_NODE, true, false) as Label
-	var meta_label := button.find_child(ROSTER_META_NODE, true, false) as Label
-	var hint_label := button.find_child(ROSTER_HINT_NODE, true, false) as Label
-	var accent_bar := button.find_child(ROSTER_ACCENT_NODE, true, false) as ColorRect
-	var flare := button.find_child(ROSTER_FLARE_NODE, true, false) as ColorRect
-	var ember := button.find_child(ROSTER_EMBER_NODE, true, false) as ColorRect
-	var entry := _find_character_entry(character_id)
-	var presentation_variant: Variant = entry.get("presentation", {})
-	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
-	var detail_variant: Variant = entry.get("detail", {})
-	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	var accent: Color = _family_accent_color(str(entry.get("preferred_weapon_family", "")))
-	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var name_text: String = str(display_names.get(character_id, character_id))
-	var difficulty_text: String = str(presentation.get("difficulty", "medium")).capitalize()
-	var family_text: String = str(detail.get("family_label", "")).strip_edges()
-	var hook_text: String = str(detail.get("fantasy_hook", "")).strip_edges()
-	if marker != null:
-		marker.text = ">" if is_selected else ""
-		marker.add_theme_font_size_override("font_size", int(round(22.0 * font_scale)))
-		marker.modulate = Color(1, 0.98, 0.94, 0.96) if is_selected else Color(accent.r, accent.g, accent.b, 0.9)
-	if name_label != null:
-		name_label.text = name_text
-		name_label.add_theme_font_size_override("font_size", int(round((20.0 if _is_tight_viewport() else 22.0) * font_scale)))
-		name_label.modulate = Color(1, 1, 1, 0.98)
-	if meta_label != null:
-		meta_label.text = difficulty_text if family_text == "" else "%s - %s" % [family_text, difficulty_text]
-		meta_label.add_theme_font_size_override("font_size", int(round((14.0 if _is_tight_viewport() else 15.0) * font_scale)))
-		meta_label.modulate = Color(0.90, 0.92, 0.98, 0.92) if is_selected else Color(0.78, 0.81, 0.88, 0.88)
-	if hint_label != null:
-		hint_label.text = _truncate_copy(hook_text, 54 if _is_tight_viewport() else 78)
-		hint_label.visible = not _is_tight_viewport() and hook_text != ""
-		hint_label.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
-		hint_label.modulate = Color(accent.r, accent.g, accent.b, 0.88) if is_selected else Color(accent.r, accent.g, accent.b, 0.74)
-	if accent_bar != null:
-		accent_bar.color = Color(accent.r, accent.g, accent.b, 0.95 if is_selected else (0.72 if high_contrast else 0.58))
-	if flare != null:
-		flare.color = Color(accent.r, accent.g, accent.b, 0.34 if is_selected else 0.18)
-	if ember != null:
-		ember.color = Color(accent.r, accent.g, accent.b, 0.58 if is_selected else 0.28)
+	var content := VBoxContainer.new()
+	content.name = ROSTER_TILE_NODE
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.alignment = BoxContainer.ALIGNMENT_CENTER
+	content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	content.add_theme_constant_override("separation", 2)
+	margin.add_child(content)
 
-func _build_roster_button_text(character_id: String, is_selected: bool) -> String:
-	var entry := _find_character_entry(character_id)
-	var presentation_variant: Variant = entry.get("presentation", {})
-	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
-	var detail_variant: Variant = entry.get("detail", {})
-	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	var display_name: String = str(display_names.get(character_id, character_id))
-	var difficulty: String = str(presentation.get("difficulty", "medium")).capitalize()
-	var family_label: String = str(detail.get("family_label", ""))
-	var prefix: String = "> " if is_selected else ""
-	if _is_tight_viewport():
-		return "%s%s\n%s" % [prefix, display_name, difficulty]
-	if family_label == "":
-		return "%s%s\n%s" % [prefix, display_name, difficulty]
-	return "%s%s\n%s - %s" % [prefix, display_name, family_label, difficulty]
+	var portrait_box := CenterContainer.new()
+	portrait_box.custom_minimum_size = Vector2(0, 20)
+	portrait_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	content.add_child(portrait_box)
 
-func _apply_roster_button_icon(button: Button, character_id: String) -> void:
-	if button == null:
-		return
-	button.icon = null
-	button.expand_icon = false
-	button.add_theme_constant_override("h_separation", 0)
+	var portrait_texture := TextureRect.new()
+	portrait_texture.name = ROSTER_TILE_PORTRAIT_NODE
+	portrait_texture.custom_minimum_size = Vector2(18, 18)
+	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_box.add_child(portrait_texture)
 
-func _apply_roster_button_style(button: Button, character_id: String, is_selected: bool) -> void:
-	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var entry := _find_character_entry(character_id)
-	var accent := _family_accent_color(str(entry.get("preferred_weapon_family", "")))
+	var placeholder := ColorRect.new()
+	placeholder.name = ROSTER_TILE_PLACEHOLDER_NODE
+	placeholder.custom_minimum_size = Vector2(18, 18)
+	placeholder.color = Color(0.22, 0.16, 0.13, 1.0)
+	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_box.add_child(placeholder)
+
+	var name := Label.new()
+	name.name = ROSTER_TILE_NAME_NODE
+	name.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name.clip_text = true
+	name.max_lines_visible = 2
+	name.custom_minimum_size = Vector2(0, 32)
+	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_child(name)
+
+	_refresh_roster_tile_content(button, character_id)
+	return button
+
+func _build_sealed_roster_tile() -> Control:
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(72, 68)
+	panel.focus_mode = Control.FOCUS_NONE
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 22
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 20
-	style.corner_radius_bottom_left = 12
-	style.border_width_left = 2
+	style.bg_color = Color(0.06, 0.05, 0.06, 0.88)
+	style.border_width_left = 1
 	style.border_width_top = 1
 	style.border_width_right = 1
 	style.border_width_bottom = 1
-	style.content_margin_left = 14
-	style.content_margin_top = 10
-	style.content_margin_right = 14
-	style.content_margin_bottom = 10
-	style.shadow_size = 8 if is_selected else 4
-	style.shadow_color = Color(accent.r, accent.g, accent.b, 0.16) if is_selected else Color(0, 0, 0, 0.18)
-	if is_selected:
-		style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.95) if high_contrast else Color(accent.r, accent.g, accent.b, 0.78)
-	else:
-		style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-		style.border_color = Color(accent.r, accent.g, accent.b, 0.42) if high_contrast else Color(accent.r, accent.g, accent.b, 0.22)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+	style.border_color = Color(0.18, 0.14, 0.12, 1.0)
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	panel.add_theme_stylebox_override("panel", style)
 
-func _refresh_selection_details() -> void:
-	if selectable_ids.is_empty():
-		heading_label.text = "No active hunters are available right now."
-		family_label.text = "Family: -"
-		name_label.text = ""
-		summary_label.text = ""
-		fantasy_hook_label.text = ""
-		passive_label.text = ""
-		passive_summary_label.text = ""
-		tags_label.text = ""
-		difficulty_label.text = ""
-		starter_weapon_label.text = "Starting Weapon: -"
-		arsenal_label.text = "Arsenal: -"
-		strengths_label.text = "Strengths: -"
-		tradeoffs_label.text = "Tradeoffs: -"
-		portrait_rect.texture = null
-		if action_lead_label != null:
-			action_lead_label.text = "No hunter is ready yet. Return once the frontier roster is active."
-		if confirm_button != null:
-			confirm_button.disabled = true
-			confirm_button.text = "Choose Opening Weapon"
-		return
-	var character_id := selectable_ids[selected_index]
-	var current_entry := _find_character_entry(character_id)
-	var presentation_variant: Variant = presentations.get(character_id, {})
-	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
-	if current_entry.get("presentation", null) is Dictionary:
-		presentation = current_entry.get("presentation", {})
-	var detail_variant: Variant = details.get(character_id, {})
-	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	if current_entry.get("detail", null) is Dictionary:
-		detail = current_entry.get("detail", {})
-	var accent: Color = _family_accent_color(str(current_entry.get("preferred_weapon_family", "")))
-	heading_label.text = str(presentation.get("headline", "Choose your fighter."))
-	_apply_portrait(character_id, detail)
-	family_label.text = "Family: %s" % str(detail.get("family_label", "Unknown"))
-	name_label.text = str(display_names.get(character_id, character_id))
-	summary_label.text = str(presentation.get("identity_summary", ""))
-	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
-	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
-	passive_summary_label.text = str(presentation.get("passive_summary", ""))
-	var tags_variant: Variant = presentation.get("playstyle_tags", [])
-	var tags: Array[String] = []
-	if tags_variant is Array:
-		for tag_variant in tags_variant:
-			var tag_text := str(tag_variant)
-			if tag_text != "":
-				tags.append(tag_text.capitalize())
-	tags_label.text = "Combat Signature"
-	_rebuild_tag_chips(tags, accent)
-	difficulty_label.text = "Difficulty: %s" % str(presentation.get("difficulty", "medium")).capitalize()
-	var starter_title: String = str(detail.get("starter_weapon_label", "Starting Weapon"))
-	starter_weapon_label.text = "%s: %s" % [starter_title, _join_detail_list(detail.get("starter_weapon_names", []), "Unknown")]
-	var starter_summary: String = str(detail.get("starter_weapon_summary", ""))
-	if starter_summary != "":
-		starter_weapon_label.text = "%s\n%s" % [starter_weapon_label.text, starter_summary]
-	var arsenal_title: String = str(detail.get("arsenal_label", "Arsenal"))
-	var compact_lists: bool = _is_tight_viewport()
-	arsenal_label.text = "%s: %s" % [arsenal_title, _join_detail_list_limited(detail.get("arsenal_names", []), "Unknown", 4 if compact_lists else 6)]
-	strengths_label.text = _format_detail_bullets("Strengths", detail.get("strengths", []), "No standout edge listed yet.", 2 if compact_lists else 3)
-	tradeoffs_label.text = _format_detail_bullets("Tradeoffs", detail.get("tradeoffs", []), "No major drawback listed yet.", 2 if compact_lists else 3)
-	_apply_detail_panel_accents(accent)
-	if action_lead_label != null:
-		action_lead_label.text = _build_action_lead(name_label.text, str(detail.get("starter_weapon_label", "Starting Weapon")))
-	if roster_status_label != null:
-		var ready_count: int = 0
-		for entry in character_entries:
-			if entry.get("is_ready_for_run_start", true) != false:
-				ready_count += 1
-		roster_status_label.text = "%d active hunters. %d ready to enter the frontier." % [selectable_ids.size(), ready_count]
-	if confirm_button != null:
-		var run_ready: bool = current_entry.get("is_ready_for_run_start", true) != false
-		confirm_button.disabled = not run_ready
-		if run_ready:
-			confirm_button.text = "Choose Starter" if _is_tight_viewport() else "Choose Opening Weapon"
-		else:
-			confirm_button.text = str(current_entry.get("readiness_reason", "Unavailable"))
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 4)
+	margin.add_theme_constant_override("margin_top", 4)
+	margin.add_theme_constant_override("margin_right", 4)
+	margin.add_theme_constant_override("margin_bottom", 4)
+	panel.add_child(margin)
 
-func _apply_portrait(character_id: String, detail: Dictionary) -> void:
-	if portrait_rect == null:
-		return
-	portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
-	if portrait_backdrop != null:
-		portrait_backdrop.color = Color(0.05, 0.06, 0.1, 0.94)
-	if portrait_top_shade != null:
-		portrait_top_shade.color = Color(accent.r * 0.45, accent.g * 0.45, accent.b * 0.45, 0.12)
-	if portrait_focus_pillar != null:
-		portrait_focus_pillar.color = Color(accent.r, accent.g, accent.b, 0.10)
-	if portrait_mist != null:
-		portrait_mist.color = Color(accent.r, accent.g, accent.b, 0.14)
-	if portrait_accent_bar != null:
-		portrait_accent_bar.color = accent
-	if portrait_halo != null:
-		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.22)
-	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var label := Label.new()
+	label.text = "◈"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(14, accessibility_settings))
+	label.modulate = COLOR_MUTED_PARCHMENT
+	margin.add_child(label)
+	return panel
+
+func _refresh_roster_grid_styles() -> void:
+	for slot_index in range(min(roster_grid.get_child_count(), selectable_ids.size())):
+		var button := roster_grid.get_child(slot_index) as Button
+		if button == null:
+			continue
+		_apply_roster_tile_style(button, slot_index == selected_index)
+
+func _refresh_roster_tile_content(button: Button, character_id: String) -> void:
+	var name := button.find_child(ROSTER_TILE_NAME_NODE, true, false) as Label
+	var portrait_texture := button.find_child(ROSTER_TILE_PORTRAIT_NODE, true, false) as TextureRect
+	var placeholder := button.find_child(ROSTER_TILE_PLACEHOLDER_NODE, true, false) as ColorRect
+	if name != null:
+		name.text = _character_display_name(character_id).to_upper()
+		name.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(10, accessibility_settings))
+		name.modulate = COLOR_BONE_HIGHLIGHT
 	var entry: Dictionary = _find_character_entry(character_id)
 	var visual_path: String = str(entry.get("visual_path", ""))
-	if portrait_path == "" and visual_path == "":
+	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var texture := MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	if portrait_texture != null:
+		portrait_texture.texture = texture
+		portrait_texture.visible = texture != null
+	if placeholder != null:
+		placeholder.visible = texture == null
+
+func _apply_roster_tile_style(button: Button, is_selected: bool) -> void:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	button.add_theme_stylebox_override("normal", _build_tile_style("normal", is_selected, high_contrast))
+	button.add_theme_stylebox_override("hover", _build_tile_style("hover", is_selected, high_contrast))
+	button.add_theme_stylebox_override("pressed", _build_tile_style("pressed", is_selected, high_contrast))
+	button.add_theme_stylebox_override("focus", _build_tile_style("focus", is_selected, high_contrast))
+	button.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_hover_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_focus_color", COLOR_BONE_HIGHLIGHT)
+
+func _refresh_selection_details() -> void:
+	var active_count: int = selectable_ids.size()
+	header_status.text = "%d ACTIVE HUNTERS • %d SEALED" % [active_count, max(ROSTER_CAPACITY - active_count, 0)]
+	if active_count <= 0:
+		selected_name.text = ""
+		selected_tagline.text = ""
+		family_value.text = "-"
+		difficulty_value.text = "-"
+		signature_value.text = "-"
+		identity_summary.text = ""
+		identity_fantasy_hook.text = ""
+		passive_name.text = ""
+		passive_summary.text = ""
+		opening_weapon_name.text = ""
+		opening_weapon_summary.text = ""
 		portrait_rect.texture = null
-		_refresh_portrait_fallback(detail, null)
+		portrait_rect.visible = false
+		portrait_placeholder.visible = true
+		_rebuild_tag_row([])
+		_rebuild_arsenal_preview([])
+		confirm_button.disabled = true
 		return
-	var dedicated_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(portrait_path)
-	var resolved_texture: Texture2D = dedicated_texture
-	if resolved_texture == null:
-		resolved_texture = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
-	portrait_rect.texture = resolved_texture
-	_refresh_portrait_fallback(detail, resolved_texture)
-	if portrait_rect.texture != null:
+	var character_id: String = selectable_ids[selected_index]
+	var entry: Dictionary = _find_character_entry(character_id)
+	var presentation: Dictionary = _get_character_presentation(character_id, entry)
+	var detail: Dictionary = _get_character_detail(character_id, entry)
+	selected_name.text = _character_display_name(character_id).to_upper()
+	selected_tagline.text = _truncate_text(str(presentation.get("headline", "")), TAGLINE_DISPLAY_LIMIT)
+	family_value.text = str(detail.get("family_label", "Unknown")).to_upper()
+	difficulty_value.text = str(presentation.get("difficulty", "medium")).capitalize().to_upper()
+	signature_value.text = _resolve_signature_text(entry).to_upper()
+	identity_summary.text = _truncate_text(str(presentation.get("identity_summary", "")), IDENTITY_SUMMARY_LIMIT)
+	identity_fantasy_hook.text = _truncate_text(str(detail.get("fantasy_hook", "")), IDENTITY_FANTASY_LIMIT)
+	passive_name.text = str(presentation.get("passive_name", ""))
+	passive_summary.text = _truncate_text(str(presentation.get("passive_summary", "")), PASSIVE_SUMMARY_LIMIT)
+	_apply_showcase_portrait(character_id, entry)
+	_rebuild_tag_row(_build_display_tags(presentation))
+	_apply_opening_weapon_detail(entry)
+	confirm_button.disabled = entry.get("is_ready_for_run_start", true) != true
+
+func _apply_showcase_portrait(character_id: String, entry: Dictionary) -> void:
+	var visual_path: String = str(entry.get("visual_path", ""))
+	var portrait_path := "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
+	var texture := MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, visual_path)
+	portrait_rect.texture = texture
+	portrait_rect.visible = texture != null
+	portrait_placeholder.visible = texture == null
+	if texture != null:
 		MenuAnimationRuntimeRef.fade_swap_texture(portrait_rect)
-	if portrait_caption != null:
-		if dedicated_texture != null:
-			portrait_caption.text = "Selected character portrait"
-		elif resolved_texture != null:
-			portrait_caption.text = "Runtime portrait preview"
-		else:
-			portrait_caption.text = "Frontier dossier preview"
 
-func _apply_detail_panel_accents(accent: Color) -> void:
-	_apply_card_accent(identity_accent, accent, 0.92)
-	_apply_card_accent(passive_accent, accent, 0.86)
-	_apply_card_accent(starter_accent, accent, 0.78)
-	_apply_card_accent(tradeoff_accent, accent, 0.70)
-	_apply_card_accent(flow_accent, Color(0.56, 0.62, 0.76, 1.0), 0.68)
-	_apply_card_accent(action_accent, accent, 0.82)
+func _build_display_tags(presentation: Dictionary) -> Array[String]:
+	var tags: Array[String] = []
+	var tags_variant: Variant = presentation.get("playstyle_tags", [])
+	if tags_variant is Array:
+		for tag_variant in tags_variant:
+			if tags.size() >= 3:
+				break
+			var tag_text := str(tag_variant).strip_edges()
+			if tag_text != "":
+				tags.append(tag_text.capitalize())
+	return tags
 
-func _apply_card_accent(target: ColorRect, accent: Color, alpha: float) -> void:
-	if target == null:
-		return
-	target.color = Color(accent.r, accent.g, accent.b, alpha)
-
-func _refresh_portrait_fallback(detail: Dictionary, resolved_texture: Texture2D) -> void:
-	if portrait_fallback == null:
-		return
-	var has_texture: bool = resolved_texture != null
-	portrait_fallback.visible = not has_texture
-	if has_texture:
-		return
-	var display_name: String = name_label.text if name_label != null else "Selected Hunter"
-	var family_text: String = str(detail.get("family_label", "Unknown"))
-	var difficulty_text: String = difficulty_label.text.replace("Difficulty: ", "") if difficulty_label != null else "Unknown"
-	if portrait_fallback_title != null:
-		portrait_fallback_title.text = display_name
-	if portrait_fallback_meta != null:
-		portrait_fallback_meta.text = "%s - %s" % [family_text, difficulty_text]
-	if portrait_fallback_body != null:
-		var fantasy_hook: String = str(detail.get("fantasy_hook", "")).strip_edges()
-		var fallback_copy: String = "Final portrait art is still pending. Use the passive, opener, and tradeoffs on the right to judge the hunter."
-		portrait_fallback_body.text = fantasy_hook if fantasy_hook != "" else fallback_copy
-
-func _apply_screen_art_slots() -> void:
-	_apply_optional_texture(arena_texture, CHARACTER_SELECT_BACKGROUND_ART_PATH)
-	_apply_frame_texture(roster_frame_art_slot, CHARACTER_SELECT_ROSTER_FRAME_PATH)
-	_apply_frame_texture(hero_frame_art_slot, CHARACTER_SELECT_HERO_FRAME_PATH)
-	_apply_frame_texture(portrait_frame_art_slot, CHARACTER_SELECT_HERO_FRAME_PATH)
-	_apply_frame_texture(detail_frame_art_slot, CHARACTER_SELECT_DETAIL_FRAME_PATH)
-
-func _apply_frame_texture(target: TextureRect, texture_path: String) -> void:
-	if target == null:
-		return
-	var loaded := _apply_optional_texture(target, texture_path)
-	target.visible = loaded
-
-func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
-	if target == null:
-		return false
-	if texture_path == "" or not ResourceLoader.exists(texture_path):
-		target.texture = null
-		return false
-	var texture_variant: Variant = load(texture_path)
-	if texture_variant is Texture2D:
-		target.texture = texture_variant
-		return true
-	target.texture = null
-	return false
-
-func _join_detail_list(values_variant: Variant, empty_text: String) -> String:
-	if not (values_variant is Array):
-		return empty_text
-	var values: Array = values_variant
-	var parts: Array[String] = []
-	for value_variant in values:
-		var value := str(value_variant)
-		if value != "":
-			parts.append(value)
-	return ", ".join(parts) if not parts.is_empty() else empty_text
-
-func _join_detail_list_limited(values_variant: Variant, empty_text: String, limit: int) -> String:
-	if not (values_variant is Array):
-		return empty_text
-	var values: Array = values_variant
-	var parts: Array[String] = []
-	for value_variant in values:
-		var value := str(value_variant).strip_edges()
-		if value != "":
-			parts.append(value)
-	if parts.is_empty():
-		return empty_text
-	if limit <= 0 or parts.size() <= limit:
-		return ", ".join(parts)
-	var visible: Array[String] = []
-	for index in range(limit):
-		visible.append(parts[index])
-	return "%s +%d more" % [", ".join(visible), parts.size() - limit]
-
-func _format_detail_bullets(title: String, values_variant: Variant, empty_text: String, limit: int) -> String:
-	if not (values_variant is Array):
-		return "%s: %s" % [title, empty_text]
-	var values: Array = values_variant
-	var parts: Array[String] = []
-	for value_variant in values:
-		var value: String = str(value_variant).strip_edges()
-		if value != "":
-			parts.append(value)
-	if parts.is_empty():
-		return "%s: %s" % [title, empty_text]
-	var visible: Array[String] = []
-	var max_count: int = parts.size() if limit <= 0 else min(limit, parts.size())
-	for index in range(max_count):
-		visible.append("• %s" % parts[index])
-	if parts.size() > max_count:
-		visible.append("• +%d more" % (parts.size() - max_count))
-	return "%s\n%s" % [title, "\n".join(visible)]
-
-func _build_action_lead(display_name: String, starter_label: String) -> String:
-	var hunter_name: String = display_name.strip_edges()
-	var opener_label: String = starter_label.strip_edges()
-	if hunter_name == "":
-		hunter_name = "this hunter"
-	if opener_label == "":
-		opener_label = "starting weapon"
-	return "Lock %s, then choose the %s that opens the run." % [hunter_name, opener_label.to_lower()]
-
-func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
-	if tag_chips == null:
-		return
-	for child in tag_chips.get_children():
+func _rebuild_tag_row(tags: Array[String]) -> void:
+	for child in tag_row.get_children():
 		child.queue_free()
-	if tags.is_empty():
-		var empty_label := Label.new()
-		empty_label.text = "Build signature still forming"
-		empty_label.modulate = Color(0.72, 0.76, 0.84, 0.9)
-		tag_chips.add_child(empty_label)
-		return
 	for tag in tags:
 		var chip := PanelContainer.new()
-		var chip_style := StyleBoxFlat.new()
-		chip_style.bg_color = Color(accent.r, accent.g, accent.b, 0.16)
-		chip_style.border_width_left = 1
-		chip_style.border_width_top = 1
-		chip_style.border_width_right = 1
-		chip_style.border_width_bottom = 1
-		chip_style.border_color = Color(accent.r, accent.g, accent.b, 0.45)
-		chip_style.corner_radius_top_left = 10
-		chip_style.corner_radius_top_right = 10
-		chip_style.corner_radius_bottom_right = 10
-		chip_style.corner_radius_bottom_left = 10
-		chip.add_theme_stylebox_override("panel", chip_style)
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.12, 0.08, 0.08, 0.94)
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.border_color = Color(0.33, 0.18, 0.15, 1.0)
+		style.corner_radius_top_left = 10
+		style.corner_radius_top_right = 10
+		style.corner_radius_bottom_right = 10
+		style.corner_radius_bottom_left = 10
+		chip.add_theme_stylebox_override("panel", style)
 		var margin := MarginContainer.new()
 		margin.add_theme_constant_override("margin_left", 10)
 		margin.add_theme_constant_override("margin_top", 4)
@@ -654,188 +433,135 @@ func _rebuild_tag_chips(tags: Array[String], accent: Color) -> void:
 		chip.add_child(margin)
 		var label := Label.new()
 		label.text = tag
-		label.modulate = Color(0.96, 0.97, 1.0, 0.95)
+		label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(12, accessibility_settings))
+		label.modulate = COLOR_BONE_HIGHLIGHT
 		margin.add_child(label)
-		tag_chips.add_child(chip)
+		tag_row.add_child(chip)
 
-func _family_accent_color(family_name: String) -> Color:
-	var normalized := family_name.strip_edges().to_lower().replace(" ", "_")
-	match normalized:
-		"gunslinger":
-			return Color(0.96, 0.72, 0.33, 1.0)
-		"harvester":
-			return Color(0.90, 0.33, 0.56, 1.0)
-		"hellfire":
-			return Color(0.95, 0.42, 0.32, 1.0)
-		"portal":
-			return Color(0.50, 0.68, 1.0, 1.0)
-		"devil":
-			return Color(0.97, 0.28, 0.38, 1.0)
-		"ritual":
-			return Color(0.83, 0.43, 0.96, 1.0)
-		_:
-			return Color(0.99, 0.56, 0.56, 1.0)
+func _apply_opening_weapon_detail(entry: Dictionary) -> void:
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var starting_ids_variant: Variant = entry.get("starting_weapon_ids", [])
+	var starting_ids: Array[String] = _normalize_string_array(starting_ids_variant)
+	if starting_ids.is_empty():
+		opening_weapon_name.text = ""
+		opening_weapon_summary.text = ""
+		_rebuild_arsenal_preview([])
+		return
+	var opening_weapon_id: String = starting_ids[0]
+	opening_weapon_name.text = _resolve_weapon_name(data_registry, opening_weapon_id)
+	opening_weapon_summary.text = _truncate_text(_resolve_weapon_description(data_registry, opening_weapon_id), WEAPON_DESCRIPTION_LIMIT)
+	var family_weapon_ids: Array[String] = _normalize_string_array(entry.get("family_weapon_ids", []))
+	_rebuild_arsenal_preview(_resolve_arsenal_preview_textures(data_registry, family_weapon_ids))
 
-func _find_character_entry(character_id: String) -> Dictionary:
-	for entry in character_entries:
-		if str(entry.get("id", "")) == character_id:
-			return entry
-	return {}
+func _rebuild_arsenal_preview(textures: Array[Texture2D]) -> void:
+	for child in arsenal_preview_row.get_children():
+		child.queue_free()
+	for slot_index in range(5):
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = Vector2(30, 30)
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.08, 0.06, 0.06, 0.94)
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.border_color = Color(0.22, 0.16, 0.13, 1.0)
+		style.corner_radius_top_left = 6
+		style.corner_radius_top_right = 6
+		style.corner_radius_bottom_right = 6
+		style.corner_radius_bottom_left = 6
+		panel.add_theme_stylebox_override("panel", style)
+		var center := CenterContainer.new()
+		panel.add_child(center)
+		var icon := TextureRect.new()
+		icon.custom_minimum_size = Vector2(22, 22)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		if slot_index < textures.size():
+			icon.texture = textures[slot_index]
+		center.add_child(icon)
+		arsenal_preview_row.add_child(panel)
+
+func _resolve_arsenal_preview_textures(data_registry: Node, weapon_ids: Array[String]) -> Array[Texture2D]:
+	var textures: Array[Texture2D] = []
+	for weapon_id in weapon_ids:
+		if textures.size() >= 5:
+			break
+		var weapon_variant: Variant = null
+		if data_registry != null and data_registry.has_method("get_weapon"):
+			weapon_variant = data_registry.call("get_weapon", weapon_id)
+		var icon: Texture2D = null
+		if weapon_variant is WeaponData:
+			var weapon_resource: WeaponData = weapon_variant
+			icon = weapon_resource.icon
+		elif weapon_variant is Dictionary:
+			var weapon_data: Dictionary = weapon_variant
+			var icon_variant: Variant = weapon_data.get("icon", null)
+			icon = icon_variant if icon_variant is Texture2D else null
+		if icon != null:
+			textures.append(icon)
+	return textures
+
+func _move_selection_horizontal(direction: int) -> void:
+	if selectable_ids.is_empty():
+		return
+	var row_start: int = int(selected_index / ROSTER_COLUMNS) * ROSTER_COLUMNS
+	var row_end: int = min(row_start + ROSTER_COLUMNS - 1, selectable_ids.size() - 1)
+	var candidate: int = clampi(selected_index + direction, row_start, row_end)
+	if candidate != selected_index:
+		_select_index(candidate)
+
+func _move_selection_vertical(direction: int) -> void:
+	if selectable_ids.is_empty():
+		return
+	var target_row: int = int(selected_index / ROSTER_COLUMNS) + direction
+	if target_row < 0:
+		return
+	var target_index: int = target_row * ROSTER_COLUMNS + int(selected_index % ROSTER_COLUMNS)
+	if target_index >= selectable_ids.size():
+		var row_start: int = target_row * ROSTER_COLUMNS
+		if row_start > selectable_ids.size() - 1:
+			return
+		target_index = selectable_ids.size() - 1
+	if target_index < 0 or target_index >= selectable_ids.size():
+		return
+	_select_index(target_index)
+
+func _select_index(index: int) -> void:
+	selected_index = clampi(index, 0, max(selectable_ids.size() - 1, 0))
+	_refresh_roster_grid_styles()
+	_refresh_selection_details()
+	_focus_selected_tile()
+
+func _focus_selected_tile() -> void:
+	if roster_grid == null:
+		return
+	if selected_index < 0 or selected_index >= roster_grid.get_child_count():
+		return
+	var selected_button := roster_grid.get_child(selected_index) as Button
+	if selected_button == null:
+		return
+	selected_button.grab_focus()
+	MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.01)
+
+func _on_character_button_pressed(index: int) -> void:
+	_select_index(index)
 
 func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():
 		return
-	var data_registry := get_node_or_null("/root/DataRegistry")
-	var payload := CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
 	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
 	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
-
-func _on_random_pressed() -> void:
-	if selectable_ids.is_empty():
-		return
-	selected_index = randi_range(0, selectable_ids.size() - 1)
-	_refresh_roster_buttons()
-	_refresh_selection_details()
-	if roster_list == null or roster_list.get_child_count() == 0:
-		return
-	var selected_button := roster_list.get_child(selected_index) as Button
-	if selected_button != null:
-		selected_button.grab_focus()
 
 func _on_back_pressed() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
 
-func _apply_responsive_layout() -> void:
-	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
-	var viewport_size: Vector2 = get_viewport_rect().size
-	var compact: bool = viewport_size.x < 1500.0
-	var tight: bool = viewport_size.x <= 1366.0 or viewport_size.y <= 768.0
-	var very_tight: bool = viewport_size.x < 1220.0 or viewport_size.y < 700.0
-	if root_margin != null:
-		root_margin.offset_left = 4.0 if very_tight else (8.0 if tight else (20.0 if compact else 40.0))
-		root_margin.offset_top = 4.0 if very_tight else (8.0 if tight else (18.0 if compact else 36.0))
-		root_margin.offset_right = -4.0 if very_tight else (-8.0 if tight else (-20.0 if compact else -40.0))
-		root_margin.offset_bottom = -4.0 if very_tight else (-8.0 if tight else (-18.0 if compact else -36.0))
-	if flow_header != null:
-		flow_header.visible = not very_tight
-		flow_header.add_theme_constant_override("separation", 8 if tight else 12)
-	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
-	if roster_panel != null:
-		roster_panel.custom_minimum_size = Vector2(164 if very_tight else (192 if tight else (228 if compact else 280)), 0)
-		roster_panel.size_flags_stretch_ratio = 0.9 if tight else 1.0
-	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(220 if very_tight else (250 if tight else (320 if compact else 380)), 0)
-		hero_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		hero_panel.size_flags_stretch_ratio = 1.2 if tight else 1.15
-	if detail_panel != null:
-		detail_panel.custom_minimum_size = Vector2(210 if very_tight else (238 if tight else (292 if compact else 340)), 0)
-		detail_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		detail_panel.size_flags_stretch_ratio = 1.1 if tight else 1.0
-	if detail_scroll != null:
-		detail_scroll.custom_minimum_size = Vector2(0, 0)
-	if portrait_panel != null:
-		portrait_panel.custom_minimum_size = Vector2(0, 152 if very_tight else (188 if tight else (270 if compact else 360)))
-	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 132 if very_tight else (164 if tight else (224 if compact else 320)))
-	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 112 if very_tight else (132 if tight else (190 if compact else 280)))
-	if portrait_fallback_title != null:
-		portrait_fallback_title.add_theme_font_size_override("font_size", int(round((18 if very_tight else (20 if tight else 26)) * font_scale)))
-	if portrait_fallback_meta != null:
-		portrait_fallback_meta.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
-	if portrait_fallback_body != null:
-		portrait_fallback_body.add_theme_font_size_override("font_size", int(round((12 if very_tight else (13 if tight else 15)) * font_scale)))
-	if roster_title_label != null:
-		roster_title_label.add_theme_font_size_override("font_size", int(round((20 if very_tight else (23 if tight else 28)) * font_scale)))
-	if roster_body_label != null:
-		roster_body_label.visible = not very_tight
-		roster_body_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
-	if roster_status_label != null:
-		roster_status_label.add_theme_font_size_override("font_size", int(round((13 if tight else 15) * font_scale)))
-	if name_label != null:
-		name_label.add_theme_font_size_override("font_size", int(round(((18 if very_tight else 22) if tight else (32 if compact else 40)) * font_scale)))
-	if heading_label != null:
-		heading_label.add_theme_font_size_override("font_size", int(round((15 if tight else 18) * font_scale)))
-	if family_label != null:
-		family_label.add_theme_font_size_override("font_size", int(round((13 if tight else 17) * font_scale)))
-	if difficulty_label != null:
-		difficulty_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
-	if tags_label != null:
-		tags_label.add_theme_font_size_override("font_size", int(round((13 if tight else 16) * font_scale)))
-	if action_lead_label != null:
-		action_lead_label.add_theme_font_size_override("font_size", int(round((13 if very_tight else (14 if tight else 16)) * font_scale)))
-	if summary_label != null:
-		summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 18)) * font_scale)))
-		summary_label.custom_minimum_size = Vector2(0, 56 if very_tight else (68 if tight else 80))
-	if fantasy_hook_label != null:
-		fantasy_hook_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 18)) * font_scale)))
-		fantasy_hook_label.custom_minimum_size = Vector2(0, 42 if very_tight else (50 if tight else 56))
-	if passive_label != null:
-		passive_label.add_theme_font_size_override("font_size", int(round((15 if tight else 20) * font_scale)))
-	if passive_summary_label != null:
-		passive_summary_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
-		passive_summary_label.custom_minimum_size = Vector2(0, 48 if very_tight else (54 if tight else 60))
-	if starter_weapon_label != null:
-		starter_weapon_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
-		starter_weapon_label.custom_minimum_size = Vector2(0, 46 if very_tight else (52 if tight else 58))
-	if arsenal_label != null:
-		arsenal_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
-		arsenal_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
-	if strengths_label != null:
-		strengths_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
-		strengths_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
-	if tradeoffs_label != null:
-		tradeoffs_label.add_theme_font_size_override("font_size", int(round((14 if very_tight else (15 if tight else 17)) * font_scale)))
-		tradeoffs_label.custom_minimum_size = Vector2(0, 36 if very_tight else (40 if tight else 42))
-	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(108 if very_tight else (132 if tight else 220), 40 if very_tight else (42 if tight else 50))
-		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
-	if random_button != null:
-		random_button.custom_minimum_size = Vector2(64 if very_tight else (78 if tight else 120), 40 if very_tight else (42 if tight else 50))
-		random_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
-	if back_button != null:
-		back_button.custom_minimum_size = Vector2(64 if very_tight else (78 if tight else 120), 40 if very_tight else (42 if tight else 50))
-		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
-	if hero_hint_label != null:
-		hero_hint_label.visible = not very_tight
-		hero_hint_label.add_theme_font_size_override("font_size", int(round((12 if tight else 14) * font_scale)))
-		hero_hint_label.text = "Up/Down browse, Enter continue, R random, Esc back." if tight else "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back to the main menu."
-	_apply_shell_panel_styles()
-	_refresh_roster_buttons()
-
-func _roster_button_height() -> float:
-	var viewport_size: Vector2 = get_viewport_rect().size
-	if viewport_size.x <= 1280.0 or viewport_size.y <= 720.0:
-		return 92.0
-	if viewport_size.x < 1360.0:
-		return 104.0
-	return 118.0
-
-func _is_tight_viewport() -> bool:
-	var viewport_size: Vector2 = get_viewport_rect().size
-	return viewport_size.x <= 1366.0 or viewport_size.y <= 768.0
-
-func _apply_shell_panel_styles() -> void:
-	_apply_panel_style(roster_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
-	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
-	_apply_panel_style(portrait_panel, Color(0.0411765, 0.0470588, 0.0745098, 0.97), Color(0.992157, 0.560784, 0.560784, 0.18))
-	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
-	_apply_panel_style(action_card, Color(0.0431373, 0.0470588, 0.0745098, 0.95), Color(0.992157, 0.560784, 0.560784, 0.18))
-	_apply_panel_style(identity_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
-	_apply_panel_style(passive_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
-	_apply_panel_style(starter_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
-	_apply_panel_style(tradeoff_card, Color(0.0666667, 0.0705882, 0.105882, 0.82), Color(0.992157, 0.560784, 0.560784, 0.12))
-	_apply_panel_style(flow_card, Color(0.0392157, 0.0431373, 0.0666667, 0.9), Color(0.56, 0.62, 0.76, 0.16))
-	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
-	_apply_action_button_style(random_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
-	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
-
-func _truncate_copy(text: String, max_length: int) -> String:
-	var trimmed: String = text.strip_edges()
-	if max_length <= 0 or trimmed.length() <= max_length:
-		return trimmed
-	return "%sâ€¦" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
+func _on_resized() -> void:
+	_apply_accessibility_scaling()
+	_apply_shell_styles()
+	_refresh_roster_grid_styles()
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
 	if panel == null:
@@ -847,54 +573,193 @@ func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Co
 	style.border_width_right = 1
 	style.border_width_bottom = 1
 	style.border_color = border_color
-	style.corner_radius_top_left = 18
-	style.corner_radius_top_right = 18
-	style.corner_radius_bottom_right = 18
-	style.corner_radius_bottom_left = 18
-	style.shadow_color = Color(0, 0, 0, 0.24)
-	style.shadow_size = 10
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_right = 10
+	style.corner_radius_bottom_left = 10
 	panel.add_theme_stylebox_override("panel", style)
 
-func _apply_action_button_style(button: Button, bg_color: Color, border_color: Color) -> void:
-	if button == null:
-		return
-	var primary: bool = button == confirm_button
-	var framed: bool = false
-	if primary:
-		framed = MenuFrameRuntimeRef.apply_button_frame(
-			button,
-			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
-			Color(1.0, 0.97, 0.97, 1.0),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
-	else:
-		framed = MenuFrameRuntimeRef.apply_button_frame(
-			button,
-			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
-			Color(0.90, 0.93, 1.0, 0.98),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
-	if framed:
-		return
+func _apply_button_style(button: Button, is_primary: bool, high_contrast: bool) -> void:
 	var normal := StyleBoxFlat.new()
-	normal.bg_color = bg_color
+	normal.bg_color = Color(0.10, 0.07, 0.08, 0.96)
 	normal.border_width_left = 1
 	normal.border_width_top = 1
 	normal.border_width_right = 1
 	normal.border_width_bottom = 1
-	normal.border_color = border_color
-	normal.corner_radius_top_left = 14
-	normal.corner_radius_top_right = 14
-	normal.corner_radius_bottom_right = 14
-	normal.corner_radius_bottom_left = 14
+	normal.corner_radius_top_left = 12
+	normal.corner_radius_top_right = 12
+	normal.corner_radius_bottom_right = 12
+	normal.corner_radius_bottom_left = 12
 	normal.content_margin_left = 18
 	normal.content_margin_top = 12
 	normal.content_margin_right = 18
 	normal.content_margin_bottom = 12
-	var hover: StyleBoxFlat = normal.duplicate()
-	hover.bg_color = Color(bg_color.r, bg_color.g, bg_color.b, min(bg_color.a + 0.08, 1.0))
-	hover.border_color = Color(border_color.r, border_color.g, border_color.b, min(border_color.a + 0.12, 1.0))
+	normal.border_color = COLOR_HELL_ORANGE if is_primary else _panel_border_color(high_contrast)
+	if is_primary:
+		normal.bg_color = Color(0.18, 0.10, 0.07, 0.98)
+	var hover := normal.duplicate()
+	hover.bg_color = normal.bg_color.lightened(0.08)
+	hover.border_color = COLOR_FOCUS_OUTLINE if high_contrast else COLOR_OLD_PARCHMENT
+	var focus := normal.duplicate()
+	focus.border_width_left = 2
+	focus.border_width_top = 2
+	focus.border_width_right = 2
+	focus.border_width_bottom = 2
+	focus.border_color = COLOR_FOCUS_OUTLINE
+	var pressed := hover.duplicate()
+	pressed.bg_color = hover.bg_color.darkened(0.05)
 	button.add_theme_stylebox_override("normal", normal)
 	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", hover)
-	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_stylebox_override("pressed", pressed)
+	button.add_theme_stylebox_override("focus", focus)
+	button.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_hover_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
+	button.add_theme_color_override("font_focus_color", COLOR_BONE_HIGHLIGHT)
+
+func _get_character_presentation(character_id: String, entry: Dictionary) -> Dictionary:
+	var presentation_variant: Variant = presentations.get(character_id, {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var entry_presentation_variant: Variant = entry.get("presentation", {})
+	if entry_presentation_variant is Dictionary:
+		presentation = entry_presentation_variant
+	return presentation
+
+func _get_character_detail(character_id: String, entry: Dictionary) -> Dictionary:
+	var detail_variant: Variant = details.get(character_id, {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+	var entry_detail_variant: Variant = entry.get("detail", {})
+	if entry_detail_variant is Dictionary:
+		detail = entry_detail_variant
+	return detail
+
+func _find_character_entry(character_id: String) -> Dictionary:
+	for entry in character_entries:
+		if str(entry.get("id", "")) == character_id:
+			return entry
+	return {}
+
+func _resolve_signature_text(entry: Dictionary) -> String:
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var starting_ids: Array[String] = _normalize_string_array(entry.get("starting_weapon_ids", []))
+	if not starting_ids.is_empty() and data_registry != null and data_registry.has_method("get_weapon"):
+		var weapon_variant: Variant = data_registry.call("get_weapon", starting_ids[0])
+		var tags: Array[String] = []
+		var family: String = ""
+		if weapon_variant is WeaponData:
+			var weapon_resource: WeaponData = weapon_variant
+			tags = weapon_resource.tags
+			family = weapon_resource.family
+		elif weapon_variant is Dictionary:
+			var weapon_data: Dictionary = weapon_variant
+			tags = _normalize_string_array(weapon_data.get("tags", []))
+			family = str(weapon_data.get("family", ""))
+		for tag in tags:
+			var tag_text: String = str(tag).strip_edges()
+			if tag_text != "":
+				return tag_text
+		if family.strip_edges() != "":
+			return family
+	var preferred_family: String = str(entry.get("preferred_weapon_family", "")).strip_edges()
+	if preferred_family != "":
+		return preferred_family
+	return "-"
+
+func _resolve_weapon_name(data_registry: Node, weapon_id: String) -> String:
+	if data_registry == null or not data_registry.has_method("get_weapon"):
+		return weapon_id
+	var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+	if weapon_variant is WeaponData:
+		var weapon_resource: WeaponData = weapon_variant
+		return weapon_resource.display_name if weapon_resource.display_name != "" else weapon_id
+	if weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		var display_name: String = str(weapon_data.get("display_name", ""))
+		return display_name if display_name != "" else weapon_id
+	return weapon_id
+
+func _resolve_weapon_description(data_registry: Node, weapon_id: String) -> String:
+	if data_registry == null or not data_registry.has_method("get_weapon"):
+		return ""
+	var weapon_variant: Variant = data_registry.call("get_weapon", weapon_id)
+	if weapon_variant is WeaponData:
+		var weapon_resource: WeaponData = weapon_variant
+		return weapon_resource.description
+	if weapon_variant is Dictionary:
+		var weapon_data: Dictionary = weapon_variant
+		return str(weapon_data.get("description", ""))
+	return ""
+
+func _normalize_string_array(values_variant: Variant) -> Array[String]:
+	var normalized: Array[String] = []
+	if not (values_variant is Array):
+		return normalized
+	var values: Array = values_variant
+	for value_variant in values:
+		var value: String = str(value_variant).strip_edges()
+		if value != "":
+			normalized.append(value)
+	return normalized
+
+func _truncate_text(text: String, max_length: int) -> String:
+	var trimmed: String = text.strip_edges()
+	if trimmed.length() <= max_length:
+		return trimmed
+	return "%s…" % trimmed.substr(0, max_length - 1).rstrip(" ,.-")
+
+func _panel_border_color(high_contrast: bool) -> Color:
+	return COLOR_FOCUS_OUTLINE if high_contrast else COLOR_BURNT_BROWN
+
+func _build_tile_style(state: String, is_selected: bool, high_contrast: bool) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.corner_radius_top_left = 8
+	style.corner_radius_top_right = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left = 8
+	style.content_margin_left = 0
+	style.content_margin_top = 0
+	style.content_margin_right = 0
+	style.content_margin_bottom = 0
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.bg_color = COLOR_DARK_NEUTRAL
+	style.border_color = _panel_border_color(high_contrast)
+	match state:
+		"hover":
+			style.bg_color = Color(0.13, 0.10, 0.10, 0.98)
+			style.border_color = COLOR_FOCUS_OUTLINE if high_contrast else COLOR_OLD_PARCHMENT
+		"focus":
+			style.bg_color = Color(0.13, 0.10, 0.10, 0.98)
+			style.border_width_left = 2
+			style.border_width_top = 2
+			style.border_width_right = 2
+			style.border_width_bottom = 2
+			style.border_color = COLOR_FOCUS_OUTLINE
+		"pressed":
+			style.bg_color = Color(0.16, 0.11, 0.10, 0.98)
+			style.border_color = COLOR_OLD_PARCHMENT
+	if is_selected:
+		style.bg_color = Color(0.15, 0.10, 0.08, 0.98)
+		style.border_width_left = 2
+		style.border_width_top = 2
+		style.border_width_right = 2
+		style.border_width_bottom = 2
+		style.border_blend = true
+		style.border_color = COLOR_HELL_ORANGE
+		style.shadow_color = Color(COLOR_RITUAL_CRIMSON.r, COLOR_RITUAL_CRIMSON.g, COLOR_RITUAL_CRIMSON.b, 0.35)
+		style.shadow_size = 1
+		if state == "focus":
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 2
+			style.border_color = COLOR_FOCUS_OUTLINE
+		elif state == "hover":
+			style.border_color = COLOR_HELL_ORANGE.lightened(0.12)
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 1
+		elif state == "pressed":
+			style.border_color = COLOR_HELL_ORANGE.darkened(0.05)
+			style.shadow_color = COLOR_RITUAL_CRIMSON
+			style.shadow_size = 1
+	return style

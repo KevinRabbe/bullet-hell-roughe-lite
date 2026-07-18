@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/character_select_screen.gd" id="1_anknn"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_2qye0"]
+[ext_resource type="Script" path="res://scripts/ui/character_select_screen.gd" id="1_spec"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_bg"]
 
 [node name="CharacterSelect" type="Control"]
 layout_mode = 3
@@ -10,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_anknn")
+script = ExtResource("1_spec")
 
 [node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0431373, 0.0470588, 0.0784314, 1)
+color = Color(0.0705882, 0.0431373, 0.0627451, 1)
 
 [node name="ArenaTexture" type="TextureRect" parent="."]
 layout_mode = 1
@@ -28,10 +28,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_2qye0")
+texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 6
-modulate = Color(0.52, 0.42, 0.45, 0.46)
+modulate = Color(0.45, 0.33, 0.33, 0.28)
 
 [node name="Dimmer" type="ColorRect" parent="."]
 layout_mode = 1
@@ -40,710 +40,328 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0196078, 0.0235294, 0.0431373, 0.8)
-
-[node name="LeftGlow" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 11
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_right = 120.0
-grow_vertical = 2
-color = Color(0.301961, 0.0784314, 0.145098, 0.16)
-
-[node name="TopBand" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 170.0
-grow_horizontal = 2
-color = Color(0.341176, 0.0901961, 0.14902, 0.18)
-
-[node name="BottomBand" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -120.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.00784314, 0.0117647, 0.0235294, 0.28)
+color = Color(0.0705882, 0.0431373, 0.0627451, 0.86)
 
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 36.0
-offset_right = -40.0
-offset_bottom = -36.0
+offset_left = 24.0
+offset_top = 16.0
+offset_right = -24.0
+offset_bottom = -16.0
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 16
 
-[node name="FlowHeader" type="HBoxContainer" parent="RootMargin/RootVBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="StepChip1" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+[node name="Header" type="CenterContainer" parent="RootMargin/RootVBox"]
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 
-[node name="StepChip1Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip1"]
+[node name="HeaderVBox" type="VBoxContainer" parent="RootMargin/RootVBox/Header"]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
+alignment = 1
+theme_override_constants/separation = 6
 
-[node name="StepChip1Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip1/StepChip1Margin"]
+[node name="Title" type="Label" parent="RootMargin/RootVBox/Header/HeaderVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "1 Main Menu"
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+theme_override_font_sizes/font_size = 34
+text = "CHOOSE YOUR HUNTER"
+horizontal_alignment = 1
 
-[node name="StepChip2" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
+[node name="Status" type="Label" parent="RootMargin/RootVBox/Header/HeaderVBox"]
 layout_mode = 2
-
-[node name="StepChip2Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip2"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip2Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip2/StepChip2Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.95)
-text = "2 Character"
-
-[node name="StepChip3" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
-layout_mode = 2
-
-[node name="StepChip3Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip3"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip3Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip3/StepChip3Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "3 Starter"
-
-[node name="StepChip4" type="PanelContainer" parent="RootMargin/RootVBox/FlowHeader"]
-layout_mode = 2
-
-[node name="StepChip4Margin" type="MarginContainer" parent="RootMargin/RootVBox/FlowHeader/StepChip4"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip4Label" type="Label" parent="RootMargin/RootVBox/FlowHeader/StepChip4/StepChip4Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "4 Arena"
+theme_override_colors/font_color = Color(0.619608, 0.105882, 0.184314, 1)
+theme_override_font_sizes/font_size = 12
+text = "6 ACTIVE HUNTERS • 24 SEALED"
+horizontal_alignment = 1
 
 [node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
+custom_minimum_size = Vector2(0, 462)
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 28
+theme_override_constants/separation = 24
 
 [node name="RosterPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
-custom_minimum_size = Vector2(320, 0)
+custom_minimum_size = Vector2(400, 462)
 layout_mode = 2
-
-[node name="RosterFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/RosterPanel"]
-visible = false
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 6
 
 [node name="RosterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
 
-[node name="RosterVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin"]
+[node name="RosterGrid" type="GridContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin"]
 layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="RosterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "Choose Your Hunter"
-
-[node name="RosterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
-autowrap_mode = 3
-text = "Pick the hunter who enters the frontier. The next step locks the opening weapon for this run."
-
-[node name="RosterStatus" type="Label" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
-autowrap_mode = 3
-text = "6 active hunters standing by."
-
-[node name="RosterList" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/RosterPanel/RosterMargin/RosterVBox"]
-layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+columns = 5
 
-[node name="HeroPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
-custom_minimum_size = Vector2(360, 0)
+[node name="ShowcasePanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
+custom_minimum_size = Vector2(320, 462)
 layout_mode = 2
 
-[node name="HeroFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel"]
+[node name="ShowcaseMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="ShowcaseVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PortraitStage" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+
+[node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
+layout_mode = 2
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PortraitPlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter"]
+custom_minimum_size = Vector2(140, 140)
+layout_mode = 2
+color = Color(0.231373, 0.168627, 0.117647, 0.819608)
+
+[node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter"]
+custom_minimum_size = Vector2(220, 200)
 visible = false
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="HeroMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
-
-[node name="HeroVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="HeroHeading" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
-theme_override_font_sizes/font_size = 18
-text = "Frontier Dossier"
-
-[node name="PortraitPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
-custom_minimum_size = Vector2(0, 380)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PortraitMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="PortraitStage" type="Control" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin"]
-custom_minimum_size = Vector2(0, 320)
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="PortraitBackdrop" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0588235, 0.0666667, 0.105882, 0.94)
-
-[node name="PortraitTopShade" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 96.0
-grow_horizontal = 2
-color = Color(0.341176, 0.0901961, 0.14902, 0.12)
-
-[node name="PortraitFocusPillar" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -132.0
-offset_right = 132.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.1)
-
-[node name="PortraitHalo" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -120.0
-offset_top = -150.0
-offset_right = 120.0
-offset_bottom = 90.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.592157, 0.2, 0.286275, 0.18)
-
-[node name="PortraitSideGlowLeft" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 13
-anchor_top = 0.5
-anchor_right = 0.0
-anchor_bottom = 0.5
-offset_left = 18.0
-offset_top = -104.0
-offset_right = 84.0
-offset_bottom = 104.0
-grow_vertical = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.08)
-
-[node name="PortraitSideGlowRight" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 9
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -84.0
-offset_top = -104.0
-offset_right = -18.0
-offset_bottom = 104.0
-grow_horizontal = 0
-grow_vertical = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.08)
-
-[node name="PortraitMist" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -142.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.992157, 0.560784, 0.560784, 0.14)
-
-[node name="PortraitAccentBar" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 6.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.8)
-
-[node name="PortraitFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-visible = false
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 6
-
-[node name="PortraitFloor" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -52.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.0117647, 0.0156863, 0.027451, 0.88)
-
-[node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitCenter"]
-custom_minimum_size = Vector2(0, 320)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PortraitFallback" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -78.0
-offset_right = 150.0
-offset_bottom = 78.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 10
-
-[node name="PortraitFallbackTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback"]
+[node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.97, 1, 0.95)
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
 theme_override_font_sizes/font_size = 26
+text = "GUNSLINGER"
+clip_text = true
 horizontal_alignment = 1
-text = "Selected Hunter"
 
-[node name="PortraitFallbackMeta" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback"]
+[node name="SelectedTagline" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.92)
+theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.92)
+theme_override_font_sizes/font_size = 13
+text = "Baseline precision shooter with clean ranged tempo."
+autowrap_mode = 0
+clip_text = false
+text_overrun_behavior = 3
 horizontal_alignment = 1
-text = "Family / Role"
 
-[node name="PortraitFallbackBody" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage/PortraitFallback"]
+[node name="Divider" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
+custom_minimum_size = Vector2(0, 1)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.88)
-horizontal_alignment = 1
-autowrap_mode = 3
-text = "Final portrait art is still pending. Use the passive, opener, and tradeoffs on the right to judge the hunter."
+color = Color(0.184314, 0.0901961, 0.105882, 1)
 
-[node name="PortraitCaption" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/PortraitPanel/PortraitMargin/PortraitStage"]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -38.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.772549, 0.8, 0.878431, 0.84)
-horizontal_alignment = 1
-text = "Frontier dossier preview"
-
-[node name="HeroMeta" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
+[node name="MetaRows" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 2
 
-[node name="Name" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+[node name="FamilyRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "Character"
+theme_override_constants/separation = 8
 
-[node name="Family" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+[node name="Label" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/FamilyRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 18
-text = "Family: Unknown"
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "FAMILY"
 
-[node name="Difficulty" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
+[node name="Value" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/FamilyRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-text = "Difficulty: Medium"
-
-[node name="Tags" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-autowrap_mode = 3
-text = "Build Tags"
-
-[node name="TagChips" type="FlowContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/HeroMeta"]
-layout_mode = 2
-theme_override_constants/h_separation = 8
-theme_override_constants/v_separation = 8
-
-[node name="ActionCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox"]
-layout_mode = 2
-
-[node name="ActionAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.82)
-
-[node name="ActionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
-
-[node name="ActionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="ActionLead" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
-autowrap_mode = 3
-text = "Lock this hunter, then choose the weapon that opens the run."
-
-[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
-custom_minimum_size = Vector2(220, 50)
-layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-text = "Lock Starting Weapon"
+text = "GUNSLINGER"
+clip_text = true
 
-[node name="RandomButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
-custom_minimum_size = Vector2(120, 50)
+[node name="DifficultyRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows"]
 layout_mode = 2
-text = "Random Hunter"
+theme_override_constants/separation = 8
 
-[node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox/ActionRow"]
-custom_minimum_size = Vector2(120, 50)
+[node name="Label" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/DifficultyRow"]
 layout_mode = 2
-text = "Back to Menu"
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "DIFFICULTY"
 
-[node name="HintLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroPanel/HeroMargin/HeroVBox/ActionCard/ActionMargin/ActionVBox"]
+[node name="Value" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/DifficultyRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
-autowrap_mode = 3
-text = "Shortcuts: Up/Down browse, Enter continue, R random hunter, Esc back."
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+size_flags_horizontal = 3
+text = "EASY"
+clip_text = true
+
+[node name="SignatureRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/SignatureRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "SIGNATURE"
+
+[node name="Value" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/MetaRows/SignatureRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+size_flags_horizontal = 3
+text = "Fast, readable firearms make the Gunslinger the clean reference pick."
+clip_text = true
+
+[node name="TagRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
 
 [node name="DetailPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox"]
+custom_minimum_size = Vector2(336, 462)
 layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="DetailFrameArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
-visible = false
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 6
 
 [node name="DetailMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
-[node name="DetailScroll" type="ScrollContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
-layout_mode = 2
-size_flags_vertical = 3
-follow_focus = true
-horizontal_scroll_mode = 0
-
-[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 16
-
-[node name="IdentityCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
-layout_mode = 2
-
-[node name="IdentityAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.82)
-
-[node name="IdentityMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
-
-[node name="IdentityVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin"]
+[node name="DetailVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="IdentitySectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
+[node name="IdentityCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 172)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 16
-text = "Identity"
 
-[node name="Summary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
-custom_minimum_size = Vector2(0, 72)
+[node name="IdentityMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="IdentityVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "IDENTITY"
+
+[node name="IdentitySummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+text = "The Gunslinger is the readable reference character: fast bullets, crisp target focus, and a straightforward ranged build path."
 autowrap_mode = 3
-text = "Identity"
+text_overrun_behavior = 3
+max_lines_visible = 3
 
-[node name="FantasyHook" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
-custom_minimum_size = Vector2(0, 42)
+[node name="IdentityFantasyHook" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.9)
+theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
+text = "Fast, readable firearms make the Gunslinger the clean reference pick for players who want crisp ranged control."
 autowrap_mode = 3
-text = "Fantasy hook"
+text_overrun_behavior = 3
+max_lines_visible = 2
 
-[node name="PassiveCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
+[node name="PassiveCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 120)
 layout_mode = 2
 
-[node name="PassiveAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.82)
-
-[node name="PassiveMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard"]
+[node name="PassiveMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="PassiveVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin"]
+[node name="PassiveVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
 
-[node name="PassiveSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
+[node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 16
-text = "Passive"
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "PASSIVE"
 
-[node name="PassiveName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
+[node name="PassiveName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Passive: -"
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+text = "Quickdraw"
 
-[node name="PassiveSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
-custom_minimum_size = Vector2(0, 60)
+[node name="PassiveSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard/PassiveMargin/PassiveVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
+text = "Killing an enemy briefly boosts attack speed, helping the Gunslinger chain clean gun pressure through a wave."
 autowrap_mode = 3
-text = "Passive summary"
+text_overrun_behavior = 3
+max_lines_visible = 2
 
-[node name="StarterCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
+[node name="OpeningWeaponCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 
-[node name="StarterAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.82)
-
-[node name="StarterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard"]
+[node name="OpeningWeaponMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard"]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
 
-[node name="StarterVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin"]
+[node name="OpeningWeaponVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 4
 
-[node name="StarterSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox"]
+[node name="Heading" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 16
-text = "Opening Weapon"
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "OPENING WEAPON"
 
-[node name="StarterWeapon" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox"]
-custom_minimum_size = Vector2(0, 58)
+[node name="OpeningWeaponName" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+text = "Heavy Pistol"
+
+[node name="OpeningWeaponSummary" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
+text = "Reliable sidearm with crisp, hard-hitting shots."
 autowrap_mode = 3
-text = "Starting Weapon: -"
+text_overrun_behavior = 3
+max_lines_visible = 1
 
-[node name="Arsenal" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/StarterCard/StarterMargin/StarterVBox"]
-custom_minimum_size = Vector2(0, 42)
+[node name="ArsenalPreviewLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
-autowrap_mode = 3
-text = "Arsenal: -"
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+text = "ARSENAL PREVIEW"
 
-[node name="TradeoffCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
+[node name="ArsenalPreviewRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
-[node name="TradeoffAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.992157, 0.560784, 0.560784, 0.82)
-
-[node name="TradeoffMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard"]
+[node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 16
+alignment = 1
+theme_override_constants/separation = 24
 
-[node name="TradeoffVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin"]
+[node name="BackButton" type="Button" parent="RootMargin/RootVBox/ActionRow"]
+custom_minimum_size = Vector2(190, 50)
 layout_mode = 2
-theme_override_constants/separation = 10
+text = "BACK"
 
-[node name="StrengthsSectionLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox"]
+[node name="ConfirmButton" type="Button" parent="RootMargin/RootVBox/ActionRow"]
+custom_minimum_size = Vector2(260, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.75, 0.79, 0.86, 0.95)
-theme_override_font_sizes/font_size = 16
-text = "Strengths & Tradeoffs"
-
-[node name="Strengths" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox"]
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.72, 0.91, 0.75, 0.95)
-autowrap_mode = 3
-text = "Strengths: -"
-
-[node name="Tradeoffs" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/TradeoffCard/TradeoffMargin/TradeoffVBox"]
-custom_minimum_size = Vector2(0, 42)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.96, 0.71, 0.67, 0.95)
-autowrap_mode = 3
-text = "Tradeoffs: -"
-
-[node name="FlowCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox"]
-layout_mode = 2
-
-[node name="FlowAccent" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard"]
-mouse_filter = 2
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 5.0
-grow_horizontal = 2
-color = Color(0.56, 0.62, 0.76, 0.74)
-
-[node name="FlowMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 14
-
-[node name="FlowLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailScroll/DetailVBox/FlowCard/FlowMargin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.68, 0.72, 0.8, 0.88)
-autowrap_mode = 3
-text = "Confirm to choose a starting weapon. Back returns to the main menu."
+text = "CHOOSE STARTER"
