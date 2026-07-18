@@ -264,12 +264,16 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
 text = "The Gunslinger is the readable reference character: fast bullets, crisp target focus, and a straightforward ranged build path."
 autowrap_mode = 3
+text_overrun_behavior = 3
+max_lines_visible = 3
 
 [node name="IdentityFantasyHook" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
 text = "Fast, readable firearms make the Gunslinger the clean reference pick for players who want crisp ranged control."
 autowrap_mode = 3
+text_overrun_behavior = 3
+max_lines_visible = 2
 
 [node name="PassiveCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 120)
@@ -301,6 +305,8 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
 text = "Killing an enemy briefly boosts attack speed, helping the Gunslinger chain clean gun pressure through a wave."
 autowrap_mode = 3
+text_overrun_behavior = 3
+max_lines_visible = 2
 
 [node name="OpeningWeaponCard" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox"]
 custom_minimum_size = Vector2(0, 150)
@@ -332,6 +338,8 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.9)
 text = "Reliable sidearm with crisp, hard-hitting shots."
 autowrap_mode = 3
+text_overrun_behavior = 3
+max_lines_visible = 1
 
 [node name="ArsenalPreviewLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard/OpeningWeaponMargin/OpeningWeaponVBox"]
 layout_mode = 2

@@ -266,7 +266,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name.clip_text = true
 	name.max_lines_visible = 2
-	name.custom_minimum_size = Vector2(0, 26)
+	name.custom_minimum_size = Vector2(0, 32)
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(name)
