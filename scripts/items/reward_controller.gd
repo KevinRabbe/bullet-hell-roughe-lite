@@ -28,7 +28,7 @@ func _unhandled_input(event: InputEvent) -> void:
 func _on_portal_event_completed(event_result: Dictionary = {}) -> void:
 	if log_reward_events:
 		print("Reward trigger: portal event completed.")
-	var reward_count: int = maxi(int(event_result.get("reward_count", 1)), 1)
+	var reward_count: int = maxi(int(event_result.get("reward_count", 1)), 0)
 	for reward_index in range(reward_count):
 		_grant_random_item("portal_event", event_result, reward_index)
 

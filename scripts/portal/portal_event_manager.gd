@@ -6,6 +6,7 @@ const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.gd")
 const PortalEventManagerRuntime = preload("res://scripts/portal/portal_event_manager_runtime.gd")
 const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
+const PortalMutationOfferScene = preload("res://scenes/ui/PortalMutationOffer.tscn")
 
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
@@ -29,6 +30,9 @@ var active_event_result: Dictionary = {}
 var speed_pressure_active: bool = false
 var speed_pressure_original_multiplier: float = 1.0
 var speed_pressure_reward_result: Dictionary = {}
+var active_mutation_offer: Node
+var active_mutation_event_result: Dictionary = {}
+var previous_tree_paused: bool = false
 
 func _ready() -> void:
 	rng = _resolve_rng("portal")
@@ -89,6 +93,12 @@ func _on_portal_activated(portal_position: Vector2) -> void:
 	var event_id := str(event_result.get("event_id", "double_elite"))
 	if log_portal_events:
 		print("Portal activated. Event: %s" % event_id)
+	var event_data_variant: Variant = event_result.get("event_data", {})
+	var event_data: Dictionary = event_data_variant if event_data_variant is Dictionary else {}
+	var mutation_id := str(event_data.get("mutation_id", ""))
+	if mutation_id != "":
+		_start_portal_mutation_offer(event_result, mutation_id)
+		return
 	match event_id:
 		"double_elite":
 			_start_double_elite_event(portal_position, event_result)
@@ -100,6 +110,52 @@ func _on_portal_activated(portal_position: Vector2) -> void:
 			_start_enemy_flood_event(event_result)
 		"triple_reward_for_enemy_speed":
 			_start_triple_reward_for_enemy_speed_event(event_result)
+
+func _start_portal_mutation_offer(event_result: Dictionary, mutation_id: String) -> void:
+	if active_mutation_offer != null and is_instance_valid(active_mutation_offer):
+		return
+	var registry := get_node_or_null("/root/DataRegistry")
+	if registry == null or not registry.has_method("get_portal_mutation"):
+		_emit_portal_event_completed(event_result.merged({"applied": false, "reason": "mutation_registry_unavailable"}, true))
+		return
+	var mutation_variant: Variant = registry.call("get_portal_mutation", mutation_id)
+	if not (mutation_variant is Dictionary):
+		_emit_portal_event_completed(event_result.merged({"applied": false, "reason": "mutation_not_found"}, true))
+		return
+	active_mutation_event_result = event_result.duplicate(true)
+	active_mutation_offer = PortalMutationOfferScene.instantiate()
+	add_child(active_mutation_offer)
+	active_mutation_offer.call("configure", mutation_variant as Dictionary)
+	active_mutation_offer.connect("accepted", _on_portal_mutation_accepted.bind(mutation_variant as Dictionary))
+	active_mutation_offer.connect("declined", _on_portal_mutation_declined)
+	previous_tree_paused = get_tree().paused
+	get_tree().paused = true
+
+func _on_portal_mutation_accepted(mutation: Dictionary) -> void:
+	var result := {"applied": false, "reason": "player_unavailable"}
+	if player != null and is_instance_valid(player) and player.has_method("apply_portal_mutation"):
+		var result_variant: Variant = player.call("apply_portal_mutation", mutation, false)
+		if result_variant is Dictionary:
+			result = result_variant
+	var payload := active_mutation_event_result.merged(result, true)
+	payload["mutation_id"] = str(mutation.get("id", ""))
+	payload["mutation_accepted"] = true
+	_finish_portal_mutation_offer()
+	_emit_portal_event_completed(payload)
+
+func _on_portal_mutation_declined() -> void:
+	var payload := active_mutation_event_result.duplicate(true)
+	payload["mutation_accepted"] = false
+	payload["reward_count"] = 0
+	_finish_portal_mutation_offer()
+	_emit_portal_event_completed(payload)
+
+func _finish_portal_mutation_offer() -> void:
+	get_tree().paused = previous_tree_paused
+	if active_mutation_offer != null and is_instance_valid(active_mutation_offer):
+		active_mutation_offer.queue_free()
+	active_mutation_offer = null
+	active_mutation_event_result = {}
 
 func _start_double_elite_event(portal_position: Vector2, event_result: Dictionary) -> void:
 	if log_portal_events:
