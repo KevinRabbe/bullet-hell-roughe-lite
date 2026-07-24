@@ -43,6 +43,7 @@
     "identity_summary": "The Abyss Herald combines heavy portal artillery with ritual and infernal relics. Each takedown deepens the resonance, briefly increasing damage and armor.",
     "passive_name": "Deep Resonance",
     "passive_summary": "Enemy kills briefly grant damage and armor, stacking up to three times while the herald's abyssal call continues.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/deep_resonance.png",
     "playstyle_tags": ["portal", "heavy", "ritual", "armor"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Rift Cannon",

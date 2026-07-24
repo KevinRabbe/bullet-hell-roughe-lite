@@ -43,6 +43,7 @@
     "identity_summary": "The Chain Warden mixes thrown arcs, close-range blades, and constant repositioning. Takedowns briefly harden the warden and accelerate the chase, rewarding players who stay close to the next target.",
     "passive_name": "Unbroken Pursuit",
     "passive_summary": "Enemy kills briefly grant movement speed and armor, stacking up to three times while the pursuit continues.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/unbroken_pursuit.png",
     "playstyle_tags": ["thrown", "heavy", "melee", "mobility"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Chain",

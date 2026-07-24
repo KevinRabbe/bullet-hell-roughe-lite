@@ -43,6 +43,7 @@
     "identity_summary": "The Ember Vanguard bridges heavy infernal casting and close-range aggression. Takedowns push the vanguard forward with a brief burst of movement and attack speed.",
     "passive_name": "Forward Blaze",
     "passive_summary": "Enemy kills briefly grant movement and attack speed, stacking up to three times while the advance continues.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/forward_blaze.png",
     "playstyle_tags": ["hellfire", "burn", "melee", "mobility"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Lantern",

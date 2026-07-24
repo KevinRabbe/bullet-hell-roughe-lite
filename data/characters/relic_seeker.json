@@ -43,6 +43,7 @@
     "identity_summary": "The Relic Seeker mixes portal tools with precision relics from several arsenals. Takedowns reveal temporary opportunities, increasing luck and attack range.",
     "passive_name": "Lucky Find",
     "passive_summary": "Enemy kills briefly grant luck and attack range, stacking up to three times as the seeker uncovers better angles and rarer openings.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/lucky_find.png",
     "playstyle_tags": ["portal", "precision", "artifact", "luck"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Rift Artifact",

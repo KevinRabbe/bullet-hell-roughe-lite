@@ -43,6 +43,7 @@
     "identity_summary": "The Blood Duelist blends ritual precision with the Devil arsenal's aggressive close-range tools. Each takedown sharpens the next exchange, creating brief windows of fast, escalating offense.",
     "passive_name": "Red Tempo",
     "passive_summary": "Enemy kills briefly grant attack speed and damage, stacking up to three times during an uninterrupted duel.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/red_tempo.png",
     "playstyle_tags": ["blood", "precision", "melee", "rapid"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Needle",
