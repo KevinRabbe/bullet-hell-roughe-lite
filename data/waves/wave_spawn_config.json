@@ -40,12 +40,55 @@
       ]
     },
     {
-      "max_wave": 999,
+      "max_wave": 5,
       "variants": [
         {"id": "imp_runner", "weight": 0.34},
         {"id": "husk_brute", "weight": 0.27},
         {"id": "spit_fiend", "weight": 0.21},
         {"id": "skeleton_rifleman", "weight": 0.18}
+      ]
+    },
+    {
+      "max_wave": 6,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.28},
+        {"id": "husk_brute", "weight": 0.26},
+        {"id": "spit_fiend", "weight": 0.20},
+        {"id": "skeleton_rifleman", "weight": 0.16},
+        {"id": "horned_bruiser", "weight": 0.10}
+      ]
+    },
+    {
+      "max_wave": 8,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.22},
+        {"id": "husk_brute", "weight": 0.22},
+        {"id": "spit_fiend", "weight": 0.18},
+        {"id": "skeleton_rifleman", "weight": 0.18},
+        {"id": "horned_bruiser", "weight": 0.10},
+        {"id": "rift_caller", "weight": 0.10}
+      ]
+    },
+    {
+      "max_wave": 10,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.18},
+        {"id": "husk_brute", "weight": 0.22},
+        {"id": "spit_fiend", "weight": 0.16},
+        {"id": "skeleton_rifleman", "weight": 0.18},
+        {"id": "horned_bruiser", "weight": 0.13},
+        {"id": "rift_caller", "weight": 0.13}
+      ]
+    },
+    {
+      "max_wave": 999,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.18},
+        {"id": "husk_brute", "weight": 0.22},
+        {"id": "spit_fiend", "weight": 0.16},
+        {"id": "skeleton_rifleman", "weight": 0.18},
+        {"id": "horned_bruiser", "weight": 0.13},
+        {"id": "rift_caller", "weight": 0.13}
       ]
     }
   ]
