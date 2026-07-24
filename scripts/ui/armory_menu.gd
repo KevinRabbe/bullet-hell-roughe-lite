@@ -375,10 +375,23 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 	column.add_theme_constant_override("separation", 8)
 	margin.add_child(column)
 
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 12)
+	column.add_child(header)
+
+	var icon_variant: Variant = entry.get("icon", null)
+	if icon_variant is Texture2D:
+		header.add_child(_build_card_art_frame(icon_variant as Texture2D, style.border_color, Vector2(64, 64)))
+
+	var header_copy := VBoxContainer.new()
+	header_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header_copy.add_theme_constant_override("separation", 4)
+	header.add_child(header_copy)
+
 	var title := Label.new()
 	title.text = str(entry.get("name", item_id))
 	title.add_theme_font_size_override("font_size", 24)
-	column.add_child(title)
+	header_copy.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "%s / %s" % [
@@ -387,7 +400,7 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 	]
 	subtitle.modulate = Color(0.972549, 0.831373, 0.654902, 0.92)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(subtitle)
+	header_copy.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(entry.get("description", ""))
@@ -1026,6 +1039,7 @@ func _build_item_entry(item_id: String, item_variant: Variant) -> Dictionary:
 			"category": item.category,
 			"rarity": item.rarity,
 			"tags": item.tags,
+			"icon": item.icon,
 			"price": item.price,
 			"stack_limit": item.stack_limit,
 			"stat_lines": _build_item_stat_lines(item.stat_modifiers),
@@ -1041,6 +1055,7 @@ func _build_item_entry(item_id: String, item_variant: Variant) -> Dictionary:
 			"category": str(item_data.get("category", "")),
 			"rarity": str(item_data.get("rarity", "common")),
 			"tags": item_data.get("tags", []),
+			"icon": item_data.get("icon", null),
 			"price": int(item_data.get("price", 0)),
 			"stack_limit": int(item_data.get("stack_limit", 1)),
 			"stat_lines": _build_item_stat_lines(item_data.get("stat_modifiers", {})),
