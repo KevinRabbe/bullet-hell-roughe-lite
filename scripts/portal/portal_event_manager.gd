@@ -122,19 +122,34 @@ func _start_portal_mutation_offer(event_result: Dictionary, mutation_id: String)
 	if not (mutation_variant is Dictionary):
 		_emit_portal_event_completed(event_result.merged({"applied": false, "reason": "mutation_not_found"}, true))
 		return
+	var mutation: Dictionary = (mutation_variant as Dictionary).duplicate(true)
+	var active_major := _get_active_major_mutation()
+	var replaces_active_major := (
+		str(mutation.get("mutation_tier", "")) == "major"
+		and str(active_major.get("id", "")) != ""
+		and str(active_major.get("id", "")) != str(mutation.get("id", ""))
+	)
+	if replaces_active_major:
+		mutation["replacement_warning"] = "Replaces active major mutation: %s." % str(
+			active_major.get("title", active_major.get("id", "Unknown"))
+		)
 	active_mutation_event_result = event_result.duplicate(true)
 	active_mutation_offer = PortalMutationOfferScene.instantiate()
 	add_child(active_mutation_offer)
-	active_mutation_offer.call("configure", mutation_variant as Dictionary)
-	active_mutation_offer.connect("accepted", _on_portal_mutation_accepted.bind(mutation_variant as Dictionary))
+	active_mutation_offer.call("configure", mutation)
+	active_mutation_offer.connect("accepted", _on_portal_mutation_accepted.bind(mutation, replaces_active_major))
 	active_mutation_offer.connect("declined", _on_portal_mutation_declined)
 	previous_tree_paused = get_tree().paused
 	get_tree().paused = true
 
-func _on_portal_mutation_accepted(mutation: Dictionary) -> void:
+func _on_portal_mutation_accepted(mutation: Dictionary, allow_major_replacement: bool) -> void:
 	var result := {"applied": false, "reason": "player_unavailable"}
 	if player != null and is_instance_valid(player) and player.has_method("apply_portal_mutation"):
-		var result_variant: Variant = player.call("apply_portal_mutation", mutation, false)
+		var result_variant: Variant = player.call(
+			"apply_portal_mutation",
+			mutation,
+			allow_major_replacement
+		)
 		if result_variant is Dictionary:
 			result = result_variant
 	var payload := active_mutation_event_result.merged(result, true)
@@ -142,6 +157,15 @@ func _on_portal_mutation_accepted(mutation: Dictionary) -> void:
 	payload["mutation_accepted"] = true
 	_finish_portal_mutation_offer()
 	_emit_portal_event_completed(payload)
+
+func _get_active_major_mutation() -> Dictionary:
+	if player == null or not is_instance_valid(player) or not player.has_method("get_portal_mutation_state"):
+		return {}
+	var state_variant: Variant = player.call("get_portal_mutation_state")
+	if not (state_variant is Dictionary):
+		return {}
+	var major_variant: Variant = (state_variant as Dictionary).get("major_mutation", {})
+	return (major_variant as Dictionary).duplicate(true) if major_variant is Dictionary else {}
 
 func _on_portal_mutation_declined() -> void:
 	var payload := active_mutation_event_result.duplicate(true)
