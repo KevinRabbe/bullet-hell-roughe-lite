@@ -113,14 +113,14 @@ func _load_state() -> void:
 	current_character_entry = character_entry_variant if character_entry_variant is Dictionary else {}
 	title_label.text = "Run Check"
 	var display_name: String = str(selection_state.get("display_name", current_character_id))
-	var family_count := 0
+	var starter_count := 0
 	if not current_character_entry.is_empty():
-		family_count = int(current_character_entry.get("family_weapon_count", 0))
+		starter_count = int(current_character_entry.get("starting_weapon_count", 0))
 	headline_label.text = "%s - choose the opener that shapes your first minute." % display_name
 	if _is_tight_viewport():
 		headline_label.text = "%s - choose your opening weapon." % display_name
-	if family_count > 0:
-		headline_label.text = "%s\nStarter pool: %d weapon%s" % [headline_label.text, family_count, "" if family_count == 1 else "s"]
+	if starter_count > 0:
+		headline_label.text = "%s\nStarter pool: %d weapon%s" % [headline_label.text, starter_count, "" if starter_count == 1 else "s"]
 	var selection_source: String = str(selection_state.get("selection_source", "default_starter"))
 	if selection_state_label != null:
 		selection_state_label.text = "Default opener locked in."
@@ -142,15 +142,17 @@ func _rebuild_weapon_buttons() -> void:
 		child.queue_free()
 	var card_height := _weapon_card_height()
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var card_font_size: float = 14.0 if _is_tight_viewport() else 17.0
 	for index in range(weapon_options.size()):
 		var option: Dictionary = weapon_options[index]
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(0, card_height)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
+		button.add_theme_font_size_override("font_size", int(round(card_font_size * font_scale)))
 		_apply_weapon_button_icon(button, option)
 		_apply_weapon_button_style(button, option, index == selected_index)
 		button.pressed.connect(_on_weapon_button_pressed.bind(index))
@@ -181,13 +183,14 @@ func _refresh_weapon_buttons() -> void:
 		return
 	var card_height := _weapon_card_height()
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var card_font_size: float = 14.0 if _is_tight_viewport() else 17.0
 	for index in range(weapon_list.get_child_count()):
 		var button := weapon_list.get_child(index) as Button
 		if button == null or index >= weapon_options.size():
 			continue
 		button.custom_minimum_size = Vector2(0, card_height)
 		var option: Dictionary = weapon_options[index]
-		button.add_theme_font_size_override("font_size", int(round(17.0 * font_scale)))
+		button.add_theme_font_size_override("font_size", int(round(card_font_size * font_scale)))
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		_apply_weapon_button_icon(button, option)
 		_apply_weapon_button_style(button, option, index == selected_index)
@@ -210,6 +213,7 @@ func _apply_weapon_button_icon(button: Button, option: Dictionary) -> void:
 	var icon_variant: Variant = option.get("icon", null)
 	button.icon = icon_variant if icon_variant is Texture2D else null
 	button.expand_icon = true
+	button.add_theme_constant_override("icon_max_width", 32 if _is_tight_viewport() else 56)
 
 func _refresh_selection() -> void:
 	if weapon_options.is_empty():
