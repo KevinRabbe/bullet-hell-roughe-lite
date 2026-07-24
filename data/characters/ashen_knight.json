@@ -43,6 +43,7 @@
     "identity_summary": "The Ashen Knight trades speed and reach for dependable close-range pressure. Each kill reinforces a short window of poise, letting the knight hold ground while infernal weapons keep the lane burning.",
     "passive_name": "Cinder Guard",
     "passive_summary": "Enemy kills briefly grant armor and damage, stacking up to three times while the knight keeps advancing.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/cinder_guard.png",
     "playstyle_tags": ["hellfire", "heavy", "melee", "armored"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Pact Blade",

@@ -43,6 +43,7 @@
     "identity_summary": "The Bone Artificer mixes necromantic tools with guns, artifacts, and deployable magic. Each takedown feeds a short salvage calculation that improves range and damage.",
     "passive_name": "Salvage Matrix",
     "passive_summary": "Enemy kills briefly grant attack range and damage, stacking up to three times as useful parts accumulate.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/salvage_matrix.png",
     "playstyle_tags": ["necromancy", "precision", "artifact", "mine"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Eye Scepter",

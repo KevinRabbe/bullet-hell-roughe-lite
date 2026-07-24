@@ -43,6 +43,7 @@
     "identity_summary": "The Cinder Witch blends hellfire relics with ritual tools. Each takedown deepens her trance, briefly accelerating attacks and strengthening burn pressure.",
     "passive_name": "Ember Trance",
     "passive_summary": "Enemy kills briefly grant attack speed and burn damage, stacking up to three times while the ritual flame stays fed.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/ember_trance.png",
     "playstyle_tags": ["hellfire", "ritual", "burn", "rapid"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Infernal Sigil",

@@ -43,6 +43,7 @@
     "identity_summary": "The Hex Alchemist curates a hybrid ritual arsenal built around waves, mines, bells, and cursed magic. Kills stir the current mixture, briefly increasing both casting tempo and damage.",
     "passive_name": "Volatile Mixture",
     "passive_summary": "Enemy kills briefly grant attack speed and damage, stacking up to three times while the mixture remains unstable.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/volatile_mixture.png",
     "playstyle_tags": ["ritual", "curse", "wave", "mine"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Censer",

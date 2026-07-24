@@ -43,6 +43,7 @@
     "identity_summary": "The Void Monk combines portal precision, deliberate spacing, and select heavy tools. Kills briefly improve evasion and attack tempo without adding teleportation or invulnerability.",
     "passive_name": "Phase Discipline",
     "passive_summary": "Enemy kills briefly grant dodge and attack speed, stacking up to two times while focus holds.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/phase_discipline.png",
     "playstyle_tags": ["portal", "precision", "mobility", "melee"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Rift Staff",
