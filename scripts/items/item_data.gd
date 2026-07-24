@@ -7,6 +7,7 @@ extends Resource
 @export var category: String = "generic"
 @export var rarity: String = "common"
 @export var tags: Array[String] = []
+@export var icon: Texture2D
 @export var price: int = 3
 @export var stack_limit: int = 1
 @export var stat_modifiers: Dictionary = {}
@@ -22,7 +23,8 @@ func _init(
 	new_price: int = 3,
 	new_stack_limit: int = 1,
 	new_stat_modifiers: Dictionary = {},
-	new_weapon_tag_stat_bonuses: Array[Dictionary] = []
+	new_weapon_tag_stat_bonuses: Array[Dictionary] = [],
+	new_icon: Texture2D = null
 ) -> void:
 	id = new_id
 	name = new_name
@@ -30,6 +32,7 @@ func _init(
 	category = new_category
 	rarity = new_rarity
 	tags = new_tags.duplicate()
+	icon = new_icon
 	price = new_price
 	stack_limit = new_stack_limit
 	stat_modifiers = new_stat_modifiers.duplicate(true)
