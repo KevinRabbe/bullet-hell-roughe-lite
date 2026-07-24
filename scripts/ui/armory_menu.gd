@@ -1199,6 +1199,24 @@ func _humanize_family_id(family_id: String) -> String:
 			words[index] = word.capitalize()
 	return " ".join(words)
 
+func _family_accent_color(family_label: String) -> Color:
+	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
+	match normalized:
+		"gunslinger":
+			return Color(0.96, 0.72, 0.33, 1.0)
+		"harvester":
+			return Color(0.90, 0.33, 0.56, 1.0)
+		"hellfire":
+			return Color(0.95, 0.42, 0.32, 1.0)
+		"portal":
+			return Color(0.50, 0.68, 1.0, 1.0)
+		"devil":
+			return Color(0.97, 0.28, 0.38, 1.0)
+		"ritual":
+			return Color(0.83, 0.43, 0.96, 1.0)
+		_:
+			return Color(0.99, 0.56, 0.56, 1.0)
+
 func _build_item_stat_lines(stat_modifiers_variant: Variant) -> Array[String]:
 	var lines: Array[String] = []
 	if not (stat_modifiers_variant is Dictionary):
