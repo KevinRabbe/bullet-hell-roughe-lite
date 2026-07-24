@@ -32,6 +32,7 @@ var selected_weapon_slot: int = -1
 var merge_selected_button: Button
 var card_title_labels: Array[Label] = []
 var card_type_labels: Array[Label] = []
+var card_icon_rects: Array[TextureRect] = []
 var card_desc_labels: Array[RichTextLabel] = []
 var card_lock_buttons: Array[Button] = []
 var card_panels: Array[Panel] = []
@@ -155,11 +156,20 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 
 	var title := Label.new()
 	title.position = Vector2(12.0, 10.0)
-	title.size = Vector2(card_width - 24.0, 48.0)
+	title.size = Vector2(card_width - 84.0, 48.0)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.add_theme_font_size_override("font_size", 18)
 	card.add_child(title)
 	card_title_labels.append(title)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.position = Vector2(card_width - 66.0, 8.0)
+	icon_rect.size = Vector2(54.0, 54.0)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(icon_rect)
+	card_icon_rects.append(icon_rect)
 
 	var type_label := Label.new()
 	type_label.position = Vector2(12.0, 62.0)
@@ -398,6 +408,7 @@ func _get_snapshot_cards() -> Array[Dictionary]:
 func _clear_offer_card(index: int, button: Button) -> void:
 	card_title_labels[index].text = "N/A"
 	card_type_labels[index].text = "-"
+	card_icon_rects[index].texture = null
 	card_desc_labels[index].text = ""
 	if button != null:
 		button.text = "N/A"
@@ -406,10 +417,12 @@ func _clear_offer_card(index: int, button: Button) -> void:
 func _apply_offer_card(index: int, card: Dictionary, button: Button) -> void:
 	var title := card_title_labels[index]
 	var type_label := card_type_labels[index]
+	var icon_rect := card_icon_rects[index]
 	var desc := card_desc_labels[index]
 	_apply_card_border(index, str(card.get("kind", "")))
 	title.text = str(card.get("title", "Offer"))
 	type_label.text = str(card.get("type_label", "-"))
+	icon_rect.texture = card.get("icon", null)
 	desc.text = str(card.get("description", ""))
 	var block_reason := str(card.get("block_reason", ""))
 	if block_reason != "":
