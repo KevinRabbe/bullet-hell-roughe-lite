@@ -1,0 +1,18 @@
+{
+  "id": "vertical_slice",
+  "total_waves": 10,
+  "milestones": [
+    {
+      "id": "first_ascension",
+      "wave": 5,
+      "type": "boss",
+      "boss_id": "gate_beast",
+      "reward": "ascension",
+      "choice_count": 3
+    }
+  ],
+  "victory": {
+    "wave": 10,
+    "condition": "arena_clear"
+  }
+}
