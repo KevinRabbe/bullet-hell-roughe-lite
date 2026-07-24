@@ -1,0 +1,33 @@
+{
+  "id": "weight_of_ruin",
+  "title": "Weight of Ruin",
+  "description": "Let heavy weapons strike harder while accepting a slower cadence.",
+  "required_tags": [
+    "heavy"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "heavy"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "heavy"
+      ],
+      "stat_id": "damage",
+      "amount": 0.20
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "heavy"
+      ],
+      "stat_id": "attack_speed",
+      "amount": -0.12
+    }
+  ]
+}
