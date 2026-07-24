@@ -1,0 +1,55 @@
+{
+  "id": "void_monk",
+  "display_name": "The Void Monk",
+  "description": "Disciplined dimensional fighter who converts takedowns into evasive focus.",
+  "roster_order": 12,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/void_monk/void_monk.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["rift_staff"],
+  "family_weapon_ids": [
+    "rift_staff",
+    "void_revolver",
+    "rift_bow",
+    "rift_artifact",
+    "harvester_scythe",
+    "grand_sigil"
+  ],
+  "preferred_weapon_family": "portal",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "phase_discipline",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "dodge",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.04
+        }
+      ],
+      "duration": 4.0,
+      "max_stacks": 2,
+      "debug_label": "PHASE DISCIPLINE"
+    }
+  ],
+  "presentation": {
+    "headline": "Dimensional martial hunter who turns takedowns into brief phase focus.",
+    "fantasy_hook": "Wrapped limbs, a broken void halo, and a compact rift staff frame a disciplined silhouette inside the infernal roster.",
+    "identity_summary": "The Void Monk combines portal precision, deliberate spacing, and select heavy tools. Kills briefly improve evasion and attack tempo without adding teleportation or invulnerability.",
+    "passive_name": "Phase Discipline",
+    "passive_summary": "Enemy kills briefly grant dodge and attack speed, stacking up to two times while focus holds.",
+    "playstyle_tags": ["portal", "precision", "mobility", "melee"],
+    "difficulty": "hard",
+    "starter_weapon_label": "Opening Rift Staff",
+    "arsenal_label": "Monk Arsenal",
+    "arsenal_preview": ["Rift Staff", "Void Revolver", "Rift Bow", "Rift Artifact", "Harvester Scythe", "Grand Sigil"],
+    "strengths": ["Flexible dimensional spacing", "Short evasive windows", "Precision and heavy tag overlap"],
+    "tradeoffs": ["Lower raw durability", "Requires takedowns to maintain phase focus"]
+  },
+  "passive_tags": ["phase_discipline", "void_monk", "evasive_focus"]
+}
