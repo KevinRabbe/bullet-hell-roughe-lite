@@ -1,0 +1,30 @@
+{
+  "id": "powder_covenant",
+  "title": "Powder Covenant",
+  "description": "The portal sharpens ballistic trajectories into an unstable pact of speed and precision.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.14 for the rest of the run.",
+  "reward": "Gun and Precision weapons gain 12% attack speed for the rest of the run.",
+  "effect_tags": [
+    "gun",
+    "precision"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "gun",
+        "precision"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.12
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.14
+    }
+  ]
+}
