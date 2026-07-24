@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -9,6 +9,7 @@
 [ext_resource type="Resource" path="res://data/weapons/heavy_pistol.tres" id="7"]
 [ext_resource type="Texture2D" path="res://assets/sprites/characters/gunslinger/gunslinger_idle.png" id="8"]
 [ext_resource type="Script" path="res://scripts/portal/portal_mutation_runtime.gd" id="9"]
+[ext_resource type="Script" path="res://scripts/player/player_ascension_runtime.gd" id="10"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
@@ -46,3 +47,7 @@ weapon_loadout_path = NodePath("../WeaponLoadout")
 
 [node name="PortalMutationRuntime" type="Node" parent="."]
 script = ExtResource("9")
+
+[node name="PlayerAscensionRuntime" type="Node" parent="."]
+script = ExtResource("10")
+weapon_loadout_path = NodePath("../WeaponLoadout")
