@@ -1,0 +1,55 @@
+{
+  "id": "ashen_knight",
+  "display_name": "The Ashen Knight",
+  "description": "Armored infernal bruiser who turns takedowns into short windows of poise.",
+  "roster_order": 7,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/ashen_knight/ashen_knight.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["pact_blade"],
+  "family_weapon_ids": [
+    "pact_blade",
+    "hell_claw",
+    "infernal_sigil",
+    "cursed_lantern",
+    "hellfire_orb",
+    "demonic_scepter"
+  ],
+  "preferred_weapon_family": "hellfire",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "cinder_guard",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "armor",
+          "amount": 0.15
+        },
+        {
+          "stat_id": "damage",
+          "amount": 0.03
+        }
+      ],
+      "duration": 4.0,
+      "max_stacks": 3,
+      "debug_label": "CINDER GUARD"
+    }
+  ],
+  "presentation": {
+    "headline": "Armored frontline hunter who builds momentum through decisive takedowns.",
+    "fantasy_hook": "Soot-black plate, a chipped infernal shield, and a pact blade turn the shared hunter frame into a stubborn advancing wall.",
+    "identity_summary": "The Ashen Knight trades speed and reach for dependable close-range pressure. Each kill reinforces a short window of poise, letting the knight hold ground while infernal weapons keep the lane burning.",
+    "passive_name": "Cinder Guard",
+    "passive_summary": "Enemy kills briefly grant armor and damage, stacking up to three times while the knight keeps advancing.",
+    "playstyle_tags": ["hellfire", "heavy", "melee", "armored"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Pact Blade",
+    "arsenal_label": "Ashen Arsenal",
+    "arsenal_preview": ["Pact Blade", "Hell Claw", "Infernal Sigil", "Cursed Lantern", "Hellfire Orb", "Demonic Scepter"],
+    "strengths": ["Stable close-range pressure", "Kill-chain durability", "Hybrid melee and infernal casting"],
+    "tradeoffs": ["Less mobile than skirmishers", "Needs takedowns to reach full poise"]
+  },
+  "passive_tags": ["cinder_guard", "armored_advance", "kill_momentum"]
+}
