@@ -1,0 +1,55 @@
+{
+  "id": "bone_artificer",
+  "display_name": "The Bone Artificer",
+  "description": "Infernal tinkerer who combines necromantic relics with precise constructed weapons.",
+  "roster_order": 13,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/bone_artificer/bone_artificer.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["harvester_eye_scepter"],
+  "family_weapon_ids": [
+    "harvester_eye_scepter",
+    "harvester_grimoire",
+    "harvester_lantern",
+    "heavy_pistol",
+    "rift_artifact",
+    "hex_totem"
+  ],
+  "preferred_weapon_family": "harvester",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "salvage_matrix",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "attack_range",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "damage",
+          "amount": 0.03
+        }
+      ],
+      "duration": 4.5,
+      "max_stacks": 3,
+      "debug_label": "SALVAGE MATRIX"
+    }
+  ],
+  "presentation": {
+    "headline": "Relic mechanic who assembles precision pressure from bone and infernal iron.",
+    "fantasy_hook": "Cracked goggles, a bone-machine backpack, and a clamped eye scepter make the artificer a readable infernal inventor.",
+    "identity_summary": "The Bone Artificer mixes necromantic tools with guns, artifacts, and deployable magic. Each takedown feeds a short salvage calculation that improves range and damage.",
+    "passive_name": "Salvage Matrix",
+    "passive_summary": "Enemy kills briefly grant attack range and damage, stacking up to three times as useful parts accumulate.",
+    "playstyle_tags": ["necromancy", "precision", "artifact", "mine"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Eye Scepter",
+    "arsenal_label": "Artificer Arsenal",
+    "arsenal_preview": ["Eye Scepter", "Grave Grimoire", "Soul Lantern", "Heavy Pistol", "Rift Artifact", "Hex Totem"],
+    "strengths": ["Unusual precision-relic hybrids", "Growing ranged pressure", "Broad tag coverage"],
+    "tradeoffs": ["Mixed arsenal lacks one pure cadence", "Needs takedowns to finish the salvage cycle"]
+  },
+  "passive_tags": ["salvage_matrix", "bone_artificer", "relic_engineer"]
+}
