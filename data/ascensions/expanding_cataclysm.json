@@ -1,0 +1,41 @@
+{
+  "id": "expanding_cataclysm",
+  "title": "Expanding Cataclysm",
+  "description": "Turn wave, spread, and mine weapons into wider bursts of force with slower repetition.",
+  "required_tags": [
+    "wave",
+    "spread",
+    "mine"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "wave",
+    "spread",
+    "mine"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "wave",
+        "spread",
+        "mine"
+      ],
+      "stat_id": "damage",
+      "amount": 0.17
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "wave",
+        "spread",
+        "mine"
+      ],
+      "stat_id": "attack_speed",
+      "amount": -0.07
+    }
+  ]
+}
