@@ -1,0 +1,30 @@
+{
+  "id": "dimensional_overreach",
+  "title": "Dimensional Overreach",
+  "description": "Feed portal weapons unstable force and accept a more dangerous run.",
+  "required_tags": [
+    "portal"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "portal"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "portal"
+      ],
+      "stat_id": "damage",
+      "amount": 0.14
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.12
+    }
+  ]
+}

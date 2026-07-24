@@ -1,0 +1,33 @@
+{
+  "id": "deadeye_covenant",
+  "title": "Deadeye Covenant",
+  "description": "Trade firing rhythm for deliberate, punishing precision shots.",
+  "required_tags": [
+    "precision"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "precision"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "precision"
+      ],
+      "stat_id": "damage",
+      "amount": 0.16
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "precision"
+      ],
+      "stat_id": "attack_speed",
+      "amount": -0.08
+    }
+  ]
+}

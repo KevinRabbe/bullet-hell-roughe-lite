@@ -1,0 +1,33 @@
+{
+  "id": "cursed_frenzy",
+  "title": "Cursed Frenzy",
+  "description": "Drive cursed weapons into a faster rhythm at the cost of raw impact.",
+  "required_tags": [
+    "curse"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "curse"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "curse"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.16
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "curse"
+      ],
+      "stat_id": "damage",
+      "amount": -0.05
+    }
+  ]
+}
