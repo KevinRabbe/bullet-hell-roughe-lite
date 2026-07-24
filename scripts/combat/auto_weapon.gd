@@ -246,12 +246,13 @@ func _get_weapon_damage(entry_data: WeaponData, weapon_bonus_overrides: Dictiona
 	if entry_data == null:
 		return float(weapon_bonus_overrides.get("damage", 0.0))
 	var base_damage := entry_data.get_damage_value() if entry_data.has_method("get_damage_value") else entry_data.base_damage
-	return base_damage + float(weapon_bonus_overrides.get("damage", 0.0))
+	var damage_multiplier := maxf(1.0 + float(weapon_bonus_overrides.get("damage", 0.0)), 0.01)
+	return base_damage * damage_multiplier
 
 func _get_weapon_projectile_speed(entry_data: WeaponData, weapon_bonus_overrides: Dictionary = {}) -> float:
-	if entry_data.projectile_speed > 0.0:
-		return entry_data.projectile_speed + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
-	return 700.0 + float(weapon_bonus_overrides.get("projectile_speed", 0.0))
+	var base_projectile_speed := entry_data.projectile_speed if entry_data.projectile_speed > 0.0 else 700.0
+	var speed_multiplier := maxf(1.0 + float(weapon_bonus_overrides.get("projectile_speed", 0.0)), 0.01)
+	return base_projectile_speed * speed_multiplier
 
 func _get_weapon_lifetime(entry_data: WeaponData) -> float:
 	if entry_data != null and entry_data.has_method("get_projectile_lifetime_value"):
