@@ -52,6 +52,7 @@
     "identity_summary": "The Gunslinger is the readable reference character: fast bullets, crisp target focus, and a straightforward ranged build path. He rewards steady combat flow and priority target control without leaning on exotic mechanics.",
     "passive_name": "Quickdraw",
     "passive_summary": "Killing an enemy briefly boosts attack speed, helping the Gunslinger chain clean gun pressure through a wave.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/quickdraw.png",
     "playstyle_tags": ["gun", "precision", "ranged", "rapid"],
     "difficulty": "easy",
     "starter_weapon_label": "Opening Sidearm",

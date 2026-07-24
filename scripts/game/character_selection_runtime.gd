@@ -168,6 +168,7 @@ static func _build_character_presentation(character_data: Dictionary) -> Diction
 		"identity_summary": "",
 		"passive_name": "",
 		"passive_summary": "",
+		"passive_icon_path": "",
 		"playstyle_tags": [],
 		"difficulty": "medium",
 		"starter_weapon_label": "Starting Weapon",
@@ -185,6 +186,7 @@ static func _build_character_presentation(character_data: Dictionary) -> Diction
 	result["identity_summary"] = str(presentation.get("identity_summary", ""))
 	result["passive_name"] = str(presentation.get("passive_name", ""))
 	result["passive_summary"] = str(presentation.get("passive_summary", ""))
+	result["passive_icon_path"] = str(presentation.get("passive_icon_path", ""))
 	result["difficulty"] = str(presentation.get("difficulty", "medium"))
 	result["starter_weapon_label"] = str(presentation.get("starter_weapon_label", "Starting Weapon"))
 	result["arsenal_label"] = str(presentation.get("arsenal_label", "Arsenal"))
@@ -421,6 +423,7 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 				"identity_summary": "",
 				"passive_name": "",
 				"passive_summary": "",
+				"passive_icon_path": "",
 				"playstyle_tags": [],
 				"difficulty": "medium",
 				"starter_weapon_label": "Starting Weapon",
@@ -452,6 +455,7 @@ static func build_fallback_state(data_registry: Node) -> Dictionary:
 				"identity_summary": "",
 				"passive_name": "",
 				"passive_summary": "",
+				"passive_icon_path": "",
 				"playstyle_tags": [],
 				"difficulty": "medium",
 				"starter_weapon_label": "Starting Weapon",

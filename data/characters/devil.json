@@ -81,6 +81,7 @@
     "identity_summary": "The Devil is all about cursed aggression: fast thrown blades, close-range pressure, and short windows where trading safety for offense pays off. He should feel reckless, sharp, and rewarding when you stay on top of the fight.",
     "passive_name": "Devil's Bargain",
     "passive_summary": "Enemy kills trigger a short offensive burst that increases damage and attack speed while shaving off a little armor.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/devils_bargain.png",
     "playstyle_tags": ["thrown", "aggressive", "curse", "risk_reward"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Fang",
