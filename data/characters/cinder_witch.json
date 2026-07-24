@@ -1,0 +1,55 @@
+{
+  "id": "cinder_witch",
+  "display_name": "The Cinder Witch",
+  "description": "Infernal spellbinder who turns ritual flame into fast, escalating battlefield pressure.",
+  "roster_order": 14,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/cinder_witch/cinder_witch.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["infernal_sigil"],
+  "family_weapon_ids": [
+    "infernal_sigil",
+    "ritual_candles",
+    "ash_censer",
+    "cursed_bell",
+    "hell_sphere",
+    "demonic_scepter"
+  ],
+  "preferred_weapon_family": "hellfire",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "ember_trance",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "burn_damage",
+          "amount": 0.06
+        }
+      ],
+      "duration": 4.0,
+      "max_stacks": 3,
+      "debug_label": "EMBER TRANCE"
+    }
+  ],
+  "presentation": {
+    "headline": "Cinder spellbinder who keeps ritual fire moving through the hunt.",
+    "fantasy_hook": "A crooked witch hood, ember-red braid, floating candles, and a sigil wand make her flamecraft instantly readable.",
+    "identity_summary": "The Cinder Witch blends hellfire relics with ritual tools. Each takedown deepens her trance, briefly accelerating attacks and strengthening burn pressure.",
+    "passive_name": "Ember Trance",
+    "passive_summary": "Enemy kills briefly grant attack speed and burn damage, stacking up to three times while the ritual flame stays fed.",
+    "playstyle_tags": ["hellfire", "ritual", "burn", "rapid"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Infernal Sigil",
+    "arsenal_label": "Cinder Arsenal",
+    "arsenal_preview": ["Infernal Sigil", "Ritual Candles", "Ash Censer", "Cursed Bell", "Hell Sphere", "Demonic Scepter"],
+    "strengths": ["Fast escalating burn pressure", "Strong ritual and hellfire overlap", "Readable ranged cadence"],
+    "tradeoffs": ["Needs kills to maintain the trance", "Less durable than armored hunters"]
+  },
+  "passive_tags": ["ember_trance", "cinder_witch", "burn_cadence"]
+}
