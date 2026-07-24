@@ -1,0 +1,30 @@
+{
+  "id": "rift_acceleration",
+  "title": "Rift Acceleration",
+  "description": "The portal forces dimensional weapons into an unstable firing rhythm.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.18 for the rest of the run.",
+  "reward": "Portal and Rapid weapons gain 14% attack speed for the rest of the run.",
+  "effect_tags": [
+    "portal",
+    "rapid"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "portal",
+        "rapid"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.14
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.18
+    }
+  ]
+}

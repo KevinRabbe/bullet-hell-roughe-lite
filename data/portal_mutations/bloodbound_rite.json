@@ -1,0 +1,30 @@
+{
+  "id": "bloodbound_rite",
+  "title": "Bloodbound Rite",
+  "description": "The portal binds ritual force to every blood-shaped weapon.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.16 for the rest of the run.",
+  "reward": "Blood and Ritual weapons gain 13% damage for the rest of the run.",
+  "effect_tags": [
+    "blood",
+    "ritual"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "blood",
+        "ritual"
+      ],
+      "stat_id": "damage",
+      "amount": 0.13
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.16
+    }
+  ]
+}
