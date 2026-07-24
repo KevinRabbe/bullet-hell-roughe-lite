@@ -1,0 +1,55 @@
+{
+  "id": "ember_vanguard",
+  "display_name": "The Ember Vanguard",
+  "description": "Advancing infernal fighter who combines burn casting with close-range pressure.",
+  "roster_order": 11,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/ember_vanguard/ember_vanguard.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["cursed_lantern"],
+  "family_weapon_ids": [
+    "cursed_lantern",
+    "hellfire_orb",
+    "hell_sphere",
+    "demonic_crown",
+    "pact_blade",
+    "hell_claw"
+  ],
+  "preferred_weapon_family": "hellfire",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "forward_blaze",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "movement_speed",
+          "amount": 0.05
+        },
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.04
+        }
+      ],
+      "duration": 3.5,
+      "max_stacks": 3,
+      "debug_label": "FORWARD BLAZE"
+    }
+  ],
+  "presentation": {
+    "headline": "Aggressive burn vanguard who carries infernal pressure into the frontline.",
+    "fantasy_hook": "A lantern standard, ember-crested helm, and scorched mantle make every step feel like the front of an advancing flame.",
+    "identity_summary": "The Ember Vanguard bridges heavy infernal casting and close-range aggression. Takedowns push the vanguard forward with a brief burst of movement and attack speed.",
+    "passive_name": "Forward Blaze",
+    "passive_summary": "Enemy kills briefly grant movement and attack speed, stacking up to three times while the advance continues.",
+    "playstyle_tags": ["hellfire", "burn", "melee", "mobility"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Lantern",
+    "arsenal_label": "Vanguard Arsenal",
+    "arsenal_preview": ["Cursed Lantern", "Hellfire Orb", "Hell Sphere", "Demonic Crown", "Pact Blade", "Hell Claw"],
+    "strengths": ["Strong forward momentum", "Flexible casting and melee mix", "Natural burn synergy"],
+    "tradeoffs": ["Needs takedowns to maintain pace", "Less precise than dedicated ranged builds"]
+  },
+  "passive_tags": ["forward_blaze", "ember_vanguard", "kill_momentum"]
+}
