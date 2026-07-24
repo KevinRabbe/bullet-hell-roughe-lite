@@ -29,6 +29,7 @@ func _build_snapshot(player_snapshot: Dictionary, offers: Array[Dictionary]) -> 
 		"offers": offers,
 		"offer_cards": _build_offer_cards(offers),
 		"items_text": _get_items_text(player_snapshot),
+		"item_entries": _build_item_entries(player_snapshot),
 		"weapon_count": _get_weapon_count(),
 		"weapon_entries": _get_weapon_entries(player_snapshot),
 		"weapon_slots": _build_weapon_slots(player_snapshot),
@@ -116,6 +117,23 @@ func _build_item_lines(items_variant: Variant) -> Array[String]:
 			var item := item_variant as ItemData
 			lines.append("- %s" % item.name)
 	return lines
+
+func _build_item_entries(player_snapshot: Dictionary) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var items_variant: Variant = player_snapshot.get("items", null)
+	if items_variant == null and player != null:
+		items_variant = _get_player_property("owned_items", null)
+	if not (items_variant is Array):
+		return entries
+	for item_variant in items_variant:
+		if item_variant is ItemData:
+			var item := item_variant as ItemData
+			entries.append({
+				"id": item.id,
+				"name": item.name,
+				"icon": item.icon
+			})
+	return entries
 
 func _get_weapon_count() -> int:
 	var entries := _get_weapon_entries()
