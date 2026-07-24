@@ -6,7 +6,7 @@
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/abyss_herald/abyss_herald.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["rift_cannon"],
+  "starting_weapon_ids": ["rift_cannon", "rift_staff", "grand_sigil"],
   "family_weapon_ids": [
     "rift_cannon",
     "rift_staff",

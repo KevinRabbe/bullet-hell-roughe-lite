@@ -5,7 +5,7 @@
   "roster_order": 5,
   "visual_path": "res://assets/sprites/characters/devil/devil_character.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["devil_fang"],
+  "starting_weapon_ids": ["devil_fang", "sin_shuriken", "blood_chakram"],
   "family_weapon_ids": [
     "devil_fang",
     "sin_shuriken",

@@ -6,7 +6,7 @@
   "roster_order": 6,
   "visual_path": "res://assets/sprites/characters/ritualist/ritualCaracter.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["blood_needle"],
+  "starting_weapon_ids": ["blood_needle", "ritual_candles", "cursed_bell"],
   "family_weapon_ids": [
     "blood_needle",
     "ritual_candles",
