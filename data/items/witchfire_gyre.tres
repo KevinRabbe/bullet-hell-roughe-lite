@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/witchfire_gyre.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "witchfire_gyre"
+name = "Witchfire Gyre"
+description = "Burn weapons hit harder, while orbit weapons cycle faster."
+category = "offense"
+rarity = "common"
+tags = Array[String](["burn", "orbit"])
+icon = ExtResource("2")
+price = 3
+stack_limit = 1
+stat_modifiers = {}
+weapon_tag_stat_bonuses = Array[Dictionary]([{
+"amount": 0.1,
+"stat_id": "damage",
+"tag": "burn"
+}, {
+"amount": 0.08,
+"stat_id": "attack_speed",
+"tag": "orbit"
+}])
