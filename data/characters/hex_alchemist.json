@@ -1,0 +1,55 @@
+{
+  "id": "hex_alchemist",
+  "display_name": "The Hex Alchemist",
+  "description": "Volatile curse brewer who overlaps waves, mines, and smoky ritual pressure.",
+  "roster_order": 9,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/hex_alchemist/hex_alchemist.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["ash_censer"],
+  "family_weapon_ids": [
+    "ash_censer",
+    "hex_totem",
+    "cursed_bell",
+    "harvester_bell",
+    "harvester_occult_weapon",
+    "infernal_sigil"
+  ],
+  "preferred_weapon_family": "ritual",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "volatile_mixture",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.05
+        },
+        {
+          "stat_id": "damage",
+          "amount": 0.03
+        }
+      ],
+      "duration": 4.0,
+      "max_stacks": 3,
+      "debug_label": "VOLATILE MIXTURE"
+    }
+  ],
+  "presentation": {
+    "headline": "Curse brewer who turns ritual tools into unstable area pressure.",
+    "fantasy_hook": "Oversized goggles, clattering vials, and a smoking censer make the alchemist readable before the first hex detonates.",
+    "identity_summary": "The Hex Alchemist curates a hybrid ritual arsenal built around waves, mines, bells, and cursed magic. Kills stir the current mixture, briefly increasing both casting tempo and damage.",
+    "passive_name": "Volatile Mixture",
+    "passive_summary": "Enemy kills briefly grant attack speed and damage, stacking up to three times while the mixture remains unstable.",
+    "playstyle_tags": ["ritual", "curse", "wave", "mine"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Censer",
+    "arsenal_label": "Alchemist Arsenal",
+    "arsenal_preview": ["Ash Censer", "Hex Totem", "Cursed Bell", "Mourning Bell", "Occult Relic", "Infernal Sigil"],
+    "strengths": ["Broad area-pressure toolkit", "Strong curse and ritual overlap", "Builds tempo from takedowns"],
+    "tradeoffs": ["Less direct precision", "Hybrid arsenal needs careful positioning"]
+  },
+  "passive_tags": ["volatile_mixture", "hex_brewer", "ritual_pressure"]
+}
