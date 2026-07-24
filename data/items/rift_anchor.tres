@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/rift_anchor.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "rift_anchor"
+name = "Rift Anchor"
+description = "Gain armor. Mine weapons hit harder, while portal weapons launch faster projectiles."
+category = "defense"
+rarity = "common"
+tags = Array[String](["portal", "mine"])
+icon = ExtResource("2")
+price = 3
+stack_limit = 1
+stat_modifiers = {
+"armor": 1.0
+}
+weapon_tag_stat_bonuses = Array[Dictionary]([{
+"amount": 0.12,
+"stat_id": "damage",
+"tag": "mine"
+}, {
+"amount": 0.08,
+"stat_id": "projectile_speed",
+"tag": "portal"
+}])
