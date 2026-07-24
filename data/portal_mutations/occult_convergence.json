@@ -1,0 +1,32 @@
+{
+  "id": "occult_convergence",
+  "title": "Occult Convergence",
+  "description": "The portal stretches occult patterns outward until every spell reaches beyond its natural boundary.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.16 for the rest of the run.",
+  "reward": "Magic, Wave, and Orbit weapons gain 12% attack range for the rest of the run.",
+  "effect_tags": [
+    "magic",
+    "wave",
+    "orbit"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "magic",
+        "wave",
+        "orbit"
+      ],
+      "stat_id": "attack_range",
+      "amount": 0.12
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.16
+    }
+  ]
+}
