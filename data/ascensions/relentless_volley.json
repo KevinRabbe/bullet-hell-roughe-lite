@@ -1,0 +1,33 @@
+{
+  "id": "relentless_volley",
+  "title": "Relentless Volley",
+  "description": "Commit rapid weapons to a faster firing rhythm at the cost of some impact.",
+  "required_tags": [
+    "rapid"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "rapid"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "rapid"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.18
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "rapid"
+      ],
+      "stat_id": "damage",
+      "amount": -0.06
+    }
+  ]
+}
