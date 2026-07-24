@@ -545,7 +545,7 @@ func _ensure_audio_runtime_content() -> void:
 		return
 	audio_runtime_box = VBoxContainer.new()
 	audio_runtime_box.name = "AudioRuntimeContent"
-	audio_runtime_box.theme_override_constants.separation = 14
+	audio_runtime_box.add_theme_constant_override("separation", 14)
 	audio_runtime_box.visible = false
 	placeholder_content.add_child(audio_runtime_box)
 	placeholder_content.move_child(audio_runtime_box, placeholder_content.get_child_count() - 1)
@@ -576,7 +576,7 @@ func _add_audio_channel_block(channel_data: Dictionary) -> void:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	block.add_child(margin)
 	var column := VBoxContainer.new()
-	column.theme_override_constants.separation = 10
+	column.add_theme_constant_override("separation", 10)
 	margin.add_child(column)
 	var title := Label.new()
 	title.text = str(channel_data.get("title", "Audio"))
@@ -588,12 +588,12 @@ func _add_audio_channel_block(channel_data: Dictionary) -> void:
 	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
 	column.add_child(body)
 	var value_label := Label.new()
-	value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	value_label.add_theme_color_override("font_color", Color(0.992157, 0.560784, 0.560784, 0.95))
 	value_label.add_theme_font_size_override("font_size", 22)
 	column.add_child(value_label)
 	audio_value_labels[str(channel_data.get("id", ""))] = value_label
 	var controls := HBoxContainer.new()
-	controls.theme_override_constants.separation = 12
+	controls.add_theme_constant_override("separation", 12)
 	column.add_child(controls)
 	var prev_button := Button.new()
 	prev_button.custom_minimum_size = Vector2(180, 48)
@@ -622,7 +622,7 @@ func _add_audio_mute_block() -> void:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	block.add_child(margin)
 	var column := VBoxContainer.new()
-	column.theme_override_constants.separation = 10
+	column.add_theme_constant_override("separation", 10)
 	margin.add_child(column)
 	var title := Label.new()
 	title.text = "Quiet Mode"
@@ -634,7 +634,7 @@ func _add_audio_mute_block() -> void:
 	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
 	column.add_child(body)
 	audio_mute_value_label = Label.new()
-	audio_mute_value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	audio_mute_value_label.add_theme_color_override("font_color", Color(0.992157, 0.560784, 0.560784, 0.95))
 	audio_mute_value_label.add_theme_font_size_override("font_size", 22)
 	column.add_child(audio_mute_value_label)
 	var toggle_button := Button.new()
@@ -661,7 +661,7 @@ func _ensure_controls_runtime_content() -> void:
 		return
 	controls_runtime_box = VBoxContainer.new()
 	controls_runtime_box.name = "ControlsRuntimeContent"
-	controls_runtime_box.theme_override_constants.separation = 14
+	controls_runtime_box.add_theme_constant_override("separation", 14)
 	controls_runtime_box.visible = false
 	placeholder_content.add_child(controls_runtime_box)
 	placeholder_content.move_child(controls_runtime_box, placeholder_content.get_child_count() - 1)
@@ -671,7 +671,7 @@ func _ensure_accessibility_runtime_content() -> void:
 		return
 	accessibility_runtime_box = VBoxContainer.new()
 	accessibility_runtime_box.name = "AccessibilityRuntimeContent"
-	accessibility_runtime_box.theme_override_constants.separation = 14
+	accessibility_runtime_box.add_theme_constant_override("separation", 14)
 	accessibility_runtime_box.visible = false
 	placeholder_content.add_child(accessibility_runtime_box)
 	placeholder_content.move_child(accessibility_runtime_box, placeholder_content.get_child_count() - 1)
@@ -717,7 +717,7 @@ func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Ar
 	margin.add_theme_constant_override("margin_bottom", 18)
 	block.add_child(margin)
 	var column := VBoxContainer.new()
-	column.theme_override_constants.separation = 10
+	column.add_theme_constant_override("separation", 10)
 	margin.add_child(column)
 	var title := Label.new()
 	title.text = title_text
@@ -749,7 +749,7 @@ func _add_accessibility_toggle_block(setting_data: Dictionary) -> void:
 	margin.add_theme_constant_override("margin_bottom", 18)
 	block.add_child(margin)
 	var column := VBoxContainer.new()
-	column.theme_override_constants.separation = 10
+	column.add_theme_constant_override("separation", 10)
 	margin.add_child(column)
 	var title := Label.new()
 	title.text = str(setting_data.get("title", "Accessibility"))
@@ -761,7 +761,7 @@ func _add_accessibility_toggle_block(setting_data: Dictionary) -> void:
 	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
 	column.add_child(body)
 	var value_label := Label.new()
-	value_label.theme_override_colors.font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+	value_label.add_theme_color_override("font_color", Color(0.992157, 0.560784, 0.560784, 0.95))
 	value_label.add_theme_font_size_override("font_size", 22)
 	column.add_child(value_label)
 	accessibility_value_labels[str(setting_data.get("id", ""))] = value_label
