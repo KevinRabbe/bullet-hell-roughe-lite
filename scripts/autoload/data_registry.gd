@@ -8,6 +8,7 @@ const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
 const PORTAL_EVENT_DIR: String = "res://data/portal_events"
 const PORTAL_MUTATION_DIR: String = "res://data/portal_mutations"
+const ASCENSION_DIR: String = "res://data/ascensions"
 const SET_BONUS_DIR: String = "res://data/set_bonuses"
 
 var characters: Dictionary = {}
@@ -16,17 +17,19 @@ var items: Dictionary = {}
 var enemies: Dictionary = {}
 var portal_events: Dictionary = {}
 var portal_mutations: Dictionary = {}
+var ascensions: Dictionary = {}
 var set_bonuses: Dictionary = {}
 
 func _ready() -> void:
 	_register_defaults()
-	print("DataRegistry ready: %d characters, %d weapons, %d items, %d enemies, %d portal events, %d portal mutations, %d set bonuses" % [
+	print("DataRegistry ready: %d characters, %d weapons, %d items, %d enemies, %d portal events, %d portal mutations, %d ascensions, %d set bonuses" % [
 		characters.size(),
 		weapons.size(),
 		items.size(),
 		enemies.size(),
 		portal_events.size(),
 		portal_mutations.size(),
+		ascensions.size(),
 		set_bonuses.size()
 	])
 
@@ -39,6 +42,7 @@ func _register_defaults() -> void:
 	_register_by_id(enemies, _load_enemy_resources())
 	_load_json_directory_into(portal_events, PORTAL_EVENT_DIR)
 	_load_json_directory_into(portal_mutations, PORTAL_MUTATION_DIR)
+	_load_json_directory_into(ascensions, ASCENSION_DIR)
 	_load_json_directory_into(set_bonuses, SET_BONUS_DIR)
 	_validate_registry_entries()
 
@@ -196,6 +200,7 @@ func _validate_registry_entries() -> void:
 		if float(portal_event.get("base_weight", 0.0)) <= 0.0:
 			push_warning("Portal event '%s' has non-positive base_weight." % str(portal_event_id))
 	_validate_portal_mutation_entries()
+	_validate_ascension_entries()
 	_validate_set_bonus_entries()
 
 func _validate_portal_mutation_entries() -> void:
@@ -238,6 +243,53 @@ func _validate_portal_mutation_entries() -> void:
 				push_warning("Portal mutation '%s' contains an effect with no type." % str(mutation_id))
 			elif str((effect_variant as Dictionary).get("type", "")) not in PortalMutationRuntimeRef.SUPPORTED_EFFECT_TYPES:
 				push_warning("Portal mutation '%s' contains an unsupported effect type." % str(mutation_id))
+
+func _validate_ascension_entries() -> void:
+	for ascension_id in ascensions.keys():
+		var ascension_variant: Variant = ascensions[ascension_id]
+		if not (ascension_variant is Dictionary):
+			push_warning("Ascension entry '%s' is invalid." % str(ascension_id))
+			continue
+		var ascension: Dictionary = ascension_variant
+		if str(ascension.get("title", "")) == "":
+			push_warning("Ascension '%s' is missing title." % str(ascension_id))
+		var stack_policy := str(ascension.get("stack_policy", ""))
+		if stack_policy not in PortalMutationRuntimeRef.SUPPORTED_STACK_POLICIES:
+			push_warning("Ascension '%s' has unsupported stack_policy." % str(ascension_id))
+		var required_tags := WeaponTagRuntimeRef.resolve_effect_tags(ascension.get("required_tags", []))
+		var invalid_required_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(required_tags)
+		if not invalid_required_tags.is_empty():
+			push_warning(
+				"Ascension '%s' uses non-canonical required_tags: %s"
+				% [str(ascension_id), ", ".join(invalid_required_tags)]
+			)
+		var minimum_tag_count := int(ascension.get("minimum_tag_count", 0))
+		if not required_tags.is_empty() and minimum_tag_count <= 0:
+			push_warning("Ascension '%s' requires tags but has no positive minimum_tag_count." % str(ascension_id))
+		if float(ascension.get("fallback_weight", 0.0)) < 0.0:
+			push_warning("Ascension '%s' has negative fallback_weight." % str(ascension_id))
+		if float(ascension.get("choice_weight", 0.0)) <= 0.0:
+			push_warning("Ascension '%s' has non-positive choice_weight." % str(ascension_id))
+		var invalid_effect_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(
+			WeaponTagRuntimeRef.resolve_effect_tags(ascension.get("effect_tags", []))
+		)
+		if not invalid_effect_tags.is_empty():
+			push_warning(
+				"Ascension '%s' uses non-canonical effect_tags: %s"
+				% [str(ascension_id), ", ".join(invalid_effect_tags)]
+			)
+		var effects_variant: Variant = ascension.get("effects", [])
+		if not (effects_variant is Array) or (effects_variant as Array).is_empty():
+			push_warning("Ascension '%s' must define at least one effect." % str(ascension_id))
+			continue
+		var effects: Array = effects_variant
+		for effect_variant in effects:
+			if not (effect_variant is Dictionary):
+				push_warning("Ascension '%s' contains a non-dictionary effect." % str(ascension_id))
+				continue
+			var effect_type := str((effect_variant as Dictionary).get("type", ""))
+			if effect_type not in PortalMutationRuntimeRef.SUPPORTED_EFFECT_TYPES:
+				push_warning("Ascension '%s' contains an unsupported effect type." % str(ascension_id))
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():
@@ -564,6 +616,16 @@ func get_portal_mutation_ids() -> Array[String]:
 	var ids: Array[String] = []
 	for mutation_id in portal_mutations.keys():
 		ids.append(str(mutation_id))
+	ids.sort()
+	return ids
+
+func get_ascension(id: String):
+	return ascensions.get(id)
+
+func get_ascension_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for ascension_id in ascensions.keys():
+		ids.append(str(ascension_id))
 	ids.sort()
 	return ids
 
