@@ -1,0 +1,33 @@
+{
+  "id": "ballistic_doctrine",
+  "title": "Ballistic Doctrine",
+  "description": "Drive gun weapons into a faster firing drill while surrendering some effective reach.",
+  "required_tags": [
+    "gun"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "gun"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "gun"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.14
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "gun"
+      ],
+      "stat_id": "attack_range",
+      "amount": -0.05
+    }
+  ]
+}
