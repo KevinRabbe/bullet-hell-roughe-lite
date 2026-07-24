@@ -29,6 +29,7 @@ func _build_snapshot(player_snapshot: Dictionary, offers: Array[Dictionary]) -> 
 		"offers": offers,
 		"offer_cards": _build_offer_cards(offers),
 		"items_text": _get_items_text(player_snapshot),
+		"item_entries": _build_item_entries(player_snapshot),
 		"weapon_count": _get_weapon_count(),
 		"weapon_entries": _get_weapon_entries(player_snapshot),
 		"weapon_slots": _build_weapon_slots(player_snapshot),
@@ -117,6 +118,23 @@ func _build_item_lines(items_variant: Variant) -> Array[String]:
 			lines.append("- %s" % item.name)
 	return lines
 
+func _build_item_entries(player_snapshot: Dictionary) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var items_variant: Variant = player_snapshot.get("items", null)
+	if items_variant == null and player != null:
+		items_variant = _get_player_property("owned_items", null)
+	if not (items_variant is Array):
+		return entries
+	for item_variant in items_variant:
+		if item_variant is ItemData:
+			var item := item_variant as ItemData
+			entries.append({
+				"id": item.id,
+				"name": item.name,
+				"icon": item.icon
+			})
+	return entries
+
 func _get_weapon_count() -> int:
 	var entries := _get_weapon_entries()
 	var count := 0
@@ -165,6 +183,7 @@ func _create_offer_card_base(offer: Dictionary) -> Dictionary:
 	return {
 		"title": str(offer.get("label", "Offer")),
 		"type_label": str(offer.get("type", "")).capitalize(),
+		"icon": null,
 		"description": "",
 		"button_text": "%dG" % int(offer.get("price", 0)),
 		"button_disabled": false,
@@ -188,7 +207,11 @@ func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: 
 	card["block_reason"] = get_weapon_offer_block_reason(weapon_id, _get_offer_weapon_rarity(offer, weapon_data))
 
 func _apply_item_offer_card(card: Dictionary, offer: Dictionary, player_snapshot: Dictionary) -> void:
-	card["description"] = _build_item_offer_description(str(offer.get("id", "")), player_snapshot)
+	var item_id := str(offer.get("id", ""))
+	var item_data: ItemData = _find_item(item_id)
+	if item_data != null:
+		card["icon"] = item_data.icon
+	card["description"] = _build_item_offer_description(item_id, player_snapshot)
 
 func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 	var entries := _get_weapon_entries(player_snapshot)

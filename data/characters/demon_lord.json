@@ -64,6 +64,7 @@
     "identity_summary": "The Demon Lord trades comfort for authority: slower infernal projectiles, heavier impact, and a constant push toward destructive hellfire scaling. He should feel commanding and punishing rather than agile.",
     "passive_name": "Infernal Tribute",
     "passive_summary": "Enemy kills grant a short damage surge with a small defensive downside, turning every takedown into a risky infernal power spike.",
+    "passive_icon_path": "res://assets/sprites/ui/passives/infernal_tribute.png",
     "playstyle_tags": ["hellfire", "heavy", "burn", "risk_reward"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Relic",

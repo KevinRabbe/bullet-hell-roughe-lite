@@ -23,7 +23,7 @@ var continue_button: Button
 var top_wave_label: Label
 var top_gold_label: Label
 var right_stats_label: RichTextLabel
-var bottom_items_label: RichTextLabel
+var bottom_items_list: VBoxContainer
 var bottom_weapons_title: Label
 var weapon_slots_container: HBoxContainer
 var weapon_slot_buttons: Array[Button] = []
@@ -32,6 +32,7 @@ var selected_weapon_slot: int = -1
 var merge_selected_button: Button
 var card_title_labels: Array[Label] = []
 var card_type_labels: Array[Label] = []
+var card_icon_rects: Array[TextureRect] = []
 var card_desc_labels: Array[RichTextLabel] = []
 var card_lock_buttons: Array[Button] = []
 var card_panels: Array[Panel] = []
@@ -155,11 +156,20 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 
 	var title := Label.new()
 	title.position = Vector2(12.0, 10.0)
-	title.size = Vector2(card_width - 24.0, 48.0)
+	title.size = Vector2(card_width - 84.0, 48.0)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	title.add_theme_font_size_override("font_size", 18)
 	card.add_child(title)
 	card_title_labels.append(title)
+
+	var icon_rect := TextureRect.new()
+	icon_rect.position = Vector2(card_width - 66.0, 8.0)
+	icon_rect.size = Vector2(54.0, 54.0)
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(icon_rect)
+	card_icon_rects.append(icon_rect)
 
 	var type_label := Label.new()
 	type_label.position = Vector2(12.0, 62.0)
@@ -234,13 +244,16 @@ func _build_items_panel() -> void:
 	items_title.text = "Items"
 	items_panel.add_child(items_title)
 
-	bottom_items_label = RichTextLabel.new()
-	bottom_items_label.position = Vector2(10.0, 34.0)
-	bottom_items_label.size = Vector2(600.0, 122.0)
-	bottom_items_label.bbcode_enabled = true
-	bottom_items_label.scroll_active = true
-	bottom_items_label.add_theme_font_size_override("normal_font_size", 17)
-	items_panel.add_child(bottom_items_label)
+	var items_scroll := ScrollContainer.new()
+	items_scroll.position = Vector2(10.0, 34.0)
+	items_scroll.size = Vector2(600.0, 122.0)
+	items_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	items_panel.add_child(items_scroll)
+
+	bottom_items_list = VBoxContainer.new()
+	bottom_items_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom_items_list.add_theme_constant_override("separation", 6)
+	items_scroll.add_child(bottom_items_list)
 
 func _build_weapons_panel() -> void:
 	var weapons_panel := Panel.new()
@@ -359,11 +372,45 @@ func _refresh_stats_panel() -> void:
 	right_stats_label.text = str(_snapshot.get("stats_text", "No stats"))
 
 func _refresh_bottom_sections() -> void:
-	if bottom_items_label != null:
-		bottom_items_label.text = str(_snapshot.get("items_text", "-"))
+	_refresh_owned_items()
 	if bottom_weapons_title != null:
 		bottom_weapons_title.text = "Weapons (%d/6)" % int(_snapshot.get("weapon_count", 0))
 	_refresh_weapon_slots()
+
+func _refresh_owned_items() -> void:
+	if bottom_items_list == null:
+		return
+	for child in bottom_items_list.get_children():
+		child.queue_free()
+	var entries_variant: Variant = _snapshot.get("item_entries", [])
+	if not (entries_variant is Array) or entries_variant.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "None"
+		empty_label.add_theme_font_size_override("font_size", 17)
+		bottom_items_list.add_child(empty_label)
+		return
+	for entry_variant in entries_variant:
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		var row := HBoxContainer.new()
+		row.custom_minimum_size = Vector2(0, 34)
+		row.add_theme_constant_override("separation", 8)
+		bottom_items_list.add_child(row)
+
+		var icon_rect := TextureRect.new()
+		icon_rect.custom_minimum_size = Vector2(30, 30)
+		icon_rect.texture = entry.get("icon", null)
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		row.add_child(icon_rect)
+
+		var name_label := Label.new()
+		name_label.text = str(entry.get("name", "Item"))
+		name_label.add_theme_font_size_override("font_size", 17)
+		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		row.add_child(name_label)
 
 func _refresh_weapon_slots() -> void:
 	var slots := _get_snapshot_weapon_slots()
@@ -398,6 +445,7 @@ func _get_snapshot_cards() -> Array[Dictionary]:
 func _clear_offer_card(index: int, button: Button) -> void:
 	card_title_labels[index].text = "N/A"
 	card_type_labels[index].text = "-"
+	card_icon_rects[index].texture = null
 	card_desc_labels[index].text = ""
 	if button != null:
 		button.text = "N/A"
@@ -406,10 +454,12 @@ func _clear_offer_card(index: int, button: Button) -> void:
 func _apply_offer_card(index: int, card: Dictionary, button: Button) -> void:
 	var title := card_title_labels[index]
 	var type_label := card_type_labels[index]
+	var icon_rect := card_icon_rects[index]
 	var desc := card_desc_labels[index]
 	_apply_card_border(index, str(card.get("kind", "")))
 	title.text = str(card.get("title", "Offer"))
 	type_label.text = str(card.get("type_label", "-"))
+	icon_rect.texture = card.get("icon", null)
 	desc.text = str(card.get("description", ""))
 	var block_reason := str(card.get("block_reason", ""))
 	if block_reason != "":
