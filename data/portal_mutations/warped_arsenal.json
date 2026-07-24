@@ -1,0 +1,30 @@
+{
+  "id": "warped_arsenal",
+  "title": "Warped Arsenal",
+  "description": "The portal distorts weight and momentum into brutal weapon force.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.14 for the rest of the run.",
+  "reward": "Heavy and Thrown weapons gain 12% damage for the rest of the run.",
+  "effect_tags": [
+    "heavy",
+    "thrown"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "heavy",
+        "thrown"
+      ],
+      "stat_id": "damage",
+      "amount": 0.12
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.14
+    }
+  ]
+}

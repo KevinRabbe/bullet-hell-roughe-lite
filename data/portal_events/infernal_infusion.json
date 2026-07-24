@@ -4,7 +4,7 @@
   "description": "Accept a run-long infernal mutation that empowers flame-tagged weapons and raises portal instability.",
   "category": "mutation",
   "mutation_id": "infernal_infusion",
-  "base_weight": 0.65,
+  "base_weight": 0.13,
   "instability_weight_scale": 0.25,
   "reward_count": 1,
   "reward_tier_biases": {
