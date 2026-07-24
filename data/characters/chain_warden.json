@@ -1,0 +1,55 @@
+{
+  "id": "chain_warden",
+  "display_name": "The Chain Warden",
+  "description": "Mobile infernal jailer who keeps pressure through hooked chains and pursuit.",
+  "roster_order": 8,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/chain_warden/chain_warden.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["chain_crescent"],
+  "family_weapon_ids": [
+    "chain_crescent",
+    "blood_chakram",
+    "sin_shuriken",
+    "hell_claw",
+    "pact_blade",
+    "devil_fang"
+  ],
+  "preferred_weapon_family": "devil",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "unbroken_pursuit",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "movement_speed",
+          "amount": 0.05
+        },
+        {
+          "stat_id": "armor",
+          "amount": 0.1
+        }
+      ],
+      "duration": 3.5,
+      "max_stacks": 3,
+      "debug_label": "UNBROKEN PURSUIT"
+    }
+  ],
+  "presentation": {
+    "headline": "Hooked-chain pursuer who turns takedowns into relentless movement.",
+    "fantasy_hook": "Broken manacles and a heavy crescent chain give this hunter a fast jailer silhouette built around pursuit rather than spellcasting.",
+    "identity_summary": "The Chain Warden mixes thrown arcs, close-range blades, and constant repositioning. Takedowns briefly harden the warden and accelerate the chase, rewarding players who stay close to the next target.",
+    "passive_name": "Unbroken Pursuit",
+    "passive_summary": "Enemy kills briefly grant movement speed and armor, stacking up to three times while the pursuit continues.",
+    "playstyle_tags": ["thrown", "heavy", "melee", "mobility"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Chain",
+    "arsenal_label": "Warden Arsenal",
+    "arsenal_preview": ["Chain Crescent", "Blood Chakram", "Sin Shuriken", "Hell Claw", "Pact Blade", "Devil Fang"],
+    "strengths": ["Strong pursuit tempo", "Mixes thrown and melee pressure", "Kill-chain durability"],
+    "tradeoffs": ["Needs nearby targets to maintain momentum", "Less precise than dedicated ranged hunters"]
+  },
+  "passive_tags": ["unbroken_pursuit", "chain_hunter", "kill_momentum"]
+}
