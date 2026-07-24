@@ -1,0 +1,55 @@
+{
+  "id": "abyss_herald",
+  "display_name": "The Abyss Herald",
+  "description": "Ceremonial void caller who turns resonant heavy weapons into steady battlefield authority.",
+  "roster_order": 16,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/abyss_herald/abyss_herald.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["rift_cannon"],
+  "family_weapon_ids": [
+    "rift_cannon",
+    "rift_staff",
+    "grand_sigil",
+    "hellfire_orb",
+    "harvester_bell",
+    "demonic_crown"
+  ],
+  "preferred_weapon_family": "portal",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "deep_resonance",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "damage",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "armor",
+          "amount": 0.12
+        }
+      ],
+      "duration": 4.5,
+      "max_stacks": 3,
+      "debug_label": "DEEP RESONANCE"
+    }
+  ],
+  "presentation": {
+    "headline": "Heavy abyss caller who turns every takedown into a deeper battlefield resonance.",
+    "fantasy_hook": "A broad ceremonial mantle, resonant war horn, crown-like horns, and floating abyss shards create a commanding silhouette.",
+    "identity_summary": "The Abyss Herald combines heavy portal artillery with ritual and infernal relics. Each takedown deepens the resonance, briefly increasing damage and armor.",
+    "passive_name": "Deep Resonance",
+    "passive_summary": "Enemy kills briefly grant damage and armor, stacking up to three times while the herald's abyssal call continues.",
+    "playstyle_tags": ["portal", "heavy", "ritual", "armor"],
+    "difficulty": "hard",
+    "starter_weapon_label": "Opening Rift Cannon",
+    "arsenal_label": "Herald Arsenal",
+    "arsenal_preview": ["Rift Cannon", "Rift Staff", "Grand Sigil", "Hellfire Orb", "Mourning Bell", "Demonic Crown"],
+    "strengths": ["Heavy cross-family pressure", "Growing damage and resilience", "Strong portal and ritual overlap"],
+    "tradeoffs": ["Slower opening cadence", "Needs takedowns to build full resonance"]
+  },
+  "passive_tags": ["deep_resonance", "abyss_herald", "void_authority"]
+}
