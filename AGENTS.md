@@ -18,18 +18,28 @@
 - Demon Lord: active.
 - Riftwalker: active.
 - Devil: active.
-- Ritualist: planned active #6, uses `ritualCaracter.png`.
+- Ritualist: active #6, uses `ritualCaracter.png`.
+- Ashen Knight: active.
+- Chain Warden: active.
+- Hex Alchemist: active.
+- Blood Duelist: active.
+- Ember Vanguard: active.
+- Void Monk: active.
+- Bone Artificer: active.
+- Cinder Witch: active.
+- Relic Seeker: active.
+- Abyss Herald: active.
 - Sand Lord: parked, not counted, non-selectable.
 
-# Current Implementation Order
-- Stabilization merged first.
-- Harvester missing weapons and systems.
-- Demon Lord.
-- Riftwalker.
-- Devil.
-- Ritualist visual and data.
-- Ritualist weapons and gameplay.
-- Sand Lord later.
+# Current Progression Direction
+- The active roster contains 16 selectable hunters built from a shared visual foundation.
+- Families preserve hunter identity; canonical weapon tags provide cross-family build synergy.
+- Portal Mutation is an optional run-long risk/reward build distortion.
+- Gate Beast is the Wave 5 milestone guardian.
+- Clearing the Wave 5 milestone presents one deterministic Ascension choice.
+- The current vertical-slice run ends after the Wave 10 arena clear.
+- Mutation Lab remains a future internal content-authoring tool, not current runtime scope.
+- Sand Lord remains parked for later.
 
 # Repo Map
 - `scripts/`: runtime behavior and orchestration rules.
