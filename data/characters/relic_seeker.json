@@ -1,0 +1,55 @@
+{
+  "id": "relic_seeker",
+  "display_name": "The Relic Seeker",
+  "description": "Infernal explorer who turns dimensional curios into precise, opportunistic pressure.",
+  "roster_order": 15,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/relic_seeker/relic_seeker.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["rift_artifact"],
+  "family_weapon_ids": [
+    "rift_artifact",
+    "void_revolver",
+    "rift_bow",
+    "harvester_eye_scepter",
+    "demonic_crown",
+    "hex_totem"
+  ],
+  "preferred_weapon_family": "portal",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "lucky_find",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "luck",
+          "amount": 0.04
+        },
+        {
+          "stat_id": "attack_range",
+          "amount": 0.03
+        }
+      ],
+      "duration": 5.0,
+      "max_stacks": 3,
+      "debug_label": "LUCKY FIND"
+    }
+  ],
+  "presentation": {
+    "headline": "Dimensional explorer who finds opportunity in every fractured battlefield.",
+    "fantasy_hook": "A relic backpack, oversized monocle, travel scarf, and rift compass make the seeker a clear infernal adventurer.",
+    "identity_summary": "The Relic Seeker mixes portal tools with precision relics from several arsenals. Takedowns reveal temporary opportunities, increasing luck and attack range.",
+    "passive_name": "Lucky Find",
+    "passive_summary": "Enemy kills briefly grant luck and attack range, stacking up to three times as the seeker uncovers better angles and rarer openings.",
+    "playstyle_tags": ["portal", "precision", "artifact", "luck"],
+    "difficulty": "medium",
+    "starter_weapon_label": "Opening Rift Artifact",
+    "arsenal_label": "Seeker Arsenal",
+    "arsenal_preview": ["Rift Artifact", "Void Revolver", "Rift Bow", "Eye Scepter", "Demonic Crown", "Hex Totem"],
+    "strengths": ["Flexible cross-family relic path", "Growing range and opportunity", "Strong precision and artifact overlap"],
+    "tradeoffs": ["Lower immediate power than focused hunters", "Needs takedowns to reveal the best finds"]
+  },
+  "passive_tags": ["lucky_find", "relic_seeker", "dimensional_explorer"]
+}
