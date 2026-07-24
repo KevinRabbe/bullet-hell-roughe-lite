@@ -1,0 +1,41 @@
+{
+  "id": "far_horizon",
+  "title": "Far Horizon",
+  "description": "Commit ranged weapons to longer, faster lanes at the cost of some impact.",
+  "required_tags": [
+    "ranged"
+  ],
+  "minimum_tag_count": 3,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "ranged"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "ranged"
+      ],
+      "stat_id": "attack_range",
+      "amount": 0.18
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "ranged"
+      ],
+      "stat_id": "projectile_speed",
+      "amount": 0.12
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "ranged"
+      ],
+      "stat_id": "damage",
+      "amount": -0.05
+    }
+  ]
+}
