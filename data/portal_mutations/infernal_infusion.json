@@ -1,0 +1,30 @@
+{
+  "id": "infernal_infusion",
+  "title": "Infernal Infusion",
+  "description": "The portal feeds infernal force into weapons already shaped by flame.",
+  "mutation_tier": "major",
+  "duration": "run",
+  "risk": "Portal instability increases by 0.20 for the rest of the run.",
+  "reward": "Burn and Hellfire weapons gain 12% damage for the rest of the run.",
+  "effect_tags": [
+    "burn",
+    "hellfire"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "burn",
+        "hellfire"
+      ],
+      "stat_id": "damage",
+      "amount": 0.12
+    },
+    {
+      "type": "portal_profile_modifier",
+      "stat_id": "portal_instability",
+      "amount": 0.20
+    }
+  ]
+}
