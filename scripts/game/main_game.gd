@@ -13,6 +13,7 @@ const RunResultsScene = preload("res://scenes/ui/RunResults.tscn")
 const PauseMenuScene = preload("res://scenes/ui/PauseMenu.tscn")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
+const RunProgressionRuntimeRef = preload("res://scripts/game/run_progression_runtime.gd")
 const MainGameStartRuntime = preload("res://scripts/game/main_game_start_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
@@ -23,6 +24,7 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 @export var debug_starting_gold: int = 50
 @export var debug_combat_wave_duration_seconds: float = 20.0
 @export var debug_combat_starting_gold: int = 10
+@export var run_progression_path: String = "res://data/waves/run_progression.json"
 
 @onready var player: CharacterBody2D = $Player
 @onready var enemy_spawner: Node = $EnemySpawner
@@ -65,10 +67,12 @@ var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
 var active_run_results: Control = null
 var active_pause_menu: Control = null
+var run_progression: Dictionary = {}
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_new_run_seed()
+	run_progression = RunProgressionRuntimeRef.load_progression(run_progression_path)
 	if player == null:
 		push_error("Main scene is missing a Player node.")
 		return
@@ -338,6 +342,18 @@ func _start_next_wave_after_intermission() -> void:
 	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
 	boss_victory_pending = false
+	_spawn_configured_milestone_for_current_wave()
+
+func _spawn_configured_milestone_for_current_wave() -> void:
+	if enemy_spawner == null or boss_manager == null or not boss_manager.has_method("spawn_boss"):
+		return
+	var wave_index := int(enemy_spawner.get("current_wave_index"))
+	var milestone := RunProgressionRuntimeRef.get_milestone_for_wave(run_progression, wave_index)
+	if str(milestone.get("type", "")) != "boss":
+		return
+	var boss_id := str(milestone.get("boss_id", ""))
+	if boss_id != "":
+		boss_manager.call("spawn_boss", boss_id)
 
 func _set_combat_active(active: bool) -> void:
 	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
