@@ -36,6 +36,7 @@ var _regen_tick_accumulator: float = 0.0
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var set_bonus_manager: Node = get_node_or_null("SetBonusManager")
 @onready var portal_mutation_runtime: Node = get_node_or_null("PortalMutationRuntime")
+@onready var ascension_runtime: Node = get_node_or_null("PlayerAscensionRuntime")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -52,10 +53,16 @@ func _ready() -> void:
 	var mutation_snapshot_callable := Callable(self, "_on_portal_mutation_state_changed")
 	if portal_mutation_runtime != null and portal_mutation_runtime.has_signal("mutation_state_changed") and not portal_mutation_runtime.is_connected("mutation_state_changed", mutation_snapshot_callable):
 		portal_mutation_runtime.connect("mutation_state_changed", mutation_snapshot_callable)
+	var ascension_snapshot_callable := Callable(self, "_on_ascension_state_changed")
+	if ascension_runtime != null and ascension_runtime.has_signal("ascension_state_changed") and not ascension_runtime.is_connected("ascension_state_changed", ascension_snapshot_callable):
+		ascension_runtime.connect("ascension_state_changed", ascension_snapshot_callable)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
 
 func _on_portal_mutation_state_changed(_snapshot: Dictionary) -> void:
+	_emit_ui_snapshot_changed()
+
+func _on_ascension_state_changed(_snapshot: Dictionary) -> void:
 	_emit_ui_snapshot_changed()
 
 func _physics_process(delta: float) -> void:
@@ -214,7 +221,12 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 	return fallback
 
 func _get_runtime_stat_value(stat_name: String, fallback: float) -> float:
-	return _get_stat_value(stat_name, fallback) + _get_set_bonus_stat_bonus(stat_name) + _get_portal_mutation_stat_bonus(stat_name)
+	return (
+		_get_stat_value(stat_name, fallback)
+		+ _get_set_bonus_stat_bonus(stat_name)
+		+ _get_portal_mutation_stat_bonus(stat_name)
+		+ _get_ascension_stat_bonus(stat_name)
+	)
 
 func get_effective_stat_value(stat_name: String, fallback: float = 0.0) -> float:
 	return _get_runtime_stat_value(stat_name, fallback)
@@ -228,6 +240,11 @@ func _get_portal_mutation_stat_bonus(stat_name: String) -> float:
 	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_stat_bonus"):
 		return 0.0
 	return float(portal_mutation_runtime.call("get_stat_bonus", stat_name))
+
+func _get_ascension_stat_bonus(stat_name: String) -> float:
+	if ascension_runtime == null or not ascension_runtime.has_method("get_stat_bonus"):
+		return 0.0
+	return float(ascension_runtime.call("get_stat_bonus", stat_name))
 
 func _update_hp_label() -> void:
 	pass
@@ -902,7 +919,8 @@ func get_ui_snapshot() -> Dictionary:
 		"weapon_tag_counts": get_weapon_tag_counts(),
 		"item_tag_counts": get_owned_item_tag_counts(),
 		"passive_weapon_synergies": get_passive_weapon_synergy_entries(),
-		"set_bonus_weapon_synergies": get_set_bonus_weapon_synergy_entries()
+		"set_bonus_weapon_synergies": get_set_bonus_weapon_synergy_entries(),
+		"ascension": get_ascension_state()
 	}
 
 func get_weapon_tag_counts() -> Dictionary:
@@ -934,13 +952,16 @@ func count_owned_items_with_tag(tag: String) -> int:
 	return WeaponTagRuntimeRef.count_owned_items_with_tag(owned_items, tag)
 
 func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
-	var item_overrides := WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
-	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_weapon_bonus_overrides"):
-		return item_overrides
-	var mutation_overrides_variant: Variant = portal_mutation_runtime.call("get_weapon_bonus_overrides", weapon_data)
-	if not (mutation_overrides_variant is Dictionary):
-		return item_overrides
-	return _merge_stat_overrides(item_overrides, mutation_overrides_variant as Dictionary)
+	var overrides := WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+	if portal_mutation_runtime != null and portal_mutation_runtime.has_method("get_weapon_bonus_overrides"):
+		var mutation_overrides_variant: Variant = portal_mutation_runtime.call("get_weapon_bonus_overrides", weapon_data)
+		if mutation_overrides_variant is Dictionary:
+			overrides = _merge_stat_overrides(overrides, mutation_overrides_variant as Dictionary)
+	if ascension_runtime != null and ascension_runtime.has_method("get_weapon_bonus_overrides"):
+		var ascension_overrides_variant: Variant = ascension_runtime.call("get_weapon_bonus_overrides", weapon_data)
+		if ascension_overrides_variant is Dictionary:
+			overrides = _merge_stat_overrides(overrides, ascension_overrides_variant as Dictionary)
+	return overrides
 
 func apply_portal_mutation(definition: Dictionary, allow_major_replacement: bool = false) -> Dictionary:
 	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("apply_mutation"):
@@ -960,6 +981,28 @@ func get_portal_mutation_state() -> Dictionary:
 	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_state_snapshot"):
 		return {}
 	var snapshot_variant: Variant = portal_mutation_runtime.call("get_state_snapshot")
+	return snapshot_variant if snapshot_variant is Dictionary else {}
+
+func build_ascension_choice_state(choice_count: int = 3) -> Dictionary:
+	if ascension_runtime == null or not ascension_runtime.has_method("build_choice_state"):
+		return {"available": false, "reason": "runtime_unavailable", "choices": []}
+	var state_variant: Variant = ascension_runtime.call("build_choice_state", choice_count)
+	return state_variant if state_variant is Dictionary else {"available": false, "reason": "invalid_result", "choices": []}
+
+func apply_ascension(definition: Dictionary) -> Dictionary:
+	if ascension_runtime == null or not ascension_runtime.has_method("apply_ascension"):
+		return {"applied": false, "reason": "runtime_unavailable"}
+	var result_variant: Variant = ascension_runtime.call("apply_ascension", definition)
+	return result_variant if result_variant is Dictionary else {"applied": false, "reason": "invalid_result"}
+
+func clear_ascension() -> void:
+	if ascension_runtime != null and ascension_runtime.has_method("clear_all"):
+		ascension_runtime.call("clear_all")
+
+func get_ascension_state() -> Dictionary:
+	if ascension_runtime == null or not ascension_runtime.has_method("get_state_snapshot"):
+		return {}
+	var snapshot_variant: Variant = ascension_runtime.call("get_state_snapshot")
 	return snapshot_variant if snapshot_variant is Dictionary else {}
 
 func _merge_stat_overrides(base_overrides: Dictionary, additional_overrides: Dictionary) -> Dictionary:
