@@ -3,7 +3,7 @@
   "display_name": "The Cinder Witch",
   "description": "Infernal spellbinder who turns ritual flame into fast, escalating battlefield pressure.",
   "roster_order": 14,
-  "selectable": false,
+  "selectable": true,
   "visual_path": "res://assets/sprites/characters/cinder_witch/cinder_witch.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["infernal_sigil"],

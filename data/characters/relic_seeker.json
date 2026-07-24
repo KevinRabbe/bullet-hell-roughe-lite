@@ -3,7 +3,7 @@
   "display_name": "The Relic Seeker",
   "description": "Infernal explorer who turns dimensional curios into precise, opportunistic pressure.",
   "roster_order": 15,
-  "selectable": false,
+  "selectable": true,
   "visual_path": "res://assets/sprites/characters/relic_seeker/relic_seeker.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_artifact"],
