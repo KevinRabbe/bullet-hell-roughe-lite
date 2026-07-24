@@ -230,6 +230,16 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	title.add_theme_font_size_override("font_size", 26)
 	column.add_child(title)
 
+	var passive_row := HBoxContainer.new()
+	passive_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	passive_row.add_theme_constant_override("separation", 10)
+	column.add_child(passive_row)
+
+	var passive_icon_path := str(presentation.get("passive_icon_path", ""))
+	var passive_icon_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(passive_icon_path)
+	if passive_icon_texture != null:
+		passive_row.add_child(_build_card_art_frame(passive_icon_texture, accent, Vector2(40, 40)))
+
 	var subtitle := Label.new()
 	subtitle.text = "%s / %s" % [
 		str(presentation.get("passive_name", "Passive")),
@@ -237,7 +247,8 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	]
 	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(subtitle)
+	subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	passive_row.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(presentation.get("fantasy_hook", ""))
