@@ -11,6 +11,7 @@ const MainGameLevelUpStateRuntime = preload("res://scripts/game/main_game_levelu
 const MainGameActivationRuntime = preload("res://scripts/game/main_game_activation_runtime.gd")
 const RunResultsScene = preload("res://scenes/ui/RunResults.tscn")
 const PauseMenuScene = preload("res://scenes/ui/PauseMenu.tscn")
+const AscensionOfferScene = preload("res://scenes/ui/AscensionOffer.tscn")
 const RunEndRuntime = preload("res://scripts/game/run_end_runtime.gd")
 const RunFlowRuntime = preload("res://scripts/game/run_flow_runtime.gd")
 const RunProgressionRuntimeRef = preload("res://scripts/game/run_progression_runtime.gd")
@@ -56,6 +57,9 @@ var waiting_for_wave_continue: bool = false
 var waiting_for_level_up_choice: bool = false
 var run_end_state: String = "inactive"
 var boss_victory_pending: bool = false
+var ascension_milestone_pending: bool = false
+var pending_ascension_wave: int = 0
+var pending_ascension_choice_count: int = 0
 var selectable_characters: Array[String] = []
 var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
@@ -67,6 +71,7 @@ var level_up_base_reroll_cost: int = 2
 var default_wave_duration_seconds: float = 30.0
 var active_run_results: Control = null
 var active_pause_menu: Control = null
+var active_ascension_offer: CanvasLayer = null
 var run_progression: Dictionary = {}
 
 func _ready() -> void:
@@ -149,9 +154,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _process(_delta: float) -> void:
 	_try_finish_pending_victory()
+	_try_open_pending_ascension()
 
 func _on_player_died() -> void:
 	boss_victory_pending = false
+	_clear_pending_ascension()
 	_enter_run_end_state("game_over")
 
 func _toggle_pause() -> void:
@@ -303,6 +310,9 @@ func _open_character_select_scene() -> void:
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
 func _on_wave_completed(wave_index: int) -> void:
+	if ascension_milestone_pending:
+		print("Wave %d timer ended after milestone defeat. Waiting for the Ascension choice." % wave_index)
+		return
 	if boss_victory_pending:
 		print("Wave %d timer ended after boss defeat. Waiting for the arena to clear before victory." % wave_index)
 		return
@@ -312,6 +322,16 @@ func _on_wave_completed(wave_index: int) -> void:
 	_enter_intermission_phase(wave_index)
 
 func _on_boss_defeated() -> void:
+	var wave_index := _get_current_wave_index()
+	var milestone := RunProgressionRuntimeRef.get_milestone_for_wave(run_progression, wave_index)
+	if str(milestone.get("reward", "")) == "ascension":
+		ascension_milestone_pending = true
+		pending_ascension_wave = wave_index
+		pending_ascension_choice_count = maxi(int(milestone.get("choice_count", 3)), 1)
+		if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
+			enemy_spawner.call("stop_spawning_for_victory")
+		_try_open_pending_ascension()
+		return
 	boss_victory_pending = true
 	if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
 		enemy_spawner.call("stop_spawning_for_victory")
@@ -342,12 +362,13 @@ func _start_next_wave_after_intermission() -> void:
 	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
 	boss_victory_pending = false
+	_clear_pending_ascension()
 	_spawn_configured_milestone_for_current_wave()
 
 func _spawn_configured_milestone_for_current_wave() -> void:
 	if enemy_spawner == null or boss_manager == null or not boss_manager.has_method("spawn_boss"):
 		return
-	var wave_index := int(enemy_spawner.get("current_wave_index"))
+	var wave_index := _get_current_wave_index()
 	var milestone := RunProgressionRuntimeRef.get_milestone_for_wave(run_progression, wave_index)
 	if str(milestone.get("type", "")) != "boss":
 		return
@@ -493,6 +514,60 @@ func _try_finish_pending_victory() -> void:
 		return
 	boss_victory_pending = false
 	_enter_run_end_state("victory")
+
+func _try_open_pending_ascension() -> void:
+	if not ascension_milestone_pending or active_ascension_offer != null:
+		return
+	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
+		return
+	if _has_live_group_members("enemies") or _has_live_group_members("projectiles"):
+		return
+	_set_combat_active(false)
+	var choice_state_variant: Variant = player.call("build_ascension_choice_state", pending_ascension_choice_count)
+	var choice_state: Dictionary = choice_state_variant if choice_state_variant is Dictionary else {}
+	var choices_variant: Variant = choice_state.get("choices", [])
+	if not (choices_variant is Array) or (choices_variant as Array).is_empty():
+		push_warning("Ascension milestone produced no valid choices; continuing to intermission.")
+		var completed_wave := pending_ascension_wave
+		_clear_pending_ascension()
+		_enter_intermission_phase(completed_wave)
+		return
+	var offer_variant: Variant = AscensionOfferScene.instantiate()
+	if not (offer_variant is CanvasLayer):
+		push_error("Ascension offer scene must instantiate as a CanvasLayer.")
+		var failed_wave := pending_ascension_wave
+		_clear_pending_ascension()
+		_enter_intermission_phase(failed_wave)
+		return
+	active_ascension_offer = offer_variant as CanvasLayer
+	add_child(active_ascension_offer)
+	active_ascension_offer.call("configure", choice_state)
+	active_ascension_offer.connect("ascension_selected", _on_ascension_selected)
+
+func _on_ascension_selected(definition: Dictionary) -> void:
+	if not ascension_milestone_pending:
+		return
+	var result_variant: Variant = player.call("apply_ascension", definition)
+	var result: Dictionary = result_variant if result_variant is Dictionary else {}
+	if result.get("applied", false) != true:
+		push_warning("Ascension choice could not be applied: %s" % str(result.get("reason", "unknown")))
+		return
+	var completed_wave := pending_ascension_wave
+	_clear_pending_ascension()
+	_enter_intermission_phase(completed_wave)
+
+func _clear_pending_ascension() -> void:
+	ascension_milestone_pending = false
+	pending_ascension_wave = 0
+	pending_ascension_choice_count = 0
+	if active_ascension_offer != null and is_instance_valid(active_ascension_offer):
+		active_ascension_offer.queue_free()
+	active_ascension_offer = null
+
+func _get_current_wave_index() -> int:
+	if enemy_spawner == null:
+		return 0
+	return int(enemy_spawner.get("current_wave_index"))
 
 func _has_live_group_members(group_name: String) -> bool:
 	for node in get_tree().get_nodes_in_group(group_name):

@@ -1,0 +1,91 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/ascension_offer.gd" id="1"]
+
+[node name="AscensionOffer" type="CanvasLayer"]
+layer = 100
+process_mode = 3
+script = ExtResource("1")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.0117647, 0.0156863, 0.027451, 0.9)
+
+[node name="Center" type="CenterContainer" parent="Backdrop"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Backdrop/Center"]
+custom_minimum_size = Vector2(940, 0)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="Backdrop/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="Backdrop/Center/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Eyebrow" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+text = "MILESTONE REWARD"
+
+[node name="Title" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+horizontal_alignment = 1
+text = "CHOOSE AN ASCENSION"
+
+[node name="Description" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.94)
+horizontal_alignment = 1
+text = "Commit your build to one permanent specialization."
+
+[node name="Choices" type="HBoxContainer" parent="Backdrop/Center/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 230)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Choice1" type="Button" parent="Backdrop/Center/Panel/Margin/VBox/Choices"]
+custom_minimum_size = Vector2(280, 230)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ascension 1"
+autowrap_mode = 3
+
+[node name="Choice2" type="Button" parent="Backdrop/Center/Panel/Margin/VBox/Choices"]
+custom_minimum_size = Vector2(280, 230)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ascension 2"
+autowrap_mode = 3
+
+[node name="Choice3" type="Button" parent="Backdrop/Center/Panel/Margin/VBox/Choices"]
+custom_minimum_size = Vector2(280, 230)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ascension 3"
+autowrap_mode = 3
+
+[node name="Footer" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.74, 0.8, 0.9)
+horizontal_alignment = 1
+text = "Choose carefully. One Ascension can be active per run."
