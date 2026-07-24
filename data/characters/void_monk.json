@@ -3,7 +3,7 @@
   "display_name": "The Void Monk",
   "description": "Disciplined dimensional fighter who converts takedowns into evasive focus.",
   "roster_order": 12,
-  "selectable": false,
+  "selectable": true,
   "visual_path": "res://assets/sprites/characters/void_monk/void_monk.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_staff"],
