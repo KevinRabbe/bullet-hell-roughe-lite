@@ -1,0 +1,37 @@
+{
+  "id": "blade_tempest",
+  "title": "Blade Tempest",
+  "description": "Push melee and thrown weapons into a relentless cutting rhythm with lighter impact.",
+  "required_tags": [
+    "melee",
+    "thrown"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "melee",
+    "thrown"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "melee",
+        "thrown"
+      ],
+      "stat_id": "attack_speed",
+      "amount": 0.16
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "melee",
+        "thrown"
+      ],
+      "stat_id": "damage",
+      "amount": -0.05
+    }
+  ]
+}

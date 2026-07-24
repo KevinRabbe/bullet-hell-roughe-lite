@@ -1,0 +1,37 @@
+{
+  "id": "occult_orbit",
+  "title": "Occult Orbit",
+  "description": "Empower magic and orbit weapons with denser occult force while slowing their cycle.",
+  "required_tags": [
+    "magic",
+    "orbit"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "magic",
+    "orbit"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "magic",
+        "orbit"
+      ],
+      "stat_id": "damage",
+      "amount": 0.15
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "magic",
+        "orbit"
+      ],
+      "stat_id": "attack_speed",
+      "amount": -0.06
+    }
+  ]
+}
