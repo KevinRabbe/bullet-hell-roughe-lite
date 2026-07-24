@@ -2,6 +2,7 @@ extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const PortalMutationRuntimeRef = preload("res://scripts/portal/portal_mutation_runtime.gd")
 const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
@@ -214,6 +215,8 @@ func _validate_portal_mutation_entries() -> void:
 			push_warning("Portal mutation '%s' has invalid duration '%s'." % [str(mutation_id), duration])
 		if str(mutation.get("stack_policy", "")) == "":
 			push_warning("Portal mutation '%s' is missing stack_policy." % str(mutation_id))
+		elif str(mutation.get("stack_policy", "")) not in PortalMutationRuntimeRef.SUPPORTED_STACK_POLICIES:
+			push_warning("Portal mutation '%s' has unsupported stack_policy." % str(mutation_id))
 		var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(
 			WeaponTagRuntimeRef.resolve_effect_tags(mutation.get("effect_tags", []))
 		)
@@ -233,6 +236,8 @@ func _validate_portal_mutation_entries() -> void:
 				continue
 			if str((effect_variant as Dictionary).get("type", "")) == "":
 				push_warning("Portal mutation '%s' contains an effect with no type." % str(mutation_id))
+			elif str((effect_variant as Dictionary).get("type", "")) not in PortalMutationRuntimeRef.SUPPORTED_EFFECT_TYPES:
+				push_warning("Portal mutation '%s' contains an unsupported effect type." % str(mutation_id))
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():

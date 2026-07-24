@@ -35,6 +35,7 @@ var _regen_tick_accumulator: float = 0.0
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
 @onready var set_bonus_manager: Node = get_node_or_null("SetBonusManager")
+@onready var portal_mutation_runtime: Node = get_node_or_null("PortalMutationRuntime")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -48,6 +49,8 @@ func _ready() -> void:
 	var snapshot_callable := Callable(self, "_emit_ui_snapshot_changed")
 	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", snapshot_callable):
 		weapon_loadout.connect("loadout_changed", snapshot_callable)
+	if portal_mutation_runtime != null and portal_mutation_runtime.has_signal("mutation_state_changed") and not portal_mutation_runtime.is_connected("mutation_state_changed", snapshot_callable):
+		portal_mutation_runtime.connect("mutation_state_changed", snapshot_callable)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
 
@@ -207,12 +210,20 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 	return fallback
 
 func _get_runtime_stat_value(stat_name: String, fallback: float) -> float:
-	return _get_stat_value(stat_name, fallback) + _get_set_bonus_stat_bonus(stat_name)
+	return _get_stat_value(stat_name, fallback) + _get_set_bonus_stat_bonus(stat_name) + _get_portal_mutation_stat_bonus(stat_name)
+
+func get_effective_stat_value(stat_name: String, fallback: float = 0.0) -> float:
+	return _get_runtime_stat_value(stat_name, fallback)
 
 func _get_set_bonus_stat_bonus(stat_name: String) -> float:
 	if set_bonus_manager == null or not set_bonus_manager.has_method("get_player_stat_bonus"):
 		return 0.0
 	return float(set_bonus_manager.call("get_player_stat_bonus", stat_name))
+
+func _get_portal_mutation_stat_bonus(stat_name: String) -> float:
+	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_stat_bonus"):
+		return 0.0
+	return float(portal_mutation_runtime.call("get_stat_bonus", stat_name))
 
 func _update_hp_label() -> void:
 	pass
@@ -878,9 +889,9 @@ func get_ui_snapshot() -> Dictionary:
 		"attack_range": get_attack_range_multiplier(),
 		"armor": _get_runtime_stat_value("armor", 0.0),
 		"crit": float(stats.crit_chance),
-		"portal_luck": float(stats.portal_luck),
-		"portal_frequency": float(stats.portal_frequency),
-		"portal_instability": float(stats.portal_instability),
+		"portal_luck": get_effective_stat_value("portal_luck", 0.0),
+		"portal_frequency": get_effective_stat_value("portal_frequency", 1.0),
+		"portal_instability": get_effective_stat_value("portal_instability", 0.0),
 		"items": owned_items.duplicate(),
 		"weapon_entries": get_weapon_ui_entries(),
 		"active_weapon_tags": get_active_weapon_tags(),
@@ -919,7 +930,40 @@ func count_owned_items_with_tag(tag: String) -> int:
 	return WeaponTagRuntimeRef.count_owned_items_with_tag(owned_items, tag)
 
 func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
-	return WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+	var item_overrides := WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_weapon_bonus_overrides"):
+		return item_overrides
+	var mutation_overrides_variant: Variant = portal_mutation_runtime.call("get_weapon_bonus_overrides", weapon_data)
+	if not (mutation_overrides_variant is Dictionary):
+		return item_overrides
+	return _merge_stat_overrides(item_overrides, mutation_overrides_variant as Dictionary)
+
+func apply_portal_mutation(definition: Dictionary, allow_major_replacement: bool = false) -> Dictionary:
+	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("apply_mutation"):
+		return {"applied": false, "reason": "runtime_unavailable"}
+	var result_variant: Variant = portal_mutation_runtime.call("apply_mutation", definition, allow_major_replacement)
+	return result_variant if result_variant is Dictionary else {"applied": false, "reason": "invalid_result"}
+
+func clear_portal_mutations_for_duration(duration: String) -> void:
+	if portal_mutation_runtime != null and portal_mutation_runtime.has_method("clear_duration"):
+		portal_mutation_runtime.call("clear_duration", duration)
+
+func clear_all_portal_mutations() -> void:
+	if portal_mutation_runtime != null and portal_mutation_runtime.has_method("clear_all"):
+		portal_mutation_runtime.call("clear_all")
+
+func get_portal_mutation_state() -> Dictionary:
+	if portal_mutation_runtime == null or not portal_mutation_runtime.has_method("get_state_snapshot"):
+		return {}
+	var snapshot_variant: Variant = portal_mutation_runtime.call("get_state_snapshot")
+	return snapshot_variant if snapshot_variant is Dictionary else {}
+
+func _merge_stat_overrides(base_overrides: Dictionary, additional_overrides: Dictionary) -> Dictionary:
+	var merged := base_overrides.duplicate(true)
+	for stat_id_variant in additional_overrides.keys():
+		var stat_id := str(stat_id_variant)
+		merged[stat_id] = float(merged.get(stat_id, 0.0)) + float(additional_overrides.get(stat_id, 0.0))
+	return merged
 
 func get_passive_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
 	var bonus_rules: Array[Dictionary] = []
