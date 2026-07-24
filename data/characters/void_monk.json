@@ -6,7 +6,7 @@
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/void_monk/void_monk.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["rift_staff"],
+  "starting_weapon_ids": ["rift_staff", "void_revolver", "rift_bow"],
   "family_weapon_ids": [
     "rift_staff",
     "void_revolver",

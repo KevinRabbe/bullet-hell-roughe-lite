@@ -6,7 +6,7 @@
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/hex_alchemist/hex_alchemist.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["ash_censer"],
+  "starting_weapon_ids": ["ash_censer", "hex_totem", "cursed_bell"],
   "family_weapon_ids": [
     "ash_censer",
     "hex_totem",

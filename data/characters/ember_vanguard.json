@@ -6,7 +6,7 @@
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/ember_vanguard/ember_vanguard.png",
   "visual_scale": 0.12,
-  "starting_weapon_ids": ["cursed_lantern"],
+  "starting_weapon_ids": ["cursed_lantern", "hellfire_orb", "hell_sphere"],
   "family_weapon_ids": [
     "cursed_lantern",
     "hellfire_orb",
