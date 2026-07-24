@@ -57,6 +57,7 @@ var waiting_for_wave_continue: bool = false
 var waiting_for_level_up_choice: bool = false
 var run_end_state: String = "inactive"
 var boss_victory_pending: bool = false
+var final_wave_victory_pending: bool = false
 var ascension_milestone_pending: bool = false
 var pending_ascension_wave: int = 0
 var pending_ascension_choice_count: int = 0
@@ -158,6 +159,7 @@ func _process(_delta: float) -> void:
 
 func _on_player_died() -> void:
 	boss_victory_pending = false
+	final_wave_victory_pending = false
 	_clear_pending_ascension()
 	_enter_run_end_state("game_over")
 
@@ -319,6 +321,12 @@ func _on_wave_completed(wave_index: int) -> void:
 	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
 		print("Wave %d timer ended, but boss is still active. Waiting for boss resolution." % wave_index)
 		return
+	if _is_final_arena_clear_wave(wave_index):
+		final_wave_victory_pending = true
+		if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
+			enemy_spawner.call("stop_spawning_for_victory")
+		_try_finish_pending_victory()
+		return
 	_enter_intermission_phase(wave_index)
 
 func _on_boss_defeated() -> void:
@@ -362,6 +370,7 @@ func _start_next_wave_after_intermission() -> void:
 	IntermissionRuntime.start_next_wave(self, enemy_spawner)
 	run_end_state = "inactive"
 	boss_victory_pending = false
+	final_wave_victory_pending = false
 	_clear_pending_ascension()
 	_spawn_configured_milestone_for_current_wave()
 
@@ -504,7 +513,7 @@ func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	return DeterministicRng.create_fallback_rng(stream_name, "MainGame")
 
 func _try_finish_pending_victory() -> void:
-	if not boss_victory_pending:
+	if not boss_victory_pending and not final_wave_victory_pending:
 		return
 	if boss_manager != null and boss_manager.has_method("has_active_boss") and boss_manager.call("has_active_boss") == true:
 		return
@@ -513,7 +522,18 @@ func _try_finish_pending_victory() -> void:
 	if _has_live_group_members("projectiles"):
 		return
 	boss_victory_pending = false
+	final_wave_victory_pending = false
 	_enter_run_end_state("victory")
+
+func _is_final_arena_clear_wave(wave_index: int) -> bool:
+	var victory_variant: Variant = run_progression.get("victory", {})
+	if not (victory_variant is Dictionary):
+		return false
+	var victory: Dictionary = victory_variant
+	return (
+		wave_index == RunProgressionRuntimeRef.get_final_wave(run_progression)
+		and str(victory.get("condition", "")) == "arena_clear"
+	)
 
 func _try_open_pending_ascension() -> void:
 	if not ascension_milestone_pending or active_ascension_offer != null:
