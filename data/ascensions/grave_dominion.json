@@ -1,0 +1,33 @@
+{
+  "id": "grave_dominion",
+  "title": "Grave Dominion",
+  "description": "Condense necromantic weapons into heavier soul force that travels more deliberately.",
+  "required_tags": [
+    "necromancy"
+  ],
+  "minimum_tag_count": 2,
+  "fallback_weight": 0.15,
+  "choice_weight": 1.0,
+  "effect_tags": [
+    "necromancy"
+  ],
+  "stack_policy": "replace",
+  "effects": [
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "necromancy"
+      ],
+      "stat_id": "damage",
+      "amount": 0.17
+    },
+    {
+      "type": "tagged_weapon_stat_modifier",
+      "effect_tags": [
+        "necromancy"
+      ],
+      "stat_id": "projectile_speed",
+      "amount": -0.08
+    }
+  ]
+}
