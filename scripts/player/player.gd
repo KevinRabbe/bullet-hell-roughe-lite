@@ -49,9 +49,13 @@ func _ready() -> void:
 	var snapshot_callable := Callable(self, "_emit_ui_snapshot_changed")
 	if weapon_loadout != null and weapon_loadout.has_signal("loadout_changed") and not weapon_loadout.is_connected("loadout_changed", snapshot_callable):
 		weapon_loadout.connect("loadout_changed", snapshot_callable)
-	if portal_mutation_runtime != null and portal_mutation_runtime.has_signal("mutation_state_changed") and not portal_mutation_runtime.is_connected("mutation_state_changed", snapshot_callable):
-		portal_mutation_runtime.connect("mutation_state_changed", snapshot_callable)
+	var mutation_snapshot_callable := Callable(self, "_on_portal_mutation_state_changed")
+	if portal_mutation_runtime != null and portal_mutation_runtime.has_signal("mutation_state_changed") and not portal_mutation_runtime.is_connected("mutation_state_changed", mutation_snapshot_callable):
+		portal_mutation_runtime.connect("mutation_state_changed", mutation_snapshot_callable)
 	_update_hp_label()
+	_emit_ui_snapshot_changed()
+
+func _on_portal_mutation_state_changed(_snapshot: Dictionary) -> void:
 	_emit_ui_snapshot_changed()
 
 func _physics_process(delta: float) -> void:
