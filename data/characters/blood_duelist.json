@@ -1,0 +1,55 @@
+{
+  "id": "blood_duelist",
+  "display_name": "The Blood Duelist",
+  "description": "Precise infernal skirmisher who accelerates through clean close-range takedowns.",
+  "roster_order": 10,
+  "selectable": false,
+  "visual_path": "res://assets/sprites/characters/blood_duelist/blood_duelist.png",
+  "visual_scale": 0.12,
+  "starting_weapon_ids": ["blood_needle"],
+  "family_weapon_ids": [
+    "blood_needle",
+    "devil_fang",
+    "sin_shuriken",
+    "blood_chakram",
+    "hell_claw",
+    "pact_blade"
+  ],
+  "preferred_weapon_family": "devil",
+  "shop_weapon_family_bias": 0.2,
+  "passive_runtime_rules": [
+    {
+      "id": "red_tempo",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_enemy_kill",
+      "modifiers": [
+        {
+          "stat_id": "attack_speed",
+          "amount": 0.06
+        },
+        {
+          "stat_id": "damage",
+          "amount": 0.04
+        }
+      ],
+      "duration": 3.0,
+      "max_stacks": 3,
+      "debug_label": "RED TEMPO"
+    }
+  ],
+  "presentation": {
+    "headline": "Fast blood-blade skirmisher who rewards clean takedown chains.",
+    "fantasy_hook": "A needle blade, fang dagger, and trailing crimson sash turn every movement into a deliberate challenge.",
+    "identity_summary": "The Blood Duelist blends ritual precision with the Devil arsenal's aggressive close-range tools. Each takedown sharpens the next exchange, creating brief windows of fast, escalating offense.",
+    "passive_name": "Red Tempo",
+    "passive_summary": "Enemy kills briefly grant attack speed and damage, stacking up to three times during an uninterrupted duel.",
+    "playstyle_tags": ["blood", "precision", "melee", "rapid"],
+    "difficulty": "hard",
+    "starter_weapon_label": "Opening Needle",
+    "arsenal_label": "Duelist Arsenal",
+    "arsenal_preview": ["Blood Needle", "Devil Fang", "Sin Shuriken", "Blood Chakram", "Hell Claw", "Pact Blade"],
+    "strengths": ["Fast takedown chains", "Strong precision-melee overlap", "High offensive momentum"],
+    "tradeoffs": ["Short passive window", "Less forgiving when the kill chain breaks"]
+  },
+  "passive_tags": ["red_tempo", "blood_duelist", "kill_momentum"]
+}
