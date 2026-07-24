@@ -6,6 +6,7 @@ const ENEMY_RESOURCE_DIR: String = "res://data/enemies"
 const WEAPON_RESOURCE_DIR: String = "res://data/weapons"
 const ITEM_RESOURCE_DIR: String = "res://data/items"
 const PORTAL_EVENT_DIR: String = "res://data/portal_events"
+const PORTAL_MUTATION_DIR: String = "res://data/portal_mutations"
 const SET_BONUS_DIR: String = "res://data/set_bonuses"
 
 var characters: Dictionary = {}
@@ -13,16 +14,18 @@ var weapons: Dictionary = {}
 var items: Dictionary = {}
 var enemies: Dictionary = {}
 var portal_events: Dictionary = {}
+var portal_mutations: Dictionary = {}
 var set_bonuses: Dictionary = {}
 
 func _ready() -> void:
 	_register_defaults()
-	print("DataRegistry ready: %d characters, %d weapons, %d items, %d enemies, %d portal events, %d set bonuses" % [
+	print("DataRegistry ready: %d characters, %d weapons, %d items, %d enemies, %d portal events, %d portal mutations, %d set bonuses" % [
 		characters.size(),
 		weapons.size(),
 		items.size(),
 		enemies.size(),
 		portal_events.size(),
+		portal_mutations.size(),
 		set_bonuses.size()
 	])
 
@@ -34,6 +37,7 @@ func _register_defaults() -> void:
 		_register_by_id(items, ItemDatabase.get_prototype_items())
 	_register_by_id(enemies, _load_enemy_resources())
 	_load_json_directory_into(portal_events, PORTAL_EVENT_DIR)
+	_load_json_directory_into(portal_mutations, PORTAL_MUTATION_DIR)
 	_load_json_directory_into(set_bonuses, SET_BONUS_DIR)
 	_validate_registry_entries()
 
@@ -190,7 +194,45 @@ func _validate_registry_entries() -> void:
 			push_warning("Portal event '%s' is missing title." % str(portal_event_id))
 		if float(portal_event.get("base_weight", 0.0)) <= 0.0:
 			push_warning("Portal event '%s' has non-positive base_weight." % str(portal_event_id))
+	_validate_portal_mutation_entries()
 	_validate_set_bonus_entries()
+
+func _validate_portal_mutation_entries() -> void:
+	for mutation_id in portal_mutations.keys():
+		var mutation_variant: Variant = portal_mutations[mutation_id]
+		if not (mutation_variant is Dictionary):
+			push_warning("Portal mutation entry '%s' is invalid." % str(mutation_id))
+			continue
+		var mutation: Dictionary = mutation_variant
+		if str(mutation.get("title", "")) == "":
+			push_warning("Portal mutation '%s' is missing title." % str(mutation_id))
+		var mutation_tier := str(mutation.get("mutation_tier", ""))
+		if mutation_tier not in ["minor", "major"]:
+			push_warning("Portal mutation '%s' has invalid mutation_tier '%s'." % [str(mutation_id), mutation_tier])
+		var duration := str(mutation.get("duration", ""))
+		if duration not in ["event", "wave", "run"]:
+			push_warning("Portal mutation '%s' has invalid duration '%s'." % [str(mutation_id), duration])
+		if str(mutation.get("stack_policy", "")) == "":
+			push_warning("Portal mutation '%s' is missing stack_policy." % str(mutation_id))
+		var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(
+			WeaponTagRuntimeRef.resolve_effect_tags(mutation.get("effect_tags", []))
+		)
+		if not invalid_tags.is_empty():
+			push_warning(
+				"Portal mutation '%s' uses non-canonical effect_tags: %s"
+				% [str(mutation_id), ", ".join(invalid_tags)]
+			)
+		var effects_variant: Variant = mutation.get("effects", [])
+		if not (effects_variant is Array) or (effects_variant as Array).is_empty():
+			push_warning("Portal mutation '%s' must define at least one effect." % str(mutation_id))
+			continue
+		var effects: Array = effects_variant
+		for effect_variant in effects:
+			if not (effect_variant is Dictionary):
+				push_warning("Portal mutation '%s' contains a non-dictionary effect." % str(mutation_id))
+				continue
+			if str((effect_variant as Dictionary).get("type", "")) == "":
+				push_warning("Portal mutation '%s' contains an effect with no type." % str(mutation_id))
 
 func _validate_character_entries() -> void:
 	for character_id in characters.keys():
@@ -509,6 +551,16 @@ func get_enemy(id: String):
 
 func get_portal_event(id: String):
 	return portal_events.get(id)
+
+func get_portal_mutation(id: String):
+	return portal_mutations.get(id)
+
+func get_portal_mutation_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for mutation_id in portal_mutations.keys():
+		ids.append(str(mutation_id))
+	ids.sort()
+	return ids
 
 func get_set_bonus(id: String):
 	return set_bonuses.get(id)
