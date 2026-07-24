@@ -33,11 +33,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _refresh() -> void:
 	title_label.text = str(_definition.get("title", "Portal Mutation"))
-	description_label.text = str(_definition.get("description", ""))
+	var description := str(_definition.get("description", ""))
+	var replacement_warning := str(_definition.get("replacement_warning", ""))
+	description_label.text = (
+		"%s\n%s" % [description, replacement_warning]
+		if replacement_warning != ""
+		else description
+	)
 	tags_label.text = "Affected tags: %s" % _format_tags(_definition.get("effect_tags", []))
 	duration_label.text = "Duration: %s" % str(_definition.get("duration", "run")).capitalize()
 	reward_label.text = "Reward: %s" % str(_definition.get("reward", ""))
 	risk_label.text = "Risk: %s" % str(_definition.get("risk", ""))
+	accept_button.text = "Replace Mutation" if replacement_warning != "" else "Accept Mutation"
 
 func _format_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
