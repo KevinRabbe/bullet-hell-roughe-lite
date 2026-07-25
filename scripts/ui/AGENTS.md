@@ -2,3 +2,10 @@
 - Owns presentation, input wiring, and view refresh behavior only.
 - UI should consume controller or view-model state, not duplicate gameplay rules.
 - Favor dirty/event-driven refresh over per-frame full rebuilds.
+- `InfernalUiStyle` is the canonical styling foundation; extend it instead of creating parallel per-screen style systems.
+- New screens must use canonical shared styles/components first. Add a new component or variant only for a real semantic or interaction difference.
+- Screen scripts own content and interaction, not global colors, typography, spacing, border, focus, or button-state definitions.
+- Responsive UI should converge on the shared NORMAL / COMPACT / TIGHT layout classes and metrics rather than defining unrelated breakpoints per screen.
+- Unique flows such as Ascension, Portal Mutation, bosses, or victory should decorate the standard UI system instead of forking its basic panels, buttons, cards, focus states, or responsive behavior.
+- Reusable component scenes are appropriate for multi-node components with meaningful structure or behavior; do not wrap simple controls only for abstraction.
+- `docs/UI_SYSTEM_SPEC.md` is the canonical migration and component contract.
