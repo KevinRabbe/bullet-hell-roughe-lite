@@ -3,8 +3,8 @@ extends Control
 const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime.gd")
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
-const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const OPTIONS_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 
@@ -171,9 +171,9 @@ func _apply_tab_button_style(button: Button, is_selected: bool) -> void:
 	if button == null:
 		return
 	if is_selected:
-		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH, Color(1.0, 0.96, 0.96, 1.0), Color(1.0, 1.0, 1.0, 1.0))
+		InfernalUiStyleRef.apply_primary_button(button)
 	else:
-		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH, Color(0.90, 0.93, 1.0, 0.98), Color(1.0, 1.0, 1.0, 1.0))
+		InfernalUiStyleRef.apply_secondary_button(button)
 
 func _refresh_content() -> void:
 	var showing_video: bool = current_tab == TAB_VIDEO
@@ -189,21 +189,21 @@ func _refresh_content() -> void:
 	match current_tab:
 		TAB_AUDIO:
 			tab_title_label.text = "Audio"
-			tab_summary_label.text = "Dial in a practical first-pass mix for the menu shell. Audio previews immediately and saves only when you apply it."
+			tab_summary_label.text = "Balance the mix. Changes preview immediately and save when applied."
 			_refresh_audio_content()
 		TAB_VIDEO:
 			tab_title_label.text = "Video"
-			tab_summary_label.text = "Pick a realistic windowed baseline and display mode for the current menu shell. Windowed previews update immediately; fullscreen keeps the desktop size and remembers the staged windowed preset."
+			tab_summary_label.text = "Choose a window size and display mode. Fullscreen remembers the staged windowed preset."
 			if _is_editor_preview_session():
 				tab_summary_label.text += "\nEditor note: the embedded game tab keeps the editor viewport size, so use Apply to save the profile and verify real window resizing in a standalone run."
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
-			tab_summary_label.text = "See the live keyboard route for arena movement and the front-door menu stack before we tackle full remapping."
+			tab_summary_label.text = "Review the current keyboard controls for menus and the arena."
 			_refresh_controls_content()
 		TAB_ACCESSIBILITY:
 			tab_title_label.text = "Accessibility"
-			tab_summary_label.text = "Stage the menu readability pass here: preview bigger text, calmer motion, and stronger contrast before you head into a run."
+			tab_summary_label.text = "Preview larger text, calmer motion, and stronger contrast."
 			_refresh_accessibility_content()
 	_refresh_action_row_state()
 
@@ -318,7 +318,7 @@ func _refresh_controls_content() -> void:
 			{"label": "Browse roster or starters", "binding": "Up / Down"},
 			{"label": "Confirm selection", "binding": "Enter / Space"},
 			{"label": "Back / close", "binding": "Esc"},
-			{"label": "Random character / starter", "binding": "R"},
+			{"label": "Random starter", "binding": "R (starter screen)"},
 			{"label": "Default starter", "binding": "T (starter screen)"}
 		]
 	)
@@ -334,7 +334,7 @@ func _refresh_controls_content() -> void:
 	var status_label := Label.new()
 	status_label.text = "Status: live keyboard reference is in place, full rebinding stays deferred to a dedicated controls pass."
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.modulate = Color(0.992157, 0.560784, 0.560784, 0.95)
+	InfernalUiStyleRef.apply_accent_text(status_label)
 	controls_runtime_box.add_child(status_label)
 	_refresh_action_row_state()
 
@@ -437,10 +437,26 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	return false
 
 func _apply_shared_frame_styles() -> void:
-	MenuFrameRuntimeRef.apply_chip_frame(step_chip, Color(0.98, 0.88, 0.70, 0.98))
-	MenuFrameRuntimeRef.apply_button_frame(apply_button, MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH, Color(1.0, 0.97, 0.97, 1.0), Color(1.0, 1.0, 1.0, 1.0))
-	for button in [reset_button, back_button]:
-		MenuFrameRuntimeRef.apply_button_frame(button, MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH, Color(0.90, 0.93, 1.0, 0.98), Color(1.0, 1.0, 1.0, 1.0))
+	for panel_variant in find_children("*", "PanelContainer", true, false):
+		if not (panel_variant is PanelContainer):
+			continue
+		var panel := panel_variant as PanelContainer
+		var role := InfernalUiStyleRef.PANEL_SHELL if panel in [nav_panel, content_panel] else InfernalUiStyleRef.PANEL_CARD
+		InfernalUiStyleRef.apply_panel(panel, role)
+	for label_variant in find_children("*", "Label", true, false):
+		if label_variant is Label:
+			InfernalUiStyleRef.apply_body_text(label_variant as Label)
+	InfernalUiStyleRef.apply_accent_text(step_chip.get_node_or_null("StepChipMargin/StepChipLabel") as Label)
+	InfernalUiStyleRef.apply_title(nav_title_label)
+	InfernalUiStyleRef.apply_title(tab_title_label)
+	for title_name in ["ResolutionTitle", "FullscreenTitle", "PlaceholderTitle", "FocusTitle", "ChecklistTitle"]:
+		InfernalUiStyleRef.apply_section_title(find_child(title_name, true, false) as Label)
+	for value_label in [resolution_value_label, fullscreen_value_label, placeholder_status_label]:
+		InfernalUiStyleRef.apply_accent_text(value_label)
+	for button_variant in find_children("*", "Button", true, false):
+		if button_variant is Button:
+			InfernalUiStyleRef.apply_secondary_button(button_variant as Button)
+	InfernalUiStyleRef.apply_primary_button(apply_button)
 
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(staged_accessibility_settings)
@@ -710,6 +726,7 @@ func _set_placeholder_shell_mode(mode: String) -> void:
 
 func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Array) -> void:
 	var block := PanelContainer.new()
+	InfernalUiStyleRef.apply_panel(block, InfernalUiStyleRef.PANEL_CARD)
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 18)
 	margin.add_theme_constant_override("margin_top", 18)
@@ -722,6 +739,7 @@ func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Ar
 	var title := Label.new()
 	title.text = title_text
 	title.add_theme_font_size_override("font_size", 24)
+	InfernalUiStyleRef.apply_section_title(title)
 	column.add_child(title)
 	for row_variant in rows:
 		if not (row_variant is Dictionary):
@@ -729,7 +747,7 @@ func _add_controls_group(target_box: VBoxContainer, title_text: String, rows: Ar
 		var row: Dictionary = row_variant
 		var row_label := Label.new()
 		row_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		row_label.modulate = Color(0.84, 0.86, 0.91, 0.92)
+		InfernalUiStyleRef.apply_body_text(row_label)
 		row_label.text = "%s: %s" % [str(row.get("label", "")), str(row.get("binding", "-"))]
 		column.add_child(row_label)
 	target_box.add_child(block)
