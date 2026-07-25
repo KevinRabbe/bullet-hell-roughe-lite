@@ -3,6 +3,10 @@ extends CanvasLayer
 signal accepted
 signal declined
 
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+
+@onready var panel: PanelContainer = $Backdrop/Center/Panel
+@onready var eyebrow_label: Label = $Backdrop/Center/Panel/Margin/VBox/Eyebrow
 @onready var title_label: Label = $Backdrop/Center/Panel/Margin/VBox/Title
 @onready var description_label: Label = $Backdrop/Center/Panel/Margin/VBox/Description
 @onready var tags_label: Label = $Backdrop/Center/Panel/Margin/VBox/Tags
@@ -16,10 +20,23 @@ var _definition: Dictionary = {}
 var _resolved: bool = false
 
 func _ready() -> void:
+	_apply_presentation()
 	accept_button.pressed.connect(_on_accept_pressed)
 	decline_button.pressed.connect(_on_decline_pressed)
 	_refresh()
 	accept_button.grab_focus()
+
+func _apply_presentation() -> void:
+	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_accent_text(eyebrow_label)
+	InfernalUiStyleRef.apply_title(title_label)
+	InfernalUiStyleRef.apply_body_text(description_label)
+	InfernalUiStyleRef.apply_body_text(tags_label)
+	InfernalUiStyleRef.apply_body_text(duration_label)
+	InfernalUiStyleRef.apply_section_title(reward_label)
+	InfernalUiStyleRef.apply_accent_text(risk_label)
+	InfernalUiStyleRef.apply_secondary_button(decline_button)
+	InfernalUiStyleRef.apply_primary_button(accept_button)
 
 func configure(definition: Dictionary) -> void:
 	_definition = definition.duplicate(true)
