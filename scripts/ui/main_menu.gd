@@ -116,6 +116,8 @@ func _apply_responsive_layout() -> void:
 	start_button.custom_minimum_size.y = 52.0 if tight else 58.0
 	for button in [armory_button, options_button, credits_button, quit_button]:
 		button.custom_minimum_size.y = 44.0 if tight else 48.0
+	for hero_label in [eyebrow_label, title_label, subtitle_label, hero_callout]:
+		hero_label.visible = not tight
 	title_label.add_theme_font_size_override("font_size", int(round((40.0 if tight else 50.0) * font_scale)))
 	menu_title.add_theme_font_size_override("font_size", int(round((24.0 if tight else 28.0) * font_scale)))
 	subtitle_label.add_theme_font_size_override("font_size", int(round((15.0 if tight else 18.0) * font_scale)))
