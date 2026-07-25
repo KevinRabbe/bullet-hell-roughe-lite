@@ -1,7 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=2 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_fm4st"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_t4p0v"]
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -11,7 +10,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
-script = ExtResource("1_fm4st")
+script = ExtResource("1")
 
 [node name="Backdrop" type="ColorRect" parent="."]
 layout_mode = 1
@@ -20,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0313726, 0.0352941, 0.0588235, 1)
+color = Color(0.0705882, 0.0431373, 0.0627451, 1)
 
 [node name="ArenaTexture" type="TextureRect" parent="."]
 layout_mode = 1
@@ -29,10 +28,9 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_t4p0v")
 expand_mode = 1
 stretch_mode = 6
-modulate = Color(0.47, 0.36, 0.39, 0.5)
+modulate = Color(0.58, 0.42, 0.44, 0.42)
 
 [node name="PrimaryDimmer" type="ColorRect" parent="."]
 layout_mode = 1
@@ -41,234 +39,43 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0196078, 0.0235294, 0.0392157, 0.72)
+color = Color(0.0705882, 0.0431373, 0.0627451, 0.74)
 
-[node name="LeftGlow" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 11
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_right = 120.0
-grow_vertical = 2
-color = Color(0.301961, 0.0784314, 0.145098, 0.16)
-
-[node name="TopBand" type="ColorRect" parent="."]
+[node name="TopGlow" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 170.0
+offset_bottom = 150.0
 grow_horizontal = 2
-color = Color(0.341176, 0.0901961, 0.14902, 0.18)
-
-[node name="BottomBand" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -120.0
-grow_horizontal = 2
-grow_vertical = 0
-color = Color(0.00784314, 0.0117647, 0.0235294, 0.28)
+color = Color(0.352941, 0.0588235, 0.105882, 0.18)
 
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 52.0
-offset_top = 40.0
-offset_right = -52.0
-offset_bottom = -40.0
+offset_left = 44.0
+offset_top = 32.0
+offset_right = -44.0
+offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="RootVBox" type="VBoxContainer" parent="RootMargin"]
+[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
 layout_mode = 2
-theme_override_constants/separation = 26
+theme_override_constants/separation = 24
 
-[node name="HeaderRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="StepChip1" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="StepChip1Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip1"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip1Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip1/StepChip1Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 0.95)
-text = "1 Main Menu"
-
-[node name="StepChip2" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="StepChip2Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip2"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip2Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip2/StepChip2Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "2 Character"
-
-[node name="StepChip3" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="StepChip3Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip3"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip3Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip3/StepChip3Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "3 Starter"
-
-[node name="StepChip4" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="StepChip4Margin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/StepChip4"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="StepChip4Label" type="Label" parent="RootMargin/RootVBox/HeaderRow/StepChip4/StepChip4Margin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.9)
-text = "4 Arena"
-
-[node name="BuildChip" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="BuildChipMargin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/BuildChip"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="BuildChipLabel" type="Label" parent="RootMargin/RootVBox/HeaderRow/BuildChip/BuildChipMargin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
-text = "Frontier Build"
-
-[node name="FlowChip" type="PanelContainer" parent="RootMargin/RootVBox/HeaderRow"]
-layout_mode = 2
-
-[node name="FlowChipMargin" type="MarginContainer" parent="RootMargin/RootVBox/HeaderRow/FlowChip"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 8
-
-[node name="FlowChipLabel" type="Label" parent="RootMargin/RootVBox/HeaderRow/FlowChip/FlowChipMargin"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.792157, 0.862745, 0.976471, 0.95)
-text = "Start Run -> Character -> Starter -> Arena"
-
-[node name="MainHBox" type="HBoxContainer" parent="RootMargin/RootVBox"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 34
-
-[node name="HeroColumn" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox"]
-custom_minimum_size = Vector2(580, 0)
+[node name="HeroPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 22
 
-[node name="BrandingPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
+[node name="HeroStage" type="Control" parent="RootMargin/MainHBox/HeroPanel"]
+custom_minimum_size = Vector2(0, 560)
 layout_mode = 2
+clip_contents = true
 
-[node name="BrandingMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 22
-
-[node name="BrandingVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="Eyebrow" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.992157, 0.560784, 0.560784, 0.95)
-theme_override_font_sizes/font_size = 18
-text = "HELLSHOT FRONTIER"
-
-[node name="Title" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 54
-text = "Bullet Hell Roughe Lite"
-
-[node name="Subtitle" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
-custom_minimum_size = Vector2(0, 94)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.854902, 0.878431, 0.929412, 0.94)
-theme_override_font_sizes/font_size = 20
-autowrap_mode = 3
-text = "Choose a hunter, lock an opening weapon, and step into a hell-torn frontier where each run grows through portals, tags, and dangerous pivots."
-
-[node name="LogoArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/BrandingPanel/BrandingMargin/BrandingVBox"]
-visible = false
-custom_minimum_size = Vector2(0, 104)
-layout_mode = 2
-size_flags_horizontal = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="HeroFramePanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
-custom_minimum_size = Vector2(0, 240)
-layout_mode = 2
-
-[node name="HeroFrameMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="HeroFrameVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="HeroFrameTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "Frontier Preview"
-
-[node name="HeroFrameBody" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.831373, 0.901961, 0.88)
-autowrap_mode = 3
-text = "This stage holds the frontier mood piece and keeps room for later key art without changing the shipped front-door route."
-
-[node name="HeroFramePlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox"]
-custom_minimum_size = Vector2(0, 118)
-layout_mode = 2
-size_flags_vertical = 3
-color = Color(0.0745098, 0.0823529, 0.129412, 0.9)
-
-[node name="HeroArtSlot" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder"]
-visible = false
+[node name="HeroArtSlot" type="TextureRect" parent="RootMargin/MainHBox/HeroPanel/HeroStage"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -278,310 +85,131 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="HeroFramePlaceholderLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/HeroFramePanel/HeroFrameMargin/HeroFrameVBox/HeroFramePlaceholder"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -144.5
-offset_top = -13.0
-offset_right = 144.5
-offset_bottom = 13.0
-grow_horizontal = 2
-grow_vertical = 2
-horizontal_alignment = 1
-text = "Frontier preview art"
-
-[node name="ActionPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="ActionMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
-
-[node name="ActionVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="StartButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-custom_minimum_size = Vector2(0, 58)
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Start Frontier Run"
-
-[node name="ArmoryButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-text = "Open Armory"
-
-[node name="OptionsButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-text = "Open Options"
-
-[node name="CreditsButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-text = "View Credits"
-
-[node name="QuitButton" type="Button" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-custom_minimum_size = Vector2(0, 50)
-layout_mode = 2
-text = "Quit to Desktop"
-
-[node name="ActionHint" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.760784, 0.784314, 0.835294, 0.85)
-autowrap_mode = 3
-text = "Start a run now, or check the Armory and Options before you head into the frontier."
-
-[node name="FooterLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/HeroColumn"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.603922, 0.631373, 0.705882, 0.95)
-autowrap_mode = 3
-text = "Input: Up/Down moves, Enter confirms, Esc closes dialogs."
-
-[node name="InfoColumn" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox"]
-custom_minimum_size = Vector2(400, 0)
-layout_mode = 2
-theme_override_constants/separation = 20
-
-[node name="FeaturedRosterPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
-layout_mode = 2
-
-[node name="FeaturedRosterMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="FeaturedRosterVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="FeaturedRosterTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Active Hunters"
-
-[node name="FeaturedRosterBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
-autowrap_mode = 3
-text = "Six hunters are already live. This preview gives a fast read on who is ready to enter the arena."
-
-[node name="FeaturedRosterList" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FeaturedRosterPanel/FeaturedRosterMargin/FeaturedRosterVBox"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="StatusPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
-layout_mode = 2
-
-[node name="StatusMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="StatusVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="StatusTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Frontier Status"
-
-[node name="StatusBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/StatusPanel/StatusMargin/StatusVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
-autowrap_mode = 3
-text = "This build already supports six active hunters, starting weapon choice, first-pass passives, tag groundwork, portal events, and the live arena shell."
-
-[node name="FlowPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
-layout_mode = 2
-
-[node name="FlowMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="FlowVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="FlowTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Run Route"
-
-[node name="FlowBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
-autowrap_mode = 3
-text = "1. Start from the front door\n2. Choose a hunter\n3. Lock the opener\n4. Enter the arena"
-
-[node name="FlowPlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox"]
-custom_minimum_size = Vector2(0, 92)
-layout_mode = 2
-color = Color(0.0705882, 0.0745098, 0.109804, 0.92)
-
-[node name="FlowPlaceholderLabel" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/FlowPanel/FlowMargin/FlowVBox/FlowPlaceholder"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -130.5
-offset_top = -13.0
-offset_right = 130.5
-offset_bottom = 13.0
-grow_horizontal = 2
-grow_vertical = 2
-horizontal_alignment = 1
-text = "Menu > Character > Starter > Arena"
-
-[node name="NotesPanel" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn"]
-layout_mode = 2
-
-[node name="NotesMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="NotesVBox" type="VBoxContainer" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="NotesTitle" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Before You Enter"
-
-[node name="NotesBody" type="Label" parent="RootMargin/RootVBox/MainHBox/InfoColumn/NotesPanel/NotesMargin/NotesVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
-autowrap_mode = 3
-text = "Each menu step locks only one decision at a time so the run starts clear, readable, and harder to break."
-
-[node name="FooterRow" type="HBoxContainer" parent="RootMargin/RootVBox"]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="VersionLabel" type="Label" parent="RootMargin/RootVBox/FooterRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.596078, 0.627451, 0.705882, 0.9)
-text = "Current focus: Front door polish"
-
-[node name="FooterSpacer" type="Control" parent="RootMargin/RootVBox/FooterRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="FooterPrompt" type="Label" parent="RootMargin/RootVBox/FooterRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.713726, 0.741176, 0.815686, 0.92)
-text = "Start Frontier Run opens hunter selection."
-
-[node name="ModalScrim" type="ColorRect" parent="."]
-visible = false
+[node name="HeroShade" type="ColorRect" parent="RootMargin/MainHBox/HeroPanel/HeroStage"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
-color = Color(0.0196078, 0.0235294, 0.0392157, 0.72)
+mouse_filter = 2
+color = Color(0.0705882, 0.0431373, 0.0627451, 0.3)
 
-[node name="DialogPanel" type="PanelContainer" parent="."]
-visible = false
+[node name="HeroContentMargin" type="MarginContainer" parent="RootMargin/MainHBox/HeroPanel/HeroStage"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -150.0
-offset_right = 250.0
-offset_bottom = 150.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 30
 
-[node name="DialogMargin" type="MarginContainer" parent="DialogPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 20
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 20
-theme_override_constants/margin_bottom = 20
-
-[node name="DialogVBox" type="VBoxContainer" parent="DialogPanel/DialogMargin"]
-layout_mode = 2
-theme_override_constants/separation = 16
-
-[node name="DialogTitle" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 26
-text = "Info"
-
-[node name="DialogBody" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
-custom_minimum_size = Vector2(0, 110)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.839216, 0.862745, 0.913725, 0.94)
-autowrap_mode = 3
-text = "Menu dialog body."
-
-[node name="DialogResolutionLabel" type="Label" parent="DialogPanel/DialogMargin/DialogVBox"]
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
-text = "Display: Windowed / 1280x720"
-
-[node name="DialogResolutionRow" type="HBoxContainer" parent="DialogPanel/DialogMargin/DialogVBox"]
-visible = false
+[node name="HeroContent" type="VBoxContainer" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ResolutionPrevButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow"]
-custom_minimum_size = Vector2(0, 42)
+[node name="Eyebrow" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent"]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Previous Resolution"
+theme_override_font_sizes/font_size = 15
+text = "THE FRONTIER IS OPEN"
 
-[node name="ResolutionNextButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox/DialogResolutionRow"]
-custom_minimum_size = Vector2(0, 42)
+[node name="Title" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent"]
 layout_mode = 2
-size_flags_horizontal = 3
-text = "Next Resolution"
+theme_override_font_sizes/font_size = 50
+text = "HELLSHOT FRONTIER"
 
-[node name="DialogFullscreenButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox"]
-visible = false
-custom_minimum_size = Vector2(0, 42)
+[node name="Subtitle" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent"]
+custom_minimum_size = Vector2(0, 64)
 layout_mode = 2
-text = "Mode: Windowed"
+theme_override_font_sizes/font_size = 18
+text = "Choose a hunter. Shape an arsenal. Survive what comes through the gate."
+autowrap_mode = 3
 
-[node name="DialogCloseButton" type="Button" parent="DialogPanel/DialogMargin/DialogVBox"]
-custom_minimum_size = Vector2(0, 42)
+[node name="HeroSpacer" type="Control" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent"]
 layout_mode = 2
-text = "Close"
+size_flags_vertical = 3
 
-[connection signal="pressed" from="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/StartButton" to="." method="_on_start_button_pressed"]
-[connection signal="pressed" from="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/ArmoryButton" to="." method="_on_armory_button_pressed"]
-[connection signal="pressed" from="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/OptionsButton" to="." method="_on_options_button_pressed"]
-[connection signal="pressed" from="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/CreditsButton" to="." method="_on_credits_button_pressed"]
-[connection signal="pressed" from="RootMargin/RootVBox/MainHBox/HeroColumn/ActionPanel/ActionMargin/ActionVBox/QuitButton" to="." method="_on_quit_button_pressed"]
-[connection signal="pressed" from="DialogPanel/DialogMargin/DialogVBox/DialogCloseButton" to="." method="_hide_dialog"]
+[node name="HeroCallout" type="Label" parent="RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Every run begins with one hunter and one opening weapon."
+autowrap_mode = 3
+
+[node name="MenuPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+
+[node name="MenuMargin" type="MarginContainer" parent="RootMargin/MainHBox/MenuPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="MenuVBox" type="VBoxContainer" parent="RootMargin/MainHBox/MenuPanel/MenuMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MenuEyebrow" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "INFERNAL ROGUELITE"
+
+[node name="MenuTitle" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "ENTER THE FRONTIER"
+
+[node name="MenuBody" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 66)
+layout_mode = 2
+text = "Begin a run or prepare before the next gate opens."
+autowrap_mode = 3
+
+[node name="MenuSeparator" type="HSeparator" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+layout_mode = 2
+
+[node name="StartButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "START RUN"
+
+[node name="ArmoryButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "ARMORY"
+
+[node name="OptionsButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "OPTIONS"
+
+[node name="CreditsButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "CREDITS"
+
+[node name="QuitButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = "QUIT"
+
+[node name="MenuSpacer" type="Control" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FooterLabel" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "ARROWS navigate  |  ENTER confirm"
+horizontal_alignment = 1
+
+[connection signal="pressed" from="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/ArmoryButton" to="." method="_on_armory_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/OptionsButton" to="." method="_on_options_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/CreditsButton" to="." method="_on_credits_button_pressed"]
+[connection signal="pressed" from="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/QuitButton" to="." method="_on_quit_button_pressed"]
