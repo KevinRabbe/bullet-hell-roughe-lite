@@ -47,6 +47,24 @@ static func fade_swap_texture(target: CanvasItem) -> void:
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(target, "modulate:a", 1.0, 0.18)
 
+static func play_ambient_pulse(
+	target: CanvasItem,
+	dim_modulate: Color,
+	bright_modulate: Color,
+	duration: float = 3.0
+) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	target.modulate = bright_modulate
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		return
+	var pulse_duration: float = maxf(duration, 0.1)
+	var tween := target.create_tween()
+	tween.set_loops()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(target, "modulate", dim_modulate, pulse_duration)
+	tween.tween_property(target, "modulate", bright_modulate, pulse_duration)
+
 static func animate_modal_open(scrim: CanvasItem, panel: Control) -> void:
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		if scrim != null and is_instance_valid(scrim):
