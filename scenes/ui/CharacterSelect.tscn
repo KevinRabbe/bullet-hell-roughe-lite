@@ -113,6 +113,7 @@ visible = false
 custom_minimum_size = Vector2(0, 462)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
 
 [node name="ShowcaseMargin" type="MarginContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel"]
 layout_mode = 2
@@ -126,8 +127,9 @@ layout_mode = 2
 theme_override_constants/separation = 4
 
 [node name="PortraitStage" type="PanelContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
-custom_minimum_size = Vector2(0, 250)
+custom_minimum_size = Vector2(0, 270)
 layout_mode = 2
+clip_contents = true
 
 [node name="PortraitCenter" type="CenterContainer" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
 layout_mode = 2
@@ -138,16 +140,58 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="PortraitPlaceholder" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter"]
-custom_minimum_size = Vector2(140, 140)
+custom_minimum_size = Vector2(190, 190)
 layout_mode = 2
 color = Color(0.231373, 0.168627, 0.117647, 0.819608)
 
 [node name="PortraitRect" type="TextureRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage/PortraitCenter"]
-custom_minimum_size = Vector2(220, 200)
+custom_minimum_size = Vector2(340, 258)
 visible = false
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="WindowTop" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 10.0
+grow_horizontal = 2
+mouse_filter = 2
+color = Color(0.164706, 0.0901961, 0.0666667, 1)
+
+[node name="WindowBottom" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.164706, 0.0901961, 0.0666667, 1)
+
+[node name="WindowLeft" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+offset_right = 10.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.164706, 0.0901961, 0.0666667, 1)
+
+[node name="WindowRight" type="ColorRect" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox/PortraitStage"]
+layout_mode = 1
+anchors_preset = 11
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -10.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.164706, 0.0901961, 0.0666667, 1)
 
 [node name="SelectedName" type="Label" parent="RootMargin/RootVBox/MainHBox/ShowcasePanel/ShowcaseMargin/ShowcaseVBox"]
 layout_mode = 2

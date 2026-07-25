@@ -223,7 +223,7 @@ func _apply_shell_styles() -> void:
 func _apply_accessibility_scaling() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var large_text_enabled: bool = AccessibilitySettingsRuntimeRef.is_large_text_enabled(accessibility_settings)
-	portrait_stage.custom_minimum_size.y = 238.0 if large_text_enabled else 250.0
+	portrait_stage.custom_minimum_size.y = 258.0 if large_text_enabled else 270.0
 	header_title.add_theme_font_size_override("font_size", int(round(34.0 * font_scale)))
 	header_status.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
 	selected_name.add_theme_font_size_override("font_size", int(round(26.0 * font_scale)))
