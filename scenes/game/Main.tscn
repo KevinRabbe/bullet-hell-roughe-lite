@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
@@ -21,6 +21,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_dead_cactus.png" id="19"]
 [ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_broken_wagon_wheel.png" id="20"]
 [ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_skeleton_pile.png" id="21"]
+[ext_resource type="Script" path="res://scripts/ui/level_up_panel_view.gd" id="22"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("2")
@@ -281,52 +282,68 @@ tooltip_title_path = NodePath("../ShopUI/TooltipPanel/TooltipTitle")
 tooltip_body_path = NodePath("../ShopUI/TooltipPanel/TooltipBody")
 
 [node name="LevelUpUI" type="CanvasLayer" parent="."]
+layer = 30
 
 [node name="Panel" type="Panel" parent="LevelUpUI"]
-offset_left = 330.0
-offset_top = 170.0
-offset_right = 820.0
-offset_bottom = 520.0
+offset_left = 76.0
+offset_top = 149.0
+offset_right = 1076.0
+offset_bottom = 499.0
+script = ExtResource("22")
 
 [node name="Title" type="Label" parent="LevelUpUI/Panel"]
-offset_left = 30.0
-offset_top = 20.0
-offset_right = 460.0
-offset_bottom = 60.0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 976.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 26
 text = "Level Up! Pick 1 of 4"
+horizontal_alignment = 1
 
 [node name="Choice1" type="Button" parent="LevelUpUI/Panel"]
-offset_left = 40.0
-offset_top = 80.0
-offset_right = 450.0
-offset_bottom = 120.0
+offset_left = 24.0
+offset_top = 76.0
+offset_right = 250.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 18
 text = "Choice 1"
+text_overrun_behavior = 3
+autowrap_mode = 2
 
 [node name="Choice2" type="Button" parent="LevelUpUI/Panel"]
-offset_left = 40.0
-offset_top = 130.0
-offset_right = 450.0
-offset_bottom = 170.0
+offset_left = 266.0
+offset_top = 76.0
+offset_right = 492.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 18
 text = "Choice 2"
+text_overrun_behavior = 3
+autowrap_mode = 2
 
 [node name="Choice3" type="Button" parent="LevelUpUI/Panel"]
-offset_left = 40.0
-offset_top = 180.0
-offset_right = 450.0
-offset_bottom = 220.0
+offset_left = 508.0
+offset_top = 76.0
+offset_right = 734.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 18
 text = "Choice 3"
+text_overrun_behavior = 3
+autowrap_mode = 2
 
 [node name="Choice4" type="Button" parent="LevelUpUI/Panel"]
-offset_left = 40.0
-offset_top = 230.0
-offset_right = 450.0
-offset_bottom = 270.0
+offset_left = 750.0
+offset_top = 76.0
+offset_right = 976.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 18
 text = "Choice 4"
+text_overrun_behavior = 3
+autowrap_mode = 2
 
 [node name="RerollButton" type="Button" parent="LevelUpUI/Panel"]
-offset_left = 40.0
-offset_top = 290.0
-offset_right = 210.0
+offset_left = 390.0
+offset_top = 286.0
+offset_right = 610.0
 offset_bottom = 330.0
 text = "Reroll (2G)"
 
