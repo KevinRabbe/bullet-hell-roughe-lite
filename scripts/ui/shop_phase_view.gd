@@ -42,8 +42,7 @@ var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
 
 func _ready() -> void:
-	if self is CanvasLayer:
-		(self as CanvasLayer).layer = 20
+	set("layer", 20)
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
