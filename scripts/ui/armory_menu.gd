@@ -2,8 +2,8 @@ extends Control
 
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
-const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const ARMORY_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
@@ -172,18 +172,10 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	var character_id := str(entry.get("id", ""))
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 220)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
 	var selected := character_id == selected_character_id
-	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-	style.border_color = Color(0.72, 0.47, 0.92, 0.72) if selected else Color(0.72, 0.47, 0.92, 0.18)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE if selected else InfernalUiStyleRef.COLOR_BURNT_BROWN
+	style.set_border_width_all(2 if selected else 1)
 	card.add_theme_stylebox_override("panel", style)
 
 	var button := Button.new()
@@ -214,11 +206,10 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
 	var detail_variant: Variant = entry.get("detail", {})
 	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
-	var accent: Color = _family_accent_color(str(entry.get("preferred_weapon_family", "")))
 	var portrait_path: String = "res://assets/sprites/ui/menu/portraits/character_portrait_%s.png" % character_id
 	var fallback_visual_path: String = str(entry.get("visual_path", ""))
 	var portrait_texture: Texture2D = MenuPortraitRuntimeRef.resolve_portrait_texture(portrait_path, fallback_visual_path)
-	layout.add_child(_build_card_art_frame(portrait_texture, accent, Vector2(84, 112)))
+	layout.add_child(_build_card_art_frame(portrait_texture, Vector2(84, 112)))
 
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 10)
@@ -238,27 +229,27 @@ func _build_character_card(entry: Dictionary) -> PanelContainer:
 	var passive_icon_path := str(presentation.get("passive_icon_path", ""))
 	var passive_icon_texture: Texture2D = MenuPortraitRuntimeRef.resolve_menu_portrait(passive_icon_path)
 	if passive_icon_texture != null:
-		passive_row.add_child(_build_card_art_frame(passive_icon_texture, accent, Vector2(40, 40)))
+		passive_row.add_child(_build_card_art_frame(passive_icon_texture, Vector2(40, 40)))
 
 	var subtitle := Label.new()
 	subtitle.text = "%s / %s" % [
 		str(presentation.get("passive_name", "Passive")),
 		str(presentation.get("difficulty", "medium")).capitalize()
 	]
-	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	InfernalUiStyleRef.apply_accent_text(subtitle)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	passive_row.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(presentation.get("fantasy_hook", ""))
-	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	InfernalUiStyleRef.apply_body_text(summary)
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(summary)
 
 	var footer := Label.new()
 	footer.text = str(detail.get("starter_weapon_summary", ""))
-	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	InfernalUiStyleRef.apply_body_text(footer)
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(footer)
 
@@ -268,18 +259,10 @@ func _build_weapon_card(entry: Dictionary) -> PanelContainer:
 	var weapon_id := str(entry.get("id", ""))
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 200)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
 	var selected := weapon_id == selected_weapon_id
-	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-	style.border_color = Color(0.99, 0.56, 0.56, 0.72) if selected else Color(0.99, 0.56, 0.56, 0.18)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE if selected else InfernalUiStyleRef.COLOR_BURNT_BROWN
+	style.set_border_width_all(2 if selected else 1)
 	card.add_theme_stylebox_override("panel", style)
 
 	var button := Button.new()
@@ -306,10 +289,9 @@ func _build_weapon_card(entry: Dictionary) -> PanelContainer:
 	layout.add_theme_constant_override("separation", 14)
 	margin.add_child(layout)
 
-	var accent: Color = _family_accent_color(str(entry.get("family_id", "")))
 	var icon_variant: Variant = entry.get("icon", null)
 	var icon_texture: Texture2D = icon_variant if icon_variant is Texture2D else null
-	layout.add_child(_build_card_art_frame(icon_texture, accent, Vector2(72, 72)))
+	layout.add_child(_build_card_art_frame(icon_texture, Vector2(72, 72)))
 
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 8)
@@ -326,19 +308,19 @@ func _build_weapon_card(entry: Dictionary) -> PanelContainer:
 		str(entry.get("family_label", "Unaligned")),
 		str(entry.get("rarity", "common")).capitalize()
 	]
-	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	InfernalUiStyleRef.apply_accent_text(subtitle)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(entry.get("description", ""))
-	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	InfernalUiStyleRef.apply_body_text(summary)
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(summary)
 
 	var footer := Label.new()
 	footer.text = "Tags: %s" % ", ".join(_string_array_from_variant(entry.get("tags", [])))
-	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	InfernalUiStyleRef.apply_body_text(footer)
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(footer)
 
@@ -348,18 +330,10 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 	var item_id := str(entry.get("id", ""))
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 190)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
 	var selected := item_id == selected_item_id
-	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-	style.border_color = Color(0.97, 0.83, 0.65, 0.72) if selected else Color(0.97, 0.83, 0.65, 0.18)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE if selected else InfernalUiStyleRef.COLOR_BURNT_BROWN
+	style.set_border_width_all(2 if selected else 1)
 	card.add_theme_stylebox_override("panel", style)
 
 	var button := Button.new()
@@ -392,7 +366,7 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 
 	var icon_variant: Variant = entry.get("icon", null)
 	if icon_variant is Texture2D:
-		header.add_child(_build_card_art_frame(icon_variant as Texture2D, style.border_color, Vector2(64, 64)))
+		header.add_child(_build_card_art_frame(icon_variant as Texture2D, Vector2(64, 64)))
 
 	var header_copy := VBoxContainer.new()
 	header_copy.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -409,19 +383,19 @@ func _build_item_card(entry: Dictionary) -> PanelContainer:
 		str(entry.get("category_label", "Utility")),
 		str(entry.get("rarity", "common")).capitalize()
 	]
-	subtitle.modulate = Color(0.972549, 0.831373, 0.654902, 0.92)
+	InfernalUiStyleRef.apply_accent_text(subtitle)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	header_copy.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(entry.get("description", ""))
-	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	InfernalUiStyleRef.apply_body_text(summary)
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(summary)
 
 	var footer := Label.new()
 	footer.text = "Item tags: %s" % ", ".join(_string_array_from_variant(entry.get("tags", [])))
-	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	InfernalUiStyleRef.apply_body_text(footer)
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(footer)
 
@@ -431,18 +405,10 @@ func _build_set_bonus_card(entry: Dictionary) -> PanelContainer:
 	var set_bonus_id := str(entry.get("id", ""))
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 210)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
 	var selected := set_bonus_id == selected_set_bonus_id
-	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-	style.border_color = Color(0.58, 0.83, 0.98, 0.72) if selected else Color(0.58, 0.83, 0.98, 0.18)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE if selected else InfernalUiStyleRef.COLOR_BURNT_BROWN
+	style.set_border_width_all(2 if selected else 1)
 	card.add_theme_stylebox_override("panel", style)
 
 	var button := Button.new()
@@ -476,19 +442,19 @@ func _build_set_bonus_card(entry: Dictionary) -> PanelContainer:
 
 	var subtitle := Label.new()
 	subtitle.text = str(entry.get("subtitle", "Set bonus thresholds"))
-	subtitle.modulate = Color(0.58, 0.83, 0.98, 0.92)
+	InfernalUiStyleRef.apply_accent_text(subtitle)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(entry.get("summary", ""))
-	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	InfernalUiStyleRef.apply_body_text(summary)
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(summary)
 
 	var footer := Label.new()
 	footer.text = "Thresholds: %s" % ", ".join(_string_array_from_variant(entry.get("threshold_labels", [])))
-	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	InfernalUiStyleRef.apply_body_text(footer)
 	footer.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(footer)
 
@@ -497,18 +463,10 @@ func _build_set_bonus_card(entry: Dictionary) -> PanelContainer:
 func _build_collection_card(section_id: String) -> PanelContainer:
 	var card := PanelContainer.new()
 	card.custom_minimum_size = Vector2(0, 190)
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_right = 14
-	style.corner_radius_bottom_left = 14
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
 	var selected := section_id == selected_section_id
-	style.bg_color = Color(0.0901961, 0.0980392, 0.14902, 0.96) if selected else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-	style.border_color = Color(0.992157, 0.560784, 0.560784, 0.68) if selected else Color(0.992157, 0.560784, 0.560784, 0.16)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE if selected else InfernalUiStyleRef.COLOR_BURNT_BROWN
+	style.set_border_width_all(2 if selected else 1)
 	card.add_theme_stylebox_override("panel", style)
 
 	var button := Button.new()
@@ -544,19 +502,19 @@ func _build_collection_card(section_id: String) -> PanelContainer:
 
 	var subtitle := Label.new()
 	subtitle.text = str(data.get("subtitle", ""))
-	subtitle.modulate = Color(0.992157, 0.560784, 0.560784, 0.92)
+	InfernalUiStyleRef.apply_accent_text(subtitle)
 	subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(subtitle)
 
 	var summary := Label.new()
 	summary.text = str(data.get("summary", ""))
-	summary.modulate = Color(0.82, 0.85, 0.91, 0.92)
+	InfernalUiStyleRef.apply_body_text(summary)
 	summary.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(summary)
 
 	var footer := Label.new()
 	footer.text = "Browse this route"
-	footer.modulate = Color(0.72, 0.77, 0.86, 0.86)
+	InfernalUiStyleRef.apply_body_text(footer)
 	column.add_child(footer)
 
 	return card
@@ -786,77 +744,25 @@ func _on_set_bonus_card_pressed(set_bonus_id: String) -> void:
 func _apply_section_button_style(button: Button, is_selected: bool) -> void:
 	if button == null:
 		return
-	var framed: bool = false
 	if is_selected:
-		framed = MenuFrameRuntimeRef.apply_button_frame(
-			button,
-			MenuFrameRuntimeRef.MENU_BUTTON_PRIMARY_PATH,
-			Color(1.0, 0.97, 0.97, 1.0),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
+		InfernalUiStyleRef.apply_primary_button(button)
 	else:
-		framed = MenuFrameRuntimeRef.apply_button_frame(
-			button,
-			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
-			Color(0.90, 0.93, 1.0, 0.98),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
-	if framed:
-		return
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.content_margin_left = 16
-	style.content_margin_top = 14
-	style.content_margin_right = 16
-	style.content_margin_bottom = 14
-	if is_selected:
-		style.bg_color = Color(0.32549, 0.156863, 0.235294, 0.76)
-		style.border_color = Color(0.992157, 0.560784, 0.560784, 0.82)
-	else:
-		style.bg_color = Color(0.0509804, 0.054902, 0.0862745, 0.92)
-		style.border_color = Color(0.992157, 0.560784, 0.560784, 0.18)
-	button.add_theme_stylebox_override("normal", style)
-	button.add_theme_stylebox_override("hover", style)
-	button.add_theme_stylebox_override("pressed", style)
-	button.add_theme_stylebox_override("focus", style)
+		InfernalUiStyleRef.apply_secondary_button(button)
 
 func _apply_shared_shell_styles() -> void:
-	MenuFrameRuntimeRef.apply_chip_frame(step_chip, Color(0.98, 0.88, 0.70, 0.98))
-	_apply_shell_panel_style(nav_panel, Color(0.99, 0.56, 0.56, 0.22), Color(0.05, 0.05, 0.08, 0.94))
-	_apply_shell_panel_style(collection_panel, Color(0.72, 0.47, 0.92, 0.22), Color(0.05, 0.06, 0.09, 0.94))
-	_apply_shell_panel_style(detail_panel, Color(0.58, 0.83, 0.98, 0.22), Color(0.05, 0.06, 0.09, 0.94))
-	if header_copy_label != null:
-		header_copy_label.modulate = Color(0.82, 0.88, 0.98, 0.92)
-	if back_button != null:
-		MenuFrameRuntimeRef.apply_button_frame(
-			back_button,
-			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
-			Color(0.90, 0.93, 1.0, 0.98),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
-
-func _apply_shell_panel_style(panel: PanelContainer, border_color: Color, background_color: Color) -> void:
-	if panel == null:
-		return
-	var style := StyleBoxFlat.new()
-	style.bg_color = background_color
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = border_color
-	style.corner_radius_top_left = 16
-	style.corner_radius_top_right = 16
-	style.corner_radius_bottom_right = 16
-	style.corner_radius_bottom_left = 16
-	panel.add_theme_stylebox_override("panel", style)
+	InfernalUiStyleRef.apply_panel(step_chip, InfernalUiStyleRef.PANEL_CARD)
+	InfernalUiStyleRef.apply_panel(nav_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_panel(collection_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_panel(detail_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_body_text(header_copy_label)
+	InfernalUiStyleRef.apply_title(collection_title)
+	InfernalUiStyleRef.apply_title(detail_title)
+	InfernalUiStyleRef.apply_accent_text(detail_subtitle)
+	InfernalUiStyleRef.apply_body_text(collection_body)
+	InfernalUiStyleRef.apply_body_text(detail_summary)
+	InfernalUiStyleRef.apply_body_text(detail_bullets)
+	InfernalUiStyleRef.apply_section_title(detail_status)
+	InfernalUiStyleRef.apply_secondary_button(back_button)
 
 func _apply_optional_texture(target: TextureRect, texture_path: String) -> bool:
 	if target == null:
@@ -975,20 +881,11 @@ func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictiona
 		}
 	return {}
 
-func _build_card_art_frame(texture: Texture2D, accent: Color, frame_size: Vector2) -> PanelContainer:
+func _build_card_art_frame(texture: Texture2D, frame_size: Vector2) -> PanelContainer:
 	var frame := PanelContainer.new()
 	frame.custom_minimum_size = frame_size
-	var frame_style := StyleBoxFlat.new()
-	frame_style.bg_color = Color(0.06, 0.07, 0.11, 0.96)
-	frame_style.border_width_left = 1
-	frame_style.border_width_top = 1
-	frame_style.border_width_right = 1
-	frame_style.border_width_bottom = 1
-	frame_style.border_color = Color(accent.r, accent.g, accent.b, 0.32)
-	frame_style.corner_radius_top_left = 12
-	frame_style.corner_radius_top_right = 12
-	frame_style.corner_radius_bottom_right = 12
-	frame_style.corner_radius_bottom_left = 12
+	var frame_style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	frame_style.border_color = InfernalUiStyleRef.COLOR_OLD_PARCHMENT.darkened(0.42)
 	frame.add_theme_stylebox_override("panel", frame_style)
 
 	var texture_rect := TextureRect.new()
@@ -1199,23 +1096,6 @@ func _humanize_family_id(family_id: String) -> String:
 			words[index] = word.capitalize()
 	return " ".join(words)
 
-func _family_accent_color(family_label: String) -> Color:
-	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
-	match normalized:
-		"gunslinger":
-			return Color(0.96, 0.72, 0.33, 1.0)
-		"harvester":
-			return Color(0.90, 0.33, 0.56, 1.0)
-		"hellfire":
-			return Color(0.95, 0.42, 0.32, 1.0)
-		"portal":
-			return Color(0.50, 0.68, 1.0, 1.0)
-		"devil":
-			return Color(0.97, 0.28, 0.38, 1.0)
-		"ritual":
-			return Color(0.83, 0.43, 0.96, 1.0)
-		_:
-			return Color(0.99, 0.56, 0.56, 1.0)
 
 func _build_item_stat_lines(stat_modifiers_variant: Variant) -> Array[String]:
 	var lines: Array[String] = []
