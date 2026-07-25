@@ -3,7 +3,7 @@
   "display_name": "The Harvester",
   "description": "Death-soaked reaper who snowballs through kills, souls, and grim harvest milestones.",
   "roster_order": 2,
-  "visual_path": "res://assets/sprites/characters/harvester/character_a_necromancer.png",
+  "visual_path": "res://assets/sprites/characters/harvester/harvester_shared_base.png",
   "visual_scale": 0.11,
   "starting_weapon_ids": ["harvester_scythe", "harvester_lantern", "harvester_grimoire"],
   "family_weapon_ids": [
