@@ -430,38 +430,103 @@ wave_intermission_panel_path = NodePath("../../WaveIntermission/Panel")
 shop_panel_path = NodePath("../../ShopUI/Panel")
 level_up_panel_path = NodePath("../../LevelUpUI/Panel")
 character_select_layer_path = NodePath("../../CharacterSelect")
-stats_label_path = NodePath("StatsLabel")
-state_label_path = NodePath("StateLabel")
-wave_progress_bar_path = NodePath("WaveProgress")
+stats_label_path = NodePath("TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox/StatsLabel")
+state_label_path = NodePath("TopMargin/TopRow/StatePanel/StateMargin/StateVBox/StateLabel")
+wave_progress_bar_path = NodePath("TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox/WaveProgress")
 
-[node name="StatsLabel" type="Label" parent="RunHUD/Control"]
-layout_mode = 1
-offset_left = 16.0
-offset_top = 12.0
-offset_right = 560.0
-offset_bottom = 36.0
-text = "Wave 1  HP 100  Gold 0  Lv 1  XP 0/10"
-
-[node name="StateLabel" type="Label" parent="RunHUD/Control"]
-layout_mode = 1
-offset_left = 16.0
-offset_top = 36.0
-offset_right = 240.0
-offset_bottom = 60.0
-text = "State: Combat"
-
-[node name="WaveProgress" type="ProgressBar" parent="RunHUD/Control"]
+[node name="TopMargin" type="MarginContainer" parent="RunHUD/Control"]
 layout_mode = 1
 anchors_preset = 10
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -200.0
-offset_top = 16.0
-offset_right = 200.0
-offset_bottom = 34.0
+anchor_right = 1.0
+offset_left = 14.0
+offset_top = 12.0
+offset_right = -14.0
+offset_bottom = 82.0
 grow_horizontal = 2
+
+[node name="TopRow" type="HBoxContainer" parent="RunHUD/Control/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="StatsPanel" type="PanelContainer" parent="RunHUD/Control/TopMargin/TopRow"]
+custom_minimum_size = Vector2(330, 64)
+layout_mode = 2
+
+[node name="StatsMargin" type="MarginContainer" parent="RunHUD/Control/TopMargin/TopRow/StatsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="StatsVBox" type="VBoxContainer" parent="RunHUD/Control/TopMargin/TopRow/StatsPanel/StatsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="StatsCaption" type="Label" parent="RunHUD/Control/TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "HUNTER STATUS"
+
+[node name="StatsLabel" type="Label" parent="RunHUD/Control/TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "WAVE 01  HP 100  GOLD 0  LV 1  XP 0/10"
+
+[node name="ProgressPanel" type="PanelContainer" parent="RunHUD/Control/TopMargin/TopRow"]
+custom_minimum_size = Vector2(340, 64)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ProgressMargin" type="MarginContainer" parent="RunHUD/Control/TopMargin/TopRow/ProgressPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="ProgressVBox" type="VBoxContainer" parent="RunHUD/Control/TopMargin/TopRow/ProgressPanel/ProgressMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ProgressCaption" type="Label" parent="RunHUD/Control/TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "FRONTIER PRESSURE"
+horizontal_alignment = 1
+
+[node name="WaveProgress" type="ProgressBar" parent="RunHUD/Control/TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox"]
+custom_minimum_size = Vector2(0, 22)
+layout_mode = 2
 max_value = 100.0
 value = 0.0
+
+[node name="StatePanel" type="PanelContainer" parent="RunHUD/Control/TopMargin/TopRow"]
+custom_minimum_size = Vector2(170, 64)
+layout_mode = 2
+
+[node name="StateMargin" type="MarginContainer" parent="RunHUD/Control/TopMargin/TopRow/StatePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 8
+
+[node name="StateVBox" type="VBoxContainer" parent="RunHUD/Control/TopMargin/TopRow/StatePanel/StateMargin"]
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="StateCaption" type="Label" parent="RunHUD/Control/TopMargin/TopRow/StatePanel/StateMargin/StateVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "RUN STATE"
+horizontal_alignment = 1
+
+[node name="StateLabel" type="Label" parent="RunHUD/Control/TopMargin/TopRow/StatePanel/StateMargin/StateVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "COMBAT"
+horizontal_alignment = 1
 
 [node name="EquippedWeaponHUD" type="CanvasLayer" parent="."]
 visible = false

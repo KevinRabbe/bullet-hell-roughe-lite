@@ -1,5 +1,7 @@
 extends Control
 
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+
 @export var player_path: NodePath
 @export var enemy_spawner_path: NodePath
 @export var wave_intermission_panel_path: NodePath
@@ -39,6 +41,7 @@ func _ready() -> void:
 		state_label = get_node_or_null(state_label_path)
 	if wave_progress_bar_path != NodePath():
 		wave_progress_bar = get_node_or_null(wave_progress_bar_path)
+	_apply_presentation()
 	_update_hud()
 
 func _process(_delta: float) -> void:
@@ -59,19 +62,55 @@ func _update_hud() -> void:
 		var xp := int(player_snapshot.get("xp", 0))
 		var xp_to_next := int(player_snapshot.get("xp_to_next", 1))
 		var wave := int(enemy_spawner.get("current_wave_index"))
-		stats_label.text = "Wave %d  HP %.0f  Gold %d  Lv %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
+		stats_label.text = "WAVE %02d  HP %.0f  GOLD %d  LV %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
 		var debug_label := _get_debug_preset_label()
 		if debug_label == "" or debug_label == "DebugPreset: normal":
-			state_label.text = "State: %s" % _get_run_state()
+			state_label.text = _get_run_state().to_upper()
 		else:
-			state_label.text = "State: %s  |  %s" % [_get_run_state(), debug_label]
+			state_label.text = "%s  |  %s" % [_get_run_state().to_upper(), debug_label]
 	if wave_progress_bar != null:
 		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 		var ratio := clampf(elapsed / duration, 0.0, 1.0)
 		wave_progress_bar.value = ratio * 100.0
 		wave_progress_bar.visible = not _is_shop_open()
+
+func _apply_presentation() -> void:
+	for panel_path in [
+		"TopMargin/TopRow/StatsPanel",
+		"TopMargin/TopRow/ProgressPanel",
+		"TopMargin/TopRow/StatePanel",
+	]:
+		var panel := get_node_or_null(panel_path) as PanelContainer
+		InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_CARD)
+	for caption_path in [
+		"TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox/StatsCaption",
+		"TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox/ProgressCaption",
+		"TopMargin/TopRow/StatePanel/StateMargin/StateVBox/StateCaption",
+	]:
+		var caption := get_node_or_null(caption_path) as Label
+		InfernalUiStyleRef.apply_section_title(caption)
+	InfernalUiStyleRef.apply_body_text(stats_label)
+	InfernalUiStyleRef.apply_accent_text(state_label)
+	if wave_progress_bar != null:
+		wave_progress_bar.add_theme_stylebox_override(
+			"background",
+			_build_progress_style(InfernalUiStyleRef.COLOR_ALMOST_BLACK, InfernalUiStyleRef.COLOR_BURNT_BROWN)
+		)
+		wave_progress_bar.add_theme_stylebox_override(
+			"fill",
+			_build_progress_style(InfernalUiStyleRef.COLOR_DEEP_BLOOD_RED, InfernalUiStyleRef.COLOR_HELL_ORANGE)
+		)
+		wave_progress_bar.add_theme_color_override("font_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT)
+
+func _build_progress_style(background_color: Color, border_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background_color
+	style.border_color = border_color
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	return style
 
 func _get_player_snapshot() -> Dictionary:
 	if player != null and player.has_method("get_ui_snapshot"):
