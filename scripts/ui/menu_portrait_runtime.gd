@@ -6,10 +6,13 @@ static func resolve_menu_portrait(preferred_path: String) -> Texture2D:
 	return _load_texture(preferred_path)
 
 static func resolve_portrait_texture(preferred_path: String, fallback_path: String) -> Texture2D:
+	var current_visual_texture: Texture2D = _load_cropped_texture(fallback_path)
+	if current_visual_texture != null:
+		return current_visual_texture
 	var preferred_texture: Texture2D = _load_texture(preferred_path)
 	if preferred_texture != null:
 		return preferred_texture
-	return _load_cropped_texture(fallback_path)
+	return null
 
 static func _load_texture(resource_path: String) -> Texture2D:
 	if resource_path == "" or not ResourceLoader.exists(resource_path):
