@@ -22,6 +22,8 @@ const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_
 @onready var subtitle_label: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/Subtitle
 @onready var hero_callout: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/HeroCallout
 @onready var menu_panel: PanelContainer = $RootMargin/MainHBox/MenuPanel
+@onready var menu_margin: MarginContainer = $RootMargin/MainHBox/MenuPanel/MenuMargin
+@onready var menu_vbox: VBoxContainer = $RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox
 @onready var menu_eyebrow: Label = $RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/MenuEyebrow
 @onready var menu_title: Label = $RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/MenuTitle
 @onready var menu_body: Label = $RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox/MenuBody
@@ -102,6 +104,15 @@ func _apply_responsive_layout() -> void:
 	menu_panel.offset_top = -menu_half_height
 	menu_panel.offset_right = menu_half_width
 	menu_panel.offset_bottom = menu_half_height
+	var menu_margin_size: int = 16 if tight else 28
+	menu_margin.add_theme_constant_override("margin_left", menu_margin_size)
+	menu_margin.add_theme_constant_override("margin_top", menu_margin_size)
+	menu_margin.add_theme_constant_override("margin_right", menu_margin_size)
+	menu_margin.add_theme_constant_override("margin_bottom", menu_margin_size)
+	menu_vbox.add_theme_constant_override("separation", 8 if tight else 12)
+	start_button.custom_minimum_size.y = 52.0 if tight else 58.0
+	for button in [armory_button, options_button, credits_button, quit_button]:
+		button.custom_minimum_size.y = 44.0 if tight else 48.0
 	title_label.add_theme_font_size_override("font_size", int(round((40.0 if tight else 50.0) * font_scale)))
 	menu_title.add_theme_font_size_override("font_size", int(round((24.0 if tight else 28.0) * font_scale)))
 	subtitle_label.add_theme_font_size_override("font_size", int(round((15.0 if tight else 18.0) * font_scale)))
