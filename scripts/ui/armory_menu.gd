@@ -21,44 +21,44 @@ const SECTION_DATA := {
 		"subtitle": "Roster identity, passives, and opening loadouts.",
 		"summary": "Review each hunter's role, passive baseline, starting weapon, and family identity before stepping into a run.",
 		"details": [
-			"Track each active roster slot and its current passive baseline.",
-			"Keep strengths, tradeoffs, and starter identity readable for future codex expansion.",
-			"Later passes can add unlocks, completion marks, and deeper progression notes."
+			"Compare each active hunter's role, passive, and opening loadout.",
+			"Read the strengths and tradeoffs that shape the hunter's combat rhythm.",
+			"Use family identity and tags to spot possible build directions."
 		],
-		"status": "Current route: active roster notes are live. Unlock history and progression layers can slot in later."
+		"status": "Select a hunter to inspect the identity they carry into the frontier."
 	},
 	"weapons": {
 		"title": "Weapon Codex",
 		"subtitle": "Family arsenals and tag-driven build discovery.",
-		"summary": "Use this route later to browse weapon identity, feel roles, tags, and set-bonus relationships without entering a run.",
+		"summary": "Browse weapon identity, combat role, tags, and family relationships without entering a run.",
 		"details": [
-			"Surface weapon role, cadence, tags, and family identity in one place.",
-			"Keep later tag-driven build guidance separate from live shop logic.",
-			"Reserve room for rarity, starter pools, and future unlock notes."
+			"Compare weapon role, cadence, tags, and family identity in one place.",
+			"Use shared tags to discover hybrid builds across different families.",
+			"Check starter eligibility and shop availability before planning a run."
 		],
-		"status": "Current route: active weapons, tags, and feel notes are live. Deeper mastery breakdowns can arrive later."
+		"status": "Select a weapon to inspect its combat profile and build hooks."
 	},
 	"items": {
 		"title": "Item Codex",
-		"subtitle": "Support items, stat hooks, and future hybrid build glue.",
-		"summary": "The item route will become the clean place to explain stat items, tag synergies, and why a build starts to branch away from pure family identity.",
+		"subtitle": "Support items, stat hooks, and hybrid build glue.",
+		"summary": "Review the stat changes and tag synergies that let a build branch beyond pure family identity.",
 		"details": [
-			"Show item purpose in player-facing language instead of raw tuning values first.",
-			"Keep room for tag synergies and recommended pairings later.",
-			"Do not promise unlock/progression systems until they actually exist."
+			"Read each item's purpose before committing gold during a run.",
+			"Compare direct stat changes with tag-specific weapon effects.",
+			"Look for pairings that reinforce the tags already present in a loadout."
 		],
-		"status": "Current route: item notes stay intentionally lightweight while the active item catalog keeps growing."
+		"status": "Select an item to inspect how it can redirect a build."
 	},
 	"set_bonuses": {
 		"title": "Set Bonus Codex",
 		"subtitle": "Family threshold rewards and long-term build goals.",
-		"summary": "Set bonuses stay the soft family identity layer. This screen will later show 2/4/6-piece thresholds, effect summaries, and how they complement the newer tag-driven build layer.",
+		"summary": "Set bonuses reward commitment to a family while shared tags keep cross-family builds viable.",
 		"details": [
-			"Explain thresholds in clear player language.",
-			"Keep family identity visible without hiding cross-tag build options.",
-			"Reserve visual space for future family icons and threshold breakdowns."
+			"Review the 2/4/6-piece thresholds attached to each weapon family.",
+			"Compare family rewards with the shared tags available across the arsenal.",
+			"Choose between deeper family commitment and flexible hybrid paths."
 		],
-		"status": "Current route: family thresholds and effect summaries are live. Deeper synergy callouts can follow later."
+		"status": "Select a family to inspect its active threshold rewards."
 	}
 }
 
