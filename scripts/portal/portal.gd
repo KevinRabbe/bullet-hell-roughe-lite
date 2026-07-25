@@ -14,9 +14,14 @@ var _idle_tween: Tween
 
 func _ready() -> void:
 	add_to_group("portals")
+	body_entered.connect(_on_body_entered)
 	_visual_rest_position = visual.position
 	_visual_rest_scale = visual.scale
 	_play_emerge_animation()
+
+func _on_body_entered(body: Node2D) -> void:
+	if body.has_method("get_ui_snapshot"):
+		try_activate(body)
 
 func can_activate(player: Node2D) -> bool:
 	if not is_active:
