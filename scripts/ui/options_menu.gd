@@ -332,7 +332,7 @@ func _refresh_controls_content() -> void:
 		]
 	)
 	var status_label := Label.new()
-	status_label.text = "Status: live keyboard reference is in place, full rebinding stays deferred to a dedicated controls pass."
+	status_label.text = "Current keyboard bindings are shown here. Input remapping is not available."
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	InfernalUiStyleRef.apply_accent_text(status_label)
 	controls_runtime_box.add_child(status_label)
@@ -566,9 +566,9 @@ func _ensure_audio_runtime_content() -> void:
 	placeholder_content.add_child(audio_runtime_box)
 	placeholder_content.move_child(audio_runtime_box, placeholder_content.get_child_count() - 1)
 	for channel_data in [
-		{"id": "master", "title": "Master Volume", "body": "Set the overall loudness for the current menu shell and any shared buses that route through Master."},
-		{"id": "music", "title": "Music Volume", "body": "Reserve a separate music channel now so later soundtrack drops can land without rebuilding the options route."},
-		{"id": "sfx", "title": "SFX Volume", "body": "Control weapon fire, hits, reward pings, and other gameplay feedback as the demo sound set grows."},
+		{"id": "master", "title": "Master Volume", "body": "Set the overall loudness for music, effects, ambience, and menu audio."},
+		{"id": "music", "title": "Music Volume", "body": "Control the soundtrack independently from effects and ambience."},
+		{"id": "sfx", "title": "SFX Volume", "body": "Control weapon fire, hits, reward pings, and other gameplay feedback."},
 		{"id": "ambience", "title": "Ambience Volume", "body": "Shape environmental loops, portal hums, and arena bed layers without muting combat feedback."}
 	]:
 		_add_audio_channel_block(channel_data)
@@ -645,7 +645,7 @@ func _add_audio_mute_block() -> void:
 	title.add_theme_font_size_override("font_size", 24)
 	column.add_child(title)
 	var body := Label.new()
-	body.text = "Use a simple mute route when you need the front-door shell silent without rewriting every future audio source."
+	body.text = "Mute all game audio at once without changing individual channel levels."
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.modulate = Color(0.8, 0.831373, 0.901961, 0.88)
 	column.add_child(body)
@@ -692,7 +692,7 @@ func _ensure_accessibility_runtime_content() -> void:
 	placeholder_content.add_child(accessibility_runtime_box)
 	placeholder_content.move_child(accessibility_runtime_box, placeholder_content.get_child_count() - 1)
 	for setting_data in [
-		{"id": "large_text", "title": "Large Menu Text", "body": "Scale up menu typography for the front-door shell so the route stays readable at lower resolutions and from a distance.", "button": "Toggle Large Text"},
+		{"id": "large_text", "title": "Large Menu Text", "body": "Scale up menu typography so menus stay readable at lower resolutions and from a distance.", "button": "Toggle Large Text"},
 		{"id": "reduced_motion", "title": "Reduced Motion", "body": "Calm menu intros, focus pulses, and texture fades so browsing the front door feels steadier.", "button": "Toggle Reduced Motion"},
 		{"id": "high_contrast", "title": "High Contrast", "body": "Strengthen menu borders, button contrast, and accent readability without changing gameplay visuals.", "button": "Toggle High Contrast"}
 	]:
