@@ -42,8 +42,11 @@ func _ready() -> void:
 	_apply_optional_texture(arena_texture, MAIN_MENU_BACKGROUND_ART_PATH)
 	_apply_optional_texture(hero_art_slot, MAIN_MENU_HERO_ART_PATH)
 	_apply_presentation()
-	_apply_responsive_layout()
 	resized.connect(_apply_responsive_layout)
+	call_deferred("_finish_initial_layout")
+
+func _finish_initial_layout() -> void:
+	_apply_responsive_layout()
 	MenuAnimationRuntimeRef.play_screen_intro([hero_panel, menu_panel])
 	MenuAnimationRuntimeRef.play_ambient_pulse(
 		hero_art_slot,
