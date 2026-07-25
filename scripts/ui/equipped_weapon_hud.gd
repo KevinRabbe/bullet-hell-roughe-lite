@@ -1,5 +1,7 @@
 extends Control
 
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+
 @export var weapon_loadout_path: NodePath
 @export var shop_panel_path: NodePath
 var weapon_loadout: Node
@@ -42,6 +44,7 @@ func _setup_slots() -> void:
 	for i in range(6):
 		var panel := PanelContainer.new()
 		panel.custom_minimum_size = Vector2(130, 106)
+		InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_CARD)
 		var box := VBoxContainer.new()
 		box.alignment = BoxContainer.ALIGNMENT_CENTER
 		box.add_theme_constant_override("separation", 2)
@@ -53,12 +56,15 @@ func _setup_slots() -> void:
 		name_label.text = "Empty"
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		InfernalUiStyleRef.apply_title(name_label)
 		var rarity_label := Label.new()
 		rarity_label.text = "-"
 		rarity_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		InfernalUiStyleRef.apply_body_text(rarity_label)
 		var merge_button := Button.new()
 		merge_button.text = "Merge"
 		merge_button.custom_minimum_size = Vector2(64, 22)
+		InfernalUiStyleRef.apply_secondary_button(merge_button)
 		merge_button.pressed.connect(_on_merge_pressed.bind(i))
 		merge_button.visible = false
 		box.add_child(icon)
@@ -143,9 +149,13 @@ func _update_slot_selection_visuals() -> void:
 		if panel == null:
 			continue
 		if i == selected_slot_index:
-			panel.self_modulate = Color(0.78, 0.9, 1.0, 1.0)
+			var selected_style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+			selected_style.bg_color = InfernalUiStyleRef.COLOR_BURNT_BROWN
+			selected_style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE
+			selected_style.set_border_width_all(2)
+			panel.add_theme_stylebox_override("panel", selected_style)
 		else:
-			panel.self_modulate = Color(1.0, 1.0, 1.0, 1.0)
+			InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_CARD)
 
 func _update_merge_controls() -> void:
 	var equipped_entries: Array[Dictionary] = _get_equipped_entries()
