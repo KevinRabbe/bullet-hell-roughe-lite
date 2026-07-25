@@ -14,7 +14,7 @@ const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
-@onready var main_hbox: HBoxContainer = $RootMargin/MainHBox
+@onready var main_hbox: Control = $RootMargin/MainHBox
 @onready var hero_panel: PanelContainer = $RootMargin/MainHBox/HeroPanel
 @onready var hero_art_slot: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroArtSlot
 @onready var eyebrow_label: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/Eyebrow
@@ -71,7 +71,7 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> void:
 
 func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_panel(hero_panel, InfernalUiStyleRef.PANEL_CARD)
-	InfernalUiStyleRef.apply_panel(menu_panel, InfernalUiStyleRef.PANEL_SHELL)
+	menu_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	for label in [title_label, menu_title]:
 		InfernalUiStyleRef.apply_title(label)
 	for label in [eyebrow_label, menu_eyebrow]:
@@ -90,9 +90,12 @@ func _apply_responsive_layout() -> void:
 	root_margin.offset_top = 18.0 if tight else 32.0
 	root_margin.offset_right = -18.0 if tight else -44.0
 	root_margin.offset_bottom = -18.0 if tight else -32.0
-	main_hbox.add_theme_constant_override("separation", 16 if tight else 24)
-	hero_panel.custom_minimum_size.x = 500.0 if tight else 620.0
-	menu_panel.custom_minimum_size.x = 330.0 if tight else 360.0
+	var menu_half_width: float = 190.0 if tight else 210.0
+	var menu_half_height: float = 176.0 if tight else 190.0
+	menu_panel.offset_left = -menu_half_width
+	menu_panel.offset_top = -menu_half_height
+	menu_panel.offset_right = menu_half_width
+	menu_panel.offset_bottom = menu_half_height
 	title_label.add_theme_font_size_override("font_size", int(round((40.0 if tight else 50.0) * font_scale)))
 	menu_title.add_theme_font_size_override("font_size", int(round((24.0 if tight else 28.0) * font_scale)))
 	subtitle_label.add_theme_font_size_override("font_size", int(round((15.0 if tight else 18.0) * font_scale)))
