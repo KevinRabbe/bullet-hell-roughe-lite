@@ -1,8 +1,8 @@
 extends Control
 
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
-const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 
 @onready var root_margin: MarginContainer = $RootMargin
@@ -10,6 +10,17 @@ const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 @onready var eyebrow_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/Eyebrow
 @onready var title_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/Title
 @onready var summary_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/Summary
+@onready var credits_block: PanelContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock
+@onready var section_titles: Array[Label] = [
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section1,
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section2,
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section3,
+]
+@onready var section_bodies: Array[Label] = [
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section1Body,
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section2Body,
+	$RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox/Section3Body,
+]
 @onready var back_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/BackButton
 
 func _ready() -> void:
@@ -37,25 +48,16 @@ func _on_back_pressed() -> void:
 func _apply_shell_panel_style() -> void:
 	if main_panel == null:
 		return
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.06, 0.09, 0.95)
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color(0.97, 0.83, 0.65, 0.22)
-	style.corner_radius_top_left = 18
-	style.corner_radius_top_right = 18
-	style.corner_radius_bottom_right = 18
-	style.corner_radius_bottom_left = 18
-	main_panel.add_theme_stylebox_override("panel", style)
-	if back_button != null:
-		MenuFrameRuntimeRef.apply_button_frame(
-			back_button,
-			MenuFrameRuntimeRef.MENU_BUTTON_SECONDARY_PATH,
-			Color(0.90, 0.93, 1.0, 0.98),
-			Color(1.0, 1.0, 1.0, 1.0)
-		)
+	InfernalUiStyleRef.apply_panel(main_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_panel(credits_block, InfernalUiStyleRef.PANEL_SECTION)
+	InfernalUiStyleRef.apply_accent_text(eyebrow_label)
+	InfernalUiStyleRef.apply_title(title_label)
+	InfernalUiStyleRef.apply_body_text(summary_label)
+	for section_title in section_titles:
+		InfernalUiStyleRef.apply_section_title(section_title)
+	for section_body in section_bodies:
+		InfernalUiStyleRef.apply_body_text(section_body)
+	InfernalUiStyleRef.apply_secondary_button(back_button)
 
 func _apply_responsive_layout() -> void:
 	var viewport_size := get_viewport_rect().size
@@ -67,7 +69,7 @@ func _apply_responsive_layout() -> void:
 		root_margin.offset_right = -10.0 if tight else (-18.0 if compact else -36.0)
 		root_margin.offset_bottom = -10.0 if tight else (-16.0 if compact else -34.0)
 	if main_panel != null:
-		main_panel.custom_minimum_size = Vector2(0, 480 if tight else 540)
+		main_panel.custom_minimum_size = Vector2(0, 450 if tight else 500)
 	if eyebrow_label != null:
 		eyebrow_label.add_theme_font_size_override("font_size", 16 if compact else 18)
 	if title_label != null:
