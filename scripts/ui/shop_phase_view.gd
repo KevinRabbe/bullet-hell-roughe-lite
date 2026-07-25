@@ -1,6 +1,7 @@
 extends Node
 
 const ShopViewModelScript = preload("res://scripts/ui/shop_view_model.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -41,6 +42,8 @@ var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
 
 func _ready() -> void:
+	if self is CanvasLayer:
+		(self as CanvasLayer).layer = 20
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
@@ -112,11 +115,11 @@ func _build_layout_once() -> void:
 	_build_panel_style()
 	_build_top_labels()
 
-	var card_width := 248.0
-	var card_height := 360.0
-	var start_x := 12.0
+	var card_width := 236.0
+	var card_height := 350.0
+	var start_x := 20.0
 	var gap := 8.0
-	var start_y := 74.0
+	var start_y := 80.0
 	for i in range(4):
 		_build_offer_card_panel(i, card_width, card_height, start_x, gap, start_y)
 
@@ -125,14 +128,16 @@ func _build_layout_once() -> void:
 	_build_weapons_panel()
 
 	if reroll_button != null:
-		reroll_button.position = Vector2(588.0, 18.0)
+		reroll_button.position = Vector2(636.0, 18.0)
 		reroll_button.size = Vector2(220.0, 44.0)
+		InfernalUiStyleRef.apply_secondary_button(reroll_button)
 		panel.move_child(reroll_button, panel.get_child_count() - 1)
 
 	if continue_button != null:
-		continue_button.position = Vector2(1018.0, 560.0)
-		continue_button.size = Vector2(122.0, 50.0)
+		continue_button.position = Vector2(984.0, 570.0)
+		continue_button.size = Vector2(140.0, 48.0)
 		continue_button.text = "Next Wave"
+		InfernalUiStyleRef.apply_primary_button(continue_button)
 		panel.move_child(continue_button, panel.get_child_count() - 1)
 
 	for button in offer_buttons:
@@ -142,14 +147,7 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 	var card := Panel.new()
 	card.position = Vector2(start_x + (card_width + gap) * index, start_y)
 	card.size = Vector2(card_width, card_height)
-	var card_style := StyleBoxFlat.new()
-	card_style.bg_color = Color(0.03, 0.06, 0.1, 0.95)
-	card_style.border_width_left = 1
-	card_style.border_width_top = 1
-	card_style.border_width_right = 1
-	card_style.border_width_bottom = 1
-	card_style.border_color = Color(0.08, 0.18, 0.3, 0.95)
-	card.add_theme_stylebox_override("panel", card_style)
+	InfernalUiStyleRef.apply_panel(card, InfernalUiStyleRef.PANEL_CARD)
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(card)
 	card_panels.append(card)
@@ -158,7 +156,10 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 	title.position = Vector2(12.0, 10.0)
 	title.size = Vector2(card_width - 84.0, 48.0)
 	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title.max_lines_visible = 2
+	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	title.add_theme_font_size_override("font_size", 18)
+	InfernalUiStyleRef.apply_title(title)
 	card.add_child(title)
 	card_title_labels.append(title)
 
@@ -175,21 +176,24 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 	type_label.position = Vector2(12.0, 62.0)
 	type_label.size = Vector2(180.0, 30.0)
 	type_label.add_theme_font_size_override("font_size", 15)
+	InfernalUiStyleRef.apply_section_title(type_label)
 	card.add_child(type_label)
 	card_type_labels.append(type_label)
 
 	var desc := RichTextLabel.new()
-	desc.position = Vector2(12.0, 92.0)
-	desc.size = Vector2(card_width - 24.0, 170.0)
+	desc.position = Vector2(12.0, 94.0)
+	desc.size = Vector2(card_width - 24.0, 194.0)
 	desc.bbcode_enabled = true
 	desc.scroll_active = false
 	desc.fit_content = false
 	desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	desc.add_theme_font_size_override("normal_font_size", 12)
+	desc.add_theme_color_override("default_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.18))
 	card.add_child(desc)
 	card_desc_labels.append(desc)
 
 	var lock_button := Button.new()
+	lock_button.visible = false
 	lock_button.position = Vector2(12.0, 315.0)
 	lock_button.size = Vector2(card_width - 24.0, 32.0)
 	lock_button.text = "Lock (soon)"
@@ -200,53 +204,54 @@ func _build_offer_card_panel(index: int, card_width: float, card_height: float, 
 
 	if index < offer_buttons.size():
 		var price_button := offer_buttons[index]
-		price_button.position = Vector2(card.position.x + 72.0, card.position.y + 270.0)
-		price_button.size = Vector2(card_width - 144.0, 42.0)
+		price_button.position = Vector2(card.position.x + 18.0, card.position.y + 294.0)
+		price_button.size = Vector2(card_width - 36.0, 42.0)
 		price_button.text = "Buy"
 		price_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		InfernalUiStyleRef.apply_primary_button(price_button)
 		panel.move_child(price_button, panel.get_child_count() - 1)
 
 func _build_stats_panel() -> void:
 	var stats_panel := Panel.new()
-	stats_panel.position = Vector2(1020.0, 12.0)
-	stats_panel.size = Vector2(112.0, 520.0)
-	var stats_style := StyleBoxFlat.new()
-	stats_style.bg_color = Color(0.08, 0.1, 0.14, 0.96)
-	stats_panel.add_theme_stylebox_override("panel", stats_style)
+	stats_panel.position = Vector2(996.0, 80.0)
+	stats_panel.size = Vector2(128.0, 482.0)
+	InfernalUiStyleRef.apply_panel(stats_panel, InfernalUiStyleRef.PANEL_CARD)
 	panel.add_child(stats_panel)
 
 	var stats_title := Label.new()
-	stats_title.position = Vector2(6.0, 6.0)
-	stats_title.size = Vector2(100.0, 24.0)
+	stats_title.position = Vector2(8.0, 8.0)
+	stats_title.size = Vector2(112.0, 26.0)
 	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stats_title.text = "Values"
+	InfernalUiStyleRef.apply_section_title(stats_title)
 	stats_panel.add_child(stats_title)
 
 	right_stats_label = RichTextLabel.new()
-	right_stats_label.position = Vector2(8.0, 36.0)
-	right_stats_label.size = Vector2(96.0, 470.0)
+	right_stats_label.position = Vector2(10.0, 42.0)
+	right_stats_label.size = Vector2(108.0, 428.0)
 	right_stats_label.bbcode_enabled = true
-	right_stats_label.scroll_active = true
-	right_stats_label.add_theme_font_size_override("normal_font_size", 13)
+	right_stats_label.scroll_active = false
+	right_stats_label.add_theme_font_size_override("normal_font_size", 12)
+	right_stats_label.add_theme_color_override("default_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.18))
 	stats_panel.add_child(right_stats_label)
 
 func _build_items_panel() -> void:
 	var items_panel := Panel.new()
-	items_panel.position = Vector2(12.0, 446.0)
-	items_panel.size = Vector2(620.0, 168.0)
-	var items_style := StyleBoxFlat.new()
-	items_style.bg_color = Color(0.1, 0.1, 0.14, 0.95)
-	items_panel.add_theme_stylebox_override("panel", items_style)
+	items_panel.position = Vector2(20.0, 446.0)
+	items_panel.size = Vector2(600.0, 172.0)
+	InfernalUiStyleRef.apply_panel(items_panel, InfernalUiStyleRef.PANEL_CARD)
 	panel.add_child(items_panel)
 
 	var items_title := Label.new()
-	items_title.position = Vector2(10.0, 8.0)
+	items_title.position = Vector2(12.0, 10.0)
+	items_title.size = Vector2(576.0, 24.0)
 	items_title.text = "Items"
+	InfernalUiStyleRef.apply_section_title(items_title)
 	items_panel.add_child(items_title)
 
 	var items_scroll := ScrollContainer.new()
-	items_scroll.position = Vector2(10.0, 34.0)
-	items_scroll.size = Vector2(600.0, 122.0)
+	items_scroll.position = Vector2(12.0, 40.0)
+	items_scroll.size = Vector2(576.0, 120.0)
 	items_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	items_panel.add_child(items_scroll)
 
@@ -257,38 +262,39 @@ func _build_items_panel() -> void:
 
 func _build_weapons_panel() -> void:
 	var weapons_panel := Panel.new()
-	weapons_panel.position = Vector2(640.0, 446.0)
-	weapons_panel.size = Vector2(368.0, 168.0)
-	var weapons_style := StyleBoxFlat.new()
-	weapons_style.bg_color = Color(0.1, 0.1, 0.14, 0.95)
-	weapons_panel.add_theme_stylebox_override("panel", weapons_style)
+	weapons_panel.position = Vector2(628.0, 446.0)
+	weapons_panel.size = Vector2(348.0, 172.0)
+	InfernalUiStyleRef.apply_panel(weapons_panel, InfernalUiStyleRef.PANEL_CARD)
 	panel.add_child(weapons_panel)
 
 	bottom_weapons_title = Label.new()
-	bottom_weapons_title.position = Vector2(10.0, 8.0)
+	bottom_weapons_title.position = Vector2(12.0, 10.0)
+	bottom_weapons_title.size = Vector2(324.0, 24.0)
 	bottom_weapons_title.text = "Weapons (0/6)"
+	InfernalUiStyleRef.apply_section_title(bottom_weapons_title)
 	weapons_panel.add_child(bottom_weapons_title)
 
 	weapon_slots_container = HBoxContainer.new()
-	weapon_slots_container.position = Vector2(10.0, 34.0)
-	weapon_slots_container.size = Vector2(348.0, 92.0)
-	weapon_slots_container.add_theme_constant_override("separation", 4)
+	weapon_slots_container.position = Vector2(12.0, 40.0)
+	weapon_slots_container.size = Vector2(324.0, 86.0)
+	weapon_slots_container.add_theme_constant_override("separation", 2)
 	weapons_panel.add_child(weapon_slots_container)
 
 	for slot_index in range(6):
 		var slot_box := VBoxContainer.new()
-		slot_box.custom_minimum_size = Vector2(56.0, 92.0)
+		slot_box.custom_minimum_size = Vector2(52.0, 84.0)
 		slot_box.add_theme_constant_override("separation", 2)
 		weapon_slots_container.add_child(slot_box)
 
 		var icon_button := Button.new()
-		icon_button.custom_minimum_size = Vector2(54.0, 54.0)
+		icon_button.custom_minimum_size = Vector2(50.0, 50.0)
 		icon_button.text = ""
 		icon_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_button.expand_icon = true
-		icon_button.flat = true
+		icon_button.flat = false
 		icon_button.focus_mode = Control.FOCUS_NONE
 		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		InfernalUiStyleRef.apply_card_button(icon_button)
 		icon_button.pressed.connect(_on_weapon_slot_pressed.bind(slot_index))
 		slot_box.add_child(icon_button)
 		weapon_slot_buttons.append(icon_button)
@@ -302,22 +308,16 @@ func _build_weapons_panel() -> void:
 		weapon_slot_labels.append(slot_label)
 
 	merge_selected_button = Button.new()
-	merge_selected_button.position = Vector2(208.0, 129.0)
+	merge_selected_button.position = Vector2(188.0, 132.0)
 	merge_selected_button.size = Vector2(148.0, 30.0)
 	merge_selected_button.text = "Merge"
 	merge_selected_button.disabled = true
+	InfernalUiStyleRef.apply_secondary_button(merge_selected_button)
 	merge_selected_button.pressed.connect(_on_merge_selected_pressed)
 	weapons_panel.add_child(merge_selected_button)
 
 func _build_panel_style() -> void:
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.16, 0.18, 0.24, 0.94)
-	panel_style.border_width_left = 1
-	panel_style.border_width_top = 1
-	panel_style.border_width_right = 1
-	panel_style.border_width_bottom = 1
-	panel_style.border_color = Color(0.22, 0.25, 0.34, 0.95)
-	panel.add_theme_stylebox_override("panel", panel_style)
+	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_SHELL)
 	panel.offset_left = 8.0
 	panel.offset_top = 8.0
 	panel.offset_right = 1144.0
@@ -330,13 +330,16 @@ func _build_top_labels() -> void:
 	top_wave_label.position = Vector2(16.0, 12.0)
 	top_wave_label.size = Vector2(420.0, 34.0)
 	top_wave_label.add_theme_font_size_override("font_size", 22)
+	InfernalUiStyleRef.apply_title(top_wave_label)
 	panel.add_child(top_wave_label)
 
 	top_gold_label = Label.new()
 	top_gold_label.position = Vector2(468.0, 14.0)
 	top_gold_label.size = Vector2(220.0, 30.0)
 	top_gold_label.add_theme_font_size_override("font_size", 20)
+	InfernalUiStyleRef.apply_section_title(top_gold_label)
 	panel.add_child(top_gold_label)
+
 func _refresh_all() -> void:
 	_snapshot = _build_view_snapshot()
 	_refresh_top_bar()
@@ -387,6 +390,7 @@ func _refresh_owned_items() -> void:
 		var empty_label := Label.new()
 		empty_label.text = "None"
 		empty_label.add_theme_font_size_override("font_size", 17)
+		InfernalUiStyleRef.apply_body_text(empty_label)
 		bottom_items_list.add_child(empty_label)
 		return
 	for entry_variant in entries_variant:
@@ -410,6 +414,7 @@ func _refresh_owned_items() -> void:
 		name_label.add_theme_font_size_override("font_size", 17)
 		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		InfernalUiStyleRef.apply_body_text(name_label)
 		row.add_child(name_label)
 
 func _refresh_weapon_slots() -> void:
@@ -418,6 +423,7 @@ func _refresh_weapon_slots() -> void:
 		var icon_button := weapon_slot_buttons[index]
 		var slot_label := weapon_slot_labels[index]
 		icon_button.modulate = Color(1.0, 1.0, 1.0, 1.0)
+		InfernalUiStyleRef.apply_card_button(icon_button, index == selected_weapon_slot)
 		if index < slots.size():
 			var slot: Dictionary = slots[index]
 			icon_button.icon = slot.get("icon", null)
@@ -520,13 +526,11 @@ func _apply_card_border(index: int, offer_type: String) -> void:
 	if index < 0 or index >= card_panels.size():
 		return
 	var card := card_panels[index]
-	var border := Color(0.08, 0.18, 0.3, 0.95)
-	if offer_type == "weapon":
-		border = Color(0.26, 0.58, 0.98, 0.95)
-	elif offer_type == "item":
-		border = Color(0.34, 0.82, 0.52, 0.95)
+	var border := InfernalUiStyleRef.COLOR_BURNT_BROWN
+	if offer_type == "weapon" or offer_type == "item":
+		border = InfernalUiStyleRef.COLOR_OLD_PARCHMENT
 	elif offer_type == "sold_out":
-		border = Color(0.42, 0.42, 0.42, 0.95)
+		border = InfernalUiStyleRef.COLOR_BURNT_BROWN.darkened(0.35)
 	var style := card.get_theme_stylebox("panel")
 	if style is StyleBoxFlat:
 		var cloned := (style as StyleBoxFlat).duplicate() as StyleBoxFlat
