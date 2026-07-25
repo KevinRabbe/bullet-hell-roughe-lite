@@ -2,6 +2,13 @@ extends CanvasLayer
 
 signal ascension_selected(definition: Dictionary)
 
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+
+@onready var panel: PanelContainer = $Backdrop/Center/Panel
+@onready var eyebrow_label: Label = $Backdrop/Center/Panel/Margin/VBox/Eyebrow
+@onready var title_label: Label = $Backdrop/Center/Panel/Margin/VBox/Title
+@onready var description_label: Label = $Backdrop/Center/Panel/Margin/VBox/Description
+@onready var footer_label: Label = $Backdrop/Center/Panel/Margin/VBox/Footer
 @onready var choice_buttons: Array[Button] = [
 	$Backdrop/Center/Panel/Margin/VBox/Choices/Choice1,
 	$Backdrop/Center/Panel/Margin/VBox/Choices/Choice2,
@@ -12,9 +19,19 @@ var _choices: Array[Dictionary] = []
 var _resolved: bool = false
 
 func _ready() -> void:
+	_apply_presentation()
 	for index in choice_buttons.size():
 		choice_buttons[index].pressed.connect(_on_choice_pressed.bind(index))
 	_refresh()
+
+func _apply_presentation() -> void:
+	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_accent_text(eyebrow_label)
+	InfernalUiStyleRef.apply_title(title_label)
+	InfernalUiStyleRef.apply_body_text(description_label)
+	InfernalUiStyleRef.apply_body_text(footer_label)
+	for choice_button in choice_buttons:
+		InfernalUiStyleRef.apply_card_button(choice_button)
 
 func configure(choice_state: Dictionary) -> void:
 	_choices.clear()
