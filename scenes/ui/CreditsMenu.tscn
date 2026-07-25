@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/credits_menu.gd" id="1_bfu42"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png" id="2_or5lg"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/menu/backgrounds/main_menu_background.png" id="2_or5lg"]
 
 [node name="CreditsMenu" type="Control"]
 layout_mode = 3
@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.027451, 0.0313726, 0.054902, 1)
+color = Color(0.0705882, 0.0431373, 0.0627451, 1)
 
 [node name="ArenaTexture" type="TextureRect" parent="."]
 layout_mode = 1
@@ -31,7 +31,7 @@ grow_vertical = 2
 texture = ExtResource("2_or5lg")
 expand_mode = 1
 stretch_mode = 6
-modulate = Color(0.44, 0.34, 0.37, 0.42)
+modulate = Color(0.55, 0.42, 0.35, 0.3)
 
 [node name="PrimaryDimmer" type="ColorRect" parent="."]
 layout_mode = 1
@@ -40,7 +40,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.0196078, 0.0235294, 0.0392157, 0.84)
+color = Color(0.0705882, 0.0431373, 0.0627451, 0.88)
 
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -60,7 +60,7 @@ size_flags_vertical = 4
 alignment = 1
 
 [node name="MainPanel" type="PanelContainer" parent="RootMargin/RootVBox"]
-custom_minimum_size = Vector2(0, 540)
+custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -78,24 +78,22 @@ theme_override_constants/separation = 18
 
 [node name="Eyebrow" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.972549, 0.831373, 0.654902, 0.95)
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
-text = "FRONTIER CREDITS"
+text = "HELLSHOT FRONTIER"
 
 [node name="Title" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 44
+theme_override_font_sizes/font_size = 42
 horizontal_alignment = 1
-text = "Credits"
+text = "CREDITS"
 
 [node name="Summary" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
-custom_minimum_size = Vector2(0, 90)
+custom_minimum_size = Vector2(0, 62)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.94)
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "A dark bullet-hell roguelite built in Godot, centered on six distinct hunters, tag-driven build growth, and a front door that now feels like part of the game instead of a placeholder shell."
+text = "Thank you for stepping into the infernal frontier."
 
 [node name="CreditsBlock" type="PanelContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
@@ -113,36 +111,36 @@ theme_override_constants/separation = 12
 
 [node name="Section1" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Project"
+theme_override_font_sizes/font_size = 22
+text = "CREATED BY"
 
 [node name="Section1Body" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+horizontal_alignment = 1
 autowrap_mode = 3
-text = "Bullet Hell Roughe Lite by KevinRabbe. Current focus: a stable vertical slice, stronger roster identity, and systems that stay scalable as the build depth grows."
+text = "KevinRabbe"
 
 [node name="Section2" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Engine & Tooling"
+theme_override_font_sizes/font_size = 22
+text = "BUILT WITH"
 
 [node name="Section2Body" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+horizontal_alignment = 1
 autowrap_mode = 3
-text = "Built with Godot through small, scoped passes across gameplay, menu shell, data-driven content, and art integration so each layer stays reviewable and shippable."
+text = "Godot Engine"
 
 [node name="Section3" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Current Slice"
+theme_override_font_sizes/font_size = 22
+text = "SPECIAL THANKS"
 
 [node name="Section3Body" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/CreditsBlock/CreditsMargin/CreditsVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.84, 0.86, 0.91, 0.92)
+horizontal_alignment = 1
 autowrap_mode = 3
-text = "Current slice includes the front-door menu flow, six active hunters, starting weapon choice, first-pass passives, tag groundwork, portal events, and the evolving Armory/Options routes."
+text = "To every hunter who tests a build, breaks a run, and returns stronger."
 
 [node name="ActionRow" type="HBoxContainer" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
@@ -151,4 +149,4 @@ alignment = 1
 [node name="BackButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
-text = "Back to Frontier Menu"
+text = "BACK"
