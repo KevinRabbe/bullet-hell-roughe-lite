@@ -6,6 +6,7 @@ const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_run
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MenuFrameRuntimeRef = preload("res://scripts/ui/menu_frame_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const STARTING_WEAPON_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/starting_weapon_background.png"
@@ -38,7 +39,9 @@ const STARTING_WEAPON_CARD_FRAME_SELECTED_PATH := "res://assets/sprites/ui/menu/
 @onready var selection_state_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectionState
 @onready var selection_summary_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectionSummary
 @onready var character_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/CharacterPanel
+@onready var character_title_label: Label = $RootMargin/RootVBox/MainHBox/CharacterPanel/CharacterMargin/CharacterVBox/CharacterTitle
 @onready var weapon_panel: PanelContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel
+@onready var weapon_title_label: Label = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponTitle
 @onready var weapon_panel_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponFrameArtSlot
 @onready var weapon_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponScroll
 @onready var weapon_list: GridContainer = $RootMargin/RootVBox/MainHBox/WeaponPanel/WeaponMargin/WeaponVBox/WeaponScroll/WeaponList
@@ -46,6 +49,7 @@ const STARTING_WEAPON_CARD_FRAME_SELECTED_PATH := "res://assets/sprites/ui/menu/
 @onready var detail_frame_art_slot: TextureRect = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailFrameArtSlot
 @onready var detail_scroll: ScrollContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll
 @onready var selected_name_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedName
+@onready var selected_section_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedSectionLabel
 @onready var selected_description_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedDescription
 @onready var selected_tags_label: Label = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/DetailScroll/DetailVBox/SelectedTags
 @onready var action_row: FlowContainer = $RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailShell/ActionRow
@@ -151,6 +155,7 @@ func _rebuild_weapon_buttons() -> void:
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.text = _build_weapon_button_text(option, index == selected_index)
 		button.clip_text = true
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", int(round(card_font_size * font_scale)))
 		_apply_weapon_button_icon(button, option)
@@ -197,12 +202,12 @@ func _refresh_weapon_buttons() -> void:
 
 func _build_weapon_button_text(option: Dictionary, is_selected: bool) -> String:
 	var display_name: String = str(option.get("display_name", option.get("id", "Weapon")))
-	var description: String = _summarize_description(str(option.get("description", "")))
 	var tags_text: String = "Tags: %s" % _join_tags(option.get("tags", []))
-	var badge: String = "Default opener / " if option.get("default_selected", false) == true else ""
+	var badge: String = "Default | " if option.get("default_selected", false) == true else ""
 	var prefix: String = "> " if is_selected else ""
 	if _is_tight_viewport():
 		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
+	var description: String = _summarize_description(str(option.get("description", "")))
 	if description == "":
 		return "%s%s%s\n%s" % [prefix, badge, display_name, tags_text]
 	return "%s%s%s\n%s\n%s" % [prefix, badge, display_name, description, tags_text]
@@ -254,11 +259,15 @@ func _apply_character_summary(display_name: String) -> void:
 	passive_label.text = "Passive: %s" % str(presentation.get("passive_name", "-"))
 	character_tags_label.text = "Tags: %s" % _join_tags(presentation.get("playstyle_tags", []))
 	fantasy_hook_label.text = str(detail.get("fantasy_hook", ""))
-	var accent: Color = _family_accent_color(str(detail.get("family_label", "")))
 	if portrait_accent_bar != null:
-		portrait_accent_bar.color = accent
+		portrait_accent_bar.color = InfernalUiStyleRef.COLOR_HELL_ORANGE
 	if portrait_halo != null:
-		portrait_halo.color = Color(accent.r, accent.g, accent.b, 0.18)
+		portrait_halo.color = Color(
+			InfernalUiStyleRef.COLOR_DEEP_BLOOD_RED.r,
+			InfernalUiStyleRef.COLOR_DEEP_BLOOD_RED.g,
+			InfernalUiStyleRef.COLOR_DEEP_BLOOD_RED.b,
+			0.18
+		)
 	if portrait_rect != null:
 		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -295,10 +304,10 @@ func _refresh_portrait_fallback(resolved_texture: Texture2D) -> void:
 
 func _apply_screen_art_slots() -> void:
 	_apply_optional_texture(arena_texture, STARTING_WEAPON_BACKGROUND_ART_PATH)
-	_apply_frame_texture(character_frame_art_slot, STARTING_WEAPON_CHARACTER_FRAME_PATH)
-	_apply_frame_texture(portrait_frame_art_slot, STARTING_WEAPON_CHARACTER_FRAME_PATH)
-	_apply_frame_texture(weapon_panel_frame_art_slot, STARTING_WEAPON_DETAIL_FRAME_PATH)
-	_apply_frame_texture(detail_frame_art_slot, STARTING_WEAPON_DETAIL_FRAME_PATH)
+	character_frame_art_slot.visible = false
+	portrait_frame_art_slot.visible = false
+	weapon_panel_frame_art_slot.visible = false
+	detail_frame_art_slot.visible = false
 
 func _apply_frame_texture(target: TextureRect, texture_path: String) -> void:
 	if target == null:
@@ -369,44 +378,8 @@ func _summarize_description(description: String) -> String:
 		return normalized
 	return "%s..." % normalized.substr(0, 69).rstrip(" ")
 
-func _apply_weapon_button_style(button: Button, option: Dictionary, is_selected: bool) -> void:
-	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var accent: Color = _family_accent_color(str(current_character_entry.get("preferred_weapon_family", "")))
-	var texture_path: String = STARTING_WEAPON_CARD_FRAME_SELECTED_PATH if is_selected else STARTING_WEAPON_CARD_FRAME_PATH
-	var texture_style: StyleBoxTexture = _build_texture_stylebox(texture_path, 28, 16, 14, 16, 14)
-	if texture_style != null:
-		button.add_theme_stylebox_override("normal", texture_style)
-		button.add_theme_stylebox_override("hover", texture_style)
-		button.add_theme_stylebox_override("pressed", texture_style)
-		button.add_theme_stylebox_override("focus", texture_style)
-	else:
-		var style := StyleBoxFlat.new()
-		style.corner_radius_top_left = 12
-		style.corner_radius_top_right = 12
-		style.corner_radius_bottom_right = 12
-		style.corner_radius_bottom_left = 12
-		style.border_width_left = 1
-		style.border_width_top = 1
-		style.border_width_right = 1
-		style.border_width_bottom = 1
-		style.content_margin_left = 14
-		style.content_margin_top = 14
-		style.content_margin_right = 14
-		style.content_margin_bottom = 14
-		if is_selected:
-			style.bg_color = Color(accent.r, accent.g, accent.b, 0.30) if high_contrast else Color(accent.r, accent.g, accent.b, 0.24)
-			style.border_color = Color(accent.r, accent.g, accent.b, 0.94) if high_contrast else Color(accent.r, accent.g, accent.b, 0.72)
-		else:
-			style.bg_color = Color(0.04, 0.045, 0.07, 0.98) if high_contrast else Color(0.0509804, 0.054902, 0.0862745, 0.92)
-			style.border_color = Color(accent.r, accent.g, accent.b, 0.40) if high_contrast else Color(accent.r, accent.g, accent.b, 0.20)
-		button.add_theme_stylebox_override("normal", style)
-		button.add_theme_stylebox_override("hover", style)
-		button.add_theme_stylebox_override("pressed", style)
-		button.add_theme_stylebox_override("focus", style)
-	button.add_theme_color_override("font_color", Color(1, 1, 1, 0.98))
-	button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1))
-	button.add_theme_color_override("font_pressed_color", Color(1, 1, 1, 1))
-	button.add_theme_color_override("font_focus_color", Color(1, 1, 1, 1))
+func _apply_weapon_button_style(button: Button, _option: Dictionary, is_selected: bool) -> void:
+	InfernalUiStyleRef.apply_card_button(button, is_selected)
 
 func _family_accent_color(family_label: String) -> Color:
 	var normalized := family_label.strip_edges().to_lower().replace(" ", "_")
@@ -492,18 +465,18 @@ func _apply_responsive_layout() -> void:
 	var tight: bool = _is_tight_viewport()
 	var very_tight: bool = viewport_size.x < 1180.0 or viewport_size.y < 680.0
 	if root_margin != null:
-		root_margin.offset_left = 4.0 if very_tight else (8.0 if tight else (20.0 if compact else 40.0))
-		root_margin.offset_top = 4.0 if very_tight else (8.0 if tight else (18.0 if compact else 36.0))
-		root_margin.offset_right = -4.0 if very_tight else (-8.0 if tight else (-20.0 if compact else -40.0))
-		root_margin.offset_bottom = -4.0 if very_tight else (-8.0 if tight else (-18.0 if compact else -36.0))
+		root_margin.offset_left = 16.0 if very_tight else (20.0 if tight else 24.0)
+		root_margin.offset_top = 12.0 if very_tight else (16.0 if tight else 20.0)
+		root_margin.offset_right = -16.0 if very_tight else (-20.0 if tight else -24.0)
+		root_margin.offset_bottom = -12.0 if very_tight else (-16.0 if tight else -20.0)
 	if main_hbox != null:
-		main_hbox.add_theme_constant_override("separation", 4 if very_tight else (8 if tight else (18 if compact else 28)))
+		main_hbox.add_theme_constant_override("separation", 10 if very_tight else (12 if tight else 14))
 	if character_panel != null:
-		character_panel.custom_minimum_size = Vector2(156 if very_tight else (212 if tight else (270 if compact else 320)), 0)
+		character_panel.custom_minimum_size = Vector2(230 if very_tight else (240 if tight else (270 if compact else 300)), 0)
 	if weapon_panel != null:
-		weapon_panel.custom_minimum_size = Vector2(168 if very_tight else (228 if tight else (280 if compact else 360)), 0)
+		weapon_panel.custom_minimum_size = Vector2(340 if very_tight else (360 if tight else (380 if compact else 420)), 0)
 	if detail_panel != null:
-		detail_panel.custom_minimum_size = Vector2(220 if very_tight else (270 if tight else (320 if compact else 360)), 0)
+		detail_panel.custom_minimum_size = Vector2(340 if very_tight else (360 if tight else (390 if compact else 420)), 0)
 	if weapon_scroll != null:
 		weapon_scroll.custom_minimum_size = Vector2(0, 0)
 	if detail_scroll != null:
@@ -512,11 +485,11 @@ func _apply_responsive_layout() -> void:
 		action_row.add_theme_constant_override("h_separation", 10 if tight else 14)
 		action_row.add_theme_constant_override("v_separation", 10 if tight else 12)
 	if hero_panel != null:
-		hero_panel.custom_minimum_size = Vector2(0, 140 if very_tight else (164 if tight else (260 if compact else 330)))
+		hero_panel.custom_minimum_size = Vector2(0, 0)
 	if portrait_stage != null:
-		portrait_stage.custom_minimum_size = Vector2(0, 92 if very_tight else (108 if tight else (170 if compact else 210)))
+		portrait_stage.custom_minimum_size = Vector2(0, 190 if very_tight else (205 if tight else (218 if compact else 230)))
 	if portrait_rect != null:
-		portrait_rect.custom_minimum_size = Vector2(0, 82 if very_tight else (94 if tight else (142 if compact else 180)))
+		portrait_rect.custom_minimum_size = Vector2(0, 172 if very_tight else (184 if tight else (196 if compact else 210)))
 	if portrait_fallback_title != null:
 		portrait_fallback_title.add_theme_font_size_override("font_size", int(round((17 if very_tight else (18 if tight else 24)) * font_scale)))
 	if portrait_fallback_meta != null:
@@ -524,11 +497,11 @@ func _apply_responsive_layout() -> void:
 	if portrait_fallback_body != null:
 		portrait_fallback_body.add_theme_font_size_override("font_size", int(round((11 if very_tight else (12 if tight else 14)) * font_scale)))
 	if weapon_list != null:
-		weapon_list.columns = 1 if tight else (1 if viewport_size.x < 1360.0 else 2)
+		weapon_list.columns = 2
 	if character_name_label != null:
-		character_name_label.add_theme_font_size_override("font_size", int(round((24 if tight else (28 if compact else 32)) * font_scale)))
+		character_name_label.add_theme_font_size_override("font_size", int(round((22 if tight else (24 if compact else 26)) * font_scale)))
 	if title_label != null:
-		title_label.add_theme_font_size_override("font_size", int(round(((22 if very_tight else 24) if tight else (30 if compact else 36)) * font_scale)))
+		title_label.add_theme_font_size_override("font_size", int(round((16 if tight else 18) * font_scale)))
 	if headline_label != null:
 		headline_label.add_theme_font_size_override("font_size", int(round((15 if tight else 17) * font_scale)))
 	if selected_description_label != null:
@@ -538,15 +511,15 @@ func _apply_responsive_layout() -> void:
 	if passive_label != null:
 		passive_label.add_theme_font_size_override("font_size", int(round((14 if tight else 16) * font_scale)))
 	if selected_name_label != null:
-		selected_name_label.add_theme_font_size_override("font_size", int(round((22 if tight else (30 if compact else 36)) * font_scale)))
+		selected_name_label.add_theme_font_size_override("font_size", int(round((25 if tight else 30) * font_scale)))
 	if confirm_button != null:
-		confirm_button.custom_minimum_size = Vector2(116 if very_tight else (156 if tight else 220), 40 if very_tight else (42 if tight else 50))
+		confirm_button.custom_minimum_size = Vector2(166 if very_tight else (180 if tight else 200), 44 if tight else 46)
 		confirm_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if back_button != null:
-		back_button.custom_minimum_size = Vector2(84 if very_tight else (112 if tight else 160), 40 if very_tight else (42 if tight else 50))
+		back_button.custom_minimum_size = Vector2(128 if very_tight else (142 if tight else 156), 44 if tight else 46)
 		back_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if default_button != null:
-		default_button.custom_minimum_size = Vector2(96 if very_tight else (124 if tight else 160), 40 if very_tight else (42 if tight else 50))
+		default_button.custom_minimum_size = Vector2(112 if very_tight else (126 if tight else 140), 44 if tight else 46)
 		default_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	_apply_shell_panel_styles()
 	_refresh_weapon_buttons()
@@ -554,23 +527,36 @@ func _apply_responsive_layout() -> void:
 func _weapon_card_height() -> float:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	if viewport_size.x <= 1280.0 or viewport_size.y <= 720.0:
-		return 86.0
+		return 112.0
 	if viewport_size.x < 1440.0:
-		return 132.0
-	return 144.0
+		return 122.0
+	return 132.0
 
 func _is_tight_viewport() -> bool:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	return viewport_size.x <= 1280.0 or viewport_size.y <= 720.0
 
 func _apply_shell_panel_styles() -> void:
-	_apply_panel_style(character_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
-	_apply_panel_style(hero_panel, Color(0.0470588, 0.0509804, 0.0823529, 0.95), Color(0.992157, 0.560784, 0.560784, 0.24))
-	_apply_panel_style(weapon_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
-	_apply_panel_style(detail_panel, Color(0.0509804, 0.054902, 0.0862745, 0.94), Color(0.992157, 0.560784, 0.560784, 0.20))
-	_apply_action_button_style(confirm_button, Color(0.992157, 0.560784, 0.560784, 0.24), Color(0.992157, 0.560784, 0.560784, 0.9))
-	_apply_action_button_style(back_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
-	_apply_action_button_style(default_button, Color(0.09, 0.10, 0.16, 0.9), Color(0.56, 0.62, 0.76, 0.55))
+	InfernalUiStyleRef.apply_panel(character_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_panel(hero_panel, InfernalUiStyleRef.PANEL_CARD)
+	InfernalUiStyleRef.apply_panel(weapon_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_panel(detail_panel, InfernalUiStyleRef.PANEL_SHELL)
+	InfernalUiStyleRef.apply_primary_button(confirm_button)
+	InfernalUiStyleRef.apply_secondary_button(back_button)
+	InfernalUiStyleRef.apply_secondary_button(default_button)
+	InfernalUiStyleRef.apply_title(character_title_label)
+	InfernalUiStyleRef.apply_title(weapon_title_label)
+	InfernalUiStyleRef.apply_title(character_name_label)
+	InfernalUiStyleRef.apply_title(selected_name_label)
+	InfernalUiStyleRef.apply_section_title(title_label)
+	InfernalUiStyleRef.apply_section_title(selected_section_label)
+	InfernalUiStyleRef.apply_body_text(character_family_label)
+	InfernalUiStyleRef.apply_body_text(passive_label)
+	InfernalUiStyleRef.apply_body_text(character_tags_label)
+	InfernalUiStyleRef.apply_body_text(selection_state_label)
+	InfernalUiStyleRef.apply_body_text(selected_description_label)
+	InfernalUiStyleRef.apply_body_text(selected_tags_label)
+	InfernalUiStyleRef.apply_accent_text(fantasy_hook_label)
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
 	if panel == null:
