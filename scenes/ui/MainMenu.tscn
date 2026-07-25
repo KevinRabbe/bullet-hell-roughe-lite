@@ -61,14 +61,18 @@ offset_bottom = -32.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MainHBox" type="HBoxContainer" parent="RootMargin"]
-layout_mode = 2
-theme_override_constants/separation = 24
-
-[node name="HeroPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
-custom_minimum_size = Vector2(620, 0)
+[node name="MainHBox" type="Control" parent="RootMargin"]
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="HeroPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="HeroStage" type="Control" parent="RootMargin/MainHBox/HeroPanel"]
 custom_minimum_size = Vector2(0, 560)
@@ -139,8 +143,18 @@ text = "Every run begins with one hunter and one opening weapon."
 autowrap_mode = 3
 
 [node name="MenuPanel" type="PanelContainer" parent="RootMargin/MainHBox"]
-custom_minimum_size = Vector2(360, 0)
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -190.0
+offset_right = 210.0
+offset_bottom = 190.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="MenuMargin" type="MarginContainer" parent="RootMargin/MainHBox/MenuPanel"]
 layout_mode = 2
@@ -154,22 +168,26 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="MenuEyebrow" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 13
 text = "INFERNAL ROGUELITE"
 
 [node name="MenuTitle" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "ENTER THE FRONTIER"
 
 [node name="MenuBody" type="Label" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+visible = false
 custom_minimum_size = Vector2(0, 66)
 layout_mode = 2
 text = "Begin a run or prepare before the next gate opens."
 autowrap_mode = 3
 
 [node name="MenuSeparator" type="HSeparator" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
+visible = false
 layout_mode = 2
 
 [node name="StartButton" type="Button" parent="RootMargin/MainHBox/MenuPanel/MenuMargin/MenuVBox"]
