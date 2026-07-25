@@ -13,6 +13,7 @@ const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/arena/hellsh
 const ROSTER_CAPACITY: int = 30
 const ROSTER_COLUMNS: int = 5
 const ROSTER_ROWS: int = 6
+const ROSTER_TILE_SIZE := Vector2(144, 68)
 
 const COLOR_ALMOST_BLACK := Color("#120B10")
 const COLOR_DARK_NEUTRAL := Color("#181218")
@@ -70,6 +71,7 @@ var presentations: Dictionary = {}
 var details: Dictionary = {}
 var selected_index: int = 0
 var accessibility_settings: Dictionary = {}
+var detail_mode_open: bool = false
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -88,8 +90,8 @@ func _ready() -> void:
 	_apply_accessibility_scaling()
 	_rebuild_roster_grid()
 	_refresh_selection_details()
-	action_row.modulate.a = 1.0
-	MenuAnimationRuntimeRef.play_screen_intro([roster_panel, showcase_panel, detail_panel])
+	_set_detail_mode(false)
+	MenuAnimationRuntimeRef.play_screen_intro([roster_panel])
 	back_button.pressed.connect(_on_back_pressed)
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	resized.connect(_on_resized)
@@ -99,6 +101,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key_event: InputEventKey = event
 	if not key_event.pressed or key_event.echo:
+		return
+	if detail_mode_open:
+		match key_event.keycode:
+			KEY_ENTER, KEY_SPACE:
+				_on_confirm_pressed()
+			KEY_ESCAPE:
+				_on_back_pressed()
 		return
 	match key_event.keycode:
 		KEY_LEFT:
@@ -211,7 +220,7 @@ func _rebuild_roster_grid() -> void:
 func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	var button := Button.new()
 	button.text = ""
-	button.custom_minimum_size = Vector2(72, 68)
+	button.custom_minimum_size = ROSTER_TILE_SIZE
 	button.focus_mode = Control.FOCUS_ALL
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -276,7 +285,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 
 func _build_sealed_roster_tile() -> Control:
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(72, 68)
+	panel.custom_minimum_size = ROSTER_TILE_SIZE
 	panel.focus_mode = Control.FOCUS_NONE
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -546,9 +555,13 @@ func _focus_selected_tile() -> void:
 
 func _on_character_button_pressed(index: int) -> void:
 	_select_index(index)
+	_set_detail_mode(true)
 
 func _on_confirm_pressed() -> void:
 	if selectable_ids.is_empty():
+		return
+	if not detail_mode_open:
+		_set_detail_mode(true)
 		return
 	var data_registry: Node = get_node_or_null("/root/DataRegistry")
 	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
@@ -556,7 +569,23 @@ func _on_confirm_pressed() -> void:
 	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
 
 func _on_back_pressed() -> void:
+	if detail_mode_open:
+		_set_detail_mode(false)
+		return
 	get_tree().change_scene_to_file(MAIN_MENU_SCENE_PATH)
+
+func _set_detail_mode(is_open: bool) -> void:
+	detail_mode_open = is_open
+	roster_panel.visible = not is_open
+	showcase_panel.visible = is_open
+	detail_panel.visible = is_open
+	action_row.visible = is_open
+	if is_open:
+		_refresh_selection_details()
+		MenuAnimationRuntimeRef.play_screen_intro([showcase_panel, detail_panel])
+		confirm_button.grab_focus()
+	else:
+		_focus_selected_tile()
 
 func _on_resized() -> void:
 	_apply_accessibility_scaling()
