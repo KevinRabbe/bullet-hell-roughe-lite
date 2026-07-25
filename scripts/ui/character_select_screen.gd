@@ -6,7 +6,7 @@ const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_run
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
 
-const STARTING_WEAPON_SCENE_PATH := "res://scenes/ui/StartingWeaponSelect.tscn"
+const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_BACKGROUND_ART_PATH := "res://assets/sprites/arena/hellshot_frontier/arena_ground_burnt_cracked.png"
 
@@ -63,6 +63,17 @@ const ROSTER_TILE_PLACEHOLDER_NODE := "RosterTilePlaceholder"
 @onready var action_row: HBoxContainer = $RootMargin/RootVBox/ActionRow
 @onready var back_button: Button = $RootMargin/RootVBox/ActionRow/BackButton
 @onready var confirm_button: Button = $RootMargin/RootVBox/ActionRow/ConfirmButton
+@onready var starter_modal_dimmer: ColorRect = $StarterModalDimmer
+@onready var starter_modal_center: CenterContainer = $StarterModalCenter
+@onready var starter_modal_panel: PanelContainer = $StarterModalCenter/StarterModalPanel
+@onready var starter_modal_title: Label = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/Title
+@onready var starter_modal_hunter_label: Label = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/HunterLabel
+@onready var starter_options_grid: GridContainer = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/StarterOptionsGrid
+@onready var starter_selected_name: Label = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/SelectedWeaponName
+@onready var starter_selected_description: Label = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/SelectedWeaponDescription
+@onready var starter_selected_tags: Label = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/SelectedWeaponTags
+@onready var starter_modal_back_button: Button = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/ActionRow/BackButton
+@onready var starter_modal_start_button: Button = $StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/ActionRow/StartButton
 
 var selectable_ids: Array[String] = []
 var character_entries: Array[Dictionary] = []
@@ -72,6 +83,9 @@ var details: Dictionary = {}
 var selected_index: int = 0
 var accessibility_settings: Dictionary = {}
 var detail_mode_open: bool = false
+var starter_modal_open: bool = false
+var starter_weapon_options: Array[Dictionary] = []
+var selected_starter_index: int = 0
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -94,6 +108,8 @@ func _ready() -> void:
 	MenuAnimationRuntimeRef.play_screen_intro([roster_panel])
 	back_button.pressed.connect(_on_back_pressed)
 	confirm_button.pressed.connect(_on_confirm_pressed)
+	starter_modal_back_button.pressed.connect(_close_starter_modal)
+	starter_modal_start_button.pressed.connect(_start_run_with_selected_starter)
 	resized.connect(_on_resized)
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -101,6 +117,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var key_event: InputEventKey = event
 	if not key_event.pressed or key_event.echo:
+		return
+	if starter_modal_open:
+		match key_event.keycode:
+			KEY_LEFT:
+				_move_starter_selection(-1)
+			KEY_RIGHT:
+				_move_starter_selection(1)
+			KEY_UP:
+				_move_starter_selection(-3)
+			KEY_DOWN:
+				_move_starter_selection(3)
+			KEY_ENTER, KEY_SPACE:
+				_start_run_with_selected_starter()
+			KEY_R:
+				_select_random_starter()
+			KEY_T:
+				_select_default_starter()
+			KEY_ESCAPE:
+				_close_starter_modal()
 		return
 	if detail_mode_open:
 		match key_event.keycode:
@@ -171,6 +206,7 @@ func _apply_shell_styles() -> void:
 	_apply_panel_style(roster_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
 	_apply_panel_style(showcase_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
 	_apply_panel_style(detail_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
+	_apply_panel_style(starter_modal_panel, COLOR_ALMOST_BLACK, _panel_border_color(high_contrast))
 	_apply_panel_style(portrait_stage, Color(0.08, 0.05, 0.07, 0.92), _panel_border_color(high_contrast))
 	for detail_card in [
 		$RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard,
@@ -180,6 +216,8 @@ func _apply_shell_styles() -> void:
 		_apply_panel_style(detail_card, Color(0.10, 0.07, 0.08, 0.94), _panel_border_color(high_contrast))
 	_apply_button_style(back_button, false, high_contrast)
 	_apply_button_style(confirm_button, true, high_contrast)
+	_apply_button_style(starter_modal_back_button, false, high_contrast)
+	_apply_button_style(starter_modal_start_button, true, high_contrast)
 	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
 
 func _apply_accessibility_scaling() -> void:
@@ -201,6 +239,13 @@ func _apply_accessibility_scaling() -> void:
 	opening_weapon_summary.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
 	back_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
 	confirm_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+	starter_modal_title.add_theme_font_size_override("font_size", int(round(28.0 * font_scale)))
+	starter_modal_hunter_label.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	starter_selected_name.add_theme_font_size_override("font_size", int(round(22.0 * font_scale)))
+	starter_selected_description.add_theme_font_size_override("font_size", int(round(14.0 * font_scale)))
+	starter_selected_tags.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
+	starter_modal_back_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+	starter_modal_start_button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
 
 func _rebuild_roster_grid() -> void:
 	if roster_grid == null:
@@ -563,12 +608,149 @@ func _on_confirm_pressed() -> void:
 	if not detail_mode_open:
 		_set_detail_mode(true)
 		return
+	_open_starter_modal()
+
+func _open_starter_modal() -> void:
 	var data_registry: Node = get_node_or_null("/root/DataRegistry")
-	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(data_registry, selectable_ids[selected_index])
+	var character_id: String = selectable_ids[selected_index]
+	var state: Dictionary = CharacterSelectionRuntimeRef.build_starting_weapon_selection_state(
+		data_registry,
+		character_id
+	)
+	starter_weapon_options.clear()
+	var options_variant: Variant = state.get("weapon_options", [])
+	if options_variant is Array:
+		for option_variant in options_variant:
+			if option_variant is Dictionary:
+				starter_weapon_options.append(option_variant)
+	selected_starter_index = 0
+	var selected_weapon_id: String = str(state.get("selected_weapon_id", ""))
+	for option_index in starter_weapon_options.size():
+		if str(starter_weapon_options[option_index].get("id", "")) == selected_weapon_id:
+			selected_starter_index = option_index
+			break
+	starter_modal_hunter_label.text = str(state.get("display_name", character_id)).to_upper()
+	starter_modal_open = true
+	starter_modal_dimmer.visible = true
+	starter_modal_center.visible = true
+	_rebuild_starter_option_buttons()
+	_refresh_starter_modal()
+
+func _close_starter_modal() -> void:
+	if not starter_modal_open:
+		return
+	starter_modal_open = false
+	starter_modal_dimmer.visible = false
+	starter_modal_center.visible = false
+	confirm_button.grab_focus()
+
+func _rebuild_starter_option_buttons() -> void:
+	for child in starter_options_grid.get_children():
+		child.queue_free()
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	for option_index in starter_weapon_options.size():
+		var option: Dictionary = starter_weapon_options[option_index]
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(230, 86)
+		button.clip_text = true
+		button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		button.text = str(option.get("display_name", option.get("id", "Weapon"))).to_upper()
+		if option.get("default_selected", false) == true:
+			button.text += "\nDEFAULT"
+		button.tooltip_text = str(option.get("description", ""))
+		button.add_theme_font_size_override("font_size", int(round(15.0 * font_scale)))
+		var icon_variant: Variant = option.get("icon", null)
+		button.icon = icon_variant if icon_variant is Texture2D else null
+		button.expand_icon = true
+		button.add_theme_constant_override("icon_max_width", 36)
+		_apply_button_style(button, option_index == selected_starter_index, high_contrast)
+		button.pressed.connect(_select_starter_index.bind(option_index))
+		starter_options_grid.add_child(button)
+	_focus_selected_starter_button()
+
+func _refresh_starter_modal() -> void:
+	if starter_weapon_options.is_empty():
+		starter_selected_name.text = "NO VALID OPENER"
+		starter_selected_description.text = "No valid starting weapon is configured for this hunter."
+		starter_selected_tags.text = ""
+		starter_modal_start_button.disabled = true
+		return
+	selected_starter_index = clampi(selected_starter_index, 0, starter_weapon_options.size() - 1)
+	var option: Dictionary = starter_weapon_options[selected_starter_index]
+	starter_selected_name.text = str(option.get("display_name", option.get("id", "Weapon"))).to_upper()
+	starter_selected_description.text = str(option.get("description", ""))
+	var tags: Array[String] = _normalize_string_array(option.get("tags", []))
+	starter_selected_tags.text = " / ".join(tags).to_upper()
+	starter_modal_start_button.disabled = false
+
+func _select_starter_index(index: int) -> void:
+	if starter_weapon_options.is_empty():
+		return
+	selected_starter_index = clampi(index, 0, starter_weapon_options.size() - 1)
+	_persist_starter_selection()
+	_refresh_starter_option_styles()
+	_refresh_starter_modal()
+	_focus_selected_starter_button()
+
+func _move_starter_selection(delta: int) -> void:
+	if starter_weapon_options.is_empty():
+		return
+	_select_starter_index(clampi(
+		selected_starter_index + delta,
+		0,
+		starter_weapon_options.size() - 1
+	))
+
+func _select_default_starter() -> void:
+	for option_index in starter_weapon_options.size():
+		if starter_weapon_options[option_index].get("default_selected", false) == true:
+			_select_starter_index(option_index)
+			return
+
+func _select_random_starter() -> void:
+	if starter_weapon_options.is_empty():
+		return
+	_select_starter_index(randi_range(0, starter_weapon_options.size() - 1))
+
+func _persist_starter_selection() -> void:
+	if starter_weapon_options.is_empty():
+		return
+	var data_registry: Node = get_node_or_null("/root/DataRegistry")
+	var option: Dictionary = starter_weapon_options[selected_starter_index]
+	var payload: Dictionary = CharacterSelectionRuntimeRef.build_run_start_payload(
+		data_registry,
+		selectable_ids[selected_index],
+		str(option.get("id", ""))
+	)
 	CharacterSelectionRuntimeRef.set_pending_run_start_payload(payload)
-	get_tree().change_scene_to_file(STARTING_WEAPON_SCENE_PATH)
+
+func _start_run_with_selected_starter() -> void:
+	if starter_weapon_options.is_empty():
+		return
+	_persist_starter_selection()
+	get_tree().change_scene_to_file(GAME_SCENE_PATH)
+
+func _refresh_starter_option_styles() -> void:
+	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	for option_index in range(starter_options_grid.get_child_count()):
+		var button := starter_options_grid.get_child(option_index) as Button
+		if button != null:
+			_apply_button_style(button, option_index == selected_starter_index, high_contrast)
+
+func _focus_selected_starter_button() -> void:
+	if selected_starter_index < 0 or selected_starter_index >= starter_options_grid.get_child_count():
+		starter_modal_start_button.grab_focus()
+		return
+	var selected_button := starter_options_grid.get_child(selected_starter_index) as Button
+	if selected_button != null:
+		selected_button.grab_focus()
+		MenuAnimationRuntimeRef.pulse_focus(selected_button, 1.01)
 
 func _on_back_pressed() -> void:
+	if starter_modal_open:
+		_close_starter_modal()
+		return
 	if detail_mode_open:
 		_set_detail_mode(false)
 		return
@@ -591,6 +773,7 @@ func _on_resized() -> void:
 	_apply_accessibility_scaling()
 	_apply_shell_styles()
 	_refresh_roster_grid_styles()
+	_refresh_starter_option_styles()
 
 func _apply_panel_style(panel: PanelContainer, bg_color: Color, border_color: Color) -> void:
 	if panel == null:

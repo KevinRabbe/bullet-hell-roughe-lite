@@ -376,3 +376,110 @@ text = "BACK"
 custom_minimum_size = Vector2(260, 50)
 layout_mode = 2
 text = "CHOOSE STARTER"
+
+[node name="StarterModalDimmer" type="ColorRect" parent="."]
+visible = false
+z_index = 20
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.0352941, 0.0196078, 0.027451, 0.9)
+
+[node name="StarterModalCenter" type="CenterContainer" parent="."]
+visible = false
+z_index = 21
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StarterModalPanel" type="PanelContainer" parent="StarterModalCenter"]
+custom_minimum_size = Vector2(820, 500)
+layout_mode = 2
+
+[node name="StarterModalMargin" type="MarginContainer" parent="StarterModalCenter/StarterModalPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 24
+
+[node name="StarterModalVBox" type="VBoxContainer" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+theme_override_font_sizes/font_size = 28
+text = "CHOOSE YOUR OPENER"
+horizontal_alignment = 1
+
+[node name="HunterLabel" type="Label" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+theme_override_font_sizes/font_size = 14
+text = "GUNSLINGER"
+horizontal_alignment = 1
+
+[node name="Divider" type="ColorRect" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+color = Color(0.352941, 0.0588235, 0.105882, 1)
+
+[node name="StarterOptionsGrid" type="GridContainer" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 3
+
+[node name="SelectedWeaponName" type="Label" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.909804, 0.839216, 0.690196, 1)
+theme_override_font_sizes/font_size = 22
+text = "HEAVY PISTOL"
+horizontal_alignment = 1
+
+[node name="SelectedWeaponDescription" type="Label" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.847059, 0.815686, 0.741176, 0.92)
+theme_override_font_sizes/font_size = 14
+text = "Reliable sidearm with crisp, hard-hitting shots."
+horizontal_alignment = 1
+autowrap_mode = 3
+text_overrun_behavior = 3
+max_lines_visible = 2
+
+[node name="SelectedWeaponTags" type="Label" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.721569, 0.541176, 0.333333, 1)
+theme_override_font_sizes/font_size = 13
+text = "GUN / PRECISION / RANGED"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ActionRow" type="HBoxContainer" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 18
+
+[node name="BackButton" type="Button" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/ActionRow"]
+custom_minimum_size = Vector2(210, 48)
+layout_mode = 2
+text = "BACK TO HUNTER"
+
+[node name="StartButton" type="Button" parent="StarterModalCenter/StarterModalPanel/StarterModalMargin/StarterModalVBox/ActionRow"]
+custom_minimum_size = Vector2(240, 48)
+layout_mode = 2
+text = "START RUN"
