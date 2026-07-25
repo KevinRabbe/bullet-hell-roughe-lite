@@ -22,7 +22,7 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 	var tags := WeaponTagUtil.weapon_tags(weapon_data)
 	if "thrown" in tags:
 		profile["spin_speed"] = 7.0
-	elif "orbit" in tags or "wave" in tags:
+	elif "orbit" in tags:
 		profile["spin_speed"] = 2.4
 	if _contains_any(tags, ARCANE_TAGS):
 		profile["pulse_amount"] = 0.08
