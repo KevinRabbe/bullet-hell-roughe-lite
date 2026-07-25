@@ -1,6 +1,7 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
@@ -35,8 +36,14 @@ func _ready() -> void:
 		var button := offer_buttons[index]
 		button.mouse_entered.connect(_on_offer_hovered.bind(index))
 		button.mouse_exited.connect(_hide_tooltip)
+	_apply_presentation()
 	if tooltip_panel != null:
 		tooltip_panel.visible = false
+
+func _apply_presentation() -> void:
+	InfernalUiStyleRef.apply_panel(tooltip_panel, InfernalUiStyleRef.PANEL_CARD)
+	InfernalUiStyleRef.apply_section_title(tooltip_title)
+	InfernalUiStyleRef.apply_body_text(tooltip_body)
 
 func _on_offer_hovered(index: int) -> void:
 	var offer := _get_offer(index)
