@@ -43,6 +43,12 @@ func _ready() -> void:
 	_apply_responsive_layout()
 	resized.connect(_apply_responsive_layout)
 	MenuAnimationRuntimeRef.play_screen_intro([hero_panel, menu_panel])
+	MenuAnimationRuntimeRef.play_ambient_pulse(
+		hero_art_slot,
+		Color(0.92, 0.84, 0.86, 0.96),
+		Color(1.0, 0.96, 0.92, 1.0),
+		3.2
+	)
 	start_button.grab_focus()
 
 func _on_start_button_pressed() -> void:
