@@ -13,43 +13,36 @@ const PRESET_ORDER: Array[String] = [
 
 const SCENARIO_DEFINITIONS: Dictionary = {
 	"normal": {
-		"label": "Wave 1 Baseline",
 		"wave_index": 1,
 		"arena_size_class": "standard",
 		"boss_id": ""
 	},
 	"shop_test": {
-		"label": "Full Shop",
 		"wave_index": 1,
 		"arena_size_class": "standard",
 		"boss_id": ""
 	},
 	"combat_test": {
-		"label": "Combat Test",
 		"wave_index": 1,
 		"arena_size_class": "standard",
 		"boss_id": ""
 	},
 	"compact_arena": {
-		"label": "Compact Arena",
 		"wave_index": 1,
 		"arena_size_class": "compact",
 		"boss_id": ""
 	},
 	"large_arena": {
-		"label": "Large Arena",
 		"wave_index": 1,
 		"arena_size_class": "large",
 		"boss_id": ""
 	},
 	"wave_5_gate_beast": {
-		"label": "Wave 5 Gate Beast",
 		"wave_index": 5,
 		"arena_size_class": "standard",
 		"boss_id": "gate_beast"
 	},
 	"wave_10_victory": {
-		"label": "Wave 10 Victory",
 		"wave_index": 10,
 		"arena_size_class": "standard",
 		"boss_id": ""
@@ -72,9 +65,6 @@ static func effective_preset(debug_quick_shop_mode: bool, debug_run_preset: Stri
 static func scenario_definition(preset: String) -> Dictionary:
 	var definition_variant: Variant = SCENARIO_DEFINITIONS.get(preset, SCENARIO_DEFINITIONS["normal"])
 	return (definition_variant as Dictionary).duplicate(true) if definition_variant is Dictionary else {}
-
-static func scenario_label(preset: String) -> String:
-	return str(scenario_definition(preset).get("label", preset))
 
 static func wave_index_for_preset(preset: String) -> int:
 	return maxi(int(scenario_definition(preset).get("wave_index", 1)), 1)
