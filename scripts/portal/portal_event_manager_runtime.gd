@@ -1,6 +1,8 @@
 extends RefCounted
 class_name PortalEventManagerRuntime
 
+const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
+
 static func resolve_player(owner: Node, player_path: NodePath) -> Node2D:
 	if player_path == NodePath():
 		return null
@@ -166,12 +168,7 @@ static func pick_elite_role(rng: RandomNumberGenerator) -> String:
 	return "rift_caller"
 
 static func _clamp_to_arena(owner: Node, world_position: Vector2, inset: float) -> Vector2:
-	if owner == null or owner.get_tree() == null:
-		return world_position
-	var scene := owner.get_tree().current_scene
-	if scene == null:
-		return world_position
-	var arena_bounds := scene.get_node_or_null("ArenaBounds")
+	var arena_bounds := ArenaBoundsRuntime.ensure_for_scene(owner)
 	if arena_bounds == null or not arena_bounds.has_method("clamp_spawn_position"):
 		return world_position
 	var resolved: Variant = arena_bounds.call("clamp_spawn_position", world_position, inset)
