@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/components/standard_choice_card.gd" id="1_choice"]
 
 [node name="StandardChoiceCard" type="Button"]
-custom_minimum_size = Vector2(260, 166)
+custom_minimum_size = Vector2(220, 166)
 focus_mode = 2
 script = ExtResource("1_choice")
 
