@@ -66,6 +66,8 @@ static func build_choice(
 		"id": stat_id,
 		"value": value,
 		"rarity": rarity,
+		"display_name": display_name,
+		"formatted_value": formatted_value,
 		"label": "[%s] %s %s" % [rarity, display_name, formatted_value]
 	}
 
