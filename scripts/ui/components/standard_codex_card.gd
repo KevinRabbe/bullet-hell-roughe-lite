@@ -51,14 +51,11 @@ func set_selected(value: bool) -> void:
 		_apply_style()
 
 func _apply_style() -> void:
-	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
-	if selected:
-		style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE
-		style.set_border_width_all(2)
-	add_theme_stylebox_override("panel", style)
+	InfernalUiStyleRef.apply_panel(self, InfernalUiStyleRef.PANEL_CARD)
 	InfernalUiStyleRef.apply_panel(icon_frame, InfernalUiStyleRef.PANEL_CARD)
 	if hit_button != null:
-		hit_button.flat = true
+		hit_button.flat = false
+		InfernalUiStyleRef.apply_card_button(hit_button, selected)
 
 func _apply_text_styles() -> void:
 	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_CARD_TITLE)
