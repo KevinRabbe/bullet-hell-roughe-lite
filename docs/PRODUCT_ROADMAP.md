@@ -4,13 +4,15 @@
 
 Development should move toward explicit product milestones rather than polishing unrelated systems in isolation.
 
-The current north star is **V2 — Steam Page / Public Reveal Candidate**.
+The current north star is **V3 — Public Demo / External Playtest Candidate**.
 
-V2 means:
+V2 — Steam Page / Public Reveal Candidate is complete. The approved V2 baseline is the presentation target that V3 should preserve while improving first-time usability, input robustness, and playtest reliability.
 
-> Hellshot Frontier is ready to be shown to a complete stranger with no explanation, and the real game footage/screenshots communicate a coherent game worth following or wishlisting.
+V3 means:
 
-This is a presentation-ready vertical slice, not a declaration that the whole game is finished.
+> A stranger can launch Hellshot Frontier, understand the essential rules, control it with keyboard or controller, complete or fail the representative 10-wave run cleanly, and give useful feedback without the developer standing beside them.
+
+The detailed V3 execution plan lives in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
 
 ## V1 — Internal Vertical Slice + Foundations
 
@@ -44,11 +46,13 @@ V1 foundation work includes:
 - strict content validation
 - development scenario harness for deep-run testing
 
-Additional shared systems such as effect vocabulary, entity archetypes, feedback events, and unified input should evolve when concrete gameplay work proves the duplication. They are not separate architecture projects that must be completed before V2 work.
+Additional shared systems such as effect vocabulary, entity archetypes, feedback events, and unified input should evolve when concrete gameplay work proves the duplication. They are not separate architecture projects that must be completed before product work.
 
 ### V1 exit condition
 
 The core run and reusable foundations are stable enough that feature/content work can proceed without repeatedly rebuilding the same infrastructure.
+
+**Status: complete.**
 
 ## V2 — Steam Page / Public Reveal Candidate
 
@@ -167,9 +171,7 @@ The development scenario harness should make these routes cheap to retest.
 
 ### V2 capture gate
 
-Before calling V2 complete, the real game should support a small capture set without mockups or "ignore this placeholder" exceptions.
-
-Internal target:
+The approved V2 build supports the required real-game capture set:
 
 1. normal combat / arena identity
 2. distinctive hunter + build
@@ -178,11 +180,11 @@ Internal target:
 5. Gate Beast or other major encounter
 6. late-run high-power combat
 
-The same build should also be suitable for a short gameplay-first trailer capture.
+The same build supports short gameplay-first trailer capture.
 
 ### V2 non-goals
 
-V2 does not require:
+V2 did not require:
 
 - the full launch content roster
 - every future arena/biome
@@ -192,38 +194,82 @@ V2 does not require:
 - a generic framework
 - Early Access completeness
 
-The goal is a convincing public slice, not feature completeness.
+**Status: complete.** The canonical presentation/value-density closeout is recorded in `docs/V2_PRESENTATION_VALUE_ROADMAP.md`.
 
 ## V3 — Public Demo / External Playtest Candidate
 
-After V2 presentation quality is achieved, expand the goal from "looks convincing" to "strangers can play it safely and understand it without us present."
+### Purpose
 
-Likely priorities:
+Expand the goal from "looks convincing" to "strangers can play it safely and understand it without us present."
 
-- onboarding clarity
-- input/controller robustness
-- balance/pacing from external data
-- crash/state-loss hardening
-- accessibility/usability
-- progression/reward tuning
-- clearer telemetry/playtest reporting where appropriate
+The acceptance question is:
 
-Exact V3 scope should be defined from V2 playtests rather than guessed now.
+> Can a first-time player traverse the existing representative run with keyboard or controller, understand the immediate rules, recover from normal mistakes, and produce useful feedback without encountering developer-only behavior or usability traps?
+
+### V3 pillars
+
+#### 1. Public input and debug isolation
+
+- keyboard and controller movement
+- robust UI focus/navigation
+- controller-accessible pause flow
+- no essential mouse-only action
+- debug shortcuts disabled in public builds
+
+#### 2. First-run onboarding clarity
+
+Teach only what is required to begin:
+
+- movement
+- auto-fire
+- survive the wave
+- portals are optional risk/reward opportunities
+- Shop/Level Up choices shape the build
+- Pause/Options remain available
+
+Avoid long blocking tutorial pages.
+
+#### 3. Flow and failure robustness
+
+Qualify:
+
+- pause/resume/restart/main menu
+- Shop and Level Up transitions
+- Gate Beast -> Ascension -> intermission
+- death -> results
+- Wave 10 victory -> results
+- retry/new hunter/main menu
+
+Normal actions must not produce soft locks, stuck pause state, lost focus, or invisible interactive overlays.
+
+#### 4. Accessibility/usability
+
+Existing Reduced Motion, High Contrast, font scaling, focus visibility, and tooltip behavior must survive the actual demo route.
+
+#### 5. Playtest reporting
+
+Prefer small local deterministic reproduction data over premature cloud telemetry. A useful report should identify the run seed, hunter, result, wave, level, gold, and representative build state.
+
+### V3 exit condition
+
+A fresh external player can launch, understand, play, fail or finish, and navigate the post-run flow without developer guidance using either the keyboard path or controller path.
+
+Exact implementation and acceptance details live in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
 
 ## V4 — Early Access Candidate
 
 V4 is a later product milestone. It should be defined only after public/demo feedback establishes what content breadth, progression depth, replayability, and operational quality are genuinely needed.
 
-Do not optimize current development around speculative V4 requirements when they do not improve V2.
+Do not optimize current development around speculative V4 requirements when they do not improve V3.
 
 ## Prioritization rule
 
 For normal development work, ask in this order:
 
-1. Does this unblock or finish the current V1 foundation gate?
-2. Does this materially close a V2 Steam-page/reveal gap?
+1. Does this remove a blocker to a stranger successfully playing the V3 demo route?
+2. Does it improve onboarding, input robustness, flow reliability, accessibility, or reproducibility for external playtests?
 3. Does it fix a defect that prevents reliable development/testing?
-4. Is it a reusable foundation demanded by concrete duplication in current V2 work?
-5. Otherwise, defer it.
+4. Is it a reusable foundation demanded by concrete duplication in current V3 work?
+5. Otherwise, defer it until external playtest evidence justifies it.
 
-This intentionally prevents random polish and speculative architecture from displacing the current product goal.
+This intentionally prevents content sprawl, random polish, and speculative architecture from displacing the current product goal.
