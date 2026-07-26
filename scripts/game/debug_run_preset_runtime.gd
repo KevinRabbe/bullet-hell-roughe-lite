@@ -7,6 +7,7 @@ const PRESET_ORDER: Array[String] = [
 	"combat_test",
 	"compact_arena",
 	"large_arena",
+	"v2_capture_portal",
 	"wave_5_gate_beast",
 	"wave_10_victory",
 	"v2_capture_late_run"
@@ -37,6 +38,12 @@ const SCENARIO_DEFINITIONS: Dictionary = {
 		"wave_index": 1,
 		"arena_size_class": "large",
 		"boss_id": ""
+	},
+	"v2_capture_portal": {
+		"wave_index": 3,
+		"arena_size_class": "standard",
+		"boss_id": "",
+		"portal_event_id": "power_for_hp_loss"
 	},
 	"wave_5_gate_beast": {
 		"wave_index": 5,
@@ -84,6 +91,9 @@ static func wave_index_for_preset(preset: String) -> int:
 
 static func boss_id_for_preset(preset: String) -> String:
 	return str(scenario_definition(preset).get("boss_id", ""))
+
+static func portal_event_id_for_preset(preset: String) -> String:
+	return str(scenario_definition(preset).get("portal_event_id", "")).strip_edges()
 
 static func weapon_grants_for_preset(preset: String) -> Array[Dictionary]:
 	var grants: Array[Dictionary] = []
