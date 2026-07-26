@@ -94,6 +94,7 @@ func _on_body_entered(body: Node) -> void:
 			weapon_data
 		)
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
+		ProjectileVisualUtil.spawn_impact_feedback(self, visual, _visual_animation_profile)
 		if pierce_count > 0:
 			pierce_count -= 1
 			return
