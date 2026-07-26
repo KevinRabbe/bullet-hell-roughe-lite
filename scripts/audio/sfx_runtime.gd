@@ -1,9 +1,12 @@
 class_name SfxRuntime
 extends Node
 
+const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime.gd")
+
 const SAMPLE_RATE := 22050
 const MAX_ACTIVE_PLAYERS := 12
 const RUNTIME_NODE_NAME := "HellshotSfxRuntime"
+const SFX_BUS: StringName = &"SFX"
 
 var _stream_cache: Dictionary = {}
 var _last_played_ms: Dictionary = {}
@@ -29,6 +32,7 @@ static func _ensure_runtime(owner: Node):
 	var existing := scene.get_node_or_null(RUNTIME_NODE_NAME)
 	if existing is SfxRuntime:
 		return existing
+	AudioSettingsRuntimeRef.apply_saved_settings()
 	var runtime := SfxRuntime.new()
 	runtime.name = RUNTIME_NODE_NAME
 	runtime.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -49,6 +53,7 @@ func _play(cue: String, volume_db: float, pitch_scale: float, minimum_interval_m
 		return
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
+	player.bus = SFX_BUS
 	player.volume_db = volume_db
 	player.pitch_scale = clampf(pitch_scale, 0.5, 2.0)
 	player.process_mode = Node.PROCESS_MODE_ALWAYS
