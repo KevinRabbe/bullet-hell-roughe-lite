@@ -4,8 +4,6 @@ extends RefCounted
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 
-static var _weapon_cache: Dictionary = {}
-
 static func build_item_detail(item_id: String) -> Dictionary:
 	var item := ItemDatabase.get_item_by_id(item_id)
 	if item == null:
@@ -30,7 +28,10 @@ static func build_item_detail(item_id: String) -> Dictionary:
 	}
 
 static func build_weapon_detail(weapon_id: String, rarity: String = "common") -> Dictionary:
-	var weapon_data := WeaponRuntimeUtil.load_weapon_data(_weapon_cache, weapon_id)
+	var resource_path := WeaponRuntimeUtil.resource_path_for_id(weapon_id)
+	if resource_path == "" or not ResourceLoader.exists(resource_path):
+		return {"title": "WEAPON", "body": "No weapon data found."}
+	var weapon_data := load(resource_path) as WeaponData
 	if weapon_data == null:
 		return {"title": "WEAPON", "body": "No weapon data found."}
 	var display_name := weapon_data.display_name if weapon_data.display_name != "" else weapon_id.replace("_", " ").capitalize()
