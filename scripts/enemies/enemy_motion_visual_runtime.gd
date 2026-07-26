@@ -8,6 +8,8 @@ const COLOR_HIT := Color(1.35, 1.12, 0.82, 1.0)
 const COLOR_HIT_HIGH_CONTRAST := Color(1.6, 1.6, 1.6, 1.0)
 const COLOR_DEATH := Color(1.0, 0.42, 0.18, 0.0)
 const COLOR_EMBER := Color(0.94, 0.42, 0.10, 0.9)
+const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
+const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -78,6 +80,8 @@ static func apply_enemy_data_visual(data: EnemyData, visual_sprite: Sprite2D, lo
 		visual_sprite.texture = texture_variant as Texture2D
 		visual_sprite.scale = Vector2.ONE * data.visual_scale
 		_play_spawn_intro(visual_sprite)
+		if data.is_boss:
+			_apply_boss_presence(visual_sprite)
 
 static func spawn_hit_flash(visual: CanvasItem, owner: Node) -> void:
 	if visual == null or owner == null or not is_instance_valid(visual) or not is_instance_valid(owner):
@@ -133,6 +137,40 @@ static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(visual_sprite, "scale", rest_scale, 0.14)
 	tween.parallel().tween_property(visual_sprite, "modulate:a", 1.0, 0.12)
+
+static func _apply_boss_presence(visual_sprite: Sprite2D) -> void:
+	if visual_sprite == null or not is_instance_valid(visual_sprite):
+		return
+	var parent := visual_sprite.get_parent() as Node2D
+	if parent == null or parent.get_node_or_null("BossPresence") != null:
+		return
+	var ring := Line2D.new()
+	ring.name = "BossPresence"
+	var points := PackedVector2Array()
+	var point_count := 28
+	var radius := 58.0
+	for index in range(point_count + 1):
+		var angle := TAU * float(index) / float(point_count)
+		var irregularity := 1.0 + (0.055 * sin((angle * 5.0) + 0.7))
+		points.append(Vector2(cos(angle), sin(angle)) * radius * irregularity)
+	ring.points = points
+	ring.width = 3.5
+	ring.default_color = (
+		COLOR_BOSS_PRESENCE_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_BOSS_PRESENCE
+	)
+	ring.z_index = visual_sprite.z_index - 1
+	ring.scale = Vector2.ONE * 0.96
+	parent.add_child(ring)
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		return
+	var tween := ring.create_tween().set_loops()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(ring, "scale", Vector2.ONE * 1.04, 0.72)
+	tween.parallel().tween_property(ring, "modulate:a", 0.72, 0.72)
+	tween.tween_property(ring, "scale", Vector2.ONE * 0.96, 0.72)
+	tween.parallel().tween_property(ring, "modulate:a", 0.46, 0.72)
 
 static func _spawn_death_ring(scene: Node, position: Vector2, z_index: int, reduced_motion: bool) -> void:
 	if scene == null or not is_instance_valid(scene):
