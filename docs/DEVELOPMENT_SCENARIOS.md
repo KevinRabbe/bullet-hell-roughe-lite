@@ -93,7 +93,6 @@ When the timer ends and the arena is cleared, normal final-wave progression owns
 Scenario definitions currently own only:
 
 ```text
-label
 wave_index
 arena_size_class
 boss_id
