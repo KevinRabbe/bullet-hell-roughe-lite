@@ -13,6 +13,20 @@ static func build_event_roll(rng: RandomNumberGenerator, profile: PortalRunProfi
 		return _build_event_roll_from_data(rng, safe_profile, event_definitions)
 	return _build_fallback_event_roll(rng, safe_profile)
 
+static func build_event_result_for_id(event_id: String, profile: PortalRunProfile) -> Dictionary:
+	var normalized_event_id := event_id.strip_edges()
+	if normalized_event_id == "":
+		return {}
+	var safe_profile := profile if profile != null else PortalRunProfile.new()
+	var event_data := _find_event_definition(_load_event_definitions(), normalized_event_id)
+	return {
+		"event_id": normalized_event_id,
+		"event_ids": [normalized_event_id],
+		"weights": [1.0],
+		"portal_instability": safe_profile.portal_instability,
+		"event_data": event_data
+	}
+
 static func roll_reward_tier(
 	rng: RandomNumberGenerator,
 	source: String,

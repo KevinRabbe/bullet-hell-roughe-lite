@@ -81,9 +81,14 @@ static func _apply_scene_scenario(requester: Node, preset: String) -> void:
 	if enemy_spawner != null and enemy_spawner.has_method("configure_starting_wave"):
 		enemy_spawner.call("configure_starting_wave", DebugRunPresetRuntimeRef.wave_index_for_preset(preset))
 
+	var portal_event_id := DebugRunPresetRuntimeRef.portal_event_id_for_preset(preset)
+	if portal_event_id != "":
+		var portal_event_manager := scene.get_node_or_null("PortalEventManager")
+		if portal_event_manager != null and portal_event_manager.has_method("configure_debug_capture_event"):
+			portal_event_manager.call("configure_debug_capture_event", portal_event_id)
+
 	var boss_id := DebugRunPresetRuntimeRef.boss_id_for_preset(preset)
-	if boss_id == "":
-		return
-	var boss_manager := scene.get_node_or_null("BossManager")
-	if boss_manager != null and boss_manager.has_method("spawn_boss"):
-		boss_manager.call("spawn_boss", boss_id)
+	if boss_id != "":
+		var boss_manager := scene.get_node_or_null("BossManager")
+		if boss_manager != null and boss_manager.has_method("spawn_boss"):
+			boss_manager.call("spawn_boss", boss_id)
