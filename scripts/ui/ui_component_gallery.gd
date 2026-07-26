@@ -7,6 +7,9 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 @onready var buttons_title: Label = $RootMargin/Scroll/Content/ButtonsTitle
 @onready var cards_title: Label = $RootMargin/Scroll/Content/CardsTitle
 @onready var stats_title: Label = $RootMargin/Scroll/Content/StatsTitle
+@onready var tags_title: Label = $RootMargin/Scroll/Content/TagsTitle
+@onready var codex_title: Label = $RootMargin/Scroll/Content/CodexTitle
+@onready var tooltip_title: Label = $RootMargin/Scroll/Content/TooltipTitle
 @onready var modal_title: Label = $RootMargin/Scroll/Content/ModalTitle
 @onready var primary_button: Button = $RootMargin/Scroll/Content/ButtonRow/Primary
 @onready var secondary_button: Button = $RootMargin/Scroll/Content/ButtonRow/Secondary
@@ -18,12 +21,17 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 @onready var wave_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/WaveStat
 @onready var gold_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/GoldStat
 @onready var level_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/LevelStat
+@onready var ranged_tag: PanelContainer = $RootMargin/Scroll/Content/TagRow/RangedTag
+@onready var ritual_tag: PanelContainer = $RootMargin/Scroll/Content/TagRow/RitualTag
+@onready var rapid_tag: PanelContainer = $RootMargin/Scroll/Content/TagRow/RapidTag
+@onready var codex_card: PanelContainer = $RootMargin/Scroll/Content/CodexCard
+@onready var tooltip_preview: PanelContainer = $RootMargin/Scroll/Content/TooltipPreview
 @onready var modal_shell: PanelContainer = $RootMargin/Scroll/Content/ModalCenter/ModalShell
 
 func _ready() -> void:
 	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
 	InfernalUiStyleRef.apply_text_role(intro_label, InfernalUiStyleRef.TEXT_MUTED)
-	for section_label in [buttons_title, cards_title, stats_title, modal_title]:
+	for section_label in [buttons_title, cards_title, stats_title, tags_title, codex_title, tooltip_title, modal_title]:
 		InfernalUiStyleRef.apply_text_role(section_label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
 	InfernalUiStyleRef.apply_button(primary_button, InfernalUiStyleRef.BUTTON_PRIMARY)
 	InfernalUiStyleRef.apply_button(secondary_button, InfernalUiStyleRef.BUTTON_SECONDARY)
@@ -33,6 +41,9 @@ func _ready() -> void:
 	disabled_button.disabled = true
 	_configure_cards()
 	_configure_stats()
+	_configure_tags()
+	_configure_codex()
+	_configure_tooltip()
 	_configure_modal()
 	primary_button.grab_focus()
 
@@ -47,6 +58,29 @@ func _configure_stats() -> void:
 	wave_stat.call("configure", "Wave reached", "6")
 	gold_stat.call("configure", "Gold carried", "42")
 	level_stat.call("configure", "Level reached", "11")
+
+func _configure_tags() -> void:
+	ranged_tag.call("configure", "RANGED")
+	ritual_tag.call("configure", "RITUAL")
+	rapid_tag.call("configure", "RAPID")
+
+func _configure_codex() -> void:
+	codex_card.call(
+		"configure",
+		"Demon SMG",
+		"Infernal / Rare",
+		"A compact Armory-style entry using the shared codex component.",
+		"Tags: rapid, ranged",
+		null
+	)
+	codex_card.call("set_selected", true)
+
+func _configure_tooltip() -> void:
+	tooltip_preview.call(
+		"configure",
+		"Demon SMG",
+		"Family: Infernal\nTags: rapid, ranged\nDetailed supporting information lives here instead of crowding the decision card."
+	)
 
 func _select_card(selected_card: Button, other_card: Button) -> void:
 	selected_card.call("set_selected", true)

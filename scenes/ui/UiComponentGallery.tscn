@@ -1,9 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/ui_component_gallery.gd" id="1_gallery"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/StandardChoiceCard.tscn" id="2_card"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/StandardModalShell.tscn" id="3_modal"]
 [ext_resource type="PackedScene" path="res://scenes/ui/components/StandardStatCard.tscn" id="4_stat"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardCodexCard.tscn" id="5_codex"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardTooltip.tscn" id="6_tooltip"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardTagChip.tscn" id="7_tag"]
 
 [node name="UiComponentGallery" type="Control"]
 layout_mode = 3
@@ -124,6 +127,41 @@ layout_mode = 2
 layout_mode = 2
 
 [node name="LevelStat" parent="RootMargin/Scroll/Content/StatRow" instance=ExtResource("4_stat")]
+layout_mode = 2
+
+[node name="TagsTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "TAG CHIPS"
+
+[node name="TagRow" type="HBoxContainer" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RangedTag" parent="RootMargin/Scroll/Content/TagRow" instance=ExtResource("7_tag")]
+layout_mode = 2
+
+[node name="RitualTag" parent="RootMargin/Scroll/Content/TagRow" instance=ExtResource("7_tag")]
+layout_mode = 2
+
+[node name="RapidTag" parent="RootMargin/Scroll/Content/TagRow" instance=ExtResource("7_tag")]
+layout_mode = 2
+
+[node name="CodexTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "CODEX CARD"
+
+[node name="CodexCard" parent="RootMargin/Scroll/Content" instance=ExtResource("5_codex")]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="TooltipTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "TOOLTIP"
+
+[node name="TooltipPreview" parent="RootMargin/Scroll/Content" instance=ExtResource("6_tooltip")]
 layout_mode = 2
 
 [node name="ModalTitle" type="Label" parent="RootMargin/Scroll/Content"]
