@@ -6,6 +6,8 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 @export var title_text: String = ""
 @export_multiline var subtitle_text: String = ""
+@export var normal_minimum_width: float = 520.0
+@export var tight_minimum_width: float = 420.0
 
 @onready var margin: MarginContainer = $Margin
 @onready var stack: VBoxContainer = $Margin/Stack
@@ -22,7 +24,7 @@ func _ready() -> void:
 	_refresh_copy()
 	_apply_responsive_layout()
 	var viewport: Viewport = get_viewport()
-	if viewport != null:
+	if viewport != null and not viewport.size_changed.is_connected(_apply_responsive_layout):
 		viewport.size_changed.connect(_apply_responsive_layout)
 
 func configure(title: String, subtitle: String = "") -> void:
@@ -56,4 +58,4 @@ func _apply_responsive_layout() -> void:
 	header.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class))
 	content.add_theme_constant_override("separation", gap)
 	actions.add_theme_constant_override("separation", gap)
-	custom_minimum_size.x = 420.0 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 520.0
+	custom_minimum_size.x = tight_minimum_width if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else normal_minimum_width
