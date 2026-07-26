@@ -96,10 +96,12 @@ static func spawn_impact_feedback(projectile: Node2D, visual: Sprite2D, profile:
 	var duration := maxf(float(profile.get("impact_duration", 0.10)), 0.04)
 	var tween := impact.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		tween.tween_property(impact, "modulate:a", 0.0, duration)
+	else:
 		var impact_scale := maxf(float(profile.get("impact_scale", 1.35)), 1.0)
 		tween.tween_property(impact, "scale", impact.scale * impact_scale, duration)
-	tween.parallel().tween_property(impact, "modulate:a", 0.0, duration)
+		tween.parallel().tween_property(impact, "modulate:a", 0.0, duration)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(impact):
 			impact.queue_free()
