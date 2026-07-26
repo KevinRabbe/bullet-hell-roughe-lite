@@ -7,6 +7,7 @@ const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.
 const PortalEventManagerRuntime = preload("res://scripts/portal/portal_event_manager_runtime.gd")
 const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
 const PortalMutationOfferScene = preload("res://scenes/ui/PortalMutationOffer.tscn")
+const PortalEventPresentationRuntimeRef = preload("res://scripts/ui/portal_event_presentation_runtime.gd")
 
 @export var portal_scene: PackedScene
 @export var elite_enemy_scene: PackedScene
@@ -99,6 +100,7 @@ func _on_portal_activated(portal_position: Vector2) -> void:
 	if mutation_id != "":
 		_start_portal_mutation_offer(event_result, mutation_id)
 		return
+	PortalEventPresentationRuntimeRef.show_event_started(self, event_result)
 	match event_id:
 		"double_elite":
 			_start_double_elite_event(portal_position, event_result)
