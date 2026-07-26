@@ -27,6 +27,7 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var action_row: FlowContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow
 @onready var retry_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/RetryButton
 @onready var new_character_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/NewCharacterButton
+@onready var copy_report_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/CopyReportButton
 @onready var main_menu_button: Button = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow/MainMenuButton
 @onready var action_hint_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionHint
 
@@ -42,6 +43,7 @@ var result_state: Dictionary = {
 	]
 }
 var _playtest_identity_applied: bool = false
+var _playtest_report_text: String = ""
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -56,6 +58,8 @@ func _ready() -> void:
 		retry_button.pressed.connect(_on_retry_pressed)
 	if new_character_button != null:
 		new_character_button.pressed.connect(_on_new_character_pressed)
+	if copy_report_button != null:
+		copy_report_button.pressed.connect(_on_copy_report_pressed)
 	if main_menu_button != null:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
 	if retry_button != null:
@@ -113,13 +117,14 @@ func _append_playtest_identity() -> void:
 	result_state["stats"] = identity_lines
 	var enemy_spawner := game_scene.get_node_or_null("EnemySpawner")
 	var wave_index := int(enemy_spawner.get("current_wave_index")) if enemy_spawner != null else 0
-	print(RunPlaytestReportRuntimeRef.build_console_report(
+	_playtest_report_text = RunPlaytestReportRuntimeRef.build_report(
 		_result_id(),
 		run_rng,
 		player,
 		player_snapshot,
 		wave_index
-	))
+	)
+	print(_playtest_report_text)
 	_playtest_identity_applied = true
 
 func _result_id() -> String:
@@ -146,6 +151,8 @@ func _refresh() -> void:
 				lines.append(line_text)
 	_refresh_stats_grid(lines)
 	_refresh_action_hint()
+	if copy_report_button != null:
+		copy_report_button.disabled = _playtest_report_text == ""
 
 func _on_retry_pressed() -> void:
 	emit_signal("retry_requested")
@@ -156,6 +163,15 @@ func _on_new_character_pressed() -> void:
 	emit_signal("new_character_requested")
 	if standalone_mode:
 		get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
+
+func _on_copy_report_pressed() -> void:
+	if _playtest_report_text == "":
+		return
+	DisplayServer.clipboard_set(_playtest_report_text)
+	if copy_report_button != null:
+		copy_report_button.text = "Report Copied"
+	if action_hint_label != null:
+		action_hint_label.text = "Exact run report copied. Paste it into the bug report with your screenshot."
 
 func _on_main_menu_pressed() -> void:
 	emit_signal("main_menu_requested")
@@ -198,18 +214,19 @@ func _apply_responsive_layout() -> void:
 	if action_row != null:
 		action_row.add_theme_constant_override("h_separation", UiLayoutMetricsRef.row_gap(layout_class) + 2)
 		action_row.add_theme_constant_override("v_separation", UiLayoutMetricsRef.row_gap(layout_class))
-	var button_width := 150.0 if tight else (180.0 if compact else 220.0)
+	var button_width := 138.0 if tight else (154.0 if compact else 170.0)
 	var button_height := UiLayoutMetricsRef.secondary_button_height(layout_class)
-	for action_button in [retry_button, new_character_button, main_menu_button]:
+	for action_button in [retry_button, new_character_button, copy_report_button, main_menu_button]:
 		if action_button != null:
 			action_button.custom_minimum_size = Vector2(button_width, button_height)
-			action_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
+			action_button.add_theme_font_size_override("font_size", int(round((14 if tight else 15) * font_scale)))
 	if action_hint_label != null:
 		action_hint_label.add_theme_font_size_override("font_size", int(round((13 if tight else (13 if compact else 15)) * font_scale)))
 
 func _apply_action_styles() -> void:
 	InfernalUiStyleRef.apply_button(retry_button, InfernalUiStyleRef.BUTTON_PRIMARY)
 	InfernalUiStyleRef.apply_button(new_character_button, InfernalUiStyleRef.BUTTON_SECONDARY)
+	InfernalUiStyleRef.apply_button(copy_report_button, InfernalUiStyleRef.BUTTON_SECONDARY)
 	InfernalUiStyleRef.apply_button(main_menu_button, InfernalUiStyleRef.BUTTON_SECONDARY)
 
 func _apply_shell_styles() -> void:
@@ -224,7 +241,7 @@ func _apply_shell_styles() -> void:
 func _refresh_action_hint() -> void:
 	if action_hint_label == null:
 		return
-	action_hint_label.text = "Navigate actions with focus · Confirm to choose · Cancel for Main Menu"
+	action_hint_label.text = "Navigate actions with focus · Copy Report for bugs · Cancel for Main Menu"
 
 func _refresh_stats_grid(lines: Array[String]) -> void:
 	if result_stats_grid == null:
