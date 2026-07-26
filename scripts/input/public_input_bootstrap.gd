@@ -28,9 +28,10 @@ func _input(event: InputEvent) -> void:
 	if not OS.is_debug_build() and _is_debug_shortcut(event):
 		get_viewport().set_input_as_handled()
 		return
-	if event.is_action_pressed("ui_cancel") and _route_front_door_cancel():
-		get_viewport().set_input_as_handled()
-		return
+	if event.is_action_pressed("ui_cancel"):
+		if _route_embedded_pause_cancel() or _route_front_door_cancel():
+			get_viewport().set_input_as_handled()
+			return
 	if not event.is_action_pressed("pause_game"):
 		return
 	var scene := get_tree().current_scene
@@ -44,6 +45,27 @@ func _input(event: InputEvent) -> void:
 		return
 	scene.call("_toggle_pause")
 	get_viewport().set_input_as_handled()
+
+func _route_embedded_pause_cancel() -> bool:
+	if get_tree() == null:
+		return false
+	var scene := get_tree().current_scene
+	if scene == null or not ("active_pause_menu" in scene):
+		return false
+	var pause_variant: Variant = scene.get("active_pause_menu")
+	if not (pause_variant is Control):
+		return false
+	var pause_menu := pause_variant as Control
+	if not is_instance_valid(pause_menu) or not ("active_options_menu" in pause_menu):
+		return false
+	var options_variant: Variant = pause_menu.get("active_options_menu")
+	if not (options_variant is Control):
+		return false
+	var options_menu := options_variant as Control
+	if not is_instance_valid(options_menu) or not options_menu.has_method("_on_back_pressed"):
+		return false
+	options_menu.call("_on_back_pressed")
+	return true
 
 func _route_front_door_cancel() -> bool:
 	if get_tree() == null:
