@@ -1,6 +1,8 @@
 extends RefCounted
 class_name PortalEventManagerRuntime
 
+const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
+
 static func resolve_player(owner: Node, player_path: NodePath) -> Node2D:
 	if player_path == NodePath():
 		return null
@@ -45,7 +47,7 @@ static func instantiate_portal(
 	if not (portal_instance is Node2D):
 		return null
 	var portal := portal_instance as Node2D
-	portal.global_position = position
+	portal.global_position = _clamp_to_arena(owner, position, 64.0)
 	if portal.has_signal("activated") and activated_callback.is_valid():
 		portal.connect("activated", activated_callback)
 	owner.add_child(portal)
@@ -141,7 +143,7 @@ static func spawn_elite(
 	if not (enemy_instance is Node2D):
 		return null
 	var enemy_node := enemy_instance as Node2D
-	enemy_node.global_position = spawn_position
+	enemy_node.global_position = _clamp_to_arena(owner, spawn_position, 72.0)
 	if enemy_node.has_method("set_target"):
 		enemy_node.call("set_target", player)
 	if enemy_node.has_method("set"):
@@ -164,3 +166,10 @@ static func pick_elite_role(rng: RandomNumberGenerator) -> String:
 	if rng != null and rng.randf() < 0.5:
 		return "horned_bruiser"
 	return "rift_caller"
+
+static func _clamp_to_arena(owner: Node, world_position: Vector2, inset: float) -> Vector2:
+	var arena_bounds := ArenaBoundsRuntime.ensure_for_scene(owner)
+	if arena_bounds == null or not arena_bounds.has_method("clamp_spawn_position"):
+		return world_position
+	var resolved: Variant = arena_bounds.call("clamp_spawn_position", world_position, inset)
+	return resolved if resolved is Vector2 else world_position
