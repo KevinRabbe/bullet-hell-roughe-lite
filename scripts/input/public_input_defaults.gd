@@ -38,7 +38,7 @@ static func _ensure_action(action: StringName, deadzone: float) -> void:
 	else:
 		InputMap.action_set_deadzone(action, deadzone)
 
-static func _add_key_if_missing(action: StringName, keycode: Key, physical: bool = false) -> void:
+static func _add_key_if_missing(action: StringName, keycode: int, physical: bool = false) -> void:
 	for existing in InputMap.action_get_events(action):
 		if not (existing is InputEventKey):
 			continue
@@ -54,7 +54,7 @@ static func _add_key_if_missing(action: StringName, keycode: Key, physical: bool
 		event.keycode = keycode
 	InputMap.action_add_event(action, event)
 
-static func _add_axis_if_missing(action: StringName, axis: JoyAxis, axis_value: float) -> void:
+static func _add_axis_if_missing(action: StringName, axis: int, axis_value: float) -> void:
 	for existing in InputMap.action_get_events(action):
 		if not (existing is InputEventJoypadMotion):
 			continue
@@ -66,7 +66,7 @@ static func _add_axis_if_missing(action: StringName, axis: JoyAxis, axis_value: 
 	event.axis_value = clampf(axis_value, -1.0, 1.0)
 	InputMap.action_add_event(action, event)
 
-static func _add_joy_button_if_missing(action: StringName, button_index: JoyButton) -> void:
+static func _add_joy_button_if_missing(action: StringName, button_index: int) -> void:
 	for existing in InputMap.action_get_events(action):
 		if existing is InputEventJoypadButton and (existing as InputEventJoypadButton).button_index == button_index:
 			return
