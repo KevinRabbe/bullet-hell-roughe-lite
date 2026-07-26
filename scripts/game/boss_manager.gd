@@ -2,6 +2,7 @@ extends Node
 
 const BossManagerRuntime = preload("res://scripts/game/boss_manager_runtime.gd")
 const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
+const BossPresentationRuntimeRef = preload("res://scripts/ui/boss_presentation_runtime.gd")
 
 signal boss_spawned_signal
 signal boss_defeated_signal
@@ -50,6 +51,7 @@ func _spawn_gate_beast() -> bool:
 	active_boss = boss
 	boss_spawned = true
 	boss_spawned_signal.emit()
+	BossPresentationRuntimeRef.show_gate_beast_spawn(self)
 	print("Boss spawned: Gate Beast")
 	if boss.has_signal("tree_exiting"):
 		boss.tree_exiting.connect(_on_gate_beast_exiting.bind(boss))
@@ -76,6 +78,7 @@ func _on_gate_beast_exiting(boss: Node2D) -> void:
 
 func _on_gate_beast_defeated() -> void:
 	boss_defeated_signal.emit()
+	BossPresentationRuntimeRef.show_gate_beast_defeated(self)
 	print("Boss defeated: Gate Beast")
 
 func has_active_boss() -> bool:
