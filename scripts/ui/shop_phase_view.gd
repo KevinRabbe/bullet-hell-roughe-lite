@@ -2,6 +2,7 @@ extends Node
 
 const ShopViewModelScript = preload("res://scripts/ui/shop_view_model.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoiceCard.tscn")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -31,24 +32,41 @@ var weapon_slot_buttons: Array[Button] = []
 var weapon_slot_labels: Array[Label] = []
 var selected_weapon_slot: int = -1
 var merge_selected_button: Button
-var card_title_labels: Array[Label] = []
-var card_type_labels: Array[Label] = []
-var card_icon_rects: Array[TextureRect] = []
-var card_desc_labels: Array[RichTextLabel] = []
-var card_lock_buttons: Array[Button] = []
-var card_panels: Array[Panel] = []
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
 
 func _ready() -> void:
 	set("layer", 20)
+	_upgrade_offer_buttons_to_standard_cards()
 	_resolve_references()
 	_init_view_model()
 	_build_layout_once()
 	_connect_runtime_updates()
 	_mark_dirty()
 	_refresh_if_needed()
+
+func _upgrade_offer_buttons_to_standard_cards() -> void:
+	for path in offer_button_paths:
+		var existing: Button = get_node_or_null(path) as Button
+		if existing == null or existing.has_method("configure"):
+			continue
+		var parent: Node = existing.get_parent()
+		if parent == null:
+			continue
+		var insert_index: int = existing.get_index()
+		var card: Button = StandardChoiceCardScene.instantiate() as Button
+		if card == null:
+			continue
+		card.name = existing.name
+		card.position = existing.position
+		card.size = existing.size
+		card.visible = existing.visible
+		card.disabled = existing.disabled
+		parent.remove_child(existing)
+		existing.queue_free()
+		parent.add_child(card)
+		parent.move_child(card, insert_index)
 
 func _resolve_references() -> void:
 	shop_controller = get_node_or_null(shop_controller_path)
@@ -59,9 +77,9 @@ func _resolve_references() -> void:
 	reroll_button = get_node_or_null(reroll_button_path) as Button
 	continue_button = get_node_or_null(continue_button_path) as Button
 	for path in offer_button_paths:
-		var button := get_node_or_null(path)
+		var button: Node = get_node_or_null(path)
 		if button is Button:
-			offer_buttons.append(button)
+			offer_buttons.append(button as Button)
 
 func _init_view_model() -> void:
 	shop_view_model = ShopViewModelScript.new()
@@ -113,15 +131,7 @@ func _build_layout_once() -> void:
 
 	_build_panel_style()
 	_build_top_labels()
-
-	var card_width := 236.0
-	var card_height := 350.0
-	var start_x := 20.0
-	var gap := 8.0
-	var start_y := 80.0
-	for i in range(4):
-		_build_offer_card_panel(i, card_width, card_height, start_x, gap, start_y)
-
+	_build_offer_card_layout()
 	_build_stats_panel()
 	_build_items_panel()
 	_build_weapons_panel()
@@ -142,73 +152,20 @@ func _build_layout_once() -> void:
 	for button in offer_buttons:
 		panel.move_child(button, panel.get_child_count() - 1)
 
-func _build_offer_card_panel(index: int, card_width: float, card_height: float, start_x: float, gap: float, start_y: float) -> void:
-	var card := Panel.new()
-	card.position = Vector2(start_x + (card_width + gap) * index, start_y)
-	card.size = Vector2(card_width, card_height)
-	InfernalUiStyleRef.apply_panel(card, InfernalUiStyleRef.PANEL_CARD)
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.add_child(card)
-	card_panels.append(card)
-
-	var title := Label.new()
-	title.position = Vector2(12.0, 10.0)
-	title.size = Vector2(card_width - 84.0, 48.0)
-	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	title.max_lines_visible = 2
-	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	title.add_theme_font_size_override("font_size", 18)
-	InfernalUiStyleRef.apply_title(title)
-	card.add_child(title)
-	card_title_labels.append(title)
-
-	var icon_rect := TextureRect.new()
-	icon_rect.position = Vector2(card_width - 66.0, 8.0)
-	icon_rect.size = Vector2(54.0, 54.0)
-	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.add_child(icon_rect)
-	card_icon_rects.append(icon_rect)
-
-	var type_label := Label.new()
-	type_label.position = Vector2(12.0, 62.0)
-	type_label.size = Vector2(180.0, 30.0)
-	type_label.add_theme_font_size_override("font_size", 15)
-	InfernalUiStyleRef.apply_section_title(type_label)
-	card.add_child(type_label)
-	card_type_labels.append(type_label)
-
-	var desc := RichTextLabel.new()
-	desc.position = Vector2(12.0, 94.0)
-	desc.size = Vector2(card_width - 24.0, 194.0)
-	desc.bbcode_enabled = true
-	desc.scroll_active = false
-	desc.fit_content = false
-	desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	desc.add_theme_font_size_override("normal_font_size", 12)
-	desc.add_theme_color_override("default_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.18))
-	card.add_child(desc)
-	card_desc_labels.append(desc)
-
-	var lock_button := Button.new()
-	lock_button.visible = false
-	lock_button.position = Vector2(12.0, 315.0)
-	lock_button.size = Vector2(card_width - 24.0, 32.0)
-	lock_button.text = "Lock (soon)"
-	lock_button.disabled = true
-	lock_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	card.add_child(lock_button)
-	card_lock_buttons.append(lock_button)
-
-	if index < offer_buttons.size():
-		var price_button := offer_buttons[index]
-		price_button.position = Vector2(card.position.x + 18.0, card.position.y + 294.0)
-		price_button.size = Vector2(card_width - 36.0, 42.0)
-		price_button.text = "Buy"
-		price_button.mouse_filter = Control.MOUSE_FILTER_STOP
-		InfernalUiStyleRef.apply_primary_button(price_button)
-		panel.move_child(price_button, panel.get_child_count() - 1)
+func _build_offer_card_layout() -> void:
+	var card_width := 236.0
+	var card_height := 350.0
+	var start_x := 20.0
+	var gap := 8.0
+	var start_y := 80.0
+	for index in range(offer_buttons.size()):
+		var button: Button = offer_buttons[index]
+		button.position = Vector2(start_x + (card_width + gap) * index, start_y)
+		button.size = Vector2(card_width, card_height)
+		button.text = ""
+		button.mouse_filter = Control.MOUSE_FILTER_STOP
+		if button.has_method("set_selected"):
+			button.call("set_selected", false)
 
 func _build_stats_panel() -> void:
 	var stats_panel := Panel.new()
@@ -361,12 +318,12 @@ func _refresh_top_bar() -> void:
 
 func _refresh_offer_cards() -> void:
 	var cards := _get_snapshot_cards()
-	for i in range(4):
-		var button := offer_buttons[i] if i < offer_buttons.size() else null
-		if i >= cards.size():
-			_clear_offer_card(i, button)
+	for index in range(offer_buttons.size()):
+		var button: Button = offer_buttons[index]
+		if index >= cards.size():
+			_clear_offer_card(button)
 			continue
-		_apply_offer_card(i, cards[i], button)
+		_apply_offer_card(cards[index], button)
 
 func _refresh_stats_panel() -> void:
 	if right_stats_label == null:
@@ -447,31 +404,60 @@ func _get_snapshot_cards() -> Array[Dictionary]:
 				cards.append(card_variant as Dictionary)
 	return cards
 
-func _clear_offer_card(index: int, button: Button) -> void:
-	card_title_labels[index].text = "N/A"
-	card_type_labels[index].text = "-"
-	card_icon_rects[index].texture = null
-	card_desc_labels[index].text = ""
-	if button != null:
-		button.text = "N/A"
-		button.disabled = true
+func _clear_offer_card(button: Button) -> void:
+	if button == null:
+		return
+	button.text = ""
+	button.disabled = true
+	if button.has_method("configure"):
+		button.call("configure", "N/A", "No offer available.", "SHOP", "", "", null)
 
-func _apply_offer_card(index: int, card: Dictionary, button: Button) -> void:
-	var title := card_title_labels[index]
-	var type_label := card_type_labels[index]
-	var icon_rect := card_icon_rects[index]
-	var desc := card_desc_labels[index]
-	_apply_card_border(index, str(card.get("kind", "")))
-	title.text = str(card.get("title", "Offer"))
-	type_label.text = str(card.get("type_label", "-"))
-	icon_rect.texture = card.get("icon", null)
-	desc.text = str(card.get("description", ""))
-	var block_reason := str(card.get("block_reason", ""))
+func _apply_offer_card(card: Dictionary, button: Button) -> void:
+	if button == null:
+		return
+	var disabled: bool = card.get("button_disabled", false) == true
+	var kind := str(card.get("kind", ""))
+	var hint := "Buy"
+	if kind == "sold_out":
+		hint = "Purchased"
+	elif disabled:
+		hint = "Blocked"
+	var body := _build_card_body(card)
+	button.text = ""
+	button.disabled = disabled
+	if button.has_method("configure"):
+		button.call(
+			"configure",
+			str(card.get("title", "Offer")),
+			body,
+			str(card.get("type_label", "Offer")).to_upper(),
+			str(card.get("button_text", "Buy")),
+			hint,
+			card.get("icon", null)
+		)
+	if button.has_method("set_selected"):
+		button.call("set_selected", false)
+
+func _build_card_body(card: Dictionary) -> String:
+	var plain_description := _strip_bbcode(str(card.get("description", "")))
+	var body_lines: Array[String] = []
+	for raw_line in plain_description.split("\n", false):
+		var line := str(raw_line).strip_edges()
+		if line == "":
+			continue
+		body_lines.append(line)
+		if body_lines.size() >= 4:
+			break
+	var block_reason := str(card.get("block_reason", "")).strip_edges()
 	if block_reason != "":
-		desc.text += "\n[color=#ff7d7d]%s[/color]" % block_reason
-	if button != null:
-		button.disabled = card.get("button_disabled", false) == true
-		button.text = str(card.get("button_text", "Buy"))
+		body_lines.append("Blocked: %s" % block_reason)
+	return "\n".join(body_lines)
+
+func _strip_bbcode(value: String) -> String:
+	var regex := RegEx.new()
+	if regex.compile("\\[[^\\]]*\\]") != OK:
+		return value
+	return regex.sub(value, "", true)
 
 func _get_snapshot_weapon_slots() -> Array[Dictionary]:
 	var slots: Array[Dictionary] = []
@@ -520,18 +506,3 @@ func _update_merge_button_state() -> void:
 			return
 	merge_selected_button.disabled = true
 	merge_selected_button.text = "No valid merge"
-
-func _apply_card_border(index: int, offer_type: String) -> void:
-	if index < 0 or index >= card_panels.size():
-		return
-	var card := card_panels[index]
-	var border := InfernalUiStyleRef.COLOR_BURNT_BROWN
-	if offer_type == "weapon" or offer_type == "item":
-		border = InfernalUiStyleRef.COLOR_OLD_PARCHMENT
-	elif offer_type == "sold_out":
-		border = InfernalUiStyleRef.COLOR_BURNT_BROWN.darkened(0.35)
-	var style := card.get_theme_stylebox("panel")
-	if style is StyleBoxFlat:
-		var cloned := (style as StyleBoxFlat).duplicate() as StyleBoxFlat
-		cloned.border_color = border
-		card.add_theme_stylebox_override("panel", cloned)
