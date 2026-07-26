@@ -7,6 +7,7 @@ const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spaw
 
 @export var enemy_scene: PackedScene
 @export var target_path: NodePath
+@export var arena_bounds_path: NodePath
 @export var spawn_interval_seconds: float = 1.5
 @export var spawn_radius: float = 420.0
 @export var max_alive_enemies: int = 20
@@ -18,6 +19,7 @@ const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spaw
 @export var external_move_speed_multiplier: float = 1.0
 
 var target: Node2D
+var arena_bounds: Node
 var rng: RandomNumberGenerator
 var spawn_timer: Timer
 var wave_elapsed_seconds: float = 0.0
@@ -30,6 +32,8 @@ var _elite_config: Dictionary = {}
 func _ready() -> void:
 	if target_path != NodePath():
 		target = get_node_or_null(target_path)
+	if arena_bounds_path != NodePath():
+		arena_bounds = get_node_or_null(arena_bounds_path)
 
 	rng = _resolve_rng("spawner")
 	_load_wave_config()
@@ -86,11 +90,25 @@ func _on_spawn_timer_timeout() -> void:
 		var adjusted_move_speed := float(enemy_node.get("move_speed")) * external_move_speed_multiplier
 		enemy_node.set("move_speed", adjusted_move_speed)
 	var spawn_direction := Vector2.RIGHT.rotated(rng.randf_range(0.0, TAU))
-	enemy_node.global_position = target.global_position + (spawn_direction * spawn_radius)
+	enemy_node.global_position = _resolve_spawn_position(spawn_direction)
 	add_child(enemy_node)
 
 	if enemy_node.has_method("set_target"):
 		enemy_node.call("set_target", target)
+
+func _resolve_spawn_position(spawn_direction: Vector2) -> Vector2:
+	var legacy_position := target.global_position + (spawn_direction * spawn_radius)
+	if arena_bounds == null or not is_instance_valid(arena_bounds):
+		return legacy_position
+	if not arena_bounds.has_method("resolve_enemy_spawn_position"):
+		return legacy_position
+	var resolved: Variant = arena_bounds.call(
+		"resolve_enemy_spawn_position",
+		target.global_position,
+		spawn_radius,
+		spawn_direction
+	)
+	return resolved if resolved is Vector2 else legacy_position
 
 func _pick_enemy_variant() -> String:
 	var pool := _variant_pool_for_wave(current_wave_index)
