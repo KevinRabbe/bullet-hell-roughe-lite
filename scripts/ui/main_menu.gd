@@ -6,7 +6,7 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
-const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
+const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelectStandardized.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
 const CREDITS_SCENE_PATH := "res://scenes/ui/CreditsMenu.tscn"
 const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenuStandardized.tscn"
