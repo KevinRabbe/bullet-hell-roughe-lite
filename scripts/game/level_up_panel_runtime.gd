@@ -3,9 +3,9 @@ extends RefCounted
 
 static func show_panel(panel: Control, title_label: Label, reroll_button: Button, reroll_cost: int) -> void:
 	if title_label != null:
-		title_label.text = "Level Up! Pick 1 of 4"
+		title_label.text = "CURSE DEEPENS — CHOOSE ONE"
 	if reroll_button != null:
-		reroll_button.text = "Reroll (%dG)" % reroll_cost
+		reroll_button.text = "REROLL · %dG" % reroll_cost
 	if panel != null:
 		panel.visible = true
 
@@ -33,7 +33,7 @@ static func _apply_choice(button: Button, choice: Dictionary) -> void:
 			"",
 			str(choice.get("rarity", "Common")).to_upper(),
 			str(choice.get("formatted_value", "")),
-			"Select",
+			"CHOOSE",
 			null
 		)
 		if button.has_method("set_selected"):
