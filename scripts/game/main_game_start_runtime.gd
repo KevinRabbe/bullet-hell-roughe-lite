@@ -67,11 +67,8 @@ static func _apply_scene_scenario(requester: Node, preset: String) -> void:
 		return
 
 	var enemy_spawner := scene.get_node_or_null("EnemySpawner")
-	if enemy_spawner != null:
-		enemy_spawner.set("current_wave_index", DebugRunPresetRuntimeRef.wave_index_for_preset(preset))
-		enemy_spawner.set("wave_elapsed_seconds", 0.0)
-		enemy_spawner.set("countdown_print_accumulator", 0.0)
-		enemy_spawner.set("completion_emitted", false)
+	if enemy_spawner != null and enemy_spawner.has_method("configure_starting_wave"):
+		enemy_spawner.call("configure_starting_wave", DebugRunPresetRuntimeRef.wave_index_for_preset(preset))
 
 	var boss_id := DebugRunPresetRuntimeRef.boss_id_for_preset(preset)
 	if boss_id == "":
