@@ -50,13 +50,13 @@ func _route_embedded_pause_cancel() -> bool:
 	if get_tree() == null:
 		return false
 	var scene := get_tree().current_scene
-	if scene == null or not ("active_pause_menu" in scene):
+	if scene == null or not scene.has_method("_toggle_pause"):
 		return false
 	var pause_variant: Variant = scene.get("active_pause_menu")
 	if not (pause_variant is Control):
 		return false
 	var pause_menu := pause_variant as Control
-	if not is_instance_valid(pause_menu) or not ("active_options_menu" in pause_menu):
+	if not is_instance_valid(pause_menu):
 		return false
 	var options_variant: Variant = pause_menu.get("active_options_menu")
 	if not (options_variant is Control):
