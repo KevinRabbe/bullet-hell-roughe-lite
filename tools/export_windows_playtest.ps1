@@ -20,12 +20,18 @@ if ($null -eq $godotCommand) {
     throw "Godot editor executable '$GodotExe' was not found. Put Godot 4.5 on PATH or set GODOT_EXE to the editor executable path."
 }
 
+Write-Host "Validating Hellshot Frontier imports/scripts with Godot: $($godotCommand.Source)"
+& $godotCommand.Source --headless --path $projectRoot --import
+if ($LASTEXITCODE -ne 0) {
+    throw "Godot project validation/import failed with exit code $LASTEXITCODE. Fix project errors before creating a tester package."
+}
+
 if (Test-Path $windowsRoot) {
     Remove-Item $windowsRoot -Recurse -Force
 }
 New-Item -ItemType Directory -Path $windowsRoot -Force | Out-Null
 
-Write-Host "Exporting Hellshot Frontier with Godot: $($godotCommand.Source)"
+Write-Host "Exporting Hellshot Frontier release build..."
 & $godotCommand.Source --headless --path $projectRoot --export-release "Windows Playtest" $exePath
 if ($LASTEXITCODE -ne 0) {
     throw "Godot release export failed with exit code $LASTEXITCODE. Confirm matching Godot 4.5 export templates are installed."
