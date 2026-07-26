@@ -54,14 +54,15 @@ static func apply_saved_settings() -> Dictionary:
 
 static func apply_settings(settings: Dictionary) -> void:
 	ensure_runtime_buses()
-	var muted: bool = settings.get(KEY_MUTED, false) == true
+	var globally_muted: bool = settings.get(KEY_MUTED, false) == true
 	for key in BUS_BY_KEY.keys():
 		var bus_name: String = str(BUS_BY_KEY[key])
 		var bus_index: int = AudioServer.get_bus_index(bus_name)
 		if bus_index < 0:
 			continue
-		var level: float = 0.0 if muted else _normalized_level(settings, key)
+		var level := _normalized_level(settings, key)
 		AudioServer.set_bus_volume_db(bus_index, _linear_to_db(level))
+		AudioServer.set_bus_mute(bus_index, globally_muted or level <= 0.0001)
 
 static func ensure_runtime_buses() -> void:
 	for bus_name in CHILD_BUSES:
