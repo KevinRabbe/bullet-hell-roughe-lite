@@ -2,6 +2,7 @@ class_name ShopStatSheetPanel
 extends Panel
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
 const PAGE_PRIMARY := "primary"
 const PAGE_SECONDARY := "secondary"
@@ -46,9 +47,11 @@ var _active_page: String = PAGE_PRIMARY
 var _primary_button: Button
 var _secondary_button: Button
 var _rows: VBoxContainer
+var _accessibility_settings: Dictionary = {}
 
 func configure(player: Node) -> void:
 	_player = player
+	_accessibility_settings = AccessibilitySettingsRuntimeRef.get_active_settings()
 	_build_once()
 
 func refresh(player_snapshot: Dictionary) -> void:
@@ -64,13 +67,14 @@ func _build_once() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.text = "STATS"
 	InfernalUiStyleRef.apply_section_title(title)
+	title.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(12, _accessibility_settings))
 	add_child(title)
 
 	_primary_button = Button.new()
 	_primary_button.position = Vector2(8.0, 32.0)
 	_primary_button.size = Vector2(68.0, 30.0)
 	_primary_button.text = "PRIMARY"
-	_primary_button.add_theme_font_size_override("font_size", 10)
+	_primary_button.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(10, _accessibility_settings))
 	_primary_button.pressed.connect(_set_page.bind(PAGE_PRIMARY))
 	add_child(_primary_button)
 
@@ -78,7 +82,7 @@ func _build_once() -> void:
 	_secondary_button.position = Vector2(80.0, 32.0)
 	_secondary_button.size = Vector2(68.0, 30.0)
 	_secondary_button.text = "SECONDARY"
-	_secondary_button.add_theme_font_size_override("font_size", 9)
+	_secondary_button.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(9, _accessibility_settings))
 	_secondary_button.pressed.connect(_set_page.bind(PAGE_SECONDARY))
 	add_child(_secondary_button)
 
@@ -118,14 +122,15 @@ func _apply_tab_styles() -> void:
 			InfernalUiStyleRef.apply_secondary_button(_secondary_button)
 
 func _add_stat_row(definition: Dictionary) -> void:
+	var font_scale := AccessibilitySettingsRuntimeRef.get_font_scale(_accessibility_settings)
 	var row := HBoxContainer.new()
-	row.custom_minimum_size = Vector2(140.0, 23.0)
+	row.custom_minimum_size = Vector2(140.0, 23.0 * font_scale)
 	row.add_theme_constant_override("separation", 4)
 	_rows.add_child(row)
 
 	var label := Label.new()
 	label.text = str(definition.get("label", "Stat"))
-	label.add_theme_font_size_override("font_size", 11)
+	label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(11, _accessibility_settings))
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	InfernalUiStyleRef.apply_body_text(label)
@@ -136,12 +141,13 @@ func _add_stat_row(definition: Dictionary) -> void:
 	value_label.custom_minimum_size = Vector2(42.0, 0.0)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	value_label.text = _format_value(value, str(definition.get("format", "one")))
-	value_label.add_theme_font_size_override("font_size", 11)
+	value_label.add_theme_font_size_override("font_size", AccessibilitySettingsRuntimeRef.scale_font(11, _accessibility_settings))
 	var neutral := float(definition.get("neutral", 0.0))
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(_accessibility_settings)
 	if is_equal_approx(value, neutral):
-		value_label.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.28)
+		value_label.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.12 if high_contrast else 0.28)
 	else:
-		value_label.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
+		value_label.modulate = Color.WHITE if high_contrast else InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
 	row.add_child(value_label)
 
 func _resolve_value(definition: Dictionary) -> float:
