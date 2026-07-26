@@ -4,7 +4,7 @@
 ;
 ; Format:
 ;   [section] ; section goes between []
-;   param=value ; assign values to parameters
+;   param=value
 
 config_version=5
 
@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 DataRegistry="*res://scripts/autoload/data_registry.gd"
 RunRng="*res://scripts/autoload/run_rng.gd"
+PublicInputBootstrap="*res://scripts/input/public_input_bootstrap.gd"
 
 [input]
 
