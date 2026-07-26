@@ -62,6 +62,27 @@ The game should repeatedly create decisions that feel like:
 
 Build variety should come from interactions between hunter identity, weapons, items, tags, set bonuses, portal effects, mutations, and Ascensions rather than from isolated stat inflation alone.
 
+## Product milestone direction
+
+The current product north star is **V2 — Steam Page / Public Reveal Candidate**.
+
+V2 is reached when Hellshot Frontier can be shown to a complete stranger with no explanation and the real game footage/screenshots communicate a coherent game worth following or wishlisting.
+
+The route is:
+
+```text
+V1 — Internal Vertical Slice + Foundations
+        -> stable reusable development base
+V2 — Steam Page / Public Reveal Candidate
+        -> coherent identity + capture-ready representative run
+V3 — Public Demo / External Playtest Candidate
+V4 — Early Access Candidate
+```
+
+Until V2 is reached, work should primarily close an explicit V1 foundation gap, close a V2 presentation/gameplay gap, or fix a defect that blocks reliable development/testing. Random polish and speculative architecture should be deferred.
+
+The full product roadmap and V2 acceptance criteria live in `docs/PRODUCT_ROADMAP.md`.
+
 ## Reusable-foundation direction
 
 Future development should prefer one strong canonical implementation for concepts that repeat across the game, then express variety through data, configuration, shared components, and small extensions.
@@ -98,6 +119,7 @@ The repository favors small, scoped changes and deterministic/data-driven runtim
 Important project contracts live in:
 
 - `AGENTS.md`
+- `docs/PRODUCT_ROADMAP.md`
 - `docs/REUSABLE_GAME_FOUNDATIONS.md`
 - `docs/UI_SYSTEM_SPEC.md`
 - `docs/ART_STYLE_RULES.md`
@@ -108,18 +130,16 @@ Gameplay truth belongs in runtime/data systems; UI code should remain presentati
 
 ## Current development phase
 
-The foundational vertical slice exists.
+The foundational vertical slice exists and the next product milestone is the **V2 Steam Page / Public Reveal Candidate**.
 
-The highest-value work is now increasingly:
+Immediate work is:
 
-- reusable UI and arena foundations that reduce future implementation cost
-- playtesting and bug fixing
-- combat feel and readability
-- enemy and wave pressure
-- portal decision quality
-- build differentiation
-- progression/reward pacing
-- boss quality
-- audiovisual feedback and polish
-- content validation and faster scenario-based testing
-- removing remaining prototype/debug scaffolding when it becomes safe to do so
+- finish/qualify the remaining V1 foundation slices: strict content validation and deep-run development scenarios
+- then prioritize V2 gaps by how much they improve the representative public-facing 10-wave run
+- strengthen combat feel/readability and enemy pressure
+- make build differentiation, portal decisions, Gate Beast, Ascension, and late-run escalation obvious in real gameplay
+- finish the bounded Hellshot Frontier arena presentation
+- bring the canonical UI from structurally standardized to capture-ready presentation
+- add coherent audiovisual feedback/juice where the representative run needs it
+- remove visible prototype/debug presentation from capture routes
+- reach a real-game capture gate suitable for screenshots and a short gameplay-first trailer
