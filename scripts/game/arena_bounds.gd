@@ -372,8 +372,8 @@ static func _farthest_rect_corner(origin: Vector2, rect: Rect2) -> Vector2:
 	var best_distance_squared := origin.distance_squared_to(best)
 	for index in range(1, corners.size()):
 		var candidate := corners[index]
-		var distance_squared := origin.distance_squared_to(best)
-		if origin.distance_squared_to(candidate) > best_distance_squared:
+		var distance_squared := origin.distance_squared_to(candidate)
+		if distance_squared > best_distance_squared:
 			best = candidate
-			best_distance_squared = origin.distance_squared_to(candidate)
+			best_distance_squared = distance_squared
 	return best
