@@ -9,7 +9,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
 const CREDITS_SCENE_PATH := "res://scenes/ui/CreditsMenu.tscn"
-const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenu.tscn"
+const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenuStandardized.tscn"
 const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_hero_art.png"
 
