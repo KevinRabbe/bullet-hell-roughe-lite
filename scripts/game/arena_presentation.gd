@@ -24,7 +24,7 @@ func _apply_arena_layout() -> void:
 	var rect_variant: Variant = arena_bounds.call("get_playable_rect")
 	if not (rect_variant is Rect2):
 		return
-	var playable_rect := rect_variant as Rect2
+	var playable_rect: Rect2 = rect_variant
 	_apply_backdrop(playable_rect)
 	_apply_ground(playable_rect)
 	_apply_composition(playable_rect)
