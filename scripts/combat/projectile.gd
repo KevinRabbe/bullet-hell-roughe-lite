@@ -20,6 +20,7 @@ var _weapon_data_cache: Dictionary = {}
 var _visual_animation_profile: Dictionary = {}
 var _visual_base_scale: Vector2 = Vector2.ONE
 var _visual_base_rotation: float = 0.0
+var _visual_base_modulate: Color = Color.WHITE
 var _visual_elapsed: float = 0.0
 var _visual_phase: float = 0.0
 @onready var visual: Sprite2D = get_node_or_null("Visual")
@@ -30,6 +31,7 @@ func _ready() -> void:
 	if visual != null:
 		_visual_base_scale = visual.scale
 		_visual_base_rotation = visual.rotation
+		_visual_base_modulate = visual.modulate
 
 func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
@@ -70,8 +72,15 @@ func _update_visual_animation(delta: float) -> void:
 		_visual_phase
 	)
 	visual.scale = _visual_base_scale * scale_multiplier
-	visual.rotation = _visual_base_rotation + (
-		_visual_elapsed * float(_visual_animation_profile.get("spin_speed", 0.0))
+	visual.rotation = _visual_base_rotation + ProjectileVisualUtil.sample_rotation_offset(
+		_visual_animation_profile,
+		_visual_elapsed
+	)
+	visual.modulate = ProjectileVisualUtil.sample_modulate(
+		_visual_animation_profile,
+		_visual_elapsed,
+		_visual_phase,
+		_visual_base_modulate
 	)
 
 func _on_body_entered(body: Node) -> void:
