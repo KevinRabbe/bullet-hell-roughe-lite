@@ -12,6 +12,7 @@ Implemented:
 - `UiLayoutMetrics` owns the shared NORMAL / COMPACT / TIGHT layout classes.
 - `1152x648` remains the required TIGHT reference resolution.
 - `UiComponentGallery` is the internal visual review surface for reusable components.
+- standard ProgressBar styling is owned by `InfernalUiStyle`; it does not need a wrapper scene while the control itself has no reusable internal structure.
 
 ## Reusable components
 
@@ -53,22 +54,24 @@ The current UI migration stack covers:
 11. Main Menu -> semantic roles without changing its key-art composition.
 12. Character Select -> shared shells/cards/tags/layout while preserving its existing successful composition and run-selection behavior.
 13. UI Component Gallery -> previews for every reusable component currently implemented.
+14. Run HUD -> shared card/text/layout roles plus globally owned ProgressBar presentation.
 
 ## Deliberately preserved exceptions
 
 Not every UI element must become a custom component.
 
-Simple labels, buttons, rows, and containers should continue to use semantic roles directly. A component scene is justified only when it owns meaningful internal structure or reusable behavior.
+Simple labels, buttons, rows, containers, and single native controls should continue to use semantic roles directly. A component scene is justified only when it owns meaningful internal structure or reusable behavior.
 
 The following are intentionally not generalized yet:
 
 - item/weapon slot scenes;
 - rarity badge scene;
 - currency display scene;
-- progress-bar scene;
 - generic screen-header/section-header scenes.
 
-These should be introduced only when concrete duplicate consumers justify them.
+Progress bars are intentionally standardized through `InfernalUiStyle.apply_progress_bar()` rather than a wrapper scene until a real structured progress component is required.
+
+These candidates should be introduced only when concrete duplicate consumers justify them.
 
 ## Remaining Phase 5 work
 
@@ -87,6 +90,7 @@ UI migration work is allowed to continue without stopping after every screen. Th
 The batch smoke must cover at least:
 
 - Main Menu and Character Select at `1152x648`;
+- live Run HUD values, pressure bar, and state transitions;
 - Shop purchase/reroll/tooltip/weapon merge;
 - Level Up choice/reroll;
 - Pause -> Options -> Back preserving the exact active run;
