@@ -1,6 +1,7 @@
 extends Control
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 @export var player_path: NodePath
 @export var enemy_spawner_path: NodePath
@@ -22,6 +23,21 @@ var stats_label: Label
 var state_label: Label
 var wave_progress_bar: ProgressBar
 
+@onready var top_margin: MarginContainer = $TopMargin
+@onready var top_row: HBoxContainer = $TopMargin/TopRow
+@onready var stats_panel: PanelContainer = $TopMargin/TopRow/StatsPanel
+@onready var progress_panel: PanelContainer = $TopMargin/TopRow/ProgressPanel
+@onready var state_panel: PanelContainer = $TopMargin/TopRow/StatePanel
+@onready var stats_margin: MarginContainer = $TopMargin/TopRow/StatsPanel/StatsMargin
+@onready var progress_margin: MarginContainer = $TopMargin/TopRow/ProgressPanel/ProgressMargin
+@onready var state_margin: MarginContainer = $TopMargin/TopRow/StatePanel/StateMargin
+@onready var stats_vbox: VBoxContainer = $TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox
+@onready var progress_vbox: VBoxContainer = $TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox
+@onready var state_vbox: VBoxContainer = $TopMargin/TopRow/StatePanel/StateMargin/StateVBox
+@onready var stats_caption: Label = $TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox/StatsCaption
+@onready var progress_caption: Label = $TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox/ProgressCaption
+@onready var state_caption: Label = $TopMargin/TopRow/StatePanel/StateMargin/StateVBox/StateCaption
+
 func _ready() -> void:
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
@@ -42,6 +58,8 @@ func _ready() -> void:
 	if wave_progress_bar_path != NodePath():
 		wave_progress_bar = get_node_or_null(wave_progress_bar_path)
 	_apply_presentation()
+	_apply_responsive_layout()
+	resized.connect(_apply_responsive_layout)
 	_update_hud()
 
 func _process(_delta: float) -> void:
@@ -77,40 +95,57 @@ func _update_hud() -> void:
 		wave_progress_bar.visible = not _is_shop_open()
 
 func _apply_presentation() -> void:
-	for panel_path in [
-		"TopMargin/TopRow/StatsPanel",
-		"TopMargin/TopRow/ProgressPanel",
-		"TopMargin/TopRow/StatePanel",
-	]:
-		var panel := get_node_or_null(panel_path) as PanelContainer
+	for panel in [stats_panel, progress_panel, state_panel]:
 		InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_CARD)
-	for caption_path in [
-		"TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox/StatsCaption",
-		"TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox/ProgressCaption",
-		"TopMargin/TopRow/StatePanel/StateMargin/StateVBox/StateCaption",
-	]:
-		var caption := get_node_or_null(caption_path) as Label
-		InfernalUiStyleRef.apply_section_title(caption)
-	InfernalUiStyleRef.apply_body_text(stats_label)
-	InfernalUiStyleRef.apply_accent_text(state_label)
-	if wave_progress_bar != null:
-		wave_progress_bar.add_theme_stylebox_override(
-			"background",
-			_build_progress_style(InfernalUiStyleRef.COLOR_ALMOST_BLACK, InfernalUiStyleRef.COLOR_BURNT_BROWN)
-		)
-		wave_progress_bar.add_theme_stylebox_override(
-			"fill",
-			_build_progress_style(InfernalUiStyleRef.COLOR_DEEP_BLOOD_RED, InfernalUiStyleRef.COLOR_HELL_ORANGE)
-		)
-		wave_progress_bar.add_theme_color_override("font_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT)
+	for caption in [stats_caption, progress_caption, state_caption]:
+		InfernalUiStyleRef.apply_text_role(caption, InfernalUiStyleRef.TEXT_SECTION_TITLE)
+	InfernalUiStyleRef.apply_text_role(stats_label, InfernalUiStyleRef.TEXT_BODY)
+	InfernalUiStyleRef.apply_text_role(state_label, InfernalUiStyleRef.TEXT_VALUE)
+	InfernalUiStyleRef.apply_progress_bar(wave_progress_bar)
 
-func _build_progress_style(background_color: Color, border_color: Color) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = background_color
-	style.border_color = border_color
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(6)
-	return style
+func _apply_responsive_layout() -> void:
+	var layout_class := UiLayoutMetricsRef.layout_class_for_size(get_viewport_rect().size)
+	var tight := layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT
+	var compact := layout_class == UiLayoutMetricsRef.LayoutClass.COMPACT
+	var horizontal_margin := UiLayoutMetricsRef.section_padding(layout_class)
+	var vertical_margin := UiLayoutMetricsRef.dense_gap(layout_class) + 8
+	if top_margin != null:
+		top_margin.offset_left = horizontal_margin
+		top_margin.offset_top = vertical_margin
+		top_margin.offset_right = -horizontal_margin
+		top_margin.offset_bottom = 82.0 if tight else 88.0
+	if top_row != null:
+		top_row.add_theme_constant_override("separation", UiLayoutMetricsRef.row_gap(layout_class))
+	var inner_horizontal := UiLayoutMetricsRef.section_padding(layout_class)
+	var inner_vertical := UiLayoutMetricsRef.dense_gap(layout_class) + 4
+	for panel_margin in [stats_margin, progress_margin, state_margin]:
+		if panel_margin == null:
+			continue
+		panel_margin.add_theme_constant_override("margin_left", inner_horizontal)
+		panel_margin.add_theme_constant_override("margin_top", inner_vertical)
+		panel_margin.add_theme_constant_override("margin_right", inner_horizontal)
+		panel_margin.add_theme_constant_override("margin_bottom", inner_vertical)
+	if stats_vbox != null:
+		stats_vbox.add_theme_constant_override("separation", 1)
+	if progress_vbox != null:
+		progress_vbox.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class))
+	if state_vbox != null:
+		state_vbox.add_theme_constant_override("separation", 1)
+	if stats_panel != null:
+		stats_panel.custom_minimum_size = Vector2(330 if tight else (350 if compact else 380), 64 if tight else 68)
+	if progress_panel != null:
+		progress_panel.custom_minimum_size = Vector2(340 if tight else (360 if compact else 400), 64 if tight else 68)
+	if state_panel != null:
+		state_panel.custom_minimum_size = Vector2(170 if tight else (185 if compact else 200), 64 if tight else 68)
+	for caption in [stats_caption, progress_caption, state_caption]:
+		if caption != null:
+			caption.add_theme_font_size_override("font_size", 11 if tight else 12)
+	if stats_label != null:
+		stats_label.add_theme_font_size_override("font_size", 15 if tight else 16)
+	if state_label != null:
+		state_label.add_theme_font_size_override("font_size", 15 if tight else 16)
+	if wave_progress_bar != null:
+		wave_progress_bar.custom_minimum_size.y = 22 if tight else 24
 
 func _get_player_snapshot() -> Dictionary:
 	if player != null and player.has_method("get_ui_snapshot"):
