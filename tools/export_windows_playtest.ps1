@@ -86,7 +86,9 @@ Built UTC: $([DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
 
 IMPORTANT: Extract the entire ZIP to a normal folder before launching HellshotFrontier.exe. Keep HellshotFrontier.exe and HellshotFrontier.pck together in the same folder.
 
-When reporting a run, include a screenshot of the Run Results screen so the run seed, hunter, arsenal, wave, level, and gold can be reproduced.
+When reporting a run:
+1. Include a screenshot of the Run Results screen for the readable summary.
+2. Select COPY REPORT on that screen and paste the copied PLAYTEST REPORT line into the bug report. It contains the exact seed, hunter, wave, level, gold, weapon ids/rarities, item ids, and Ascension id.
 "@ | Set-Content -Path $metadataPath -Encoding UTF8
 
 New-Item -ItemType Directory -Path $buildRoot -Force | Out-Null
