@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/portal_mutation_offer.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardModalShell.tscn" id="2_modal"]
 
 [node name="PortalMutationOffer" type="CanvasLayer"]
 layer = 100
@@ -24,70 +25,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="Backdrop/Center"]
-custom_minimum_size = Vector2(680, 0)
+[node name="ModalShell" parent="Backdrop/Center" instance=ExtResource("2_modal")]
 layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="Backdrop/Center/Panel"]
-layout_mode = 2
-theme_override_constants/margin_left = 32
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 32
-theme_override_constants/margin_bottom = 28
-
-[node name="VBox" type="VBoxContainer" parent="Backdrop/Center/Panel/Margin"]
-layout_mode = 2
-theme_override_constants/separation = 14
-
-[node name="Eyebrow" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 16
-horizontal_alignment = 1
-text = "PORTAL MUTATION"
-
-[node name="Title" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 34
-horizontal_alignment = 1
-text = "Portal Mutation"
-
-[node name="Description" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 52)
-layout_mode = 2
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="Tags" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="Duration" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="Reward" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="Risk" type="Label" parent="Backdrop/Center/Panel/Margin/VBox"]
-custom_minimum_size = Vector2(0, 46)
-layout_mode = 2
-horizontal_alignment = 1
-autowrap_mode = 3
-
-[node name="Actions" type="HBoxContainer" parent="Backdrop/Center/Panel/Margin/VBox"]
-layout_mode = 2
-alignment = 1
-theme_override_constants/separation = 16
-
-[node name="Decline" type="Button" parent="Backdrop/Center/Panel/Margin/VBox/Actions"]
-custom_minimum_size = Vector2(220, 52)
-layout_mode = 2
-text = "Decline"
-
-[node name="Accept" type="Button" parent="Backdrop/Center/Panel/Margin/VBox/Actions"]
-custom_minimum_size = Vector2(220, 52)
-layout_mode = 2
-text = "Accept Mutation"
+normal_minimum_width = 680.0
+tight_minimum_width = 560.0
