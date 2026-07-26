@@ -26,6 +26,9 @@ var spawn_timer: Timer
 var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
+var current_wave: int:
+	get:
+		return current_wave_index
 var completion_emitted: bool = false
 var _wave_variant_pools: Array[Dictionary] = []
 var _elite_config: Dictionary = {}
