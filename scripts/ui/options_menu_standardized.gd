@@ -125,3 +125,105 @@ func _apply_responsive_layout() -> void:
 			action_button.add_theme_font_size_override("font_size", int(round((15 if large_text else 14) * font_scale)))
 	if action_row != null:
 		action_row.add_theme_constant_override("separation", StandardUiLayoutMetricsRef.row_gap(layout_class))
+
+func _refresh_controls_content() -> void:
+	if controls_runtime_box == null:
+		return
+	if tab_summary_label != null:
+		tab_summary_label.text = "Review the current keyboard and controller controls for menus and the arena."
+	_clear_runtime_box(controls_runtime_box)
+	_add_controls_group(
+		controls_runtime_box,
+		"Movement & Arena Actions",
+		[
+			{"label": "Move Left", "binding": _format_action_bindings("move_left")},
+			{"label": "Move Right", "binding": _format_action_bindings("move_right")},
+			{"label": "Move Up", "binding": _format_action_bindings("move_up")},
+			{"label": "Move Down", "binding": _format_action_bindings("move_down")},
+			{"label": "Interact", "binding": _format_action_bindings("interact")}
+		]
+	)
+	_add_controls_group(
+		controls_runtime_box,
+		"Menu Flow",
+		[
+			{"label": "Navigate", "binding": "Arrow Keys / D-pad / Left Stick"},
+			{"label": "Confirm", "binding": "Enter / Space / Pad A / Cross"},
+			{"label": "Back / close", "binding": "Esc / Pad B / Circle"},
+			{"label": "Random starter", "binding": "R (keyboard helper)"},
+			{"label": "Default starter", "binding": "T (keyboard helper)"}
+		]
+	)
+	_add_controls_group(
+		controls_runtime_box,
+		"In-Run Essentials",
+		[
+			{"label": "Pause", "binding": _format_action_bindings("pause_game")},
+			{"label": "Confirm Shop / Level Up", "binding": "Enter / Space / Pad A / Cross"},
+			{"label": "Back from menus", "binding": "Esc / Pad B / Circle"}
+		]
+	)
+	var status_label := Label.new()
+	status_label.text = "Status: keyboard and controller reference is live. Full rebinding remains deferred until playtest evidence justifies it."
+	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	StandardInfernalUiStyleRef.apply_text_role(status_label, StandardInfernalUiStyleRef.TEXT_VALUE)
+	controls_runtime_box.add_child(status_label)
+	_refresh_action_row_state()
+
+func _format_action_bindings(action_name: String) -> String:
+	if not InputMap.has_action(action_name):
+		return "-"
+	var parts: Array[String] = []
+	for event_variant in InputMap.action_get_events(action_name):
+		var label := ""
+		if event_variant is InputEventKey:
+			var key_event := event_variant as InputEventKey
+			label = OS.get_keycode_string(key_event.physical_keycode if key_event.physical_keycode != 0 else key_event.keycode)
+		elif event_variant is InputEventMouseButton:
+			label = "Mouse %d" % (event_variant as InputEventMouseButton).button_index
+		elif event_variant is InputEventJoypadButton:
+			label = _joy_button_label((event_variant as InputEventJoypadButton).button_index)
+		elif event_variant is InputEventJoypadMotion:
+			var motion := event_variant as InputEventJoypadMotion
+			label = _joy_axis_label(motion.axis, motion.axis_value)
+		if label != "" and not parts.has(label):
+			parts.append(label)
+	return ", ".join(parts) if not parts.is_empty() else "-"
+
+func _joy_button_label(button_index: int) -> String:
+	match button_index:
+		JOY_BUTTON_A:
+			return "Pad A / Cross"
+		JOY_BUTTON_B:
+			return "Pad B / Circle"
+		JOY_BUTTON_X:
+			return "Pad X / Square"
+		JOY_BUTTON_Y:
+			return "Pad Y / Triangle"
+		JOY_BUTTON_START:
+			return "Pad Menu"
+		JOY_BUTTON_BACK:
+			return "Pad View"
+		JOY_BUTTON_DPAD_LEFT:
+			return "D-pad Left"
+		JOY_BUTTON_DPAD_RIGHT:
+			return "D-pad Right"
+		JOY_BUTTON_DPAD_UP:
+			return "D-pad Up"
+		JOY_BUTTON_DPAD_DOWN:
+			return "D-pad Down"
+		_:
+			return "Pad Button %d" % button_index
+
+func _joy_axis_label(axis: int, axis_value: float) -> String:
+	match axis:
+		JOY_AXIS_LEFT_X:
+			return "Left Stick Left" if axis_value < 0.0 else "Left Stick Right"
+		JOY_AXIS_LEFT_Y:
+			return "Left Stick Up" if axis_value < 0.0 else "Left Stick Down"
+		JOY_AXIS_RIGHT_X:
+			return "Right Stick Left" if axis_value < 0.0 else "Right Stick Right"
+		JOY_AXIS_RIGHT_Y:
+			return "Right Stick Up" if axis_value < 0.0 else "Right Stick Down"
+		_:
+			return "Pad Axis %d" % axis
