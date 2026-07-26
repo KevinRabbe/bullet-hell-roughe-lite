@@ -4,6 +4,7 @@ signal wave_completed(wave_index: int)
 
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const EnemySpawnWavePoolRuntimeUtil = preload("res://scripts/spawning/enemy_spawn_wave_pool_runtime.gd")
+const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
 
 @export var enemy_scene: PackedScene
 @export var target_path: NodePath
@@ -34,6 +35,8 @@ func _ready() -> void:
 		target = get_node_or_null(target_path)
 	if arena_bounds_path != NodePath():
 		arena_bounds = get_node_or_null(arena_bounds_path)
+	if arena_bounds == null:
+		arena_bounds = ArenaBoundsRuntime.ensure_for_scene(self)
 
 	rng = _resolve_rng("spawner")
 	_load_wave_config()
@@ -99,8 +102,8 @@ func _on_spawn_timer_timeout() -> void:
 func _resolve_spawn_position(spawn_direction: Vector2) -> Vector2:
 	var legacy_position := target.global_position + (spawn_direction * spawn_radius)
 	if arena_bounds == null or not is_instance_valid(arena_bounds):
-		return legacy_position
-	if not arena_bounds.has_method("resolve_enemy_spawn_position"):
+		arena_bounds = ArenaBoundsRuntime.ensure_for_scene(self)
+	if arena_bounds == null or not arena_bounds.has_method("resolve_enemy_spawn_position"):
 		return legacy_position
 	var resolved: Variant = arena_bounds.call(
 		"resolve_enemy_spawn_position",
