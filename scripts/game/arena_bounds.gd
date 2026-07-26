@@ -16,16 +16,28 @@ const LARGE_SCALE := 4.0 / 3.0
 @export var player_inset: float = 20.0
 @export var spawn_inset: float = 36.0
 @export var base_camera_zoom: float = 0.8
+@export var player_path: NodePath
 @export var camera_path: NodePath
 
+var player: Node2D
 var camera: Camera2D
 
 func _ready() -> void:
+	# Arena clamping runs after the normal player physics step.
+	process_physics_priority = 100
+	_resolve_player()
 	_resolve_camera()
 	_apply_camera_contract()
 	var viewport := get_viewport()
 	if viewport != null and not viewport.size_changed.is_connected(_apply_camera_contract):
 		viewport.size_changed.connect(_apply_camera_contract)
+
+func _physics_process(_delta: float) -> void:
+	if player == null or not is_instance_valid(player):
+		_resolve_player()
+	if player == null:
+		return
+	player.global_position = clamp_player_position(player.global_position)
 
 func get_size_class_id() -> String:
 	return _normalize_size_class(size_class)
@@ -70,6 +82,12 @@ func resolve_enemy_spawn_position(origin: Vector2, radius: float, direction: Vec
 		return candidate
 
 	return _farthest_rect_corner(origin, spawn_rect)
+
+func _resolve_player() -> void:
+	player = null
+	if player_path == NodePath():
+		return
+	player = get_node_or_null(player_path) as Node2D
 
 func _resolve_camera() -> void:
 	camera = null
