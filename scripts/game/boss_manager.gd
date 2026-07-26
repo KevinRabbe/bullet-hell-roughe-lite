@@ -7,17 +7,21 @@ signal boss_defeated_signal
 
 @export var boss_scene: PackedScene
 @export var player_path: NodePath
+@export var arena_bounds_path: NodePath
 @export var auto_spawn_enabled: bool = false
 @export var spawn_after_seconds: float = 45.0
 @export var debug_spawn_key: Key = KEY_B
 
 var player: Node2D
+var arena_bounds: Node
 var boss_spawned: bool = false
 var elapsed_seconds: float = 0.0
 var active_boss: Node2D
 
 func _ready() -> void:
 	player = BossManagerRuntime.resolve_player(self, player_path)
+	if arena_bounds_path != NodePath():
+		arena_bounds = get_node_or_null(arena_bounds_path)
 
 func _process(delta: float) -> void:
 	if not auto_spawn_enabled:
@@ -39,6 +43,7 @@ func _spawn_gate_beast() -> bool:
 	var boss := BossManagerRuntime.instantiate_boss(self, boss_scene, player)
 	if boss == null:
 		return false
+	boss.global_position = _clamp_boss_position(boss.global_position)
 	active_boss = boss
 	boss_spawned = true
 	boss_spawned_signal.emit()
@@ -46,6 +51,14 @@ func _spawn_gate_beast() -> bool:
 	if boss.has_signal("tree_exiting"):
 		boss.tree_exiting.connect(_on_gate_beast_exiting.bind(boss))
 	return true
+
+func _clamp_boss_position(spawn_position: Vector2) -> Vector2:
+	if arena_bounds == null or not is_instance_valid(arena_bounds):
+		return spawn_position
+	if not arena_bounds.has_method("clamp_spawn_position"):
+		return spawn_position
+	var resolved: Variant = arena_bounds.call("clamp_spawn_position", spawn_position, 72.0)
+	return resolved if resolved is Vector2 else spawn_position
 
 func _on_gate_beast_exiting(boss: Node2D) -> void:
 	var result := BossManagerRuntime.evaluate_boss_exit(active_boss, boss)
