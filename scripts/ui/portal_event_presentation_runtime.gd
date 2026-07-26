@@ -2,6 +2,7 @@ class_name PortalEventPresentationRuntime
 extends RefCounted
 
 const EventBannerRuntimeRef = preload("res://scripts/ui/event_banner_runtime.gd")
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
 
 static func show_event_started(owner: Node, event_result: Dictionary) -> void:
 	var event_id := str(event_result.get("event_id", "double_elite"))
@@ -10,6 +11,7 @@ static func show_event_started(owner: Node, event_result: Dictionary) -> void:
 	var title := str(event_data.get("title", _fallback_title(event_id))).strip_edges()
 	var description := str(event_data.get("description", _fallback_description(event_id))).strip_edges()
 	var category := str(event_data.get("category", "event")).strip_edges().to_lower()
+	SfxRuntimeRef.play(owner, "portal_event", -8.0, 1.0, 200)
 	EventBannerRuntimeRef.show(
 		owner,
 		_eyebrow_for_category(category),
