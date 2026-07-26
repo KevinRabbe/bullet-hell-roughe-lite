@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/components/standard_tag_chip.gd" id="1_tag"]
+
+[node name="StandardTagChip" type="PanelContainer"]
+script = ExtResource("1_tag")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+text = "TAG"
