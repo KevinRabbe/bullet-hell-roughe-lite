@@ -6,6 +6,7 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 @onready var intro_label: Label = $RootMargin/Scroll/Content/Intro
 @onready var buttons_title: Label = $RootMargin/Scroll/Content/ButtonsTitle
 @onready var cards_title: Label = $RootMargin/Scroll/Content/CardsTitle
+@onready var stats_title: Label = $RootMargin/Scroll/Content/StatsTitle
 @onready var modal_title: Label = $RootMargin/Scroll/Content/ModalTitle
 @onready var primary_button: Button = $RootMargin/Scroll/Content/ButtonRow/Primary
 @onready var secondary_button: Button = $RootMargin/Scroll/Content/ButtonRow/Secondary
@@ -14,12 +15,15 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 @onready var disabled_button: Button = $RootMargin/Scroll/Content/ButtonRow/Disabled
 @onready var first_card: Button = $RootMargin/Scroll/Content/CardRow/FirstCard
 @onready var second_card: Button = $RootMargin/Scroll/Content/CardRow/SecondCard
+@onready var wave_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/WaveStat
+@onready var gold_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/GoldStat
+@onready var level_stat: PanelContainer = $RootMargin/Scroll/Content/StatRow/LevelStat
 @onready var modal_shell: PanelContainer = $RootMargin/Scroll/Content/ModalCenter/ModalShell
 
 func _ready() -> void:
 	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
 	InfernalUiStyleRef.apply_text_role(intro_label, InfernalUiStyleRef.TEXT_MUTED)
-	for section_label in [buttons_title, cards_title, modal_title]:
+	for section_label in [buttons_title, cards_title, stats_title, modal_title]:
 		InfernalUiStyleRef.apply_text_role(section_label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
 	InfernalUiStyleRef.apply_button(primary_button, InfernalUiStyleRef.BUTTON_PRIMARY)
 	InfernalUiStyleRef.apply_button(secondary_button, InfernalUiStyleRef.BUTTON_SECONDARY)
@@ -28,6 +32,7 @@ func _ready() -> void:
 	InfernalUiStyleRef.apply_button(disabled_button, InfernalUiStyleRef.BUTTON_SECONDARY)
 	disabled_button.disabled = true
 	_configure_cards()
+	_configure_stats()
 	_configure_modal()
 	primary_button.grab_focus()
 
@@ -37,6 +42,11 @@ func _configure_cards() -> void:
 	first_card.call("set_selected", true)
 	first_card.pressed.connect(_select_card.bind(first_card, second_card))
 	second_card.pressed.connect(_select_card.bind(second_card, first_card))
+
+func _configure_stats() -> void:
+	wave_stat.call("configure", "Wave reached", "6")
+	gold_stat.call("configure", "Gold carried", "42")
+	level_stat.call("configure", "Level reached", "11")
 
 func _select_card(selected_card: Button, other_card: Button) -> void:
 	selected_card.call("set_selected", true)
