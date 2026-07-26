@@ -1,6 +1,7 @@
 extends Node
 
 const BossManagerRuntime = preload("res://scripts/game/boss_manager_runtime.gd")
+const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
 
 signal boss_spawned_signal
 signal boss_defeated_signal
@@ -22,6 +23,8 @@ func _ready() -> void:
 	player = BossManagerRuntime.resolve_player(self, player_path)
 	if arena_bounds_path != NodePath():
 		arena_bounds = get_node_or_null(arena_bounds_path)
+	if arena_bounds == null:
+		arena_bounds = ArenaBoundsRuntime.ensure_for_scene(self)
 
 func _process(delta: float) -> void:
 	if not auto_spawn_enabled:
@@ -54,8 +57,8 @@ func _spawn_gate_beast() -> bool:
 
 func _clamp_boss_position(spawn_position: Vector2) -> Vector2:
 	if arena_bounds == null or not is_instance_valid(arena_bounds):
-		return spawn_position
-	if not arena_bounds.has_method("clamp_spawn_position"):
+		arena_bounds = ArenaBoundsRuntime.ensure_for_scene(self)
+	if arena_bounds == null or not arena_bounds.has_method("clamp_spawn_position"):
 		return spawn_position
 	var resolved: Variant = arena_bounds.call("clamp_spawn_position", spawn_position, 72.0)
 	return resolved if resolved is Vector2 else spawn_position
