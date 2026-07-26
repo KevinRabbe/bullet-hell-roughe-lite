@@ -1,6 +1,9 @@
 class_name MainGameStartRuntime
 extends RefCounted
 
+const ArenaBoundsRuntime = preload("res://scripts/game/arena_bounds.gd")
+const DebugRunPresetRuntimeRef = preload("res://scripts/game/debug_run_preset_runtime.gd")
+
 static func apply_selected_character(player: Node, selectable_characters: Array[String], selected_character_index: int) -> String:
 	if selectable_characters.is_empty() or player == null or not player.has_method("apply_character_by_id"):
 		return ""
@@ -32,6 +35,7 @@ static func apply_debug_quick_shop_preset(
 ) -> void:
 	if player != null and starting_gold > 0 and player.has_method("add_gold"):
 		player.call("add_gold", starting_gold)
+	_apply_arena_size_for_preset(player, effective_preset)
 
 static func set_wave_duration_for_preset(
 	enemy_spawner: Node,
@@ -45,3 +49,11 @@ static func set_wave_duration_for_preset(
 		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
 	else:
 		enemy_spawner.set("wave_duration_seconds", debug_preset_wave_duration)
+
+static func _apply_arena_size_for_preset(requester: Node, preset: String) -> void:
+	if requester == null:
+		return
+	var arena_bounds := ArenaBoundsRuntime.ensure_for_scene(requester)
+	if arena_bounds == null or not arena_bounds.has_method("set_size_class_id"):
+		return
+	arena_bounds.call("set_size_class_id", DebugRunPresetRuntimeRef.arena_size_class_for_preset(preset))
