@@ -2,6 +2,7 @@ class_name PlayerDamageFeedback
 extends Node
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
 
 const DAMAGE_FLASH := Color(1.0, 0.34, 0.22, 1.0)
 const DAMAGE_FLASH_HIGH_CONTRAST := Color(1.6, 1.6, 1.6, 1.0)
@@ -46,6 +47,7 @@ func _on_player_snapshot_changed() -> void:
 	_last_hp = current_hp
 
 func _play_damage_feedback() -> void:
+	SfxRuntimeRef.play(self, "player_hit", -8.0, 1.0, 120)
 	_play_visual_flash()
 	_play_camera_kick()
 

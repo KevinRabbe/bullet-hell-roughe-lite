@@ -4,6 +4,7 @@ const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
 const EventBannerRuntimeRef = preload("res://scripts/ui/event_banner_runtime.gd")
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
 
 const INSTANT_PORTAL_EVENTS: Array[String] = [
 	"power_for_hp_loss",
@@ -77,6 +78,7 @@ func _show_portal_reward_feedback(granted_names: Array[String]) -> void:
 	if granted_names.is_empty():
 		return
 	var title := "REWARD CLAIMED" if granted_names.size() == 1 else "%d REWARDS CLAIMED" % granted_names.size()
+	SfxRuntimeRef.play(self, "portal_reward", -8.0, 1.0, 160)
 	EventBannerRuntimeRef.show(
 		self,
 		"RIFT REWARD",
