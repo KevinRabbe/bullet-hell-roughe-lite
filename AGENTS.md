@@ -16,6 +16,15 @@
 - Promote behavior into a shared foundation only when repetition is real or guaranteed by the current product direction; do not generalize hypothetical future needs.
 - Do not turn project foundations into a generic framework, plugin architecture, public API, ECS rewrite, or broad scripting language without an explicit product requirement.
 
+# Product Milestone Direction
+- The current product north star is **V2 — Steam Page / Public Reveal Candidate** as defined in `docs/PRODUCT_ROADMAP.md`.
+- V1 foundation work is enabling work for that goal, not an open-ended architecture phase.
+- After remaining V1 foundations are qualified, prioritize work by how much it closes a concrete V2 gap in the real representative 10-wave run.
+- V2 means a stranger can understand Hellshot Frontier's identity, loop, and appeal from real gameplay/screenshots without being asked to ignore obvious prototype presentation.
+- Prefer capture-ready combat, arena presentation, build differentiation, portal/boss/Ascension readability, coherent UI/audio/VFX, and removal of visible prototype presentation over random polish.
+- Defer work that neither unblocks V1 foundations, closes a V2 gap, fixes a development blocker, nor establishes a shared system demanded by concrete V2 duplication.
+- V3 demo/external-playtest and V4 Early Access requirements should not drive current architecture unless they also materially improve V2.
+
 # Reusable Foundation Direction
 - The shared hunter runtime/visual base is the reference pattern: one stable foundation, many bounded variants.
 - Canonical UI styling/components and NORMAL / COMPACT / TIGHT responsive rules are defined in `docs/UI_SYSTEM_SPEC.md`.
