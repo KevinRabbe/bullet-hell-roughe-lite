@@ -20,7 +20,15 @@ if ($null -eq $godotCommand) {
     throw "Godot editor executable '$GodotExe' was not found. Put Godot 4.5 on PATH or set GODOT_EXE to the editor executable path."
 }
 
-Write-Host "Validating Hellshot Frontier imports/scripts with Godot: $($godotCommand.Source)"
+$godotVersion = (& $godotCommand.Source --version).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($godotVersion)) {
+    throw "Could not determine the Godot editor version from '$($godotCommand.Source)'."
+}
+if ($godotVersion -notmatch '^4\.5') {
+    throw "Windows playtest packaging is pinned to Godot 4.5, but '$godotVersion' is active. Point GODOT_EXE at a Godot 4.5 editor build."
+}
+
+Write-Host "Validating Hellshot Frontier imports/scripts with Godot $godotVersion"
 & $godotCommand.Source --headless --path $projectRoot --import
 if ($LASTEXITCODE -ne 0) {
     throw "Godot project validation/import failed with exit code $LASTEXITCODE. Fix project errors before creating a tester package."
@@ -58,6 +66,7 @@ $metadataPath = Join-Path $windowsRoot "PLAYTEST_BUILD.txt"
 @"
 Hellshot Frontier — V3 External Playtest Build
 Commit: $commitSha
+Godot: $godotVersion
 Export preset: Windows Playtest
 Architecture: Windows x86_64
 Built UTC: $([DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
