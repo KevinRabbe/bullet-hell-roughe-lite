@@ -6,8 +6,48 @@ const PRESET_ORDER: Array[String] = [
 	"shop_test",
 	"combat_test",
 	"compact_arena",
-	"large_arena"
+	"large_arena",
+	"wave_5_gate_beast",
+	"wave_10_victory"
 ]
+
+const SCENARIO_DEFINITIONS: Dictionary = {
+	"normal": {
+		"wave_index": 1,
+		"arena_size_class": "standard",
+		"boss_id": ""
+	},
+	"shop_test": {
+		"wave_index": 1,
+		"arena_size_class": "standard",
+		"boss_id": ""
+	},
+	"combat_test": {
+		"wave_index": 1,
+		"arena_size_class": "standard",
+		"boss_id": ""
+	},
+	"compact_arena": {
+		"wave_index": 1,
+		"arena_size_class": "compact",
+		"boss_id": ""
+	},
+	"large_arena": {
+		"wave_index": 1,
+		"arena_size_class": "large",
+		"boss_id": ""
+	},
+	"wave_5_gate_beast": {
+		"wave_index": 5,
+		"arena_size_class": "standard",
+		"boss_id": "gate_beast"
+	},
+	"wave_10_victory": {
+		"wave_index": 10,
+		"arena_size_class": "standard",
+		"boss_id": ""
+	}
+}
 
 static func next_preset(current_preset: String) -> String:
 	var current_index := PRESET_ORDER.find(current_preset)
@@ -21,6 +61,16 @@ static func effective_preset(debug_quick_shop_mode: bool, debug_run_preset: Stri
 	if debug_run_preset == "normal":
 		return "shop_test"
 	return debug_run_preset
+
+static func scenario_definition(preset: String) -> Dictionary:
+	var definition_variant: Variant = SCENARIO_DEFINITIONS.get(preset, SCENARIO_DEFINITIONS["normal"])
+	return (definition_variant as Dictionary).duplicate(true) if definition_variant is Dictionary else {}
+
+static func wave_index_for_preset(preset: String) -> int:
+	return maxi(int(scenario_definition(preset).get("wave_index", 1)), 1)
+
+static func boss_id_for_preset(preset: String) -> String:
+	return str(scenario_definition(preset).get("boss_id", ""))
 
 static func wave_duration_for_preset(
 	preset: String,
@@ -50,10 +100,4 @@ static func starting_gold_for_preset(
 			return 0
 
 static func arena_size_class_for_preset(preset: String) -> String:
-	match preset:
-		"compact_arena":
-			return "compact"
-		"large_arena":
-			return "large"
-		_:
-			return "standard"
+	return str(scenario_definition(preset).get("arena_size_class", "standard"))

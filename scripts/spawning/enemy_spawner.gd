@@ -149,6 +149,14 @@ func _count_alive_enemies() -> int:
 			alive_count += 1
 	return alive_count
 
+func configure_starting_wave(wave_index: int) -> void:
+	current_wave_index = maxi(wave_index, 1)
+	wave_elapsed_seconds = 0.0
+	countdown_print_accumulator = 0.0
+	completion_emitted = false
+	if spawn_timer != null:
+		spawn_timer.wait_time = spawn_interval_seconds
+
 func start_next_wave() -> void:
 	current_wave_index += 1
 	wave_elapsed_seconds = 0.0
