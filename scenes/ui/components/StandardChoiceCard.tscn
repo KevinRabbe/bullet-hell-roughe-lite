@@ -1,0 +1,77 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/components/standard_choice_card.gd" id="1_choice"]
+
+[node name="StandardChoiceCard" type="Button"]
+custom_minimum_size = Vector2(260, 166)
+focus_mode = 2
+script = ExtResource("1_choice")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Stack" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Header" type="HBoxContainer" parent="Margin/Stack"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Icon" type="TextureRect" parent="Margin/Stack/Header"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleStack" type="VBoxContainer" parent="Margin/Stack/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Eyebrow" type="Label" parent="Margin/Stack/Header/TitleStack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "TYPE"
+
+[node name="Title" type="Label" parent="Margin/Stack/Header/TitleStack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+text = "Choice Title"
+autowrap_mode = 2
+
+[node name="Body" type="Label" parent="Margin/Stack"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+text = "Choice description"
+autowrap_mode = 2
+vertical_alignment = 1
+
+[node name="Footer" type="HBoxContainer" parent="Margin/Stack"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Value" type="Label" parent="Margin/Stack/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_font_sizes/font_size = 14
+text = "+10% damage"
+
+[node name="Hint" type="Label" parent="Margin/Stack/Footer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 12
+text = "Select"
+horizontal_alignment = 2
