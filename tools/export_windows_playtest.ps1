@@ -13,6 +13,7 @@ $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $buildRoot = Join-Path $projectRoot "build"
 $windowsRoot = Join-Path $buildRoot "windows"
 $exePath = Join-Path $windowsRoot "HellshotFrontier.exe"
+$pckPath = Join-Path $windowsRoot "HellshotFrontier.pck"
 
 $godotCommand = Get-Command $GodotExe -ErrorAction SilentlyContinue
 if ($null -eq $godotCommand) {
@@ -31,6 +32,9 @@ if ($LASTEXITCODE -ne 0) {
 }
 if (-not (Test-Path $exePath)) {
     throw "Godot reported success but '$exePath' was not created."
+}
+if (-not (Test-Path $pckPath)) {
+    throw "Godot reported success but '$pckPath' was not created. The Windows Playtest preset must export a separate PCK beside the executable."
 }
 
 $commitSha = "unknown"
