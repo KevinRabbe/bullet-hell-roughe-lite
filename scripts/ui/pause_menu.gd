@@ -10,10 +10,10 @@ const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_run
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
-const OptionsMenuScene = preload("res://scenes/ui/OptionsMenu.tscn")
+const OptionsMenuScene = preload("res://scenes/ui/OptionsMenuStandardized.tscn")
 const PauseOptionsMenuScript = preload("res://scripts/ui/pause_options_menu.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
-const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenu.tscn"
+const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenuStandardized.tscn"
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 
 @onready var root_margin: MarginContainer = $RootMargin

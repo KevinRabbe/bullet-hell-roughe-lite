@@ -1,4 +1,4 @@
-extends "res://scripts/ui/options_menu.gd"
+extends "res://scripts/ui/options_menu_standardized.gd"
 
 signal close_requested
 
