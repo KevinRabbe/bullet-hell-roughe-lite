@@ -19,6 +19,7 @@ const BUS_BY_KEY := {
 	"ambience": "Ambience"
 }
 const CHILD_BUSES: Array[String] = ["Music", "SFX", "Ambience"]
+const PUBLIC_LEVEL_KEYS: Array[String] = [KEY_MASTER, KEY_SFX]
 
 static func default_settings() -> Dictionary:
 	return {
@@ -84,7 +85,7 @@ static func clone_settings(settings: Dictionary) -> Dictionary:
 	}
 
 static func settings_match(left: Dictionary, right: Dictionary) -> bool:
-	for key in [KEY_MASTER, KEY_MUSIC, KEY_SFX, KEY_AMBIENCE]:
+	for key in PUBLIC_LEVEL_KEYS:
 		if not is_equal_approx(_normalized_level(left, key), _normalized_level(right, key)):
 			return false
 	return left.get(KEY_MUTED, false) == right.get(KEY_MUTED, false)
@@ -106,12 +107,10 @@ static func toggle_muted(settings: Dictionary) -> Dictionary:
 
 static func build_summary(settings: Dictionary) -> String:
 	var muted: bool = settings.get(KEY_MUTED, false) == true
-	return "%s | Master %s | Music %s | SFX %s | Ambience %s" % [
+	return "%s | Master %s | SFX %s" % [
 		"Muted" if muted else "Live",
 		_percent_text(_normalized_level(settings, KEY_MASTER)),
-		_percent_text(_normalized_level(settings, KEY_MUSIC)),
-		_percent_text(_normalized_level(settings, KEY_SFX)),
-		_percent_text(_normalized_level(settings, KEY_AMBIENCE))
+		_percent_text(_normalized_level(settings, KEY_SFX))
 	]
 
 static func _normalized_level(settings: Dictionary, key: String) -> float:
