@@ -8,6 +8,8 @@ const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
+const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const StandardStatCardScene = preload("res://scenes/ui/components/StandardStatCard.tscn")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
@@ -15,6 +17,8 @@ const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_panel: PanelContainer = $RootMargin/RootVBox/MainPanel
+@onready var main_margin: MarginContainer = $RootMargin/RootVBox/MainPanel/MainMargin
+@onready var main_vbox: VBoxContainer = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox
 @onready var result_eyebrow_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultEyebrow
 @onready var result_title_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultTitle
 @onready var result_summary_label: Label = $RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ResultSummary
@@ -114,52 +118,61 @@ func _on_main_menu_pressed() -> void:
 func _apply_responsive_layout() -> void:
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
 	var high_contrast: bool = AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
-	var viewport_size: Vector2 = get_viewport_rect().size
-	var compact: bool = viewport_size.x < 1440.0
-	var tight: bool = viewport_size.x < 1280.0 or viewport_size.y < 720.0
+	var layout_class: int = UiLayoutMetricsRef.layout_class_for_size(get_viewport_rect().size)
+	var tight: bool = layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT
+	var compact: bool = layout_class == UiLayoutMetricsRef.LayoutClass.COMPACT
 	if root_margin != null:
-		root_margin.offset_left = 10.0 if tight else (18.0 if compact else 36.0)
-		root_margin.offset_top = 10.0 if tight else (16.0 if compact else 34.0)
-		root_margin.offset_right = -10.0 if tight else (-18.0 if compact else -36.0)
-		root_margin.offset_bottom = -10.0 if tight else (-16.0 if compact else -34.0)
+		var horizontal_margin := UiLayoutMetricsRef.screen_margin_horizontal(layout_class)
+		var vertical_margin := UiLayoutMetricsRef.screen_margin_vertical(layout_class)
+		root_margin.offset_left = horizontal_margin
+		root_margin.offset_top = vertical_margin
+		root_margin.offset_right = -horizontal_margin
+		root_margin.offset_bottom = -vertical_margin
+	if main_margin != null:
+		var padding := UiLayoutMetricsRef.shell_padding(layout_class)
+		main_margin.add_theme_constant_override("margin_left", padding)
+		main_margin.add_theme_constant_override("margin_top", padding)
+		main_margin.add_theme_constant_override("margin_right", padding)
+		main_margin.add_theme_constant_override("margin_bottom", padding)
+	if main_vbox != null:
+		main_vbox.add_theme_constant_override("separation", UiLayoutMetricsRef.row_gap(layout_class) + 6)
 	if main_panel != null:
-		main_panel.custom_minimum_size = Vector2(560 if tight else 720, 0)
+		main_panel.custom_minimum_size = Vector2(560 if tight else (640 if compact else 720), 0)
 	if result_eyebrow_label != null:
 		result_eyebrow_label.add_theme_font_size_override("font_size", int(round((15 if tight else (16 if compact else 18)) * font_scale)))
-		result_eyebrow_label.modulate = Color(1.0, 0.76, 0.76, 0.98) if high_contrast else Color(0.992157, 0.560784, 0.560784, 0.95)
+		result_eyebrow_label.modulate = Color(1.0, 0.76, 0.76, 0.98) if high_contrast else Color.WHITE
 	if result_title_label != null:
 		result_title_label.add_theme_font_size_override("font_size", int(round((34 if tight else (40 if compact else 48)) * font_scale)))
 	if result_summary_label != null:
 		result_summary_label.add_theme_font_size_override("font_size", int(round((14 if tight else (15 if compact else 17)) * font_scale)))
-		result_summary_label.modulate = Color(0.94, 0.96, 1.0, 0.98) if high_contrast else Color(0.84, 0.86, 0.91, 0.94)
 	if result_stats_grid != null:
-		result_stats_grid.add_theme_constant_override("h_separation", 10 if tight else 14)
-		result_stats_grid.add_theme_constant_override("v_separation", 10 if tight else 12)
+		result_stats_grid.add_theme_constant_override("h_separation", UiLayoutMetricsRef.row_gap(layout_class) + 2)
+		result_stats_grid.add_theme_constant_override("v_separation", UiLayoutMetricsRef.row_gap(layout_class))
 	if action_row != null:
-		action_row.add_theme_constant_override("h_separation", 10 if tight else 14)
-		action_row.add_theme_constant_override("v_separation", 10 if tight else 12)
-	var button_size := Vector2(150 if tight else (180 if compact else 220), 46 if tight else (50 if compact else 54))
+		action_row.add_theme_constant_override("h_separation", UiLayoutMetricsRef.row_gap(layout_class) + 2)
+		action_row.add_theme_constant_override("v_separation", UiLayoutMetricsRef.row_gap(layout_class))
+	var button_width := 150.0 if tight else (180.0 if compact else 220.0)
+	var button_height := UiLayoutMetricsRef.secondary_button_height(layout_class)
 	for action_button in [retry_button, new_character_button, main_menu_button]:
 		if action_button != null:
-			action_button.custom_minimum_size = button_size
+			action_button.custom_minimum_size = Vector2(button_width, button_height)
 			action_button.add_theme_font_size_override("font_size", int(round((15 if tight else 16) * font_scale)))
 	if action_hint_label != null:
 		action_hint_label.add_theme_font_size_override("font_size", int(round((13 if tight else (13 if compact else 15)) * font_scale)))
-		action_hint_label.modulate = Color(0.86, 0.90, 0.98, 0.98) if high_contrast else Color(0.75, 0.79, 0.86, 0.88)
 
 func _apply_action_styles() -> void:
-	InfernalUiStyleRef.apply_primary_button(retry_button)
-	InfernalUiStyleRef.apply_secondary_button(new_character_button)
-	InfernalUiStyleRef.apply_secondary_button(main_menu_button)
+	InfernalUiStyleRef.apply_button(retry_button, InfernalUiStyleRef.BUTTON_PRIMARY)
+	InfernalUiStyleRef.apply_button(new_character_button, InfernalUiStyleRef.BUTTON_SECONDARY)
+	InfernalUiStyleRef.apply_button(main_menu_button, InfernalUiStyleRef.BUTTON_SECONDARY)
 
 func _apply_shell_styles() -> void:
 	if main_panel == null:
 		return
-	InfernalUiStyleRef.apply_panel(main_panel, InfernalUiStyleRef.PANEL_SHELL)
-	InfernalUiStyleRef.apply_accent_text(result_eyebrow_label)
-	InfernalUiStyleRef.apply_title(result_title_label)
-	InfernalUiStyleRef.apply_body_text(result_summary_label)
-	InfernalUiStyleRef.apply_body_text(action_hint_label)
+	InfernalUiStyleRef.apply_panel(main_panel, InfernalUiStyleRef.PANEL_MODAL)
+	InfernalUiStyleRef.apply_text_role(result_eyebrow_label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
+	InfernalUiStyleRef.apply_text_role(result_title_label, InfernalUiStyleRef.TEXT_SCREEN_TITLE)
+	InfernalUiStyleRef.apply_text_role(result_summary_label, InfernalUiStyleRef.TEXT_BODY)
+	InfernalUiStyleRef.apply_text_role(action_hint_label, InfernalUiStyleRef.TEXT_HINT)
 
 func _refresh_action_hint() -> void:
 	if action_hint_label == null:
@@ -174,35 +187,22 @@ func _refresh_stats_grid(lines: Array[String]) -> void:
 	for line_text in lines:
 		result_stats_grid.add_child(_build_stat_card(line_text))
 
-func _build_stat_card(line_text: String) -> PanelContainer:
+func _build_stat_card(line_text: String) -> Control:
 	var title_text := line_text
 	var value_text := "-"
 	if line_text.contains(":"):
 		var parts := line_text.split(":", false, 1)
 		title_text = str(parts[0]).strip_edges()
 		value_text = str(parts[1]).strip_edges()
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(180, 96)
-	InfernalUiStyleRef.apply_panel(card, InfernalUiStyleRef.PANEL_CARD)
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 16)
-	margin.add_theme_constant_override("margin_top", 14)
-	margin.add_theme_constant_override("margin_right", 16)
-	margin.add_theme_constant_override("margin_bottom", 14)
-	card.add_child(margin)
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	margin.add_child(vbox)
-	var title := Label.new()
-	title.text = title_text
-	title.add_theme_font_size_override("font_size", 14)
-	InfernalUiStyleRef.apply_section_title(title)
-	vbox.add_child(title)
-	var value := Label.new()
-	value.text = value_text
-	value.add_theme_font_size_override("font_size", 24)
-	InfernalUiStyleRef.apply_title(value)
-	vbox.add_child(value)
+	var card_variant: Variant = StandardStatCardScene.instantiate()
+	if not (card_variant is Control):
+		var fallback := Label.new()
+		fallback.text = "%s: %s" % [title_text, value_text]
+		InfernalUiStyleRef.apply_text_role(fallback, InfernalUiStyleRef.TEXT_BODY)
+		return fallback
+	var card := card_variant as Control
+	if card.has_method("configure"):
+		card.call("configure", title_text, value_text)
 	return card
 
 func _sanitize_stat_line(line_text: String) -> String:
