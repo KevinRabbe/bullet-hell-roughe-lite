@@ -82,17 +82,44 @@ func _update_hud() -> void:
 		var wave := int(enemy_spawner.get("current_wave_index"))
 		stats_label.text = "WAVE %02d  HP %.0f  GOLD %d  LV %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
-		var debug_label := _get_debug_preset_label()
-		if debug_label == "" or debug_label == "DebugPreset: normal":
-			state_label.text = _get_run_state().to_upper()
-		else:
-			state_label.text = "%s  |  %s" % [_get_run_state().to_upper(), debug_label]
+		_refresh_state_panel(player_snapshot)
 	if wave_progress_bar != null:
 		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 		var ratio := clampf(elapsed / duration, 0.0, 1.0)
 		wave_progress_bar.value = ratio * 100.0
 		wave_progress_bar.visible = not _is_shop_open()
+
+func _refresh_state_panel(player_snapshot: Dictionary) -> void:
+	var run_state := _get_run_state()
+	if run_state == "Combat":
+		var focus_label := _build_focus_label(player_snapshot)
+		if focus_label != "":
+			state_caption.text = "BUILD FOCUS"
+			state_label.text = focus_label
+			return
+	state_caption.text = "RUN STATE"
+	state_label.text = run_state.to_upper()
+
+func _build_focus_label(player_snapshot: Dictionary) -> String:
+	var counts_variant: Variant = player_snapshot.get("weapon_tag_counts", {})
+	if not (counts_variant is Dictionary):
+		return ""
+	var counts: Dictionary = counts_variant
+	var tags: Array = counts.keys()
+	tags.sort()
+	var best_tag := ""
+	var best_count := 0
+	for tag_variant in tags:
+		var tag := str(tag_variant).strip_edges()
+		var count := int(counts.get(tag_variant, 0))
+		if tag == "" or count <= best_count:
+			continue
+		best_tag = tag
+		best_count = count
+	if best_tag == "" or best_count <= 0:
+		return ""
+	return "%s ×%d" % [best_tag.replace("_", " ").to_upper(), best_count]
 
 func _apply_presentation() -> void:
 	for panel in [stats_panel, progress_panel, state_panel]:
@@ -168,9 +195,3 @@ func _is_shop_open() -> bool:
 
 func _is_character_select_open() -> bool:
 	return character_select_layer != null and character_select_layer.visible
-
-func _get_debug_preset_label() -> String:
-	var main_game := get_tree().current_scene
-	if main_game != null and main_game.has_method("get_debug_preset_label"):
-		return str(main_game.call("get_debug_preset_label"))
-	return "DebugPreset: normal"
