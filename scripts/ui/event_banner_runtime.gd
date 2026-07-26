@@ -24,6 +24,7 @@ static func show(
 	var layer := CanvasLayer.new()
 	layer.layer = 42
 	layer.name = "EventBanner"
+	layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	scene.add_child(layer)
 
 	var root := Control.new()
