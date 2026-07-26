@@ -1,6 +1,9 @@
 class_name RunPlaytestReportRuntime
 extends RefCounted
 
+const PLAYTEST_BUILD_FILENAME := "PLAYTEST_BUILD.txt"
+const COMMIT_PREFIX := "Commit: "
+
 static func build_identity_lines(run_rng: Node, player: Node, player_snapshot: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
 	lines.append("Run seed: %s" % _resolve_seed(run_rng))
@@ -15,7 +18,8 @@ static func build_report(
 	player_snapshot: Dictionary,
 	wave_index: int
 ) -> String:
-	return "PLAYTEST REPORT | result=%s | seed=%s | hunter=%s | wave=%d | level=%d | gold=%d | weapons=%s | items=%s | ascension=%s" % [
+	return "PLAYTEST REPORT | build=%s | result=%s | seed=%s | hunter=%s | wave=%d | level=%d | gold=%d | weapons=%s | items=%s | ascension=%s" % [
+		_resolve_build_id(),
 		result_state,
 		_resolve_seed(run_rng),
 		_resolve_hunter_id(player),
@@ -35,6 +39,26 @@ static func build_console_report(
 	wave_index: int
 ) -> String:
 	return build_report(result_state, run_rng, player, player_snapshot, wave_index)
+
+static func _resolve_build_id() -> String:
+	if OS.is_debug_build():
+		return "debug"
+	var executable_path := OS.get_executable_path()
+	if executable_path == "":
+		return "unknown-release"
+	var metadata_path := executable_path.get_base_dir().path_join(PLAYTEST_BUILD_FILENAME)
+	if not FileAccess.file_exists(metadata_path):
+		return "unknown-release"
+	var file := FileAccess.open(metadata_path, FileAccess.READ)
+	if file == null:
+		return "unknown-release"
+	while not file.eof_reached():
+		var line := file.get_line().strip_edges()
+		if not line.begins_with(COMMIT_PREFIX):
+			continue
+		var commit_id := line.trim_prefix(COMMIT_PREFIX).strip_edges()
+		return commit_id if commit_id != "" else "unknown-release"
+	return "unknown-release"
 
 static func _resolve_seed(run_rng: Node) -> String:
 	if run_rng != null and run_rng.has_method("current_seed"):
