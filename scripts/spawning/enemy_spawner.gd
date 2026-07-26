@@ -26,6 +26,9 @@ var spawn_timer: Timer
 var wave_elapsed_seconds: float = 0.0
 var countdown_print_accumulator: float = 0.0
 var current_wave_index: int = 1
+var current_wave: int:
+	get:
+		return current_wave_index
 var completion_emitted: bool = false
 var _wave_variant_pools: Array[Dictionary] = []
 var _elite_config: Dictionary = {}
@@ -148,6 +151,14 @@ func _count_alive_enemies() -> int:
 		if child is CharacterBody2D:
 			alive_count += 1
 	return alive_count
+
+func configure_starting_wave(wave_index: int) -> void:
+	current_wave_index = maxi(wave_index, 1)
+	wave_elapsed_seconds = 0.0
+	countdown_print_accumulator = 0.0
+	completion_emitted = false
+	if spawn_timer != null:
+		spawn_timer.wait_time = spawn_interval_seconds
 
 func start_next_wave() -> void:
 	current_wave_index += 1
