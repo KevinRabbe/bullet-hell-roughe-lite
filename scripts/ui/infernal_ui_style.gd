@@ -12,66 +12,139 @@ const COLOR_HELL_ORANGE := Color("#F06A1A")
 const PANEL_SHELL: StringName = &"shell"
 const PANEL_SECTION: StringName = &"section"
 const PANEL_CARD: StringName = &"card"
+const PANEL_MODAL: StringName = &"modal"
+const PANEL_TOOLTIP: StringName = &"tooltip"
+
+const BUTTON_PRIMARY: StringName = &"primary"
+const BUTTON_SECONDARY: StringName = &"secondary"
+const BUTTON_DANGER: StringName = &"danger"
+const BUTTON_CARD: StringName = &"card"
+const BUTTON_TAB: StringName = &"tab"
+const BUTTON_ICON: StringName = &"icon"
+
+const TEXT_DISPLAY_TITLE: StringName = &"display_title"
+const TEXT_SCREEN_TITLE: StringName = &"screen_title"
+const TEXT_SECTION_TITLE: StringName = &"section_title"
+const TEXT_CARD_TITLE: StringName = &"card_title"
+const TEXT_BODY: StringName = &"body"
+const TEXT_MUTED: StringName = &"muted"
+const TEXT_VALUE: StringName = &"value"
+const TEXT_HINT: StringName = &"hint"
+const TEXT_WARNING: StringName = &"warning"
 
 static func apply_panel(control: Control, panel_role: StringName = PANEL_SECTION) -> void:
 	if control == null:
 		return
 	control.add_theme_stylebox_override("panel", build_panel_style(panel_role))
 
-static func apply_primary_button(button: Button) -> void:
+static func apply_button(button: Button, button_role: StringName = BUTTON_SECONDARY, selected: bool = false) -> void:
 	if button == null:
 		return
-	_apply_button_styles(
-		button,
-		_build_style(COLOR_BURNT_BROWN, COLOR_HELL_ORANGE, 2, 10, 16),
-		_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 10, 16),
-		_build_style(COLOR_RITUAL_CRIMSON, COLOR_BONE_HIGHLIGHT, 2, 10, 16),
-		_build_style(COLOR_BURNT_BROWN, COLOR_BONE_HIGHLIGHT, 3, 10, 16)
-	)
+	match button_role:
+		BUTTON_PRIMARY:
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_BURNT_BROWN, COLOR_HELL_ORANGE, 2, 10, 16),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 10, 16),
+				_build_style(COLOR_RITUAL_CRIMSON, COLOR_BONE_HIGHLIGHT, 2, 10, 16),
+				_build_style(COLOR_BURNT_BROWN, COLOR_BONE_HIGHLIGHT, 3, 10, 16)
+			)
+		BUTTON_DANGER:
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_DEEP_BLOOD_RED.darkened(0.18), COLOR_RITUAL_CRIMSON, 2, 10, 16),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 10, 16),
+				_build_style(COLOR_RITUAL_CRIMSON, COLOR_BONE_HIGHLIGHT, 2, 10, 16),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_BONE_HIGHLIGHT, 3, 10, 16)
+			)
+		BUTTON_CARD:
+			var normal_border := COLOR_HELL_ORANGE if selected else COLOR_BURNT_BROWN
+			var normal_width := 2 if selected else 1
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_ALMOST_BLACK, normal_border, normal_width, 8, 12),
+				_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 2, 8, 12),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 8, 12),
+				_build_style(COLOR_ALMOST_BLACK, COLOR_HELL_ORANGE, 2, 8, 12)
+			)
+		BUTTON_TAB:
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 8, 12),
+				_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 1, 8, 12),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 8, 12),
+				_build_style(COLOR_ALMOST_BLACK, COLOR_HELL_ORANGE, 2, 8, 12)
+			)
+		BUTTON_ICON:
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 8, 8),
+				_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 1, 8, 8),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 8, 8),
+				_build_style(COLOR_ALMOST_BLACK, COLOR_HELL_ORANGE, 2, 8, 8)
+			)
+		_:
+			_apply_button_styles(
+				button,
+				_build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 10, 16),
+				_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 1, 10, 16),
+				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_OLD_PARCHMENT, 2, 10, 16),
+				_build_style(COLOR_ALMOST_BLACK, COLOR_OLD_PARCHMENT, 2, 10, 16)
+			)
+
+static func apply_primary_button(button: Button) -> void:
+	apply_button(button, BUTTON_PRIMARY)
 
 static func apply_secondary_button(button: Button) -> void:
-	if button == null:
-		return
-	_apply_button_styles(
-		button,
-		_build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 10, 16),
-		_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 1, 10, 16),
-		_build_style(COLOR_DEEP_BLOOD_RED, COLOR_OLD_PARCHMENT, 2, 10, 16),
-		_build_style(COLOR_ALMOST_BLACK, COLOR_OLD_PARCHMENT, 2, 10, 16)
-	)
+	apply_button(button, BUTTON_SECONDARY)
+
+static func apply_danger_button(button: Button) -> void:
+	apply_button(button, BUTTON_DANGER)
 
 static func apply_card_button(button: Button, selected: bool = false) -> void:
-	if button == null:
+	apply_button(button, BUTTON_CARD, selected)
+
+static func apply_tab_button(button: Button) -> void:
+	apply_button(button, BUTTON_TAB)
+
+static func apply_icon_button(button: Button) -> void:
+	apply_button(button, BUTTON_ICON)
+
+static func apply_text_role(label: Label, text_role: StringName = TEXT_BODY) -> void:
+	if label == null:
 		return
-	var normal_border := COLOR_HELL_ORANGE if selected else COLOR_BURNT_BROWN
-	var normal_width := 2 if selected else 1
-	_apply_button_styles(
-		button,
-		_build_style(COLOR_ALMOST_BLACK, normal_border, normal_width, 8, 12),
-		_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 2, 8, 12),
-		_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 8, 12),
-		_build_style(COLOR_ALMOST_BLACK, COLOR_HELL_ORANGE, 2, 8, 12)
-	)
+	match text_role:
+		TEXT_DISPLAY_TITLE, TEXT_SCREEN_TITLE, TEXT_CARD_TITLE, TEXT_VALUE:
+			label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+		TEXT_SECTION_TITLE:
+			label.add_theme_color_override("font_color", COLOR_OLD_PARCHMENT)
+		TEXT_WARNING:
+			label.add_theme_color_override("font_color", COLOR_HELL_ORANGE)
+		TEXT_MUTED, TEXT_HINT:
+			label.add_theme_color_override("font_color", COLOR_OLD_PARCHMENT.darkened(0.22))
+		_:
+			label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT.darkened(0.18))
 
 static func apply_title(label: Label) -> void:
-	if label == null:
-		return
-	label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+	apply_text_role(label, TEXT_SCREEN_TITLE)
 
 static func apply_section_title(label: Label) -> void:
-	if label == null:
-		return
-	label.add_theme_color_override("font_color", COLOR_OLD_PARCHMENT)
+	apply_text_role(label, TEXT_SECTION_TITLE)
 
 static func apply_body_text(label: Label) -> void:
-	if label == null:
-		return
-	label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT.darkened(0.18))
+	apply_text_role(label, TEXT_BODY)
+
+static func apply_muted_text(label: Label) -> void:
+	apply_text_role(label, TEXT_MUTED)
+
+static func apply_value_text(label: Label) -> void:
+	apply_text_role(label, TEXT_VALUE)
+
+static func apply_hint_text(label: Label) -> void:
+	apply_text_role(label, TEXT_HINT)
 
 static func apply_accent_text(label: Label) -> void:
-	if label == null:
-		return
-	label.add_theme_color_override("font_color", COLOR_HELL_ORANGE)
+	apply_text_role(label, TEXT_WARNING)
 
 static func build_panel_style(panel_role: StringName = PANEL_SECTION) -> StyleBoxFlat:
 	match panel_role:
@@ -79,6 +152,10 @@ static func build_panel_style(panel_role: StringName = PANEL_SECTION) -> StyleBo
 			return _build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 12, 18)
 		PANEL_CARD:
 			return _build_style(COLOR_ALMOST_BLACK.lightened(0.025), COLOR_BURNT_BROWN, 1, 8, 12)
+		PANEL_MODAL:
+			return _build_style(COLOR_ALMOST_BLACK.lightened(0.01), COLOR_RITUAL_CRIMSON, 2, 12, 18)
+		PANEL_TOOLTIP:
+			return _build_style(COLOR_ALMOST_BLACK.lightened(0.02), COLOR_OLD_PARCHMENT.darkened(0.2), 1, 8, 12)
 		_:
 			return _build_style(COLOR_ALMOST_BLACK.lightened(0.015), COLOR_DEEP_BLOOD_RED, 1, 10, 16)
 
