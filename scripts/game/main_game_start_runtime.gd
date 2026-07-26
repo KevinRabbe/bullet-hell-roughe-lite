@@ -36,6 +36,7 @@ static func apply_debug_quick_shop_preset(
 	if player != null and starting_gold > 0 and player.has_method("add_gold"):
 		player.call("add_gold", starting_gold)
 	_apply_arena_size_for_preset(player, effective_preset)
+	_apply_scene_scenario(player, effective_preset)
 
 static func set_wave_duration_for_preset(
 	enemy_spawner: Node,
@@ -57,3 +58,24 @@ static func _apply_arena_size_for_preset(requester: Node, preset: String) -> voi
 	if arena_bounds == null or not arena_bounds.has_method("set_size_class_id"):
 		return
 	arena_bounds.call("set_size_class_id", DebugRunPresetRuntimeRef.arena_size_class_for_preset(preset))
+
+static func _apply_scene_scenario(requester: Node, preset: String) -> void:
+	if requester == null or requester.get_tree() == null:
+		return
+	var scene := requester.get_tree().current_scene
+	if scene == null:
+		return
+
+	var enemy_spawner := scene.get_node_or_null("EnemySpawner")
+	if enemy_spawner != null:
+		enemy_spawner.set("current_wave_index", DebugRunPresetRuntimeRef.wave_index_for_preset(preset))
+		enemy_spawner.set("wave_elapsed_seconds", 0.0)
+		enemy_spawner.set("countdown_print_accumulator", 0.0)
+		enemy_spawner.set("completion_emitted", false)
+
+	var boss_id := DebugRunPresetRuntimeRef.boss_id_for_preset(preset)
+	if boss_id == "":
+		return
+	var boss_manager := scene.get_node_or_null("BossManager")
+	if boss_manager != null and boss_manager.has_method("spawn_boss"):
+		boss_manager.call("spawn_boss", boss_id)
