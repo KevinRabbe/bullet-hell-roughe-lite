@@ -37,20 +37,20 @@ static func _show_banner(owner: Node, eyebrow_text: String, title_text: String, 
 	scene.add_child(layer)
 
 	var root := Control.new()
-	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(root)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_MODAL)
+	root.add_child(panel)
 	panel.anchor_left = 0.5
 	panel.anchor_right = 0.5
 	panel.offset_left = -PANEL_WIDTH * 0.5
 	panel.offset_right = PANEL_WIDTH * 0.5
 	panel.offset_top = PANEL_TOP
 	panel.offset_bottom = PANEL_TOP + 126.0
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_MODAL)
-	root.add_child(panel)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 20)
