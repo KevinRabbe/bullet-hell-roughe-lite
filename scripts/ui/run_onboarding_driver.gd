@@ -16,6 +16,7 @@ const PORTAL_HINT_GAP_SECONDS := 0.35
 var _intro_delay_left: float = INTRO_DELAY_SECONDS
 var _intro_shown: bool = false
 var _portal_hint_shown: bool = false
+var _portal_seen: bool = false
 var _next_banner_allowed_msec: int = 0
 
 func _ready() -> void:
@@ -28,6 +29,8 @@ func _process(delta: float) -> void:
 	var scene := _current_game_scene()
 	if scene == null or not _is_normal_run(scene) or not bool(scene.get("run_started")):
 		return
+	if not _portal_seen and _has_active_portal():
+		_portal_seen = true
 	if not _intro_shown:
 		_intro_delay_left = maxf(_intro_delay_left - delta, 0.0)
 		if _intro_delay_left <= 0.0:
@@ -35,7 +38,7 @@ func _process(delta: float) -> void:
 		return
 	if Time.get_ticks_msec() < _next_banner_allowed_msec:
 		return
-	if _has_active_portal():
+	if _portal_seen:
 		_show_portal_hint()
 
 func _show_intro() -> void:
@@ -57,7 +60,7 @@ func _show_portal_hint() -> void:
 		self,
 		"RIFT SIGHTED",
 		"OPTIONAL DANGER",
-		"Entering a portal accepts a risk/reward event. Avoid it when the trade is not worth the danger.",
+		"Portals are optional risk/reward events. Cross one when the possible reward is worth accepting its danger.",
 		PORTAL_HINT_DURATION_SECONDS
 	)
 
