@@ -33,6 +33,7 @@ var speed_pressure_reward_result: Dictionary = {}
 var active_mutation_offer: Node
 var active_mutation_event_result: Dictionary = {}
 var previous_tree_paused: bool = false
+var debug_forced_event_id: String = ""
 
 func _ready() -> void:
 	rng = _resolve_rng("portal")
@@ -49,6 +50,11 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		_try_activate_nearest_portal()
+
+func configure_debug_capture_event(event_id: String) -> void:
+	debug_forced_event_id = event_id.strip_edges()
+	if debug_forced_event_id != "":
+		_spawn_first_portal()
 
 func _spawn_first_portal() -> void:
 	if _active_portal_count() >= 1:
@@ -89,7 +95,7 @@ func _try_activate_nearest_portal() -> void:
 		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
-	var event_result := PortalRiskRewardRuntime.pick_event_result(rng, player)
+	var event_result := _resolve_portal_event_result()
 	var event_id := str(event_result.get("event_id", "double_elite"))
 	if log_portal_events:
 		print("Portal activated. Event: %s" % event_id)
@@ -288,6 +294,16 @@ func _on_event_elite_exited(enemy: Node) -> void:
 			print("Portal event completed: all elites defeated.")
 		_emit_portal_event_completed(active_event_result)
 		active_event_result = {}
+
+func _resolve_portal_event_result() -> Dictionary:
+	if debug_forced_event_id != "":
+		var forced_event_id := debug_forced_event_id
+		debug_forced_event_id = ""
+		return PortalEventResolver.build_event_result_for_id(
+			forced_event_id,
+			PortalRiskRewardRuntime.build_profile(player)
+		)
+	return PortalRiskRewardRuntime.pick_event_result(rng, player)
 
 func _pick_portal_event_id() -> String:
 	return PortalEventResolver.pick_event_id(rng, PortalRiskRewardRuntime.build_profile(player))
