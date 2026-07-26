@@ -139,8 +139,7 @@ func _refresh_controls_content() -> void:
 			{"label": "Move Left", "binding": _format_action_bindings("move_left")},
 			{"label": "Move Right", "binding": _format_action_bindings("move_right")},
 			{"label": "Move Up", "binding": _format_action_bindings("move_up")},
-			{"label": "Move Down", "binding": _format_action_bindings("move_down")},
-			{"label": "Interact", "binding": _format_action_bindings("interact")}
+			{"label": "Move Down", "binding": _format_action_bindings("move_down")}
 		]
 	)
 	_add_controls_group(
