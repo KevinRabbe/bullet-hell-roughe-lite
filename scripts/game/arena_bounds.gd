@@ -16,21 +16,39 @@ const LARGE_SCALE := 4.0 / 3.0
 @export var player_inset: float = 20.0
 @export var spawn_inset: float = 36.0
 @export var base_camera_zoom: float = 0.8
-@export var player_path: NodePath
-@export var camera_path: NodePath
+@export var player_path: NodePath = NodePath("../Player")
+@export var camera_path: NodePath = NodePath("../Player/Camera2D")
+@export var backdrop_path: NodePath = NodePath("../Arena")
+@export var arena_art_path: NodePath = NodePath("../ArenaArt")
 
 var player: Node2D
 var camera: Camera2D
+var backdrop: ColorRect
+var arena_art: Node2D
+
+static func ensure_for_scene(requester: Node) -> ArenaBounds:
+	if requester == null or requester.get_tree() == null:
+		return null
+	var scene := requester.get_tree().current_scene
+	if scene == null:
+		return null
+	var existing := scene.get_node_or_null("ArenaBounds") as ArenaBounds
+	if existing != null:
+		return existing
+	var created := ArenaBounds.new()
+	created.name = "ArenaBounds"
+	scene.add_child(created)
+	return created
 
 func _ready() -> void:
 	# Arena clamping runs after the normal player physics step.
 	process_physics_priority = 100
-	_resolve_player()
-	_resolve_camera()
+	_resolve_scene_nodes()
 	_apply_camera_contract()
+	_apply_presentation_contract()
 	var viewport := get_viewport()
-	if viewport != null and not viewport.size_changed.is_connected(_apply_camera_contract):
-		viewport.size_changed.connect(_apply_camera_contract)
+	if viewport != null and not viewport.size_changed.is_connected(_on_viewport_size_changed):
+		viewport.size_changed.connect(_on_viewport_size_changed)
 
 func _physics_process(_delta: float) -> void:
 	if player == null or not is_instance_valid(player):
@@ -41,6 +59,16 @@ func _physics_process(_delta: float) -> void:
 
 func get_size_class_id() -> String:
 	return _normalize_size_class(size_class)
+
+func set_size_class_id(next_size_class: String) -> void:
+	var normalized := _normalize_size_class(next_size_class)
+	if size_class == normalized:
+		return
+	size_class = normalized
+	_apply_camera_contract()
+	_apply_presentation_contract()
+	if player != null and is_instance_valid(player):
+		player.global_position = clamp_player_position(player.global_position)
 
 func get_playable_size() -> Vector2:
 	return playable_size_for_class(get_size_class_id())
@@ -83,6 +111,15 @@ func resolve_enemy_spawn_position(origin: Vector2, radius: float, direction: Vec
 
 	return _farthest_rect_corner(origin, spawn_rect)
 
+func _on_viewport_size_changed() -> void:
+	_apply_camera_contract()
+
+func _resolve_scene_nodes() -> void:
+	_resolve_player()
+	_resolve_camera()
+	backdrop = get_node_or_null(backdrop_path) as ColorRect if backdrop_path != NodePath() else null
+	arena_art = get_node_or_null(arena_art_path) as Node2D if arena_art_path != NodePath() else null
+
 func _resolve_player() -> void:
 	player = null
 	if player_path == NodePath():
@@ -113,6 +150,63 @@ func _apply_camera_contract() -> void:
 	)
 	var resolved_zoom := maxf(base_camera_zoom, minimum_fit_zoom)
 	camera.zoom = Vector2(resolved_zoom, resolved_zoom)
+
+func _apply_presentation_contract() -> void:
+	if (backdrop == null or not is_instance_valid(backdrop)) and backdrop_path != NodePath():
+		backdrop = get_node_or_null(backdrop_path) as ColorRect
+	if (arena_art == null or not is_instance_valid(arena_art)) and arena_art_path != NodePath():
+		arena_art = get_node_or_null(arena_art_path) as Node2D
+	var playable_rect := get_playable_rect()
+	_apply_backdrop(playable_rect)
+	_apply_ground(playable_rect)
+	_apply_environment_composition(playable_rect)
+
+func _apply_backdrop(playable_rect: Rect2) -> void:
+	if backdrop == null:
+		return
+	backdrop.offset_left = playable_rect.position.x
+	backdrop.offset_top = playable_rect.position.y
+	backdrop.offset_right = playable_rect.end.x
+	backdrop.offset_bottom = playable_rect.end.y
+
+func _apply_ground(playable_rect: Rect2) -> void:
+	if arena_art == null:
+		return
+	var ground := arena_art.get_node_or_null("Ground/GroundTexture") as Sprite2D
+	if ground == null or ground.texture == null:
+		return
+	var texture_size := ground.texture.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var cover_scale := maxf(
+		playable_rect.size.x / texture_size.x,
+		playable_rect.size.y / texture_size.y
+	)
+	ground.global_position = playable_rect.get_center()
+	ground.scale = Vector2(cover_scale, cover_scale)
+
+func _apply_environment_composition(playable_rect: Rect2) -> void:
+	if arena_art == null:
+		return
+	# Keep the combat center readable while pinning environmental storytelling toward edges.
+	_place_art_node("Decals/LavaFissures", playable_rect, Vector2(0.22, -0.25))
+	_place_art_node("Decals/RitualCircle", playable_rect, Vector2(-0.26, 0.32))
+	_place_art_node("Props/CrystalNW", playable_rect, Vector2(-0.78, -0.72))
+	_place_art_node("Props/CactusNE", playable_rect, Vector2(0.80, -0.68))
+	_place_art_node("Props/WheelSW", playable_rect, Vector2(-0.82, 0.72))
+	_place_art_node("Props/SkeletonSE", playable_rect, Vector2(0.78, 0.74))
+
+func _place_art_node(path: NodePath, playable_rect: Rect2, normalized_anchor: Vector2) -> void:
+	if arena_art == null:
+		return
+	var node := arena_art.get_node_or_null(path) as Node2D
+	if node == null:
+		return
+	var half_size := playable_rect.size * 0.5
+	node.global_position = playable_rect.get_center() + Vector2(
+		half_size.x * clampf(normalized_anchor.x, -1.0, 1.0),
+		half_size.y * clampf(normalized_anchor.y, -1.0, 1.0)
+	)
 
 static func playable_size_for_class(size_class_id: String) -> Vector2:
 	match _normalize_size_class(size_class_id):
