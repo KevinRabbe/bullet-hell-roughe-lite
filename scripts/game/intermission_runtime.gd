@@ -22,6 +22,9 @@ static func begin_intermission(owner: Node, wave_panel: Control, level_up_panel:
 	if not shop_enabled and wave_panel != null:
 		_prepare_fallback_intermission(wave_panel)
 		wave_panel.visible = true
+		var continue_button := wave_panel.get_node_or_null("ContinueButton") as Button
+		if continue_button != null:
+			continue_button.call_deferred("grab_focus")
 
 static func end_intermission(owner: Node) -> void:
 	if owner == null:

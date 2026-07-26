@@ -68,21 +68,25 @@ func configure_copy(title: String, body: String) -> void:
 func _refresh_hint_copy() -> void:
 	if hint_label == null:
 		return
-	hint_label.text = "Hotkeys: Esc Resume, R Restart" if not standalone_mode else "Hotkeys: Esc Resume, R Restart, Enter activates focus"
+	hint_label.text = "Cancel / Menu: Resume · Confirm: Activate focused action"
 
 func _unhandled_input(event: InputEvent) -> void:
 	if active_options_menu != null and is_instance_valid(active_options_menu):
+		if event.is_action_pressed("ui_cancel"):
+			active_options_menu.call("_on_back_pressed")
+			get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("pause_game"):
+		_on_resume_pressed()
+		get_viewport().set_input_as_handled()
 		return
 	if not (event is InputEventKey):
 		return
 	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
-	match key_event.keycode:
-		KEY_ESCAPE:
-			_on_resume_pressed()
-		KEY_R:
-			_on_restart_pressed()
+	if key_event.keycode == KEY_R:
+		_on_restart_pressed()
 
 func _on_resume_pressed() -> void:
 	emit_signal("resume_requested")
