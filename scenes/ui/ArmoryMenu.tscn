@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://scripts/ui/armory_menu.gd" id="1_4pv3w"]
+[ext_resource type="Script" path="res://scripts/ui/armory_menu_standardized.gd" id="1_4pv3w"]
 [ext_resource type="Texture2D" path="res://assets/sprites/ui/menu/backgrounds/main_menu_background.png" id="2_6jlwm"]
 
 [node name="ArmoryMenu" type="Control"]
