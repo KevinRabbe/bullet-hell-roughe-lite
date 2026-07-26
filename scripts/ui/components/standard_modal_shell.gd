@@ -22,7 +22,7 @@ func _ready() -> void:
 	_refresh_copy()
 	_apply_responsive_layout()
 	var viewport: Viewport = get_viewport()
-	if viewport != null and not viewport.size_changed.is_connected(_apply_responsive_layout):
+	if viewport != null:
 		viewport.size_changed.connect(_apply_responsive_layout)
 
 func configure(title: String, subtitle: String = "") -> void:
