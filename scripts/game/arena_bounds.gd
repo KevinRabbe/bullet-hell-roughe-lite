@@ -12,6 +12,11 @@ const STANDARD_PLAYABLE_SIZE := Vector2(2160.0, 1215.0)
 const COMPACT_SCALE := 2.0 / 3.0
 const LARGE_SCALE := 4.0 / 3.0
 
+const PERIMETER_SHADOW_COLOR := Color(0.07, 0.035, 0.045, 0.82)
+const PERIMETER_EMBER_COLOR := Color(0.62, 0.10, 0.18, 0.52)
+const PERIMETER_SHADOW_WIDTH := 54.0
+const PERIMETER_EMBER_WIDTH := 4.0
+
 @export_enum("compact", "standard", "large") var size_class: String = SIZE_STANDARD
 @export var player_inset: float = 20.0
 @export var spawn_inset: float = 36.0
@@ -174,6 +179,7 @@ func _apply_presentation_contract() -> void:
 	var playable_rect := get_playable_rect()
 	_apply_backdrop(playable_rect)
 	_apply_ground(playable_rect)
+	_apply_perimeter(playable_rect)
 	_apply_environment_composition(playable_rect)
 
 func _apply_backdrop(playable_rect: Rect2) -> void:
@@ -199,6 +205,59 @@ func _apply_ground(playable_rect: Rect2) -> void:
 	)
 	ground.global_position = playable_rect.get_center()
 	ground.scale = Vector2(cover_scale, cover_scale)
+
+func _apply_perimeter(playable_rect: Rect2) -> void:
+	if arena_art == null:
+		return
+	var perimeter := arena_art.get_node_or_null("Perimeter") as Node2D
+	if perimeter == null:
+		perimeter = Node2D.new()
+		perimeter.name = "Perimeter"
+		perimeter.z_index = -7
+		arena_art.add_child(perimeter)
+	for child in perimeter.get_children():
+		perimeter.remove_child(child)
+		child.queue_free()
+	var segments := _build_perimeter_segments(playable_rect)
+	for points in segments:
+		_add_perimeter_line(perimeter, points, PERIMETER_SHADOW_COLOR, PERIMETER_SHADOW_WIDTH)
+		_add_perimeter_line(perimeter, points, PERIMETER_EMBER_COLOR, PERIMETER_EMBER_WIDTH)
+
+func _build_perimeter_segments(playable_rect: Rect2) -> Array[PackedVector2Array]:
+	var normalized_segments: Array[PackedVector2Array] = [
+		PackedVector2Array([Vector2(-0.96, -0.88), Vector2(-0.77, -0.94), Vector2(-0.55, -0.91), Vector2(-0.33, -0.96)]),
+		PackedVector2Array([Vector2(0.22, -0.95), Vector2(0.44, -0.91), Vector2(0.70, -0.96), Vector2(0.94, -0.89)]),
+		PackedVector2Array([Vector2(0.93, -0.80), Vector2(0.96, -0.57), Vector2(0.92, -0.34), Vector2(0.95, -0.12)]),
+		PackedVector2Array([Vector2(0.94, 0.10), Vector2(0.91, 0.34), Vector2(0.96, 0.58), Vector2(0.92, 0.83)]),
+		PackedVector2Array([Vector2(0.88, 0.94), Vector2(0.63, 0.90), Vector2(0.39, 0.96), Vector2(0.17, 0.92)]),
+		PackedVector2Array([Vector2(-0.18, 0.95), Vector2(-0.41, 0.91), Vector2(-0.66, 0.96), Vector2(-0.90, 0.92)]),
+		PackedVector2Array([Vector2(-0.94, 0.82), Vector2(-0.91, 0.56), Vector2(-0.96, 0.33), Vector2(-0.92, 0.11)]),
+		PackedVector2Array([Vector2(-0.95, -0.12), Vector2(-0.91, -0.36), Vector2(-0.96, -0.60), Vector2(-0.92, -0.83)])
+	]
+	var resolved: Array[PackedVector2Array] = []
+	for normalized_points in normalized_segments:
+		var world_points := PackedVector2Array()
+		for normalized_point in normalized_points:
+			world_points.append(_normalized_arena_point(playable_rect, normalized_point))
+		resolved.append(world_points)
+	return resolved
+
+func _normalized_arena_point(playable_rect: Rect2, normalized_point: Vector2) -> Vector2:
+	var half_size := playable_rect.size * 0.5
+	return playable_rect.get_center() + Vector2(
+		half_size.x * clampf(normalized_point.x, -1.0, 1.0),
+		half_size.y * clampf(normalized_point.y, -1.0, 1.0)
+	)
+
+func _add_perimeter_line(parent: Node2D, points: PackedVector2Array, color: Color, width: float) -> void:
+	if points.size() < 2:
+		return
+	var line := Line2D.new()
+	line.points = points
+	line.width = width
+	line.default_color = color
+	line.z_index = 0 if width >= PERIMETER_SHADOW_WIDTH else 1
+	parent.add_child(line)
 
 func _apply_environment_composition(playable_rect: Rect2) -> void:
 	if arena_art == null:
