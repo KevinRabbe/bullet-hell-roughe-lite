@@ -3,12 +3,12 @@ extends RefCounted
 
 const RUN_END_COPY: Dictionary = {
 	"game_over": {
-		"title": "Game Over",
-		"body": "You were overwhelmed. Press R or Restart to try again."
+		"title": "Defeat — The Frontier Holds",
+		"body": "The frontier took this run. Retry the same hunter and opener, or return to the roster."
 	},
 	"victory": {
-		"title": "Victory",
-		"body": "The arena is clear. Press R or Restart to run it back."
+		"title": "Victory — Frontier Cleared",
+		"body": "The final wave is broken. This build made it through the frontier."
 	}
 }
 
