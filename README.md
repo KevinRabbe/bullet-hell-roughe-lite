@@ -83,6 +83,8 @@ Until V2 is reached, work should primarily close an explicit V1 foundation gap, 
 
 The full product roadmap and V2 acceptance criteria live in `docs/PRODUCT_ROADMAP.md`.
 
+The concrete six-shot/trailer acceptance pass lives in `docs/V2_CAPTURE_CHECKLIST.md`.
+
 ## Reusable-foundation direction
 
 Future development should prefer one strong canonical implementation for concepts that repeat across the game, then express variety through data, configuration, shared components, and small extensions.
@@ -120,6 +122,7 @@ Important project contracts live in:
 
 - `AGENTS.md`
 - `docs/PRODUCT_ROADMAP.md`
+- `docs/V2_CAPTURE_CHECKLIST.md`
 - `docs/REUSABLE_GAME_FOUNDATIONS.md`
 - `docs/UI_SYSTEM_SPEC.md`
 - `docs/ART_STYLE_RULES.md`
@@ -130,16 +133,12 @@ Gameplay truth belongs in runtime/data systems; UI code should remain presentati
 
 ## Current development phase
 
-The foundational vertical slice exists and the next product milestone is the **V2 Steam Page / Public Reveal Candidate**.
+The reusable vertical-slice foundation and the approved V2 visual/presentation batch are now integrated. The project is in the **V2 public-reveal capture gate** rather than broad foundation construction.
 
 Immediate work is:
 
-- finish/qualify the remaining V1 foundation slices: strict content validation and deep-run development scenarios
-- then prioritize V2 gaps by how much they improve the representative public-facing 10-wave run
-- strengthen combat feel/readability and enemy pressure
-- make build differentiation, portal decisions, Gate Beast, Ascension, and late-run escalation obvious in real gameplay
-- finish the bounded Hellshot Frontier arena presentation
-- bring the canonical UI from structurally standardized to capture-ready presentation
-- add coherent audiovisual feedback/juice where the representative run needs it
-- remove visible prototype/debug presentation from capture routes
-- reach a real-game capture gate suitable for screenshots and a short gameplay-first trailer
+- qualify the bounded V2 SFX slice against real gameplay rather than merging sound blindly
+- run the six-shot real-game capture checklist at 1152 × 648
+- verify the same build can produce a short gameplay-first trailer sequence
+- fix only concrete readability, presentation, audio, or stability defects exposed by that capture pass
+- call V2 complete only when the capture and audio gates pass with no visible prototype/debug exceptions
