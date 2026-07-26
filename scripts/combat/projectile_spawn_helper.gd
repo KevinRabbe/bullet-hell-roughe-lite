@@ -1,6 +1,8 @@
 class_name ProjectileSpawnHelper
 extends RefCounted
 
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
+
 static func spawn_projectile(
 	projectile_scene: PackedScene,
 	parent: Node,
@@ -29,4 +31,6 @@ static func spawn_projectile(
 	if visual is Node2D:
 		(visual as Node2D).rotation = normalized_direction.angle() + rotation_offset
 	parent.add_child(projectile)
+	var launch_pitch := clampf(1.08 - (maxf(damage, 0.0) / 180.0), 0.78, 1.10)
+	SfxRuntimeRef.play(parent, "projectile_launch", -18.0, launch_pitch, 65)
 	return projectile
