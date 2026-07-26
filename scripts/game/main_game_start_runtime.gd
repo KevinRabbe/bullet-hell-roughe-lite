@@ -35,6 +35,7 @@ static func apply_debug_quick_shop_preset(
 ) -> void:
 	if player != null and starting_gold > 0 and player.has_method("add_gold"):
 		player.call("add_gold", starting_gold)
+	_apply_weapon_grants_for_preset(player, effective_preset)
 	_apply_arena_size_for_preset(player, effective_preset)
 	_apply_scene_scenario(player, effective_preset)
 
@@ -50,6 +51,16 @@ static func set_wave_duration_for_preset(
 		enemy_spawner.set("wave_duration_seconds", default_wave_duration_seconds)
 	else:
 		enemy_spawner.set("wave_duration_seconds", debug_preset_wave_duration)
+
+static func _apply_weapon_grants_for_preset(player: Node, preset: String) -> void:
+	if player == null or not player.has_method("grant_weapon"):
+		return
+	for grant in DebugRunPresetRuntimeRef.weapon_grants_for_preset(preset):
+		var weapon_id := str(grant.get("id", ""))
+		if weapon_id == "":
+			continue
+		var rarity := str(grant.get("rarity", "common"))
+		player.call("grant_weapon", weapon_id, rarity)
 
 static func _apply_arena_size_for_preset(requester: Node, preset: String) -> void:
 	if requester == null:
