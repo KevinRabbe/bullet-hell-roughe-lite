@@ -51,6 +51,12 @@ if (-not (Test-Path $pckPath)) {
     throw "Godot reported success but '$pckPath' was not created. The Windows Playtest preset must export a separate PCK beside the executable."
 }
 
+Write-Host "Smoke-launching the packaged release headlessly..."
+& $exePath --headless --quit-after 5
+if ($LASTEXITCODE -ne 0) {
+    throw "The packaged HellshotFrontier.exe failed its headless startup smoke check with exit code $LASTEXITCODE."
+}
+
 $commitSha = "unknown"
 try {
     $resolvedSha = (& git -C $projectRoot rev-parse HEAD 2>$null).Trim()
@@ -69,6 +75,7 @@ Commit: $commitSha
 Godot: $godotVersion
 Export preset: Windows Playtest
 Architecture: Windows x86_64
+Build smoke: packaged executable started headlessly
 Built UTC: $([DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
 
 IMPORTANT: Extract the entire ZIP to a normal folder before launching HellshotFrontier.exe. Keep HellshotFrontier.exe and HellshotFrontier.pck together in the same folder.
