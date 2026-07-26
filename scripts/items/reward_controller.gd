@@ -65,7 +65,8 @@ func _queue_portal_reward_feedback(granted_names: Array[String], event_result: D
 		return
 	if get_tree() == null:
 		return
-	var names_copy := granted_names.duplicate()
+	var names_copy: Array[String] = []
+	names_copy.assign(granted_names)
 	var timer := get_tree().create_timer(EventBannerRuntimeRef.DEFAULT_SECONDS + 0.08)
 	timer.timeout.connect(func() -> void:
 		if is_instance_valid(self):
