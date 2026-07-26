@@ -8,9 +8,7 @@ Portals interrupt the run with risky events, cursed trades, mutation offers, eli
 
 ## Current vertical slice
 
-The project now has a complete short-form run structure rather than only a movement/combat prototype.
-
-Current flow:
+The project has a complete short-form run structure:
 
 ```text
 Main Menu
@@ -53,6 +51,10 @@ The vertical slice currently includes:
 - pause, options, credits, armory, and run HUD presentation
 - shared infernal/occult UI styling
 - shared-base hunter art direction for roster cohesion
+- fixed STANDARD / COMPACT arenas plus LARGE scrolling arena support
+- permanent two-page Shop stat vocabulary
+- recognition-first owned inventory with on-demand detail
+- bounded combat/portal/boss SFX baseline
 
 ## Core design direction
 
@@ -64,26 +66,36 @@ Build variety should come from interactions between hunter identity, weapons, it
 
 ## Product milestone direction
 
-The current product north star is **V2 — Steam Page / Public Reveal Candidate**.
+The current product north star is **V3 — Public Demo / External Playtest Candidate**.
 
-V2 is reached when Hellshot Frontier can be shown to a complete stranger with no explanation and the real game footage/screenshots communicate a coherent game worth following or wishlisting.
+V2 — Steam Page / Public Reveal Candidate is complete. The presentation-ready V2 baseline should now be preserved while V3 focuses on making the same representative run understandable and reliable for people playing without developer guidance.
 
 The route is:
 
 ```text
-V1 — Internal Vertical Slice + Foundations
+V1 — Internal Vertical Slice + Foundations        COMPLETE
         -> stable reusable development base
-V2 — Steam Page / Public Reveal Candidate
+V2 — Steam Page / Public Reveal Candidate         COMPLETE
         -> coherent identity + capture-ready representative run
-V3 — Public Demo / External Playtest Candidate
+V3 — Public Demo / External Playtest Candidate    CURRENT
+        -> stranger-safe input + onboarding + reliable playtest flow
 V4 — Early Access Candidate
 ```
 
-Until V2 is reached, work should primarily close an explicit V1 foundation gap, close a V2 presentation/gameplay gap, or fix a defect that blocks reliable development/testing. Random polish and speculative architecture should be deferred.
+Current V3 priorities are:
 
-The full product roadmap and V2 acceptance criteria live in `docs/PRODUCT_ROADMAP.md`.
+1. public keyboard/controller input and debug isolation
+2. first-run onboarding clarity
+3. pause/result/decision-flow robustness
+4. accessibility/usability qualification
+5. local deterministic playtest reporting
+6. external demo qualification
 
-The concrete six-shot/trailer acceptance pass lives in `docs/V2_CAPTURE_CHECKLIST.md`.
+The canonical product roadmap lives in `docs/PRODUCT_ROADMAP.md`.
+
+The detailed V3 execution plan lives in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
+
+The completed V2 presentation pass remains documented in `docs/V2_PRESENTATION_VALUE_ROADMAP.md`, with the capture routes in `docs/V2_CAPTURE_CHECKLIST.md`.
 
 ## Reusable-foundation direction
 
@@ -91,19 +103,19 @@ Future development should prefer one strong canonical implementation for concept
 
 The shared hunter base is the reference model for this approach.
 
-Current foundation priorities are:
+Current reusable foundations include:
 
 1. canonical reusable UI system
 2. explicit STANDARD / COMPACT / LARGE arena system
 3. deterministic content validation
 4. development scenario harness for direct deep-run testing
+5. public input defaults/bootstrap introduced by concrete V3 controller needs
 
 Additional foundations should evolve only when real duplication justifies them:
 
 - shared effect/modifier vocabulary
 - reusable enemy/boss/projectile archetypes
 - semantic gameplay-feedback events
-- unified input actions/navigation
 
 This is intentionally **not** a generic framework/API effort. The objective is to remove repeated Hellshot Frontier work without hiding the game behind unnecessary abstraction.
 
@@ -122,6 +134,7 @@ Important project contracts live in:
 
 - `AGENTS.md`
 - `docs/PRODUCT_ROADMAP.md`
+- `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`
 - `docs/V2_CAPTURE_CHECKLIST.md`
 - `docs/REUSABLE_GAME_FOUNDATIONS.md`
 - `docs/UI_SYSTEM_SPEC.md`
@@ -133,12 +146,13 @@ Gameplay truth belongs in runtime/data systems; UI code should remain presentati
 
 ## Current development phase
 
-The reusable vertical-slice foundation and the approved V2 visual/presentation batch are now integrated. The project is in the **V2 public-reveal capture gate** rather than broad foundation construction.
+The project is now in the **V3 external-playtest readiness phase**.
 
 Immediate work is:
 
-- qualify the bounded V2 SFX slice against real gameplay rather than merging sound blindly
-- run the six-shot real-game capture checklist at 1152 × 648
-- verify the same build can produce a short gameplay-first trailer sequence
-- fix only concrete readability, presentation, audio, or stability defects exposed by that capture pass
-- call V2 complete only when the capture and audio gates pass with no visible prototype/debug exceptions
+- qualify keyboard + controller traversal of the existing representative run
+- isolate developer shortcuts from public builds
+- add minimal first-run controls/objective onboarding
+- harden decision-screen focus and pause/result navigation
+- add deterministic run identity to playtest reporting
+- fix only concrete V3 usability/reliability defects before expanding content breadth
