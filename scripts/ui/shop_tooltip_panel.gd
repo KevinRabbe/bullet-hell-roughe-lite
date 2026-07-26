@@ -2,6 +2,8 @@ extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const StandardTooltipScene = preload("res://scenes/ui/components/StandardTooltip.tscn")
+
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
 @export var offer_button_paths: Array[NodePath] = []
@@ -12,22 +14,20 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 var shop_controller: Node
 var player: Node
 var offer_buttons: Array[Button] = []
-var tooltip_panel: Panel
+var tooltip_panel: Control
 var tooltip_title: Label
 var tooltip_body: Label
 var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
+	_upgrade_tooltip_to_standard_component()
 	if shop_controller_path != NodePath():
 		shop_controller = get_node_or_null(shop_controller_path)
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if tooltip_panel_path != NodePath():
-		tooltip_panel = get_node_or_null(tooltip_panel_path)
-	if tooltip_title_path != NodePath():
-		tooltip_title = get_node_or_null(tooltip_title_path)
-	if tooltip_body_path != NodePath():
-		tooltip_body = get_node_or_null(tooltip_body_path)
+		tooltip_panel = get_node_or_null(tooltip_panel_path) as Control
+	_resolve_tooltip_labels()
 	for button_path in offer_button_paths:
 		var button := get_node_or_null(button_path)
 		if button is Button:
@@ -37,13 +37,46 @@ func _ready() -> void:
 		button.mouse_entered.connect(_on_offer_hovered.bind(index))
 		button.mouse_exited.connect(_hide_tooltip)
 	_apply_presentation()
-	if tooltip_panel != null:
-		tooltip_panel.visible = false
+	_hide_tooltip()
+
+func _upgrade_tooltip_to_standard_component() -> void:
+	if tooltip_panel_path == NodePath():
+		return
+	var existing := get_node_or_null(tooltip_panel_path) as Control
+	if existing == null or existing.has_method("show_at"):
+		return
+	var parent := existing.get_parent()
+	if parent == null:
+		return
+	var insert_index := existing.get_index()
+	var tooltip_variant: Variant = StandardTooltipScene.instantiate()
+	if not (tooltip_variant is Control):
+		return
+	var standard_tooltip := tooltip_variant as Control
+	standard_tooltip.name = existing.name
+	standard_tooltip.position = existing.position
+	standard_tooltip.visible = existing.visible
+	parent.remove_child(existing)
+	existing.queue_free()
+	parent.add_child(standard_tooltip)
+	parent.move_child(standard_tooltip, insert_index)
+
+func _resolve_tooltip_labels() -> void:
+	if tooltip_panel != null and tooltip_panel.has_method("get_title_label"):
+		tooltip_title = tooltip_panel.call("get_title_label") as Label
+		tooltip_body = tooltip_panel.call("get_body_label") as Label
+		return
+	if tooltip_title_path != NodePath():
+		tooltip_title = get_node_or_null(tooltip_title_path) as Label
+	if tooltip_body_path != NodePath():
+		tooltip_body = get_node_or_null(tooltip_body_path) as Label
 
 func _apply_presentation() -> void:
-	InfernalUiStyleRef.apply_panel(tooltip_panel, InfernalUiStyleRef.PANEL_CARD)
-	InfernalUiStyleRef.apply_section_title(tooltip_title)
-	InfernalUiStyleRef.apply_body_text(tooltip_body)
+	if tooltip_panel != null and tooltip_panel.has_method("configure"):
+		return
+	InfernalUiStyleRef.apply_panel(tooltip_panel, InfernalUiStyleRef.PANEL_TOOLTIP)
+	InfernalUiStyleRef.apply_text_role(tooltip_title, InfernalUiStyleRef.TEXT_CARD_TITLE)
+	InfernalUiStyleRef.apply_text_role(tooltip_body, InfernalUiStyleRef.TEXT_BODY)
 
 func _on_offer_hovered(index: int) -> void:
 	var offer := _get_offer(index)
@@ -60,14 +93,18 @@ func _on_offer_hovered(index: int) -> void:
 		body = _build_weapon_tooltip(str(offer.get("id", "")))
 	elif offer_type == "item":
 		body = _build_item_tooltip(str(offer.get("id", "")))
-	if tooltip_title != null:
+	if tooltip_panel != null and tooltip_panel.has_method("configure"):
+		tooltip_panel.call("configure", title, body)
+	elif tooltip_title != null and tooltip_body != null:
 		tooltip_title.text = title
-	if tooltip_body != null:
 		tooltip_body.text = body
 	if tooltip_panel != null:
 		var mouse := get_viewport().get_mouse_position()
-		tooltip_panel.position = mouse + Vector2(16.0, 16.0)
-		tooltip_panel.visible = true
+		if tooltip_panel.has_method("show_at"):
+			tooltip_panel.call("show_at", mouse)
+		else:
+			tooltip_panel.position = mouse + Vector2(16.0, 16.0)
+			tooltip_panel.visible = true
 
 func _get_offer(index: int) -> Dictionary:
 	if shop_controller == null:
@@ -221,7 +258,11 @@ func _format_stat_bonus(stat_id: String, amount: float) -> String:
 			return "%+.2f %s" % [amount, stat_id.replace("_", " ")]
 
 func _hide_tooltip() -> void:
-	if tooltip_panel != null:
+	if tooltip_panel == null:
+		return
+	if tooltip_panel.has_method("hide_tooltip"):
+		tooltip_panel.call("hide_tooltip")
+	else:
 		tooltip_panel.visible = false
 
 func _get_player_snapshot() -> Dictionary:
