@@ -35,10 +35,21 @@ static func ensure_for_scene(requester: Node) -> ArenaBounds:
 	var existing := scene.get_node_or_null("ArenaBounds") as ArenaBounds
 	if existing != null:
 		return existing
+	if not _scene_supports_arena(scene):
+		return null
 	var created := ArenaBounds.new()
 	created.name = "ArenaBounds"
 	scene.add_child(created)
 	return created
+
+static func _scene_supports_arena(scene: Node) -> bool:
+	if scene == null:
+		return false
+	return (
+		scene.get_node_or_null("Player") is Node2D
+		and scene.get_node_or_null("Player/Camera2D") is Camera2D
+		and scene.get_node_or_null("Arena") is ColorRect
+	)
 
 func _ready() -> void:
 	# Arena clamping runs after the normal player physics step.
