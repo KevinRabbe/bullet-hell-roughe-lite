@@ -4,7 +4,9 @@ signal ascension_selected(definition: Dictionary)
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 
+@onready var backdrop: ColorRect = $Backdrop
 @onready var panel: PanelContainer = $Backdrop/Center/Panel
 @onready var margin: MarginContainer = $Backdrop/Center/Panel/Margin
 @onready var vbox: VBoxContainer = $Backdrop/Center/Panel/Margin/VBox
@@ -31,11 +33,12 @@ func _ready() -> void:
 	if viewport != null and not viewport.size_changed.is_connected(_apply_responsive_layout):
 		viewport.size_changed.connect(_apply_responsive_layout)
 	_refresh()
+	MenuAnimationRuntimeRef.animate_modal_open(backdrop, panel)
 
 func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_MODAL)
-	InfernalUiStyleRef.apply_text_role(eyebrow_label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
-	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_SCREEN_TITLE)
+	InfernalUiStyleRef.apply_text_role(eyebrow_label, InfernalUiStyleRef.TEXT_WARNING)
+	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
 	InfernalUiStyleRef.apply_text_role(description_label, InfernalUiStyleRef.TEXT_BODY)
 	InfernalUiStyleRef.apply_text_role(footer_label, InfernalUiStyleRef.TEXT_HINT)
 
