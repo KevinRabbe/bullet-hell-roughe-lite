@@ -72,7 +72,7 @@ func _process(_delta: float) -> void:
 func _update_hud() -> void:
 	if player == null or enemy_spawner == null:
 		return
-	var hud_visible := not _is_character_select_open()
+	var hud_visible := not _is_character_select_open() and _get_run_state() == "Combat"
 	visible = hud_visible
 	if not hud_visible:
 		return
@@ -84,9 +84,8 @@ func _update_hud() -> void:
 		var xp := int(player_snapshot.get("xp", 0))
 		var xp_to_next := int(player_snapshot.get("xp_to_next", 1))
 		var wave := int(enemy_spawner.get("current_wave_index"))
-		stats_label.text = "WAVE %02d  HP %.0f  GOLD %d  LV %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
-	if state_label != null:
-		_refresh_state_panel(player_snapshot)
+		stats_label.text = "W%02d   HP %.0f   G %d   LV %d   XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
+	_refresh_state_panel(player_snapshot)
 	_refresh_progress_panel()
 
 func _refresh_progress_panel() -> void:
@@ -106,7 +105,7 @@ func _refresh_progress_panel() -> void:
 	var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 	var ratio := clampf(elapsed / duration, 0.0, 1.0)
 	wave_progress_bar.value = ratio * 100.0
-	wave_progress_bar.visible = not _is_shop_open()
+	wave_progress_bar.visible = true
 
 func _get_active_boss() -> Node:
 	if boss_manager == null or not is_instance_valid(boss_manager):
@@ -125,15 +124,13 @@ func _boss_display_name(active_boss: Node) -> String:
 	return variant_id.replace("_", " ").capitalize()
 
 func _refresh_state_panel(player_snapshot: Dictionary) -> void:
-	var run_state := _get_run_state()
-	if run_state == "Combat":
-		var focus_label := _build_focus_label(player_snapshot)
-		if focus_label != "":
-			state_caption.text = "BUILD FOCUS"
-			state_label.text = focus_label
-			return
-	state_caption.text = "RUN STATE"
-	state_label.text = run_state.to_upper()
+	if state_panel == null or state_label == null:
+		return
+	var focus_label := _build_focus_label(player_snapshot)
+	state_panel.visible = focus_label != ""
+	if focus_label == "":
+		return
+	state_label.text = focus_label
 
 func _build_focus_label(player_snapshot: Dictionary) -> String:
 	var counts_variant: Variant = player_snapshot.get("weapon_tag_counts", {})
@@ -158,8 +155,9 @@ func _build_focus_label(player_snapshot: Dictionary) -> String:
 func _apply_presentation() -> void:
 	for panel in [stats_panel, progress_panel, state_panel]:
 		InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_CARD)
-	for caption in [stats_caption, progress_caption, state_caption]:
-		InfernalUiStyleRef.apply_text_role(caption, InfernalUiStyleRef.TEXT_SECTION_TITLE)
+	stats_caption.visible = false
+	state_caption.visible = false
+	InfernalUiStyleRef.apply_text_role(progress_caption, InfernalUiStyleRef.TEXT_SECTION_TITLE)
 	InfernalUiStyleRef.apply_text_role(stats_label, InfernalUiStyleRef.TEXT_BODY)
 	InfernalUiStyleRef.apply_text_role(state_label, InfernalUiStyleRef.TEXT_VALUE)
 	InfernalUiStyleRef.apply_progress_bar(wave_progress_bar)
@@ -168,17 +166,16 @@ func _apply_responsive_layout() -> void:
 	var layout_class := UiLayoutMetricsRef.layout_class_for_size(get_viewport_rect().size)
 	var tight := layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT
 	var compact := layout_class == UiLayoutMetricsRef.LayoutClass.COMPACT
-	var horizontal_margin := UiLayoutMetricsRef.section_padding(layout_class)
-	var vertical_margin := UiLayoutMetricsRef.dense_gap(layout_class) + 8
+	var horizontal_margin := 8 if tight else 10
 	if top_margin != null:
 		top_margin.offset_left = horizontal_margin
-		top_margin.offset_top = vertical_margin
+		top_margin.offset_top = 6.0
 		top_margin.offset_right = -horizontal_margin
-		top_margin.offset_bottom = 82.0 if tight else 88.0
+		top_margin.offset_bottom = 54.0 if tight else 58.0
 	if top_row != null:
-		top_row.add_theme_constant_override("separation", UiLayoutMetricsRef.row_gap(layout_class))
-	var inner_horizontal := UiLayoutMetricsRef.section_padding(layout_class)
-	var inner_vertical := UiLayoutMetricsRef.dense_gap(layout_class) + 4
+		top_row.add_theme_constant_override("separation", 6 if tight else 8)
+	var inner_horizontal := 10 if tight else 12
+	var inner_vertical := 4 if tight else 5
 	for panel_margin in [stats_margin, progress_margin, state_margin]:
 		if panel_margin == null:
 			continue
@@ -187,26 +184,25 @@ func _apply_responsive_layout() -> void:
 		panel_margin.add_theme_constant_override("margin_right", inner_horizontal)
 		panel_margin.add_theme_constant_override("margin_bottom", inner_vertical)
 	if stats_vbox != null:
-		stats_vbox.add_theme_constant_override("separation", 1)
+		stats_vbox.add_theme_constant_override("separation", 0)
 	if progress_vbox != null:
-		progress_vbox.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class))
+		progress_vbox.add_theme_constant_override("separation", 2)
 	if state_vbox != null:
-		state_vbox.add_theme_constant_override("separation", 1)
+		state_vbox.add_theme_constant_override("separation", 0)
 	if stats_panel != null:
-		stats_panel.custom_minimum_size = Vector2(330 if tight else (350 if compact else 380), 64 if tight else 68)
+		stats_panel.custom_minimum_size = Vector2(278 if tight else (292 if compact else 310), 44 if tight else 48)
 	if progress_panel != null:
-		progress_panel.custom_minimum_size = Vector2(340 if tight else (360 if compact else 400), 64 if tight else 68)
+		progress_panel.custom_minimum_size = Vector2(300 if tight else (330 if compact else 360), 44 if tight else 48)
 	if state_panel != null:
-		state_panel.custom_minimum_size = Vector2(170 if tight else (185 if compact else 200), 64 if tight else 68)
-	for caption in [stats_caption, progress_caption, state_caption]:
-		if caption != null:
-			caption.add_theme_font_size_override("font_size", 11 if tight else 12)
+		state_panel.custom_minimum_size = Vector2(128 if tight else (142 if compact else 154), 44 if tight else 48)
+	if progress_caption != null:
+		progress_caption.add_theme_font_size_override("font_size", 10 if tight else 11)
 	if stats_label != null:
-		stats_label.add_theme_font_size_override("font_size", 15 if tight else 16)
+		stats_label.add_theme_font_size_override("font_size", 13 if tight else 14)
 	if state_label != null:
-		state_label.add_theme_font_size_override("font_size", 15 if tight else 16)
+		state_label.add_theme_font_size_override("font_size", 13 if tight else 14)
 	if wave_progress_bar != null:
-		wave_progress_bar.custom_minimum_size.y = 22 if tight else 24
+		wave_progress_bar.custom_minimum_size.y = 14 if tight else 16
 
 func _get_player_snapshot() -> Dictionary:
 	if player != null and player.has_method("get_ui_snapshot"):
@@ -223,9 +219,6 @@ func _get_run_state() -> String:
 	if wave_intermission_panel != null and wave_intermission_panel.visible:
 		return "Intermission"
 	return "Combat"
-
-func _is_shop_open() -> bool:
-	return shop_panel != null and shop_panel.visible
 
 func _is_character_select_open() -> bool:
 	return character_select_layer != null and character_select_layer.visible
