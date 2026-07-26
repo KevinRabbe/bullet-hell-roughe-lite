@@ -28,17 +28,20 @@ if ($godotVersion -notmatch '^4\.5') {
     throw "Windows playtest packaging is pinned to Godot 4.5, but '$godotVersion' is active. Point GODOT_EXE at a Godot 4.5 editor build."
 }
 
-$commitSha = "unknown"
 $gitCommand = Get-Command "git" -ErrorAction SilentlyContinue
-if ($null -ne $gitCommand) {
-    $dirtyLines = @(& $gitCommand.Source -C $projectRoot status --porcelain --untracked-files=normal 2>$null)
-    if ($LASTEXITCODE -eq 0 -and $dirtyLines.Count -gt 0) {
-        throw "Refusing to package a dirty Git worktree. Commit, stash, or remove local changes so PLAYTEST_BUILD.txt identifies the exact source bytes."
-    }
-    $resolvedSha = (& $gitCommand.Source -C $projectRoot rev-parse HEAD 2>$null).Trim()
-    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($resolvedSha)) {
-        $commitSha = $resolvedSha
-    }
+if ($null -eq $gitCommand) {
+    throw "Git is required for canonical playtest packaging so the ZIP can identify its exact source commit."
+}
+$dirtyLines = @(& $gitCommand.Source -C $projectRoot status --porcelain --untracked-files=normal 2>$null)
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not inspect the Git worktree at '$projectRoot'."
+}
+if ($dirtyLines.Count -gt 0) {
+    throw "Refusing to package a dirty Git worktree. Commit, stash, or remove local changes so PLAYTEST_BUILD.txt identifies the exact source bytes."
+}
+$commitSha = (& $gitCommand.Source -C $projectRoot rev-parse HEAD 2>$null).Trim()
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($commitSha)) {
+    throw "Could not resolve the exact Git HEAD for the playtest package."
 }
 
 Write-Host "Validating Hellshot Frontier imports/scripts with Godot $godotVersion"
