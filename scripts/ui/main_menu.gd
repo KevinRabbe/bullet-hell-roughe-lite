@@ -84,15 +84,17 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> void:
 func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_panel(hero_panel, InfernalUiStyleRef.PANEL_CARD)
 	menu_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
-	for label in [title_label, menu_title]:
-		InfernalUiStyleRef.apply_title(label)
+	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
+	InfernalUiStyleRef.apply_text_role(menu_title, InfernalUiStyleRef.TEXT_SCREEN_TITLE)
 	for label in [eyebrow_label, menu_eyebrow]:
-		InfernalUiStyleRef.apply_section_title(label)
-	for label in [subtitle_label, menu_body, hero_callout, footer_label]:
-		InfernalUiStyleRef.apply_body_text(label)
-	InfernalUiStyleRef.apply_primary_button(start_button)
+		InfernalUiStyleRef.apply_text_role(label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
+	InfernalUiStyleRef.apply_text_role(subtitle_label, InfernalUiStyleRef.TEXT_MUTED)
+	InfernalUiStyleRef.apply_text_role(menu_body, InfernalUiStyleRef.TEXT_BODY)
+	InfernalUiStyleRef.apply_text_role(hero_callout, InfernalUiStyleRef.TEXT_BODY)
+	InfernalUiStyleRef.apply_text_role(footer_label, InfernalUiStyleRef.TEXT_HINT)
+	InfernalUiStyleRef.apply_button(start_button, InfernalUiStyleRef.BUTTON_PRIMARY)
 	for button in [armory_button, options_button, credits_button, quit_button]:
-		InfernalUiStyleRef.apply_secondary_button(button)
+		InfernalUiStyleRef.apply_button(button, InfernalUiStyleRef.BUTTON_SECONDARY)
 
 func _apply_responsive_layout() -> void:
 	var viewport_size: Vector2 = get_viewport_rect().size
