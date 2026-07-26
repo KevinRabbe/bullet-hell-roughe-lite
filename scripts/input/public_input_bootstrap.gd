@@ -1,6 +1,7 @@
 extends Node
 
 const PublicInputDefaultsRef = preload("res://scripts/input/public_input_defaults.gd")
+const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 
 const GAMEPLAY_FOCUS_CANDIDATES: Array[NodePath] = [
 	NodePath("ShopUI/Panel/Offer1"),
@@ -22,6 +23,8 @@ func _ready() -> void:
 	PublicInputDefaultsRef.ensure()
 
 func _process(_delta: float) -> void:
+	if _redirect_release_debug_entry():
+		return
 	_restore_gameplay_focus_if_needed()
 
 func _input(event: InputEvent) -> void:
@@ -45,6 +48,17 @@ func _input(event: InputEvent) -> void:
 		return
 	scene.call("_toggle_pause")
 	get_viewport().set_input_as_handled()
+
+func _redirect_release_debug_entry() -> bool:
+	if OS.is_debug_build() or get_tree() == null:
+		return false
+	var scene := get_tree().current_scene
+	if scene == null or not scene.has_method("_toggle_pause"):
+		return false
+	if bool(scene.get("run_started")):
+		return false
+	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
+	return true
 
 func _route_embedded_pause_cancel() -> bool:
 	if get_tree() == null:
