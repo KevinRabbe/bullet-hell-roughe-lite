@@ -12,18 +12,22 @@ static func ensure() -> void:
 	_add_key_if_missing("move_left", KEY_A, true)
 	_add_key_if_missing("move_left", KEY_LEFT)
 	_add_axis_if_missing("move_left", JOY_AXIS_LEFT_X, -1.0)
+	_add_joy_button_if_missing("move_left", JOY_BUTTON_DPAD_LEFT)
 
 	_add_key_if_missing("move_right", KEY_D, true)
 	_add_key_if_missing("move_right", KEY_RIGHT)
 	_add_axis_if_missing("move_right", JOY_AXIS_LEFT_X, 1.0)
+	_add_joy_button_if_missing("move_right", JOY_BUTTON_DPAD_RIGHT)
 
 	_add_key_if_missing("move_up", KEY_W, true)
 	_add_key_if_missing("move_up", KEY_UP)
 	_add_axis_if_missing("move_up", JOY_AXIS_LEFT_Y, -1.0)
+	_add_joy_button_if_missing("move_up", JOY_BUTTON_DPAD_UP)
 
 	_add_key_if_missing("move_down", KEY_S, true)
 	_add_key_if_missing("move_down", KEY_DOWN)
 	_add_axis_if_missing("move_down", JOY_AXIS_LEFT_Y, 1.0)
+	_add_joy_button_if_missing("move_down", JOY_BUTTON_DPAD_DOWN)
 
 	_add_key_if_missing("interact", KEY_E, true)
 	_add_joy_button_if_missing("interact", JOY_BUTTON_A)
