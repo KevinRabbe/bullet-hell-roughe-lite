@@ -117,8 +117,12 @@ func _on_viewport_size_changed() -> void:
 func _resolve_scene_nodes() -> void:
 	_resolve_player()
 	_resolve_camera()
-	backdrop = get_node_or_null(backdrop_path) as ColorRect if backdrop_path != NodePath() else null
-	arena_art = get_node_or_null(arena_art_path) as Node2D if arena_art_path != NodePath() else null
+	backdrop = null
+	if backdrop_path != NodePath():
+		backdrop = get_node_or_null(backdrop_path) as ColorRect
+	arena_art = null
+	if arena_art_path != NodePath():
+		arena_art = get_node_or_null(arena_art_path) as Node2D
 
 func _resolve_player() -> void:
 	player = null
@@ -196,10 +200,10 @@ func _apply_environment_composition(playable_rect: Rect2) -> void:
 	_place_art_node("Props/WheelSW", playable_rect, Vector2(-0.82, 0.72))
 	_place_art_node("Props/SkeletonSE", playable_rect, Vector2(0.78, 0.74))
 
-func _place_art_node(path: NodePath, playable_rect: Rect2, normalized_anchor: Vector2) -> void:
+func _place_art_node(path: String, playable_rect: Rect2, normalized_anchor: Vector2) -> void:
 	if arena_art == null:
 		return
-	var node := arena_art.get_node_or_null(path) as Node2D
+	var node := arena_art.get_node_or_null(NodePath(path)) as Node2D
 	if node == null:
 		return
 	var half_size := playable_rect.size * 0.5
