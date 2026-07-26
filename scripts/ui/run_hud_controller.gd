@@ -5,6 +5,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 @export var player_path: NodePath
 @export var enemy_spawner_path: NodePath
+@export var boss_manager_path: NodePath = NodePath("../../BossManager")
 @export var wave_intermission_panel_path: NodePath
 @export var shop_panel_path: NodePath
 @export var level_up_panel_path: NodePath
@@ -15,6 +16,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 var player: Node
 var enemy_spawner: Node
+var boss_manager: Node
 var wave_intermission_panel: Control
 var shop_panel: Control
 var level_up_panel: Control
@@ -43,6 +45,8 @@ func _ready() -> void:
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
+	if boss_manager_path != NodePath():
+		boss_manager = get_node_or_null(boss_manager_path)
 	if wave_intermission_panel_path != NodePath():
 		wave_intermission_panel = get_node_or_null(wave_intermission_panel_path)
 	if shop_panel_path != NodePath():
@@ -83,12 +87,41 @@ func _update_hud() -> void:
 		stats_label.text = "WAVE %02d  HP %.0f  GOLD %d  LV %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
 		_refresh_state_panel(player_snapshot)
-	if wave_progress_bar != null:
-		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
-		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
-		var ratio := clampf(elapsed / duration, 0.0, 1.0)
-		wave_progress_bar.value = ratio * 100.0
-		wave_progress_bar.visible = not _is_shop_open()
+	_refresh_progress_panel()
+
+func _refresh_progress_panel() -> void:
+	if wave_progress_bar == null or progress_caption == null:
+		return
+	var active_boss := _get_active_boss()
+	if active_boss != null:
+		progress_caption.text = _boss_display_name(active_boss).to_upper()
+		var max_hp := maxf(float(active_boss.get("max_hp")), 1.0)
+		var current_hp := clampf(float(active_boss.get("current_hp")), 0.0, max_hp)
+		wave_progress_bar.value = (current_hp / max_hp) * 100.0
+		wave_progress_bar.visible = true
+		return
+	progress_caption.text = "FRONTIER PRESSURE"
+	var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
+	var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
+	var ratio := clampf(elapsed / duration, 0.0, 1.0)
+	wave_progress_bar.value = ratio * 100.0
+	wave_progress_bar.visible = not _is_shop_open()
+
+func _get_active_boss() -> Node:
+	if boss_manager == null or not is_instance_valid(boss_manager):
+		return null
+	var boss_variant: Variant = boss_manager.get("active_boss")
+	if boss_variant is Node:
+		var boss_node := boss_variant as Node
+		if is_instance_valid(boss_node):
+			return boss_node
+	return null
+
+func _boss_display_name(active_boss: Node) -> String:
+	var variant_id := str(active_boss.get("enemy_variant")).strip_edges()
+	if variant_id == "":
+		return "Boss"
+	return variant_id.replace("_", " ").capitalize()
 
 func _refresh_state_panel(player_snapshot: Dictionary) -> void:
 	var run_state := _get_run_state()
