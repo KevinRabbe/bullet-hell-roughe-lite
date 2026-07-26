@@ -18,6 +18,7 @@ const BUS_BY_KEY := {
 	"sfx": "SFX",
 	"ambience": "Ambience"
 }
+const CHILD_BUSES: Array[String] = ["Music", "SFX", "Ambience"]
 
 static func default_settings() -> Dictionary:
 	return {
@@ -52,6 +53,7 @@ static func apply_saved_settings() -> Dictionary:
 	return settings
 
 static func apply_settings(settings: Dictionary) -> void:
+	ensure_runtime_buses()
 	var muted: bool = settings.get(KEY_MUTED, false) == true
 	for key in BUS_BY_KEY.keys():
 		var bus_name: String = str(BUS_BY_KEY[key])
@@ -60,6 +62,16 @@ static func apply_settings(settings: Dictionary) -> void:
 			continue
 		var level: float = 0.0 if muted else _normalized_level(settings, key)
 		AudioServer.set_bus_volume_db(bus_index, _linear_to_db(level))
+
+static func ensure_runtime_buses() -> void:
+	for bus_name in CHILD_BUSES:
+		var bus_index := AudioServer.get_bus_index(bus_name)
+		if bus_index < 0:
+			AudioServer.add_bus()
+			bus_index = AudioServer.bus_count - 1
+			AudioServer.set_bus_name(bus_index, bus_name)
+		if bus_index >= 0:
+			AudioServer.set_bus_send(bus_index, "Master")
 
 static func clone_settings(settings: Dictionary) -> Dictionary:
 	return {
