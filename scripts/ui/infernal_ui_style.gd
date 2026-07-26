@@ -146,6 +146,19 @@ static func apply_hint_text(label: Label) -> void:
 static func apply_accent_text(label: Label) -> void:
 	apply_text_role(label, TEXT_WARNING)
 
+static func apply_progress_bar(progress_bar: ProgressBar) -> void:
+	if progress_bar == null:
+		return
+	progress_bar.add_theme_stylebox_override(
+		"background",
+		_build_progress_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN)
+	)
+	progress_bar.add_theme_stylebox_override(
+		"fill",
+		_build_progress_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE)
+	)
+	progress_bar.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
+
 static func build_panel_style(panel_role: StringName = PANEL_SECTION) -> StyleBoxFlat:
 	match panel_role:
 		PANEL_SHELL:
@@ -179,6 +192,14 @@ static func _apply_button_styles(
 	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_focus_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_disabled_color", COLOR_OLD_PARCHMENT.darkened(0.42))
+
+static func _build_progress_style(background_color: Color, border_color: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = background_color
+	style.border_color = border_color
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(6)
+	return style
 
 static func _build_style(
 	background_color: Color,
