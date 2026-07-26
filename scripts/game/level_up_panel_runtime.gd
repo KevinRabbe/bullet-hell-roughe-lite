@@ -14,13 +14,18 @@ static func hide_panel(panel: Control) -> void:
 		panel.visible = false
 
 static func refresh_choice_buttons(choice_buttons: Array[Button], active_choices: Array[Dictionary]) -> void:
+	var first_available: Button = null
 	for index in choice_buttons.size():
 		var button := choice_buttons[index]
 		if index < active_choices.size():
 			var choice := active_choices[index]
 			_apply_choice(button, choice)
+			if first_available == null and not button.disabled:
+				first_available = button
 		else:
 			_apply_empty_choice(button)
+	if first_available != null:
+		first_available.call_deferred("grab_focus")
 
 static func _apply_choice(button: Button, choice: Dictionary) -> void:
 	button.disabled = false
