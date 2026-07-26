@@ -145,7 +145,7 @@ func _build_layout_once() -> void:
 	if continue_button != null:
 		continue_button.position = Vector2(984.0, 570.0)
 		continue_button.size = Vector2(140.0, 48.0)
-		continue_button.text = "Next Wave"
+		continue_button.text = "NEXT WAVE"
 		InfernalUiStyleRef.apply_primary_button(continue_button)
 		panel.move_child(continue_button, panel.get_child_count() - 1)
 
@@ -178,7 +178,7 @@ func _build_stats_panel() -> void:
 	stats_title.position = Vector2(8.0, 8.0)
 	stats_title.size = Vector2(112.0, 26.0)
 	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_title.text = "Values"
+	stats_title.text = "STATS"
 	InfernalUiStyleRef.apply_section_title(stats_title)
 	stats_panel.add_child(stats_title)
 
@@ -201,7 +201,7 @@ func _build_items_panel() -> void:
 	var items_title := Label.new()
 	items_title.position = Vector2(12.0, 10.0)
 	items_title.size = Vector2(576.0, 24.0)
-	items_title.text = "Items"
+	items_title.text = "ITEMS"
 	InfernalUiStyleRef.apply_section_title(items_title)
 	items_panel.add_child(items_title)
 
@@ -226,7 +226,7 @@ func _build_weapons_panel() -> void:
 	bottom_weapons_title = Label.new()
 	bottom_weapons_title.position = Vector2(12.0, 10.0)
 	bottom_weapons_title.size = Vector2(324.0, 24.0)
-	bottom_weapons_title.text = "Weapons (0/6)"
+	bottom_weapons_title.text = "ARSENAL (0/6)"
 	InfernalUiStyleRef.apply_section_title(bottom_weapons_title)
 	weapons_panel.add_child(bottom_weapons_title)
 
@@ -266,7 +266,7 @@ func _build_weapons_panel() -> void:
 	merge_selected_button = Button.new()
 	merge_selected_button.position = Vector2(188.0, 132.0)
 	merge_selected_button.size = Vector2(148.0, 30.0)
-	merge_selected_button.text = "Merge"
+	merge_selected_button.text = "MERGE"
 	merge_selected_button.disabled = true
 	InfernalUiStyleRef.apply_secondary_button(merge_selected_button)
 	merge_selected_button.pressed.connect(_on_merge_selected_pressed)
@@ -309,12 +309,13 @@ func _build_view_snapshot() -> Dictionary:
 	return shop_view_model.get_snapshot()
 
 func _refresh_top_bar() -> void:
+	var wave_index := maxi(int(_snapshot.get("wave_index", 1)), 1)
 	if top_wave_label != null:
-		top_wave_label.text = str(_snapshot.get("title", "Shop"))
+		top_wave_label.text = "FRONTIER CACHE — WAVE %02d" % wave_index
 	if top_gold_label != null:
-		top_gold_label.text = "Gold: %d" % int(_snapshot.get("gold", 0))
+		top_gold_label.text = "GOLD %d" % int(_snapshot.get("gold", 0))
 	if reroll_button != null:
-		reroll_button.text = "Reroll - %dG" % int(_snapshot.get("reroll_cost", 0))
+		reroll_button.text = "REROLL · %dG" % int(_snapshot.get("reroll_cost", 0))
 
 func _refresh_offer_cards() -> void:
 	var cards := _get_snapshot_cards()
@@ -333,7 +334,7 @@ func _refresh_stats_panel() -> void:
 func _refresh_bottom_sections() -> void:
 	_refresh_owned_items()
 	if bottom_weapons_title != null:
-		bottom_weapons_title.text = "Weapons (%d/6)" % int(_snapshot.get("weapon_count", 0))
+		bottom_weapons_title.text = "ARSENAL (%d/6)" % int(_snapshot.get("weapon_count", 0))
 	_refresh_weapon_slots()
 
 func _refresh_owned_items() -> void:
@@ -344,7 +345,7 @@ func _refresh_owned_items() -> void:
 	var entries_variant: Variant = _snapshot.get("item_entries", [])
 	if not (entries_variant is Array) or entries_variant.is_empty():
 		var empty_label := Label.new()
-		empty_label.text = "None"
+		empty_label.text = "No items yet."
 		empty_label.add_theme_font_size_override("font_size", 17)
 		InfernalUiStyleRef.apply_body_text(empty_label)
 		bottom_items_list.add_child(empty_label)
@@ -417,11 +418,11 @@ func _apply_offer_card(card: Dictionary, button: Button) -> void:
 		return
 	var disabled: bool = card.get("button_disabled", false) == true
 	var kind := str(card.get("kind", ""))
-	var hint := "Buy"
+	var hint := "BUY"
 	if kind == "sold_out":
-		hint = "Purchased"
+		hint = "PURCHASED"
 	elif disabled:
-		hint = "Blocked"
+		hint = "BLOCKED"
 	var body := _build_card_body(card)
 	button.text = ""
 	button.disabled = disabled
@@ -491,7 +492,7 @@ func _update_merge_button_state() -> void:
 		return
 	if selected_weapon_slot < 0:
 		merge_selected_button.disabled = true
-		merge_selected_button.text = "Select weapon"
+		merge_selected_button.text = "SELECT WEAPON"
 		return
 	if shop_view_model != null:
 		var state_variant: Variant = shop_view_model.get_merge_slot_state(selected_weapon_slot)
@@ -500,9 +501,9 @@ func _update_merge_button_state() -> void:
 			var can_merge: bool = merge_state.get("can_merge", false) == true
 			merge_selected_button.disabled = not can_merge
 			if can_merge:
-				merge_selected_button.text = "Merge selected"
+				merge_selected_button.text = "MERGE SELECTED"
 			else:
-				merge_selected_button.text = str(merge_state.get("message", "No valid merge"))
+				merge_selected_button.text = str(merge_state.get("message", "No valid merge")).to_upper()
 			return
 	merge_selected_button.disabled = true
-	merge_selected_button.text = "No valid merge"
+	merge_selected_button.text = "NO VALID MERGE"
