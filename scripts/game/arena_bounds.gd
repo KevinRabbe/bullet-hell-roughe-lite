@@ -5,17 +5,19 @@ const SIZE_COMPACT := "compact"
 const SIZE_STANDARD := "standard"
 const SIZE_LARGE := "large"
 
-# STANDARD is derived from the current 1152x648 reference viewport and 0.8 camera zoom:
-# the visible world is 1440x810, so COMPACT (2/3) is exactly one reference view,
-# STANDARD is 1.5 reference views, and LARGE is two reference views.
-const STANDARD_PLAYABLE_SIZE := Vector2(2160.0, 1215.0)
+# STANDARD is the complete primary combat arena at the 1152x648 reference viewport.
+# With the canonical 0.8 camera zoom the visible world is 1440x810, so STANDARD fits
+# exactly one reference view and the camera remains locked while the player moves inside it.
+const STANDARD_PLAYABLE_SIZE := Vector2(1440.0, 810.0)
 const COMPACT_SCALE := 2.0 / 3.0
 const LARGE_SCALE := 4.0 / 3.0
 
-const PERIMETER_SHADOW_COLOR := Color(0.07, 0.035, 0.045, 0.82)
-const PERIMETER_EMBER_COLOR := Color(0.62, 0.10, 0.18, 0.52)
+const PERIMETER_SHADOW_COLOR := Color(0.07, 0.035, 0.045, 0.92)
+const PERIMETER_EMBER_COLOR := Color(0.62, 0.10, 0.18, 0.62)
 const PERIMETER_SHADOW_WIDTH := 54.0
 const PERIMETER_EMBER_WIDTH := 4.0
+const BOUNDARY_SHADOW_WIDTH := 76.0
+const BOUNDARY_EMBER_WIDTH := 3.0
 
 @export_enum("compact", "standard", "large") var size_class: String = SIZE_STANDARD
 @export var player_inset: float = 20.0
@@ -218,10 +220,29 @@ func _apply_perimeter(playable_rect: Rect2) -> void:
 	for child in perimeter.get_children():
 		perimeter.remove_child(child)
 		child.queue_free()
+
+	# The continuous inset rim establishes an unmistakable gameplay boundary from the
+	# center of STANDARD. Broken ember segments then add the cursed-frontier irregularity.
+	var boundary_loop := _build_boundary_loop(playable_rect)
+	_add_perimeter_line(perimeter, boundary_loop, PERIMETER_SHADOW_COLOR, BOUNDARY_SHADOW_WIDTH)
+	_add_perimeter_line(perimeter, boundary_loop, PERIMETER_EMBER_COLOR, BOUNDARY_EMBER_WIDTH)
+
 	var segments := _build_perimeter_segments(playable_rect)
 	for points in segments:
 		_add_perimeter_line(perimeter, points, PERIMETER_SHADOW_COLOR, PERIMETER_SHADOW_WIDTH)
 		_add_perimeter_line(perimeter, points, PERIMETER_EMBER_COLOR, PERIMETER_EMBER_WIDTH)
+
+func _build_boundary_loop(playable_rect: Rect2) -> PackedVector2Array:
+	var inset := Vector2(34.0, 34.0)
+	var top_left := playable_rect.position + inset
+	var bottom_right := playable_rect.end - inset
+	return PackedVector2Array([
+		top_left,
+		Vector2(bottom_right.x, top_left.y),
+		bottom_right,
+		Vector2(top_left.x, bottom_right.y),
+		top_left
+	])
 
 func _build_perimeter_segments(playable_rect: Rect2) -> Array[PackedVector2Array]:
 	var normalized_segments: Array[PackedVector2Array] = [
