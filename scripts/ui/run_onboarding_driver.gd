@@ -3,6 +3,11 @@ extends Node
 
 const EventBannerRuntimeRef = preload("res://scripts/ui/event_banner_runtime.gd")
 
+const CONFIG_PATH := "user://onboarding_state.cfg"
+const CONFIG_SECTION := "onboarding"
+const KEY_INTRO_SHOWN := "run_intro_shown"
+const KEY_PORTAL_HINT_SHOWN := "portal_hint_shown"
+
 const INTRO_DELAY_SECONDS := 0.55
 const INTRO_DURATION_SECONDS := 3.4
 const PORTAL_HINT_DURATION_SECONDS := 2.8
@@ -15,6 +20,7 @@ var _next_banner_allowed_msec: int = 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
+	_load_state()
 
 func _process(delta: float) -> void:
 	if delta <= 0.0 or _portal_hint_shown:
@@ -34,6 +40,7 @@ func _process(delta: float) -> void:
 
 func _show_intro() -> void:
 	_intro_shown = true
+	_save_state()
 	EventBannerRuntimeRef.show(
 		self,
 		"FRONTIER RULES",
@@ -45,6 +52,7 @@ func _show_intro() -> void:
 
 func _show_portal_hint() -> void:
 	_portal_hint_shown = true
+	_save_state()
 	EventBannerRuntimeRef.show(
 		self,
 		"RIFT SIGHTED",
@@ -52,6 +60,21 @@ func _show_portal_hint() -> void:
 		"Entering a portal accepts a risk/reward event. Avoid it when the trade is not worth the danger.",
 		PORTAL_HINT_DURATION_SECONDS
 	)
+
+func _load_state() -> void:
+	var config := ConfigFile.new()
+	if config.load(CONFIG_PATH) != OK:
+		return
+	_intro_shown = config.get_value(CONFIG_SECTION, KEY_INTRO_SHOWN, false) == true
+	_portal_hint_shown = config.get_value(CONFIG_SECTION, KEY_PORTAL_HINT_SHOWN, false) == true
+
+func _save_state() -> void:
+	var config := ConfigFile.new()
+	config.set_value(CONFIG_SECTION, KEY_INTRO_SHOWN, _intro_shown)
+	config.set_value(CONFIG_SECTION, KEY_PORTAL_HINT_SHOWN, _portal_hint_shown)
+	var error := config.save(CONFIG_PATH)
+	if error != OK:
+		push_warning("Could not persist onboarding state: %s" % error_string(error))
 
 func _current_game_scene() -> Node:
 	if get_tree() == null:
