@@ -8,6 +8,25 @@ static func build_identity_lines(run_rng: Node, player: Node, player_snapshot: D
 	lines.append("Arsenal: %s" % _resolve_arsenal_summary(player_snapshot))
 	return lines
 
+static func build_report(
+	result_state: String,
+	run_rng: Node,
+	player: Node,
+	player_snapshot: Dictionary,
+	wave_index: int
+) -> String:
+	return "PLAYTEST REPORT | result=%s | seed=%s | hunter=%s | wave=%d | level=%d | gold=%d | weapons=%s | items=%s | ascension=%s" % [
+		result_state,
+		_resolve_seed(run_rng),
+		_resolve_hunter_id(player),
+		wave_index,
+		int(player_snapshot.get("level", 1)),
+		int(player_snapshot.get("gold", 0)),
+		_resolve_arsenal_ids(player_snapshot),
+		_resolve_item_ids(player_snapshot),
+		_resolve_ascension_id(player_snapshot)
+	]
+
 static func build_console_report(
 	result_state: String,
 	run_rng: Node,
@@ -15,15 +34,7 @@ static func build_console_report(
 	player_snapshot: Dictionary,
 	wave_index: int
 ) -> String:
-	return "PLAYTEST REPORT | result=%s | seed=%s | hunter=%s | wave=%d | level=%d | gold=%d | weapons=%s" % [
-		result_state,
-		_resolve_seed(run_rng),
-		_resolve_hunter_id(player),
-		wave_index,
-		int(player_snapshot.get("level", 1)),
-		int(player_snapshot.get("gold", 0)),
-		_resolve_arsenal_ids(player_snapshot)
-	]
+	return build_report(result_state, run_rng, player, player_snapshot, wave_index)
 
 static func _resolve_seed(run_rng: Node) -> String:
 	if run_rng != null and run_rng.has_method("current_seed"):
@@ -66,6 +77,29 @@ static func _resolve_arsenal_ids(player_snapshot: Dictionary) -> String:
 			continue
 		parts.append("%s:%s" % [weapon_id, str(entry.get("rarity", "common"))])
 	return ",".join(parts) if not parts.is_empty() else "none"
+
+static func _resolve_item_ids(player_snapshot: Dictionary) -> String:
+	var parts: Array[String] = []
+	var items_variant: Variant = player_snapshot.get("items", [])
+	if not (items_variant is Array):
+		return "none"
+	for item_variant in items_variant:
+		var item_id := ""
+		if item_variant is ItemData:
+			item_id = str((item_variant as ItemData).id).strip_edges()
+		elif item_variant is Dictionary:
+			item_id = str((item_variant as Dictionary).get("id", "")).strip_edges()
+		if item_id != "":
+			parts.append(item_id)
+	parts.sort()
+	return ",".join(parts) if not parts.is_empty() else "none"
+
+static func _resolve_ascension_id(player_snapshot: Dictionary) -> String:
+	var ascension_variant: Variant = player_snapshot.get("ascension", {})
+	if not (ascension_variant is Dictionary):
+		return "none"
+	var ascension_id := str((ascension_variant as Dictionary).get("active_ascension_id", "")).strip_edges()
+	return ascension_id if ascension_id != "" else "none"
 
 static func _weapon_entries(player_snapshot: Dictionary) -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
