@@ -24,6 +24,12 @@ func configure(title: String, body: String) -> void:
 	title_label.text = title
 	body_label.text = body
 
+func get_title_label() -> Label:
+	return title_label
+
+func get_body_label() -> Label:
+	return body_label
+
 func show_at(viewport_position: Vector2, offset: Vector2 = Vector2(16, 16)) -> void:
 	position = viewport_position + offset
 	visible = true
