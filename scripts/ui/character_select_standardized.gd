@@ -17,7 +17,8 @@ func _apply_shell_styles() -> void:
 		"RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard",
 		"RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard"
 	]:
-		StandardInfernalUiStyleRef.apply_panel(get_node_or_null(detail_card_path), StandardInfernalUiStyleRef.PANEL_CARD)
+		var detail_card := get_node_or_null(detail_card_path) as Control
+		StandardInfernalUiStyleRef.apply_panel(detail_card, StandardInfernalUiStyleRef.PANEL_CARD)
 
 	StandardInfernalUiStyleRef.apply_text_role(header_title, StandardInfernalUiStyleRef.TEXT_SCREEN_TITLE)
 	StandardInfernalUiStyleRef.apply_text_role(header_status, StandardInfernalUiStyleRef.TEXT_MUTED)
