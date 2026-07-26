@@ -1,7 +1,13 @@
 class_name DebugRunPresetRuntime
 extends RefCounted
 
-const PRESET_ORDER: Array[String] = ["normal", "shop_test", "combat_test"]
+const PRESET_ORDER: Array[String] = [
+	"normal",
+	"shop_test",
+	"combat_test",
+	"compact_arena",
+	"large_arena"
+]
 
 static func next_preset(current_preset: String) -> String:
 	var current_index := PRESET_ORDER.find(current_preset)
@@ -42,3 +48,12 @@ static func starting_gold_for_preset(
 			return debug_combat_starting_gold
 		_:
 			return 0
+
+static func arena_size_class_for_preset(preset: String) -> String:
+	match preset:
+		"compact_arena":
+			return "compact"
+		"large_arena":
+			return "large"
+		_:
+			return "standard"
