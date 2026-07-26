@@ -45,6 +45,31 @@ func _ready() -> void:
 	_connect_buttons()
 	_initialize_panel_state()
 
+func _process(_delta: float) -> void:
+	_recover_missing_intermission_shop()
+
+func _recover_missing_intermission_shop() -> void:
+	if not enabled or panel == null or panel.visible:
+		return
+	if get_tree() == null:
+		return
+	var scene := get_tree().current_scene
+	if scene == null or scene.get("waiting_for_wave_continue") != true:
+		return
+	if scene.get("waiting_for_level_up_choice") == true:
+		return
+	var ascension_variant: Variant = scene.get("active_ascension_offer")
+	if ascension_variant is Node and is_instance_valid(ascension_variant as Node):
+		return
+	var wave_index := 1
+	if enemy_spawner != null and is_instance_valid(enemy_spawner):
+		wave_index = maxi(int(enemy_spawner.get("current_wave_index")), 1)
+	_current_wave_index = wave_index
+	reroll_count = 0
+	_open_shop_for_wave()
+	if log_shop_events:
+		print("Recovered missing Shop intermission for wave %d." % _current_wave_index)
+
 func _resolve_references() -> void:
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
