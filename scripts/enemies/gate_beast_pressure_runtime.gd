@@ -35,11 +35,15 @@ func configure(boss: Node) -> void:
 func tick(delta: float, boss: Node) -> void:
 	if boss == null or not is_instance_valid(boss) or delta <= 0.0:
 		return
-	_phase_left -= delta
-	if _phase_left > 0.0:
-		return
-	_advance_phase()
-	_apply_phase(boss)
+	var remaining_delta := delta
+	var phase_changed := false
+	while remaining_delta >= _phase_left:
+		remaining_delta -= _phase_left
+		_advance_phase()
+		phase_changed = true
+	_phase_left -= remaining_delta
+	if phase_changed:
+		_apply_phase(boss)
 
 func restore(boss: Node) -> void:
 	if boss != null and is_instance_valid(boss) and _base_move_speed > 0.0:
