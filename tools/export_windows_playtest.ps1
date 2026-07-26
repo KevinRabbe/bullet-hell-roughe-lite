@@ -28,6 +28,19 @@ if ($godotVersion -notmatch '^4\.5') {
     throw "Windows playtest packaging is pinned to Godot 4.5, but '$godotVersion' is active. Point GODOT_EXE at a Godot 4.5 editor build."
 }
 
+$commitSha = "unknown"
+$gitCommand = Get-Command "git" -ErrorAction SilentlyContinue
+if ($null -ne $gitCommand) {
+    $dirtyLines = @(& $gitCommand.Source -C $projectRoot status --porcelain --untracked-files=normal 2>$null)
+    if ($LASTEXITCODE -eq 0 -and $dirtyLines.Count -gt 0) {
+        throw "Refusing to package a dirty Git worktree. Commit, stash, or remove local changes so PLAYTEST_BUILD.txt identifies the exact source bytes."
+    }
+    $resolvedSha = (& $gitCommand.Source -C $projectRoot rev-parse HEAD 2>$null).Trim()
+    if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($resolvedSha)) {
+        $commitSha = $resolvedSha
+    }
+}
+
 Write-Host "Validating Hellshot Frontier imports/scripts with Godot $godotVersion"
 & $godotCommand.Source --headless --path $projectRoot --import
 if ($LASTEXITCODE -ne 0) {
@@ -51,14 +64,10 @@ if (-not (Test-Path $pckPath)) {
     throw "Godot reported success but '$pckPath' was not created. The Windows Playtest preset must export a separate PCK beside the executable."
 }
 
-$commitSha = "unknown"
-try {
-    $resolvedSha = (& git -C $projectRoot rev-parse HEAD 2>$null).Trim()
-    if (-not [string]::IsNullOrWhiteSpace($resolvedSha)) {
-        $commitSha = $resolvedSha
-    }
-} catch {
-    # Git metadata is useful but must never prevent packaging an otherwise valid build.
+Write-Host "Smoke-launching the packaged release headlessly..."
+& $exePath --headless --quit-after 5
+if ($LASTEXITCODE -ne 0) {
+    throw "The packaged HellshotFrontier.exe failed its headless startup smoke check with exit code $LASTEXITCODE."
 }
 
 $shortSha = if ($commitSha.Length -ge 10) { $commitSha.Substring(0, 10) } else { $commitSha }
@@ -69,6 +78,7 @@ Commit: $commitSha
 Godot: $godotVersion
 Export preset: Windows Playtest
 Architecture: Windows x86_64
+Build smoke: packaged executable started headlessly
 Built UTC: $([DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
 
 IMPORTANT: Extract the entire ZIP to a normal folder before launching HellshotFrontier.exe. Keep HellshotFrontier.exe and HellshotFrontier.pck together in the same folder.
