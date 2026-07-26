@@ -5,6 +5,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 @export var player_path: NodePath
 @export var enemy_spawner_path: NodePath
+@export var boss_manager_path: NodePath = NodePath("../../BossManager")
 @export var wave_intermission_panel_path: NodePath
 @export var shop_panel_path: NodePath
 @export var level_up_panel_path: NodePath
@@ -15,6 +16,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 
 var player: Node
 var enemy_spawner: Node
+var boss_manager: Node
 var wave_intermission_panel: Control
 var shop_panel: Control
 var level_up_panel: Control
@@ -43,6 +45,8 @@ func _ready() -> void:
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():
 		enemy_spawner = get_node_or_null(enemy_spawner_path)
+	if boss_manager_path != NodePath():
+		boss_manager = get_node_or_null(boss_manager_path)
 	if wave_intermission_panel_path != NodePath():
 		wave_intermission_panel = get_node_or_null(wave_intermission_panel_path)
 	if shop_panel_path != NodePath():
@@ -82,17 +86,74 @@ func _update_hud() -> void:
 		var wave := int(enemy_spawner.get("current_wave_index"))
 		stats_label.text = "WAVE %02d  HP %.0f  GOLD %d  LV %d  XP %d/%d" % [wave, hp, gold, level, xp, xp_to_next]
 	if state_label != null:
-		var debug_label := _get_debug_preset_label()
-		if debug_label == "" or debug_label == "DebugPreset: normal":
-			state_label.text = _get_run_state().to_upper()
-		else:
-			state_label.text = "%s  |  %s" % [_get_run_state().to_upper(), debug_label]
-	if wave_progress_bar != null:
-		var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
-		var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
-		var ratio := clampf(elapsed / duration, 0.0, 1.0)
-		wave_progress_bar.value = ratio * 100.0
-		wave_progress_bar.visible = not _is_shop_open()
+		_refresh_state_panel(player_snapshot)
+	_refresh_progress_panel()
+
+func _refresh_progress_panel() -> void:
+	if wave_progress_bar == null or progress_caption == null:
+		return
+	var active_boss := _get_active_boss()
+	if active_boss != null:
+		progress_caption.text = _boss_display_name(active_boss).to_upper()
+		var max_hp := maxf(float(active_boss.get("max_hp")), 1.0)
+		var current_hp := clampf(float(active_boss.get("current_hp")), 0.0, max_hp)
+		wave_progress_bar.value = (current_hp / max_hp) * 100.0
+		wave_progress_bar.visible = true
+		return
+	var current_wave := int(enemy_spawner.get("current_wave_index"))
+	progress_caption.text = "FINAL FRONTIER" if current_wave >= 10 else "FRONTIER PRESSURE"
+	var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
+	var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
+	var ratio := clampf(elapsed / duration, 0.0, 1.0)
+	wave_progress_bar.value = ratio * 100.0
+	wave_progress_bar.visible = not _is_shop_open()
+
+func _get_active_boss() -> Node:
+	if boss_manager == null or not is_instance_valid(boss_manager):
+		return null
+	var boss_variant: Variant = boss_manager.get("active_boss")
+	if boss_variant is Node:
+		var boss_node := boss_variant as Node
+		if is_instance_valid(boss_node):
+			return boss_node
+	return null
+
+func _boss_display_name(active_boss: Node) -> String:
+	var variant_id := str(active_boss.get("enemy_variant")).strip_edges()
+	if variant_id == "":
+		return "Boss"
+	return variant_id.replace("_", " ").capitalize()
+
+func _refresh_state_panel(player_snapshot: Dictionary) -> void:
+	var run_state := _get_run_state()
+	if run_state == "Combat":
+		var focus_label := _build_focus_label(player_snapshot)
+		if focus_label != "":
+			state_caption.text = "BUILD FOCUS"
+			state_label.text = focus_label
+			return
+	state_caption.text = "RUN STATE"
+	state_label.text = run_state.to_upper()
+
+func _build_focus_label(player_snapshot: Dictionary) -> String:
+	var counts_variant: Variant = player_snapshot.get("weapon_tag_counts", {})
+	if not (counts_variant is Dictionary):
+		return ""
+	var counts: Dictionary = counts_variant
+	var tags: Array = counts.keys()
+	tags.sort()
+	var best_tag := ""
+	var best_count := 0
+	for tag_variant in tags:
+		var tag := str(tag_variant).strip_edges()
+		var count := int(counts.get(tag_variant, 0))
+		if tag == "" or count <= best_count:
+			continue
+		best_tag = tag
+		best_count = count
+	if best_tag == "" or best_count <= 0:
+		return ""
+	return "%s ×%d" % [best_tag.replace("_", " ").to_upper(), best_count]
 
 func _apply_presentation() -> void:
 	for panel in [stats_panel, progress_panel, state_panel]:
@@ -168,9 +229,3 @@ func _is_shop_open() -> bool:
 
 func _is_character_select_open() -> bool:
 	return character_select_layer != null and character_select_layer.visible
-
-func _get_debug_preset_label() -> String:
-	var main_game := get_tree().current_scene
-	if main_game != null and main_game.has_method("get_debug_preset_label"):
-		return str(main_game.call("get_debug_preset_label"))
-	return "DebugPreset: normal"
