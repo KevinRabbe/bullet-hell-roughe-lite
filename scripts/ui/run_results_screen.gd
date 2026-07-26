@@ -58,24 +58,25 @@ func _ready() -> void:
 		new_character_button.pressed.connect(_on_new_character_pressed)
 	if main_menu_button != null:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
+	if retry_button != null:
+		retry_button.grab_focus()
 
 func set_standalone_mode(enabled: bool) -> void:
 	standalone_mode = enabled
 	_refresh_action_hint()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_on_main_menu_pressed()
+		get_viewport().set_input_as_handled()
+		return
 	if not (event is InputEventKey):
 		return
 	var key_event: InputEventKey = event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
-	match key_event.keycode:
-		KEY_R:
-			_on_retry_pressed()
-		KEY_ENTER, KEY_SPACE:
-			_on_new_character_pressed()
-		KEY_ESCAPE:
-			_on_main_menu_pressed()
+	if key_event.keycode == KEY_R:
+		_on_retry_pressed()
 
 func apply_result_state(next_state: Dictionary) -> void:
 	result_state = {
@@ -223,7 +224,7 @@ func _apply_shell_styles() -> void:
 func _refresh_action_hint() -> void:
 	if action_hint_label == null:
 		return
-	action_hint_label.text = "Shortcuts: R retry / Enter choose character / Esc main menu." if standalone_mode else "Shortcuts: R retry / Enter choose character / Esc return to main menu."
+	action_hint_label.text = "Navigate actions with focus · Confirm to choose · Cancel for Main Menu"
 
 func _refresh_stats_grid(lines: Array[String]) -> void:
 	if result_stats_grid == null:
