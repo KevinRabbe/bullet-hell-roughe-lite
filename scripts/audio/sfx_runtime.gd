@@ -75,8 +75,7 @@ func _build_stream(cue: String, duration: float) -> AudioStreamWAV:
 		var t := float(index) / float(SAMPLE_RATE)
 		var sample := clampf(_sample_cue(cue, t, duration, index), -0.92, 0.92)
 		var pcm := int(round(sample * 32767.0))
-		bytes[index * 2] = pcm & 0xff
-		bytes[(index * 2) + 1] = (pcm >> 8) & 0xff
+		bytes.encode_s16(index * 2, pcm)
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = SAMPLE_RATE
