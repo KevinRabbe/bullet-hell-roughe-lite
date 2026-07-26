@@ -1,5 +1,20 @@
 # V2 Presentation Value-Density Roadmap
 
+## Status — COMPLETE
+
+Completed and runtime-approved on 2026-07-26.
+
+Approved combined candidate:
+
+- branch: `chatgpt/v2-public-reveal-candidate-v1`
+- approved head: `32571cd86535a6da8cdb9173a5449d414fbbc29a`
+
+Production completion point after merging the qualified audio slice:
+
+- `main`: `ea18ea8da53ec7ee6c611a54578d04a441dbaeee`
+
+Milestones M1 through M7 are closed for this update. Future work should treat defects discovered after this point as new follow-up work rather than reopening this roadmap by default.
+
 ## Objective
 
 Bring Hellshot Frontier from a technically complete vertical slice to a **Steam-page/public-reveal candidate** whose real runtime screens communicate as much useful gameplay value as possible.
