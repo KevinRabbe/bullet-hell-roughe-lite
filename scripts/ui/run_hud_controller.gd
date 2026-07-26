@@ -92,11 +92,6 @@ func _update_hud() -> void:
 
 func _refresh_state_panel(player_snapshot: Dictionary) -> void:
 	var run_state := _get_run_state()
-	var debug_label := _get_debug_preset_label()
-	if debug_label != "" and debug_label != "DebugPreset: normal":
-		state_caption.text = "DEV ROUTE"
-		state_label.text = "%s  |  %s" % [run_state.to_upper(), debug_label]
-		return
 	if run_state == "Combat":
 		var focus_label := _build_focus_label(player_snapshot)
 		if focus_label != "":
@@ -200,9 +195,3 @@ func _is_shop_open() -> bool:
 
 func _is_character_select_open() -> bool:
 	return character_select_layer != null and character_select_layer.visible
-
-func _get_debug_preset_label() -> String:
-	var main_game := get_tree().current_scene
-	if main_game != null and main_game.has_method("get_debug_preset_label"):
-		return str(main_game.call("get_debug_preset_label"))
-	return "DebugPreset: normal"
