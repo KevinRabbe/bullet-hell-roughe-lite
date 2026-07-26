@@ -47,6 +47,28 @@ This is deliberately narrow transitional wiring:
 - callers fall back to legacy placement if no live scene can provide an arena;
 - future scene cleanup may make the node explicit without changing the arena contract.
 
+## Development size profiles
+
+The existing run-preset cycle exposes arena variants without adding player-facing map selection before the design needs it.
+
+Current preset order:
+
+```text
+normal
+shop_test
+combat_test
+compact_arena
+large_arena
+```
+
+For a direct `Main.tscn` development run, press `+` before starting the run until the debug label reports the desired arena preset, then start normally.
+
+- `compact_arena` keeps normal wave duration and starting economy but applies `COMPACT` bounds.
+- `large_arena` keeps normal wave duration and starting economy but applies `LARGE` bounds.
+- all other existing presets use `STANDARD` bounds.
+
+These presets are internal validation routes. They do not imply that arena size should be randomized every run. Product content should continue to use STANDARD overwhelmingly, with Compact/Large reserved for intentionally designed map variants.
+
 ## Player boundary
 
 The player is clamped inside the playable rectangle with a small inset that accounts for the existing player collision footprint.
@@ -125,4 +147,4 @@ At 1152 x 648:
 6. Spawn Gate Beast near multiple player positions and confirm the boss starts in-bounds.
 7. Confirm ground, fissures, ritual mark, crystal, cactus, wheel, and skeleton composition remain coherent and the combat center stays readable.
 8. Confirm Wave 1-2 pressure feels compact rather than like an effectively endless world.
-9. Repeat boundary/camera/spawn checks later for COMPACT and LARGE once those profiles are exposed through development scenarios.
+9. Repeat the same boundary/camera/spawn checks with `compact_arena` and `large_arena`.
