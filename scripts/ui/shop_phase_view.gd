@@ -3,7 +3,9 @@ extends Node
 const ShopViewModelScript = preload("res://scripts/ui/shop_view_model.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoiceCard.tscn")
+const StandardTooltipScene = preload("res://scenes/ui/components/StandardTooltip.tscn")
 const ShopStatSheetPanelRef = preload("res://scripts/ui/shop_stat_sheet_panel.gd")
+const ShopInventoryDetailRuntimeRef = preload("res://scripts/ui/shop_inventory_detail_runtime.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -26,13 +28,13 @@ var continue_button: Button
 var top_wave_label: Label
 var top_gold_label: Label
 var right_stats_panel: Control
-var bottom_items_list: VBoxContainer
+var bottom_items_list: Container
 var bottom_weapons_title: Label
 var weapon_slots_container: HBoxContainer
 var weapon_slot_buttons: Array[Button] = []
-var weapon_slot_labels: Array[Label] = []
 var selected_weapon_slot: int = -1
 var merge_selected_button: Button
+var inventory_tooltip: Control
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
@@ -111,9 +113,7 @@ func _mark_dirty() -> void:
 	_is_dirty = true
 
 func _refresh_if_needed() -> void:
-	if panel == null:
-		return
-	if not _is_dirty:
+	if panel == null or not _is_dirty:
 		return
 	_refresh_all()
 	_is_dirty = false
@@ -129,13 +129,13 @@ func _on_shop_payload_changed(_arg0: Variant = null, _arg1: Variant = null) -> v
 func _build_layout_once() -> void:
 	if panel == null:
 		return
-
 	_build_panel_style()
 	_build_top_labels()
 	_build_offer_card_layout()
 	_build_stats_panel()
 	_build_items_panel()
 	_build_weapons_panel()
+	_build_inventory_tooltip()
 
 	if reroll_button != null:
 		reroll_button.position = Vector2(636.0, 18.0)
@@ -195,10 +195,12 @@ func _build_items_panel() -> void:
 	items_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	items_panel.add_child(items_scroll)
 
-	bottom_items_list = VBoxContainer.new()
-	bottom_items_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom_items_list.add_theme_constant_override("separation", 6)
-	items_scroll.add_child(bottom_items_list)
+	var flow := HFlowContainer.new()
+	flow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	flow.add_theme_constant_override("h_separation", 6)
+	flow.add_theme_constant_override("v_separation", 6)
+	items_scroll.add_child(flow)
+	bottom_items_list = flow
 
 func _build_weapons_panel() -> void:
 	var weapons_panel := Panel.new()
@@ -215,46 +217,46 @@ func _build_weapons_panel() -> void:
 	weapons_panel.add_child(bottom_weapons_title)
 
 	weapon_slots_container = HBoxContainer.new()
-	weapon_slots_container.position = Vector2(12.0, 40.0)
-	weapon_slots_container.size = Vector2(324.0, 86.0)
+	weapon_slots_container.position = Vector2(12.0, 42.0)
+	weapon_slots_container.size = Vector2(324.0, 58.0)
 	weapon_slots_container.add_theme_constant_override("separation", 2)
 	weapons_panel.add_child(weapon_slots_container)
 
 	for slot_index in range(6):
-		var slot_box := VBoxContainer.new()
-		slot_box.custom_minimum_size = Vector2(52.0, 84.0)
-		slot_box.add_theme_constant_override("separation", 2)
-		weapon_slots_container.add_child(slot_box)
-
 		var icon_button := Button.new()
-		icon_button.custom_minimum_size = Vector2(50.0, 50.0)
+		icon_button.custom_minimum_size = Vector2(52.0, 58.0)
 		icon_button.text = ""
 		icon_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_button.expand_icon = true
 		icon_button.flat = false
-		icon_button.focus_mode = Control.FOCUS_NONE
+		icon_button.focus_mode = Control.FOCUS_ALL
 		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		InfernalUiStyleRef.apply_card_button(icon_button)
 		icon_button.pressed.connect(_on_weapon_slot_pressed.bind(slot_index))
-		slot_box.add_child(icon_button)
+		icon_button.mouse_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
+		icon_button.mouse_exited.connect(_hide_inventory_tooltip)
+		icon_button.focus_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
+		icon_button.focus_exited.connect(_hide_inventory_tooltip)
+		weapon_slots_container.add_child(icon_button)
 		weapon_slot_buttons.append(icon_button)
 
-		var slot_label := Label.new()
-		slot_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		slot_label.add_theme_font_size_override("font_size", 9)
-		slot_label.modulate = Color(0.92, 0.92, 0.92, 1.0)
-		slot_label.text = "-"
-		slot_box.add_child(slot_label)
-		weapon_slot_labels.append(slot_label)
-
 	merge_selected_button = Button.new()
-	merge_selected_button.position = Vector2(188.0, 132.0)
-	merge_selected_button.size = Vector2(148.0, 30.0)
-	merge_selected_button.text = "MERGE"
+	merge_selected_button.position = Vector2(174.0, 116.0)
+	merge_selected_button.size = Vector2(162.0, 40.0)
+	merge_selected_button.text = "SELECT WEAPON"
 	merge_selected_button.disabled = true
 	InfernalUiStyleRef.apply_secondary_button(merge_selected_button)
 	merge_selected_button.pressed.connect(_on_merge_selected_pressed)
 	weapons_panel.add_child(merge_selected_button)
+
+func _build_inventory_tooltip() -> void:
+	var tooltip_variant: Variant = StandardTooltipScene.instantiate()
+	if not (tooltip_variant is Control):
+		return
+	inventory_tooltip = tooltip_variant as Control
+	inventory_tooltip.name = "InventoryTooltip"
+	inventory_tooltip.visible = false
+	add_child(inventory_tooltip)
 
 func _build_panel_style() -> void:
 	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_SHELL)
@@ -282,6 +284,7 @@ func _build_top_labels() -> void:
 
 func _refresh_all() -> void:
 	_snapshot = _build_view_snapshot()
+	_hide_inventory_tooltip()
 	_refresh_top_bar()
 	_refresh_offer_cards()
 	_refresh_stats_panel()
@@ -330,7 +333,7 @@ func _refresh_owned_items() -> void:
 	if not (entries_variant is Array) or entries_variant.is_empty():
 		var empty_label := Label.new()
 		empty_label.text = "No items yet."
-		empty_label.add_theme_font_size_override("font_size", 17)
+		empty_label.add_theme_font_size_override("font_size", 15)
 		InfernalUiStyleRef.apply_body_text(empty_label)
 		bottom_items_list.add_child(empty_label)
 		return
@@ -338,47 +341,86 @@ func _refresh_owned_items() -> void:
 		if not (entry_variant is Dictionary):
 			continue
 		var entry: Dictionary = entry_variant
-		var row := HBoxContainer.new()
-		row.custom_minimum_size = Vector2(0, 34)
-		row.add_theme_constant_override("separation", 8)
-		bottom_items_list.add_child(row)
-
-		var icon_rect := TextureRect.new()
-		icon_rect.custom_minimum_size = Vector2(30, 30)
-		icon_rect.texture = entry.get("icon", null)
-		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		row.add_child(icon_rect)
-
-		var name_label := Label.new()
-		name_label.text = str(entry.get("name", "Item"))
-		name_label.add_theme_font_size_override("font_size", 17)
-		name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		InfernalUiStyleRef.apply_body_text(name_label)
-		row.add_child(name_label)
+		var item_id := str(entry.get("id", ""))
+		var icon_button := Button.new()
+		icon_button.custom_minimum_size = Vector2(58.0, 58.0)
+		icon_button.text = ""
+		icon_button.icon = entry.get("icon", null)
+		icon_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		icon_button.expand_icon = true
+		icon_button.focus_mode = Control.FOCUS_ALL
+		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		InfernalUiStyleRef.apply_card_button(icon_button)
+		icon_button.mouse_entered.connect(_show_item_detail.bind(item_id, icon_button))
+		icon_button.mouse_exited.connect(_hide_inventory_tooltip)
+		icon_button.focus_entered.connect(_show_item_detail.bind(item_id, icon_button))
+		icon_button.focus_exited.connect(_hide_inventory_tooltip)
+		icon_button.pressed.connect(_show_item_detail.bind(item_id, icon_button))
+		bottom_items_list.add_child(icon_button)
 
 func _refresh_weapon_slots() -> void:
 	var slots := _get_snapshot_weapon_slots()
 	for index in range(weapon_slot_buttons.size()):
 		var icon_button := weapon_slot_buttons[index]
-		var slot_label := weapon_slot_labels[index]
 		icon_button.modulate = Color(1.0, 1.0, 1.0, 1.0)
 		InfernalUiStyleRef.apply_card_button(icon_button, index == selected_weapon_slot)
 		if index < slots.size():
 			var slot: Dictionary = slots[index]
 			icon_button.icon = slot.get("icon", null)
 			icon_button.disabled = slot.get("occupied", false) != true
-			slot_label.text = str(slot.get("label", "-"))
 		else:
 			icon_button.icon = null
 			icon_button.disabled = true
-			slot_label.text = "-"
 		if index == selected_weapon_slot:
 			icon_button.modulate = Color(1.0, 0.95, 0.60, 1.0)
 	if selected_weapon_slot >= slots.size():
 		selected_weapon_slot = -1
 	_update_merge_button_state()
+
+func _show_item_detail(item_id: String, source: Control) -> void:
+	if item_id == "" or inventory_tooltip == null:
+		return
+	var detail := ShopInventoryDetailRuntimeRef.build_item_detail(item_id)
+	_show_inventory_tooltip(detail, source)
+
+func _show_weapon_detail(slot_index: int, source: Control) -> void:
+	if inventory_tooltip == null:
+		return
+	var slots := _get_snapshot_weapon_slots()
+	if slot_index < 0 or slot_index >= slots.size():
+		_hide_inventory_tooltip()
+		return
+	var slot: Dictionary = slots[slot_index]
+	if slot.get("occupied", false) != true:
+		_hide_inventory_tooltip()
+		return
+	var detail := ShopInventoryDetailRuntimeRef.build_weapon_detail(
+		str(slot.get("id", "")),
+		str(slot.get("rarity", "common"))
+	)
+	_show_inventory_tooltip(detail, source)
+
+func _show_inventory_tooltip(detail: Dictionary, source: Control) -> void:
+	if inventory_tooltip == null or source == null:
+		return
+	var title := str(detail.get("title", "DETAIL"))
+	var body := str(detail.get("body", ""))
+	if inventory_tooltip.has_method("configure"):
+		inventory_tooltip.call("configure", title, body)
+	var anchor := source.get_global_rect().position + Vector2(source.size.x, 0.0)
+	if inventory_tooltip.has_method("show_at"):
+		inventory_tooltip.call("show_at", anchor, Vector2(8.0, 0.0))
+	else:
+		inventory_tooltip.position = anchor + Vector2(8.0, 0.0)
+		inventory_tooltip.visible = true
+
+func _hide_inventory_tooltip() -> void:
+	if inventory_tooltip == null:
+		return
+	if inventory_tooltip.has_method("hide_tooltip"):
+		inventory_tooltip.call("hide_tooltip")
+	else:
+		inventory_tooltip.visible = false
 
 func _get_snapshot_cards() -> Array[Dictionary]:
 	var cards: Array[Dictionary] = []
@@ -425,14 +467,26 @@ func _apply_offer_card(card: Dictionary, button: Button) -> void:
 
 func _build_card_body(card: Dictionary) -> String:
 	var plain_description := _strip_bbcode(str(card.get("description", "")))
-	var body_lines: Array[String] = []
+	var all_lines: Array[String] = []
 	for raw_line in plain_description.split("\n", false):
 		var line := str(raw_line).strip_edges()
-		if line == "":
-			continue
-		body_lines.append(line)
-		if body_lines.size() >= 4:
+		if line != "":
+			all_lines.append(line)
+	var body_lines: Array[String] = []
+	for prefix in ["Rarity:", "DMG ", "CD ", "Range ", "Matches loadout tags:", "Boosts current loadout:"]:
+		for line in all_lines:
+			if line.begins_with(prefix) and line not in body_lines:
+				body_lines.append(line)
+				break
+		if body_lines.size() >= 5:
 			break
+	if body_lines.size() < 4:
+		for line in all_lines:
+			if line in body_lines:
+				continue
+			body_lines.append(line)
+			if body_lines.size() >= 4:
+				break
 	var block_reason := str(card.get("block_reason", "")).strip_edges()
 	if block_reason != "":
 		body_lines.append("Blocked: %s" % block_reason)
