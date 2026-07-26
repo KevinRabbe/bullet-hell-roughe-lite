@@ -10,6 +10,7 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const StandardStatCardScene = preload("res://scenes/ui/components/StandardStatCard.tscn")
+const RunPlaytestReportRuntimeRef = preload("res://scripts/game/run_playtest_report_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const GAME_SCENE_PATH := "res://scenes/game/Main.tscn"
@@ -40,6 +41,7 @@ var result_state: Dictionary = {
 		"Build focus: -"
 	]
 }
+var _playtest_identity_applied: bool = false
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
@@ -81,7 +83,51 @@ func apply_result_state(next_state: Dictionary) -> void:
 		"summary": str(next_state.get("summary", result_state["summary"])),
 		"stats": next_state.get("stats", result_state["stats"])
 	}
+	_append_playtest_identity()
 	_refresh()
+
+func _append_playtest_identity() -> void:
+	if _playtest_identity_applied:
+		return
+	var game_scene := get_parent()
+	if game_scene == null:
+		return
+	var player := game_scene.get_node_or_null("Player")
+	if player == null or not player.has_method("get_ui_snapshot"):
+		return
+	var snapshot_variant: Variant = player.call("get_ui_snapshot")
+	if not (snapshot_variant is Dictionary):
+		return
+	var player_snapshot: Dictionary = snapshot_variant
+	var existing_stats: Array[String] = []
+	var stats_variant: Variant = result_state.get("stats", [])
+	if stats_variant is Array:
+		for line_variant in stats_variant:
+			var line := str(line_variant).strip_edges()
+			if line != "":
+				existing_stats.append(line)
+	var run_rng := get_node_or_null("/root/RunRng")
+	var identity_lines := RunPlaytestReportRuntimeRef.build_identity_lines(run_rng, player, player_snapshot)
+	identity_lines.append_array(existing_stats)
+	result_state["stats"] = identity_lines
+	var enemy_spawner := game_scene.get_node_or_null("EnemySpawner")
+	var wave_index := int(enemy_spawner.get("current_wave_index")) if enemy_spawner != null else 0
+	print(RunPlaytestReportRuntimeRef.build_console_report(
+		_result_id(),
+		run_rng,
+		player,
+		player_snapshot,
+		wave_index
+	))
+	_playtest_identity_applied = true
+
+func _result_id() -> String:
+	var title := str(result_state.get("title", "")).to_lower()
+	if "victory" in title:
+		return "victory"
+	if "defeat" in title or "game over" in title:
+		return "game_over"
+	return "complete"
 
 func _refresh() -> void:
 	if result_eyebrow_label != null:
