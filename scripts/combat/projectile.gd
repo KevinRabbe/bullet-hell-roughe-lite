@@ -3,6 +3,7 @@ extends Area2D
 const ProjectileImpactUtil = preload("res://scripts/combat/projectile_impact_helper.gd")
 const ProjectileVisualUtil = preload("res://scripts/combat/projectile_visual_runtime.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
 
 @export var speed: float = 700.0
 @export var damage: float = 10.0
@@ -94,6 +95,8 @@ func _on_body_entered(body: Node) -> void:
 			weapon_data
 		)
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
+		var impact_pitch := clampf(1.06 - (maxf(final_damage, 0.0) / 220.0), 0.80, 1.06)
+		SfxRuntimeRef.play(self, "impact", -19.0, impact_pitch, 50)
 		ProjectileVisualUtil.spawn_impact_feedback(self, visual, _visual_animation_profile)
 		if pierce_count > 0:
 			pierce_count -= 1
