@@ -100,7 +100,8 @@ func _refresh_progress_panel() -> void:
 		wave_progress_bar.value = (current_hp / max_hp) * 100.0
 		wave_progress_bar.visible = true
 		return
-	progress_caption.text = "FRONTIER PRESSURE"
+	var current_wave := int(enemy_spawner.get("current_wave_index"))
+	progress_caption.text = "FINAL FRONTIER" if current_wave >= 10 else "FRONTIER PRESSURE"
 	var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 	var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 	var ratio := clampf(elapsed / duration, 0.0, 1.0)
