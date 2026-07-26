@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/portal/portal_mutation_runtime.gd" id="9"]
 [ext_resource type="Script" path="res://scripts/player/player_ascension_runtime.gd" id="10"]
 [ext_resource type="Script" path="res://scripts/player/player_damage_feedback.gd" id="11"]
+[ext_resource type="Script" path="res://scripts/visual/actor_motion_driver.gd" id="12"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
@@ -55,3 +56,7 @@ weapon_loadout_path = NodePath("../WeaponLoadout")
 
 [node name="DamageFeedback" type="Node" parent="."]
 script = ExtResource("11")
+
+[node name="MotionDriver" type="Node" parent="."]
+script = ExtResource("12")
+profile_id = "player"
