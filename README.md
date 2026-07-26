@@ -29,7 +29,7 @@ Main Menu
 
 ## Hunters
 
-The current active roster contains **16 selectable hunters** built from a shared cursed-survivor visual foundation.
+The current active roster contains **16 selectable hunters** built from a shared cursed-survivor visual and runtime foundation.
 
 Character Select reserves a fixed **30-slot, 5 x 6 roster** so the roster can expand without changing the core selection layout.
 
@@ -62,6 +62,28 @@ The game should repeatedly create decisions that feel like:
 
 Build variety should come from interactions between hunter identity, weapons, items, tags, set bonuses, portal effects, mutations, and Ascensions rather than from isolated stat inflation alone.
 
+## Reusable-foundation direction
+
+Future development should prefer one strong canonical implementation for concepts that repeat across the game, then express variety through data, configuration, shared components, and small extensions.
+
+The shared hunter base is the reference model for this approach.
+
+Current foundation priorities are:
+
+1. canonical reusable UI system
+2. explicit STANDARD / COMPACT / LARGE arena system
+3. deterministic content validation
+4. development scenario harness for direct deep-run testing
+
+Additional foundations should evolve only when real duplication justifies them:
+
+- shared effect/modifier vocabulary
+- reusable enemy/boss/projectile archetypes
+- semantic gameplay-feedback events
+- unified input actions/navigation
+
+This is intentionally **not** a generic framework/API effort. The objective is to remove repeated Hellshot Frontier work without hiding the game behind unnecessary abstraction.
+
 ## Engine
 
 - Godot 4.x
@@ -76,6 +98,8 @@ The repository favors small, scoped changes and deterministic/data-driven runtim
 Important project contracts live in:
 
 - `AGENTS.md`
+- `docs/REUSABLE_GAME_FOUNDATIONS.md`
+- `docs/UI_SYSTEM_SPEC.md`
 - `docs/ART_STYLE_RULES.md`
 - `docs/CHARACTER_SELECT_FINAL_SPEC.md`
 - `docs/MENU_FLOW_SMOKE_CHECKLIST.md`
@@ -88,6 +112,7 @@ The foundational vertical slice exists.
 
 The highest-value work is now increasingly:
 
+- reusable UI and arena foundations that reduce future implementation cost
 - playtesting and bug fixing
 - combat feel and readability
 - enemy and wave pressure
@@ -96,4 +121,5 @@ The highest-value work is now increasingly:
 - progression/reward pacing
 - boss quality
 - audiovisual feedback and polish
+- content validation and faster scenario-based testing
 - removing remaining prototype/debug scaffolding when it becomes safe to do so
