@@ -28,6 +28,9 @@ func _input(event: InputEvent) -> void:
 	if not OS.is_debug_build() and _is_debug_shortcut(event):
 		get_viewport().set_input_as_handled()
 		return
+	if event.is_action_pressed("ui_cancel") and _route_front_door_cancel():
+		get_viewport().set_input_as_handled()
+		return
 	if not event.is_action_pressed("pause_game"):
 		return
 	var scene := get_tree().current_scene
@@ -41,6 +44,15 @@ func _input(event: InputEvent) -> void:
 		return
 	scene.call("_toggle_pause")
 	get_viewport().set_input_as_handled()
+
+func _route_front_door_cancel() -> bool:
+	if get_tree() == null:
+		return false
+	var scene := get_tree().current_scene
+	if scene == null or not scene.has_method("_on_back_pressed"):
+		return false
+	scene.call("_on_back_pressed")
+	return true
 
 func _restore_gameplay_focus_if_needed() -> void:
 	var viewport := get_viewport()
