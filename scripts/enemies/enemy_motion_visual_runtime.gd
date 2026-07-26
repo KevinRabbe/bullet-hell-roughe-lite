@@ -108,9 +108,11 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
 	var puff_tween := puff.create_tween()
 	puff_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	if not reduced_motion:
+	if reduced_motion:
+		puff_tween.tween_property(puff, "modulate", COLOR_DEATH, 0.18)
+	else:
 		puff_tween.tween_property(puff, "scale", puff.scale * 1.45, 0.18)
-	puff_tween.parallel().tween_property(puff, "modulate", COLOR_DEATH, 0.18)
+		puff_tween.parallel().tween_property(puff, "modulate", COLOR_DEATH, 0.18)
 	puff_tween.finished.connect(func() -> void:
 		if is_instance_valid(puff):
 			puff.queue_free()
@@ -129,7 +131,7 @@ static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	visual_sprite.modulate.a = 0.55
 	var tween := visual_sprite.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(visual_sprite, "scale", rest_scale, 0.14)
+	tween.tween_property(visual_sprite, "scale", rest_scale, 0.14)
 	tween.parallel().tween_property(visual_sprite, "modulate:a", 1.0, 0.12)
 
 static func _spawn_death_ring(scene: Node, position: Vector2, z_index: int, reduced_motion: bool) -> void:
@@ -151,9 +153,11 @@ static func _spawn_death_ring(scene: Node, position: Vector2, z_index: int, redu
 	scene.add_child(ring)
 	var tween := ring.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	if not reduced_motion:
+	if reduced_motion:
+		tween.tween_property(ring, "modulate:a", 0.0, 0.16)
+	else:
 		tween.tween_property(ring, "scale", Vector2.ONE * 1.8, 0.16)
-	tween.parallel().tween_property(ring, "modulate:a", 0.0, 0.16)
+		tween.parallel().tween_property(ring, "modulate:a", 0.0, 0.16)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(ring):
 			ring.queue_free()
