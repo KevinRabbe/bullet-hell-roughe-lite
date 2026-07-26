@@ -1,5 +1,7 @@
 class_name StandardCodexCard
-extends Button
+extends PanelContainer
+
+signal pressed
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
@@ -11,6 +13,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 @export var icon_texture: Texture2D
 @export var selected: bool = false
 
+@onready var hit_button: Button = $HitButton
 @onready var margin: MarginContainer = $Margin
 @onready var layout: HBoxContainer = $Margin/Layout
 @onready var icon_frame: PanelContainer = $Margin/Layout/IconFrame
@@ -22,12 +25,13 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 @onready var footer_label: Label = $Margin/Layout/Copy/Footer
 
 func _ready() -> void:
-	text = ""
-	_set_descendants_mouse_passthrough(self)
+	mouse_filter = Control.MOUSE_FILTER_PASS
 	_apply_style()
 	_apply_text_styles()
 	_refresh_copy()
 	_apply_responsive_layout()
+	if hit_button != null:
+		hit_button.pressed.connect(func() -> void: pressed.emit())
 	var viewport := get_viewport()
 	if viewport != null and not viewport.size_changed.is_connected(_apply_responsive_layout):
 		viewport.size_changed.connect(_apply_responsive_layout)
@@ -47,8 +51,14 @@ func set_selected(value: bool) -> void:
 		_apply_style()
 
 func _apply_style() -> void:
-	InfernalUiStyleRef.apply_card_button(self, selected)
+	var style := InfernalUiStyleRef.build_panel_style(InfernalUiStyleRef.PANEL_CARD)
+	if selected:
+		style.border_color = InfernalUiStyleRef.COLOR_HELL_ORANGE
+		style.set_border_width_all(2)
+	add_theme_stylebox_override("panel", style)
 	InfernalUiStyleRef.apply_panel(icon_frame, InfernalUiStyleRef.PANEL_CARD)
+	if hit_button != null:
+		hit_button.flat = true
 
 func _apply_text_styles() -> void:
 	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_CARD_TITLE)
@@ -83,9 +93,3 @@ func _apply_responsive_layout() -> void:
 	subtitle_label.add_theme_font_size_override("font_size", 12 if tight else 13)
 	summary_label.add_theme_font_size_override("font_size", 12 if tight else 13)
 	footer_label.add_theme_font_size_override("font_size", 11 if tight else 12)
-
-func _set_descendants_mouse_passthrough(root: Node) -> void:
-	for child in root.get_children():
-		if child is Control:
-			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_set_descendants_mouse_passthrough(child)
