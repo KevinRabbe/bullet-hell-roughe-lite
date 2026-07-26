@@ -52,6 +52,8 @@ Export preset: Windows Playtest
 Architecture: Windows x86_64
 Built UTC: $([DateTime]::UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"))
 
+IMPORTANT: Extract the entire ZIP to a normal folder before launching HellshotFrontier.exe. Keep HellshotFrontier.exe and HellshotFrontier.pck together in the same folder.
+
 When reporting a run, include a screenshot of the Run Results screen so the run seed, hunter, arsenal, wave, level, and gold can be reproduced.
 "@ | Set-Content -Path $metadataPath -Encoding UTF8
 
