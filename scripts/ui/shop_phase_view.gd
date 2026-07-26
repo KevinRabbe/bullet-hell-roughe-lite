@@ -3,6 +3,7 @@ extends Node
 const ShopViewModelScript = preload("res://scripts/ui/shop_view_model.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoiceCard.tscn")
+const ShopStatSheetPanelRef = preload("res://scripts/ui/shop_stat_sheet_panel.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -24,7 +25,7 @@ var continue_button: Button
 
 var top_wave_label: Label
 var top_gold_label: Label
-var right_stats_label: RichTextLabel
+var right_stats_panel: Control
 var bottom_items_list: VBoxContainer
 var bottom_weapons_title: Label
 var weapon_slots_container: HBoxContainer
@@ -153,7 +154,7 @@ func _build_layout_once() -> void:
 		panel.move_child(button, panel.get_child_count() - 1)
 
 func _build_offer_card_layout() -> void:
-	var card_width := 236.0
+	var card_width := 229.0
 	var card_height := 350.0
 	var start_x := 20.0
 	var gap := 8.0
@@ -168,28 +169,11 @@ func _build_offer_card_layout() -> void:
 			button.call("set_selected", false)
 
 func _build_stats_panel() -> void:
-	var stats_panel := Panel.new()
-	stats_panel.position = Vector2(996.0, 80.0)
-	stats_panel.size = Vector2(128.0, 482.0)
-	InfernalUiStyleRef.apply_panel(stats_panel, InfernalUiStyleRef.PANEL_CARD)
-	panel.add_child(stats_panel)
-
-	var stats_title := Label.new()
-	stats_title.position = Vector2(8.0, 8.0)
-	stats_title.size = Vector2(112.0, 26.0)
-	stats_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_title.text = "STATS"
-	InfernalUiStyleRef.apply_section_title(stats_title)
-	stats_panel.add_child(stats_title)
-
-	right_stats_label = RichTextLabel.new()
-	right_stats_label.position = Vector2(10.0, 42.0)
-	right_stats_label.size = Vector2(108.0, 428.0)
-	right_stats_label.bbcode_enabled = true
-	right_stats_label.scroll_active = false
-	right_stats_label.add_theme_font_size_override("normal_font_size", 12)
-	right_stats_label.add_theme_color_override("default_color", InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.18))
-	stats_panel.add_child(right_stats_label)
+	right_stats_panel = ShopStatSheetPanelRef.new()
+	right_stats_panel.position = Vector2(976.0, 80.0)
+	right_stats_panel.size = Vector2(148.0, 482.0)
+	panel.add_child(right_stats_panel)
+	right_stats_panel.call("configure", player)
 
 func _build_items_panel() -> void:
 	var items_panel := Panel.new()
@@ -327,9 +311,9 @@ func _refresh_offer_cards() -> void:
 		_apply_offer_card(cards[index], button)
 
 func _refresh_stats_panel() -> void:
-	if right_stats_label == null:
+	if right_stats_panel == null:
 		return
-	right_stats_label.text = str(_snapshot.get("stats_text", "No stats"))
+	right_stats_panel.call("refresh", _snapshot)
 
 func _refresh_bottom_sections() -> void:
 	_refresh_owned_items()
