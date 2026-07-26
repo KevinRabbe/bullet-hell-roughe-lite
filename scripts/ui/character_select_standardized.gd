@@ -46,6 +46,7 @@ func _apply_shell_styles() -> void:
 	StandardInfernalUiStyleRef.apply_button(starter_modal_start_button, StandardInfernalUiStyleRef.BUTTON_PRIMARY)
 	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
 	_apply_standard_layout()
+	_apply_dossier_label_layout()
 
 func _apply_standard_layout() -> void:
 	var viewport_size := get_viewport_rect().size
@@ -106,6 +107,95 @@ func _apply_standard_layout() -> void:
 		starter_modal_back_button.custom_minimum_size = Vector2(180 if tight else 210, StandardUiLayoutMetricsRef.secondary_button_height(layout_class))
 	if starter_modal_start_button != null:
 		starter_modal_start_button.custom_minimum_size = Vector2(210 if tight else 240, StandardUiLayoutMetricsRef.primary_button_height(layout_class))
+
+func _apply_dossier_label_layout() -> void:
+	selected_tagline.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	selected_tagline.max_lines_visible = 2
+	selected_tagline.text_overrun_behavior = 0
+	identity_summary.max_lines_visible = 3
+	identity_summary.text_overrun_behavior = 0
+	identity_fantasy_hook.max_lines_visible = 2
+	identity_fantasy_hook.text_overrun_behavior = 0
+	passive_summary.max_lines_visible = 3
+	passive_summary.text_overrun_behavior = 0
+	opening_weapon_summary.max_lines_visible = 2
+	opening_weapon_summary.text_overrun_behavior = 0
+	var identity_card := get_node_or_null("RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard") as Control
+	var passive_card := get_node_or_null("RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard") as Control
+	var opening_card := get_node_or_null("RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard") as Control
+	if identity_card != null:
+		identity_card.custom_minimum_size.y = 150.0
+	if passive_card != null:
+		passive_card.custom_minimum_size.y = 130.0
+	if opening_card != null:
+		opening_card.custom_minimum_size.y = 162.0
+
+func _refresh_selection_details() -> void:
+	super._refresh_selection_details()
+	if selectable_ids.is_empty() or selected_index < 0 or selected_index >= selectable_ids.size():
+		return
+	var character_id := selectable_ids[selected_index]
+	var presentation_variant: Variant = presentations.get(character_id, {})
+	var presentation: Dictionary = presentation_variant if presentation_variant is Dictionary else {}
+	var detail_variant: Variant = details.get(character_id, {})
+	var detail: Dictionary = detail_variant if detail_variant is Dictionary else {}
+
+	selected_tagline.text = str(presentation.get("headline", "")).strip_edges()
+	identity_summary.text = _build_mechanical_profile(presentation, detail)
+	identity_fantasy_hook.text = _build_playstyle_line(presentation)
+	passive_summary.text = str(presentation.get("passive_summary", "")).strip_edges()
+	_refresh_opening_weapon_dossier(character_id)
+
+	var identity_heading := get_node_or_null("RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard/IdentityMargin/IdentityVBox/Heading") as Label
+	if identity_heading != null:
+		identity_heading.text = "BUILD PROFILE"
+
+func _build_mechanical_profile(presentation: Dictionary, detail: Dictionary) -> String:
+	var strengths := _dossier_string_array(detail.get("strengths", presentation.get("strengths", [])))
+	var tradeoffs := _dossier_string_array(detail.get("tradeoffs", presentation.get("tradeoffs", [])))
+	var lines: Array[String] = []
+	for strength in strengths:
+		if lines.size() >= 2:
+			break
+		lines.append("+ %s" % strength)
+	if not tradeoffs.is_empty():
+		lines.append("- %s" % tradeoffs[0])
+	if lines.is_empty():
+		var fallback := str(presentation.get("identity_summary", "")).strip_edges()
+		if fallback != "":
+			lines.append(fallback)
+	return "\n".join(lines)
+
+func _build_playstyle_line(presentation: Dictionary) -> String:
+	var tags := _dossier_string_array(presentation.get("playstyle_tags", []))
+	var visible_tags: Array[String] = []
+	for tag in tags:
+		if visible_tags.size() >= 3:
+			break
+		visible_tags.append(tag.replace("_", " ").to_upper())
+	if visible_tags.is_empty():
+		return ""
+	return "PLAYSTYLE · %s" % " / ".join(visible_tags)
+
+func _refresh_opening_weapon_dossier(character_id: String) -> void:
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	var entry := _find_character_entry(character_id)
+	var starting_ids := _normalize_string_array(entry.get("starting_weapon_ids", []))
+	if starting_ids.is_empty():
+		return
+	var description := _resolve_weapon_description(data_registry, starting_ids[0]).strip_edges()
+	if description != "":
+		opening_weapon_summary.text = description
+
+func _dossier_string_array(value: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if not (value is Array):
+		return result
+	for entry_variant in value:
+		var entry := str(entry_variant).strip_edges()
+		if entry != "":
+			result.append(entry)
+	return result
 
 func _apply_roster_tile_style(button: Button, is_selected: bool) -> void:
 	StandardInfernalUiStyleRef.apply_card_button(button, is_selected)
