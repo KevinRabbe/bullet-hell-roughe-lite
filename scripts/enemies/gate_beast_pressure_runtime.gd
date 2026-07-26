@@ -2,6 +2,7 @@ class_name GateBeastPressureRuntime
 extends RefCounted
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const SfxRuntimeRef = preload("res://scripts/audio/sfx_runtime.gd")
 
 const PHASE_CHASE := "chase"
 const PHASE_WINDUP := "windup"
@@ -76,6 +77,7 @@ func _apply_phase(boss: Node) -> void:
 	match _phase:
 		PHASE_WINDUP:
 			speed_multiplier = WINDUP_SPEED_MULTIPLIER
+			SfxRuntimeRef.play(boss, "boss_windup", -9.0, 1.0, 500)
 		PHASE_RUSH:
 			speed_multiplier = RUSH_SPEED_MULTIPLIER
 		PHASE_RECOVER:
