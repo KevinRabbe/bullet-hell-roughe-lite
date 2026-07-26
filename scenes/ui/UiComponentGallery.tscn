@@ -1,0 +1,119 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/ui_component_gallery.gd" id="1_gallery"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardChoiceCard.tscn" id="2_card"]
+[ext_resource type="PackedScene" path="res://scenes/ui/components/StandardModalShell.tscn" id="3_modal"]
+
+[node name="UiComponentGallery" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_gallery")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.0705882, 0.0431373, 0.0627451, 1)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = -24.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scroll" type="ScrollContainer" parent="RootMargin"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Content" type="VBoxContainer" parent="RootMargin/Scroll"]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "Hellshot UI Component Gallery"
+
+[node name="Intro" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Internal preview for shared styles and reusable components. This is not a player-facing menu."
+autowrap_mode = 2
+
+[node name="ButtonsTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "BUTTON ROLES"
+
+[node name="ButtonRow" type="HBoxContainer" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Primary" type="Button" parent="RootMargin/Scroll/Content/ButtonRow"]
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "Primary"
+
+[node name="Secondary" type="Button" parent="RootMargin/Scroll/Content/ButtonRow"]
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "Secondary"
+
+[node name="Danger" type="Button" parent="RootMargin/Scroll/Content/ButtonRow"]
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "Danger"
+
+[node name="Tab" type="Button" parent="RootMargin/Scroll/Content/ButtonRow"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+text = "Tab"
+
+[node name="Disabled" type="Button" parent="RootMargin/Scroll/Content/ButtonRow"]
+custom_minimum_size = Vector2(140, 48)
+layout_mode = 2
+text = "Disabled"
+
+[node name="CardsTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "CHOICE CARDS"
+
+[node name="CardRow" type="HBoxContainer" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="FirstCard" parent="RootMargin/Scroll/Content/CardRow" instance=ExtResource("2_card")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SecondCard" parent="RootMargin/Scroll/Content/CardRow" instance=ExtResource("2_card")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ModalTitle" type="Label" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "MODAL SHELL"
+
+[node name="ModalCenter" type="CenterContainer" parent="RootMargin/Scroll/Content"]
+layout_mode = 2
+
+[node name="ModalShell" parent="RootMargin/Scroll/Content/ModalCenter" instance=ExtResource("3_modal")]
+layout_mode = 2
