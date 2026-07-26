@@ -2,14 +2,13 @@ class_name ContentValidator
 extends RefCounted
 
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const PortalMutationRuntimeRef = preload("res://scripts/portal/portal_mutation_runtime.gd")
 
 const EXPECTED_SELECTABLE_HUNTERS := 16
 const SUPPORTED_RARITIES: Array[String] = ["common", "rare", "epic", "legendary"]
 const REQUIRED_SET_THRESHOLDS: Array[int] = [2, 4, 6]
 const SUPPORTED_MUTATION_TIERS: Array[String] = ["minor", "major"]
 const SUPPORTED_DURATIONS: Array[String] = ["event", "wave", "run"]
-const SUPPORTED_STACK_POLICIES: Array[String] = ["stack", "refresh", "replace", "unique", "replace_major"]
-const SUPPORTED_EFFECT_TYPES: Array[String] = ["stat_add", "stat_multiplier", "weapon_tag_stat_add", "weapon_tag_stat_multiplier"]
 
 static func validate_registry(registry: Node) -> Dictionary:
 	var issues: Array[Dictionary] = []
@@ -78,13 +77,7 @@ static func _validate_characters(
 		if roster_order < 0:
 			_add_error(issues, "character_roster_order", "character", character_id, "Selectable hunter requires a non-negative roster_order.")
 		elif roster_orders.has(roster_order):
-			_add_error(
-				issues,
-				"character_roster_order_duplicate",
-				"character",
-				character_id,
-				"roster_order %d is already used by '%s'." % [roster_order, str(roster_orders[roster_order])]
-			)
+			_add_error(issues, "character_roster_order_duplicate", "character", character_id, "roster_order %d is already used by '%s'." % [roster_order, str(roster_orders[roster_order])])
 		else:
 			roster_orders[roster_order] = character_id
 
@@ -107,13 +100,7 @@ static func _validate_characters(
 			_add_error(issues, "character_set_bonus_missing", "character", character_id, "Preferred family '%s' has no set-bonus definition." % family_id)
 
 	if selectable_count != EXPECTED_SELECTABLE_HUNTERS:
-		_add_error(
-			issues,
-			"selectable_hunter_count",
-			"character",
-			"",
-			"Expected %d selectable hunters; found %d." % [EXPECTED_SELECTABLE_HUNTERS, selectable_count]
-		)
+		_add_error(issues, "selectable_hunter_count", "character", "", "Expected %d selectable hunters; found %d." % [EXPECTED_SELECTABLE_HUNTERS, selectable_count])
 
 static func _validate_weapon_references(
 	issues: Array[Dictionary],
@@ -143,8 +130,7 @@ static func _validate_weapons(issues: Array[Dictionary], weapons: Dictionary) ->
 		_validate_embedded_id(issues, "weapon", weapon_id, weapon)
 		if str(_value(weapon, "display_name", "")).strip_edges() == "":
 			_add_error(issues, "weapon_display_name", "weapon", weapon_id, "Weapon is missing display_name.")
-		var family_id := _weapon_family(weapon)
-		if family_id == "":
+		if _weapon_family(weapon) == "":
 			_add_error(issues, "weapon_family", "weapon", weapon_id, "Weapon is missing family.")
 		if _weapon_damage(weapon) <= 0.0:
 			_add_error(issues, "weapon_damage", "weapon", weapon_id, "Weapon damage must be positive.")
@@ -241,7 +227,7 @@ static func _validate_effect_definitions(
 		if str(definition.get("title", "")).strip_edges() == "":
 			_add_error(issues, "%s_title" % category, category, definition_id, "Definition is missing title.")
 		var stack_policy := str(definition.get("stack_policy", ""))
-		if stack_policy not in SUPPORTED_STACK_POLICIES:
+		if stack_policy not in PortalMutationRuntimeRef.SUPPORTED_STACK_POLICIES:
 			_add_error(issues, "%s_stack_policy" % category, category, definition_id, "Unsupported stack_policy '%s'." % stack_policy)
 		if validate_mutation_fields:
 			var mutation_tier := str(definition.get("mutation_tier", ""))
@@ -260,7 +246,7 @@ static func _validate_effect_definitions(
 				continue
 			var effect: Dictionary = effect_variant
 			var effect_type := str(effect.get("type", ""))
-			if effect_type not in SUPPORTED_EFFECT_TYPES:
+			if effect_type not in PortalMutationRuntimeRef.SUPPORTED_EFFECT_TYPES:
 				_add_error(issues, "%s_effect_kind" % category, category, definition_id, "Unsupported effect type '%s'." % effect_type)
 		var tags_variant: Variant = definition.get("effect_tags", [])
 		if tags_variant is Array:
