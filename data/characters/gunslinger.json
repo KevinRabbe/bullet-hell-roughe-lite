@@ -34,15 +34,16 @@
       "id": "quickdraw",
       "effect": "temporary_stat_bonus",
       "trigger": "on_enemy_kill",
+      "required_source_weapon_tags": ["gun"],
       "modifiers": [
         {
           "stat_id": "attack_speed",
-          "amount": 0.12,
+          "amount": 0.05,
           "effect_tags": ["gun"]
         }
       ],
-      "duration": 2.0,
-      "max_stacks": 1,
+      "duration": 1.5,
+      "max_stacks": 3,
       "debug_label": "QUICKDRAW"
     }
   ],
@@ -51,7 +52,7 @@
     "fantasy_hook": "Fast, readable firearms make the Gunslinger the clean reference pick for players who want crisp ranged control.",
     "identity_summary": "The Gunslinger is the readable reference character: fast bullets, crisp target focus, and a straightforward ranged build path. He rewards steady combat flow and priority target control without leaning on exotic mechanics.",
     "passive_name": "Quickdraw",
-    "passive_summary": "Killing an enemy briefly boosts attack speed, helping the Gunslinger chain clean gun pressure through a wave.",
+    "passive_summary": "Gun kills build a short Quickdraw streak, stacking attack speed while the Gunslinger keeps clean ranged pressure.",
     "passive_icon_path": "res://assets/sprites/ui/passives/quickdraw.png",
     "playstyle_tags": ["gun", "precision", "ranged", "rapid"],
     "difficulty": "easy",
