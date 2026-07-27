@@ -86,7 +86,7 @@ payoff.
 | Ashen Knight | remain inside danger and convert absorbed pressure into force | every 25 post-armor damage endured opens Cinder Guard | heavy, melee, armor, hellfire | lower mobility | Cinder Guard now converts accumulated damage into one bounded armor and tagged-retaliation window |
 | Cinder Witch | spread and maintain burning zones | hellfire application scales its propagation with nearby enemy density | burn, ritual, wave, area | setup and positioning | Ember Field now turns crowded packs into stronger spreading burn networks without another kill-stack buff |
 | Void Monk | alternate disciplined movement and attack windows | movement charges tagged offense; every third matching shot grants repositioning speed | portal, precision, mobility, melee | loses value when rhythm breaks | Phase Discipline now creates a two-state movement/attack cadence instead of another kill-triggered speed buff |
-| Relic Seeker | convert exploration and pickups into unusual build opportunities | pickup/reward/portal resolution | relic, luck, precision, hybrid tags | inconsistent immediate combat power | make discovery affect choices or rewards without becoming raw permanent luck stacking |
+| Relic Seeker | convert exploration and pickups into unusual build opportunities | rewarding portal completions grant one additional deterministic item | relic, luck, precision, hybrid tags | inconsistent immediate combat power | Lucky Find now increases portal discovery quantity without becoming raw permanent luck stacking |
 
 ## Deferred Candidates
 

@@ -36,6 +36,8 @@ func _on_portal_event_completed(event_result: Dictionary = {}) -> void:
 	if log_reward_events:
 		print("Reward trigger: portal event completed.")
 	var reward_count: int = maxi(int(event_result.get("reward_count", 1)), 0)
+	if reward_count > 0 and player != null and player.has_method("get_portal_reward_count_bonus"):
+		reward_count += maxi(int(player.call("get_portal_reward_count_bonus")), 0)
 	var granted_names: Array[String] = []
 	for reward_index in range(reward_count):
 		var granted_name := _grant_random_item("portal_event", event_result, reward_index)

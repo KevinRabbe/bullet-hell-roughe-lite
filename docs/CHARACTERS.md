@@ -255,9 +255,9 @@ The complete mechanical overlap audit and return conditions live in
 
 **Identity:** portal tools, precision artifacts, cross-family relics, and temporary opportunity windows built around luck and range.
 
-**Passive — Lucky Find:** kills briefly grant luck and attack range, stacking up to three times.
+**Passive — Lucky Find:** each completed portal event that grants items yields one additional deterministic item reward.
 
-**Tradeoff:** lower immediate power than focused hunters and depends on takedowns to reveal the best openings.
+**Tradeoff:** lower immediate combat power than focused hunters, and the passive depends on reaching and completing portals.
 
 ---
 
