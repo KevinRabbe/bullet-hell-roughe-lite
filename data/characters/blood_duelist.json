@@ -3,7 +3,7 @@
   "display_name": "The Blood Duelist",
   "description": "Precise infernal skirmisher who accelerates through clean close-range takedowns.",
   "roster_order": 10,
-  "selectable": true,
+  "selectable": false,
   "visual_path": "res://assets/sprites/characters/blood_duelist/blood_duelist.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["blood_needle", "devil_fang", "sin_shuriken"],

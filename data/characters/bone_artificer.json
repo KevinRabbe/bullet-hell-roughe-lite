@@ -3,7 +3,7 @@
   "display_name": "The Bone Artificer",
   "description": "Infernal tinkerer who combines necromantic relics with precise constructed weapons.",
   "roster_order": 13,
-  "selectable": true,
+  "selectable": false,
   "visual_path": "res://assets/sprites/characters/bone_artificer/bone_artificer.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["harvester_eye_scepter", "harvester_grimoire", "harvester_lantern"],

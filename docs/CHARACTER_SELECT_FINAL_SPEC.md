@@ -75,7 +75,7 @@ Rules:
 
 The active roster is data-driven. Do not hardcode scene positions for named hunters.
 
-Current canon contains 16 selectable hunters; Sand Lord remains parked and non-selectable. The exact selectable count displayed by the screen comes from runtime character data.
+Current canon contains 10 selectable hunters. Six additional hunter concepts remain preserved as deferred and non-selectable; Sand Lord remains parked and non-selectable. The exact selectable count displayed by the screen comes from runtime character data.
 
 ---
 

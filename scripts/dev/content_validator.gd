@@ -4,7 +4,7 @@ extends RefCounted
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const PortalMutationRuntimeRef = preload("res://scripts/portal/portal_mutation_runtime.gd")
 
-const EXPECTED_SELECTABLE_HUNTERS := 16
+const EXPECTED_SELECTABLE_HUNTERS := 10
 const SUPPORTED_RARITIES: Array[String] = ["common", "rare", "epic", "legendary"]
 const REQUIRED_SET_THRESHOLDS: Array[int] = [2, 4, 6]
 const SUPPORTED_MUTATION_TIERS: Array[String] = ["minor", "major"]

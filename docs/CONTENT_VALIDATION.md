@@ -32,7 +32,7 @@ Warnings are printed but do not fail the command.
 ### Hunters
 
 - registry key matches embedded `id`;
-- exactly 16 selectable hunters;
+- exactly 10 selectable hunters;
 - unique non-negative roster order;
 - selectable hunter has display name and existing visual resource;
 - at least one starter weapon;

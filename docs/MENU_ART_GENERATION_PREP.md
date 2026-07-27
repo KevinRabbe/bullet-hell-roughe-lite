@@ -101,7 +101,7 @@ Generate in this order so the most visible shell improves first:
 1. `main_menu_background`
 2. `main_menu_logo`
 3. shared frame set (`menu_button_primary`, `menu_button_secondary`, `menu_step_chip`)
-4. character portraits for the six active roster entries
+4. character portraits for the 10 active roster entries
 5. `character_select_background`
 6. character-select frame trio
 7. `starting_weapon_background`

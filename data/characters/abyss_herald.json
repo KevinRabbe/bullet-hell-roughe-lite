@@ -3,7 +3,7 @@
   "display_name": "The Abyss Herald",
   "description": "Ceremonial void caller who turns resonant heavy weapons into steady battlefield authority.",
   "roster_order": 16,
-  "selectable": true,
+  "selectable": false,
   "visual_path": "res://assets/sprites/characters/abyss_herald/abyss_herald.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["rift_cannon", "rift_staff", "grand_sigil"],
