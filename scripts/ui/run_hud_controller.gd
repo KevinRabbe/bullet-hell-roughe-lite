@@ -133,6 +133,9 @@ func _refresh_state_panel(player_snapshot: Dictionary) -> void:
 	state_label.text = focus_label
 
 func _build_focus_label(player_snapshot: Dictionary) -> String:
+	var passive_label := _build_passive_state_label(player_snapshot)
+	if passive_label != "":
+		return passive_label
 	var counts_variant: Variant = player_snapshot.get("weapon_tag_counts", {})
 	if not (counts_variant is Dictionary):
 		return ""
@@ -151,6 +154,26 @@ func _build_focus_label(player_snapshot: Dictionary) -> String:
 	if best_tag == "" or best_count <= 0:
 		return ""
 	return "%s ×%d" % [best_tag.replace("_", " ").to_upper(), best_count]
+
+func _build_passive_state_label(player_snapshot: Dictionary) -> String:
+	var states_variant: Variant = player_snapshot.get("passive_runtime_states", [])
+	if not (states_variant is Array):
+		return ""
+	for state_variant in states_variant:
+		if not (state_variant is Dictionary):
+			continue
+		var state: Dictionary = state_variant
+		var label := str(state.get("label", "")).strip_edges().to_upper()
+		if label == "":
+			continue
+		if str(state.get("phase", "")) == "active":
+			return "%s %.1fs" % [label, maxf(float(state.get("remaining", 0.0)), 0.0)]
+		return "%s %d/%d" % [
+			label,
+			maxi(int(state.get("value", 0)), 0),
+			maxi(int(state.get("max_value", 1)), 1)
+		]
+	return ""
 
 func _apply_presentation() -> void:
 	for panel in [stats_panel, progress_panel, state_panel]:

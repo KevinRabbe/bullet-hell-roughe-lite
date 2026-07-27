@@ -3,6 +3,7 @@ extends RefCounted
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
 const DEFAULT_EFFECT := "temporary_stat_bonus"
+const THRESHOLD_EFFECT := "threshold_stat_bonus"
 
 var _rules: Array[Dictionary] = []
 var _state_by_rule_index: Dictionary = {}
@@ -18,7 +19,8 @@ func configure(character_data: Dictionary) -> void:
 		if not (rule_variant is Dictionary):
 			continue
 		var rule: Dictionary = (rule_variant as Dictionary).duplicate(true)
-		if str(rule.get("effect", DEFAULT_EFFECT)) != DEFAULT_EFFECT:
+		var effect_id := str(rule.get("effect", DEFAULT_EFFECT))
+		if effect_id != DEFAULT_EFFECT and effect_id != THRESHOLD_EFFECT:
 			continue
 		if str(rule.get("trigger", "")) == "":
 			continue
@@ -31,6 +33,7 @@ func configure(character_data: Dictionary) -> void:
 		var rule_index: int = _rules.size()
 		_rules.append(rule)
 		_state_by_rule_index[rule_index] = {
+			"charges": 0,
 			"stacks": 0,
 			"remaining": 0.0
 		}
@@ -49,6 +52,9 @@ func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 		if not (state_variant is Dictionary):
 			continue
 		var state: Dictionary = state_variant
+		if str(rule.get("effect", DEFAULT_EFFECT)) == THRESHOLD_EFFECT:
+			_trigger_threshold_rule(rule_index, rule, state, adjustments)
+			continue
 		var stacks: int = maxi(int(state.get("stacks", 0)), 0)
 		var max_stacks: int = maxi(int(rule.get("max_stacks", 1)), 1)
 		var duration: float = maxf(float(rule.get("duration", 0.0)), 0.0)
@@ -62,6 +68,63 @@ func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 		state["remaining"] = duration
 		_state_by_rule_index[rule_index] = state
 	return adjustments
+
+func get_state_snapshot() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for rule_index in range(_rules.size()):
+		var rule: Dictionary = _rules[rule_index]
+		if rule.get("hud_visible", false) != true:
+			continue
+		var state_variant: Variant = _state_by_rule_index.get(rule_index, {})
+		if not (state_variant is Dictionary):
+			continue
+		var state: Dictionary = state_variant
+		var effect_id := str(rule.get("effect", DEFAULT_EFFECT))
+		if effect_id == THRESHOLD_EFFECT:
+			var remaining := maxf(float(state.get("remaining", 0.0)), 0.0)
+			var active := int(state.get("stacks", 0)) > 0 and remaining > 0.0
+			entries.append({
+				"id": str(rule.get("id", "")),
+				"label": str(rule.get("active_label" if active else "resource_label", rule.get("debug_label", "Passive"))),
+				"value": 1 if active else maxi(int(state.get("charges", 0)), 0),
+				"max_value": 1 if active else maxi(int(rule.get("threshold", 1)), 1),
+				"remaining": remaining,
+				"phase": "active" if active else "charging"
+			})
+			continue
+		var stacks := maxi(int(state.get("stacks", 0)), 0)
+		if stacks <= 0:
+			continue
+		entries.append({
+			"id": str(rule.get("id", "")),
+			"label": str(rule.get("debug_label", "Passive")),
+			"value": stacks,
+			"max_value": maxi(int(rule.get("max_stacks", 1)), 1),
+			"remaining": maxf(float(state.get("remaining", 0.0)), 0.0),
+			"phase": "active"
+		})
+	return entries
+
+func _trigger_threshold_rule(
+	rule_index: int,
+	rule: Dictionary,
+	state: Dictionary,
+	adjustments: Array[Dictionary]
+) -> void:
+	var threshold := maxi(int(rule.get("threshold", 1)), 1)
+	var charges := mini(maxi(int(state.get("charges", 0)), 0) + 1, threshold)
+	if charges < threshold:
+		state["charges"] = charges
+		_state_by_rule_index[rule_index] = state
+		return
+	var already_active := int(state.get("stacks", 0)) > 0 and float(state.get("remaining", 0.0)) > 0.0
+	if not already_active:
+		for modifier in _get_rule_modifiers(rule):
+			adjustments.append(_build_adjustment(rule, modifier, float(modifier.get("amount", 0.0))))
+	state["charges"] = 0
+	state["stacks"] = 1
+	state["remaining"] = maxf(float(rule.get("duration", 0.0)), 0.0)
+	_state_by_rule_index[rule_index] = state
 
 func _matches_trigger_context(rule: Dictionary, context: Dictionary) -> bool:
 	var required_tags := WeaponTagRuntimeRef.resolve_effect_tags(rule.get("required_source_weapon_tags", []))

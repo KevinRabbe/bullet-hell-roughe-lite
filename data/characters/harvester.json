@@ -25,18 +25,21 @@
   "passive_runtime_rules": [
     {
       "id": "soul_harvest",
-      "effect": "temporary_stat_bonus",
+      "effect": "threshold_stat_bonus",
       "trigger": "on_enemy_kill",
       "modifiers": [
         {
           "stat_id": "damage",
-          "amount": 0.04,
+          "amount": 0.2,
           "effect_tags": ["necromancy", "curse"]
         }
       ],
       "duration": 5.0,
-      "max_stacks": 5,
-      "debug_label": "SOUL HARVEST"
+      "threshold": 5,
+      "hud_visible": true,
+      "resource_label": "SOULS",
+      "active_label": "SOUL SURGE",
+      "debug_label": "SOUL SURGE"
     }
   ],
   "presentation": {
@@ -44,7 +47,7 @@
     "fantasy_hook": "Heavier necromantic pressure that grows stronger the more the wave feeds the harvest.",
     "identity_summary": "The Harvester mixes reaping blades and grim necromantic shots into a heavier, more methodical offense. He wants kills to keep momentum up and feels strongest when waves start feeding the harvest.",
     "passive_name": "Soul Harvest",
-    "passive_summary": "Enemy kills build temporary soul stacks that raise damage, rewarding clean kill chains and sustained pressure.",
+    "passive_summary": "Enemy kills fill a five-soul harvest. Completing it unleashes a short Soul Surge that empowers necromancy and curse weapons.",
     "passive_icon_path": "res://assets/sprites/ui/passives/soul_harvest.png",
     "playstyle_tags": ["necromancy", "curse", "heavy", "snowball"],
     "difficulty": "medium",
