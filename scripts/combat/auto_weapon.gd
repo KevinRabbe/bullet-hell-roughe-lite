@@ -177,6 +177,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		projectile.call("set_shooter", owner_player)
 	if projectile.has_method("set_source_context"):
 		projectile.call("set_source_context", weapon_id, slot_index)
+	if orbit_weapon_hud != null and orbit_weapon_hud.has_method("play_slot_attack_feedback"):
+		orbit_weapon_hud.call("play_slot_attack_feedback", slot_index, weapon_id)
 	if owner_player.has_method("notify_weapon_fired"):
 		owner_player.call("notify_weapon_fired", weapon_id, slot_index)
 	var total_damage_multiplier := 1.0
