@@ -3,6 +3,9 @@ extends Node2D
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 
+const RELEASE_FLASH_COLOR := Color(1.0, 0.46, 0.16, 0.92)
+const RELEASE_FLASH_BONE_COLOR := Color(1.0, 0.88, 0.66, 0.94)
+
 @export var player_path: NodePath
 @export var weapon_loadout_path: NodePath
 @export var orbit_radius: float = 86.0
@@ -182,11 +185,12 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 		scale_multiplier = 1.10
 
 	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var aim_direction := get_slot_aim_direction(slot_index)
 	if not reduced_motion:
-		var aim_direction := get_slot_aim_direction(slot_index)
 		sprite.position = base_position - (aim_direction * recoil_distance)
 		sprite.scale = base_scale * scale_multiplier
 	sprite.modulate = base_modulate.lightened(0.24)
+	_spawn_release_flash(base_position, aim_direction, tags, reduced_motion)
 
 	var tween := sprite.create_tween()
 	tween.set_parallel(true)
@@ -196,6 +200,45 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 		tween.tween_property(sprite, "scale", base_scale, recovery_duration)
 	tween.tween_property(sprite, "modulate", base_modulate, recovery_duration)
 	slot_attack_tweens[slot_index] = tween
+
+func _spawn_release_flash(
+	base_position: Vector2,
+	aim_direction: Vector2,
+	tags: Array[String],
+	reduced_motion: bool
+) -> void:
+	var flash := Polygon2D.new()
+	flash.polygon = PackedVector2Array([
+		Vector2(-3.0, -3.0),
+		Vector2(15.0, 0.0),
+		Vector2(-3.0, 3.0),
+		Vector2(1.0, 0.0)
+	])
+	flash.position = base_position + (aim_direction * 16.0)
+	flash.rotation = aim_direction.angle()
+	flash.z_index = 2
+	flash.color = RELEASE_FLASH_BONE_COLOR if "gun" in tags or "precision" in tags else RELEASE_FLASH_COLOR
+	var flash_scale := 1.0
+	if "rapid" in tags:
+		flash_scale = 0.72
+	elif "heavy" in tags:
+		flash_scale = 1.35
+	elif "melee" in tags or "thrown" in tags:
+		flash_scale = 1.12
+	flash.scale = Vector2.ONE * flash_scale
+	add_child(flash)
+
+	var duration := 0.05 if reduced_motion else 0.09
+	var tween := flash.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(flash, "scale", flash.scale * 1.45, duration)
+	tween.tween_property(flash, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(flash):
+			flash.queue_free()
+	)
 
 func _load_weapon_icon(weapon_id: String) -> Texture2D:
 	var weapon_data := _load_weapon_data(weapon_id)
