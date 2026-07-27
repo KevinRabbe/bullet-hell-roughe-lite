@@ -17,40 +17,36 @@
   ],
   "preferred_weapon_family": "hellfire",
   "shop_weapon_family_bias": 0.2,
-  "passive_runtime_rules": [
-    {
-      "id": "ember_trance",
-      "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
-      "modifiers": [
-        {
-          "stat_id": "attack_speed",
-          "amount": 0.04
-        },
-        {
-          "stat_id": "burn_damage",
-          "amount": 0.06
-        }
-      ],
-      "duration": 4.0,
-      "max_stacks": 3,
-      "debug_label": "EMBER TRANCE"
+  "status_power_multipliers": {
+    "hellfire_burn": 1.15
+  },
+  "status_propagation_rules": {
+    "hellfire_burn": {
+      "radius": 90.0,
+      "chance": 0.25,
+      "duration_scale": 0.8,
+      "max_targets": 1,
+      "pressure_radius": 180.0,
+      "pressure_target_limit": 6,
+      "spread_chance_per_nearby_enemy": 0.06,
+      "spread_radius_per_nearby_enemy": 8.0,
+      "spread_max_targets_per_nearby_enemy": 0.25
     }
-  ],
+  },
   "presentation": {
     "headline": "Cinder spellbinder who keeps ritual fire moving through the hunt.",
     "fantasy_hook": "A crooked witch hood, ember-red braid, floating candles, and a sigil wand make her flamecraft instantly readable.",
-    "identity_summary": "The Cinder Witch blends hellfire relics with ritual tools. Each takedown deepens her trance, briefly accelerating attacks and strengthening burn pressure.",
-    "passive_name": "Ember Trance",
-    "passive_summary": "Enemy kills briefly grant attack speed and burn damage, stacking up to three times while the ritual flame stays fed.",
+    "identity_summary": "The Cinder Witch blends hellfire relics with ritual tools, spreading stronger flame through crowded enemy groups instead of relying on direct kill spikes.",
+    "passive_name": "Ember Field",
+    "passive_summary": "Her hellfire burns hit harder and become more likely to spread farther across nearby enemies as the battlefield grows crowded.",
     "passive_icon_path": "res://assets/sprites/ui/passives/ember_trance.png",
     "playstyle_tags": ["hellfire", "ritual", "burn", "rapid"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Infernal Sigil",
     "arsenal_label": "Cinder Arsenal",
     "arsenal_preview": ["Infernal Sigil", "Ritual Candles", "Ash Censer", "Cursed Bell", "Hell Sphere", "Demonic Scepter"],
-    "strengths": ["Fast escalating burn pressure", "Strong ritual and hellfire overlap", "Readable ranged cadence"],
-    "tradeoffs": ["Needs kills to maintain the trance", "Less durable than armored hunters"]
+    "strengths": ["Burns propagate through dense groups", "Strong ritual and hellfire overlap", "Rewards deliberate enemy clustering"],
+    "tradeoffs": ["Spread loses value against isolated targets", "Less durable than armored hunters"]
   },
-  "passive_tags": ["ember_trance", "cinder_witch", "burn_cadence"]
+  "passive_tags": ["ember_field", "cinder_witch", "burn_propagation"]
 }
