@@ -41,20 +41,20 @@
 - Devil: active.
 - Ritualist: active #6, uses `ritualCaracter.png`.
 - Ashen Knight: active.
-- Chain Warden: active.
-- Hex Alchemist: active.
-- Blood Duelist: active.
-- Ember Vanguard: active.
 - Void Monk: active.
-- Bone Artificer: active.
 - Cinder Witch: active.
 - Relic Seeker: active.
-- Abyss Herald: active.
+- Chain Warden: deferred, preserved, non-selectable.
+- Hex Alchemist: deferred, preserved, non-selectable.
+- Blood Duelist: deferred, preserved, non-selectable.
+- Ember Vanguard: deferred, preserved, non-selectable.
+- Bone Artificer: deferred, preserved, non-selectable.
+- Abyss Herald: deferred, preserved, non-selectable.
 - Sand Lord: parked, not counted, non-selectable.
 
 # Current Progression Direction
-- The active roster contains 16 selectable hunters built from a shared visual foundation.
-- The next release-quality target is 10 mechanically complete hunters; the remaining six current hunters are preserved as deferred candidates until they pass the identity gate.
+- The active roster contains 10 selectable release-quality target hunters built from a shared visual foundation.
+- Six additional current hunters are preserved as deferred non-selectable candidates until they pass the identity gate.
 - Families preserve hunter identity; canonical weapon tags provide cross-family build synergy.
 - Portal Mutation is an optional run-long risk/reward build distortion.
 - Gate Beast is the Wave 5 milestone guardian.

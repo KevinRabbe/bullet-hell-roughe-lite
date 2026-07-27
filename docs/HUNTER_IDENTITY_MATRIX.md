@@ -4,12 +4,10 @@
 
 This document separates runtime availability from release-quality readiness.
 
-The repository currently contains 16 selectable hunters. The next release
-quality target is 10 mechanically complete hunters. The other six remain
-preserved as deferred candidates until their mechanics earn a distinct place.
-
-This matrix is a planning contract. It does not change `selectable` values by
-itself.
+The repository contains 16 preserved hunter concepts. The release-quality
+runtime roster contains 10 selectable hunters. The other six remain preserved
+as deferred, non-selectable candidates until their mechanics earn a distinct
+place.
 
 ## Identity Gate
 
@@ -109,13 +107,11 @@ explicit cleanup task proves them obsolete.
 
 ## Runtime Status Rule
 
-Until a dedicated roster-state PR is approved:
-
-- all 16 currently selectable hunters remain runtime-active;
-- Character Select behavior remains unchanged;
-- release-facing claims should describe the 10-hunter quality target, not claim
-  all 16 are mechanically final;
-- no hunter is silently disabled as part of documentation work.
+- the 10 release-quality target hunters remain runtime-active;
+- the six deferred candidates remain preserved but non-selectable;
+- Character Select derives the visible roster from character data;
+- deferred hunters return only through a dedicated identity-completion task;
+- no deferred hunter data or art is removed by the roster-state gate.
 
 ## Completion Review
 

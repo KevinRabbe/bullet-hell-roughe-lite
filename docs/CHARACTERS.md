@@ -1,4 +1,4 @@
-# Active Character Roster
+# Character Roster
 
 This document tracks the current shipped roster identity, starter baseline, and menu-facing role of each selectable hunter.
 
@@ -15,9 +15,8 @@ Character JSON is authoritative for runtime values. When roster data changes, up
 
 ## Roster Rules
 
-- The active roster currently contains **16 selectable hunters**.
-- The next release-quality target is **10 mechanically complete hunters**.
-- Runtime availability and release-quality readiness are separate states.
+- The active roster currently contains **10 selectable hunters**.
+- Six additional hunter concepts remain preserved as deferred and non-selectable.
 - Roster order is data-driven through `roster_order`.
 - Sand Lord remains parked and non-selectable.
 - Character Select reserves 30 visible slots in a fixed 5 x 6 grid.
@@ -29,8 +28,8 @@ Character JSON is authoritative for runtime values. When roster data changes, up
 
 ## Release-Quality Prioritization
 
-The current 16 selectable hunters remain available until a dedicated roster
-state change is approved. Documentation work must not silently disable them.
+The dedicated release-roster gate keeps the prioritized 10 hunters selectable
+and parks the six overlapping candidates without deleting their data or art.
 
 The prioritized 10-hunter quality target is:
 
@@ -45,7 +44,7 @@ The prioritized 10-hunter quality target is:
 9. Void Monk
 10. Relic Seeker
 
-Preserved deferred candidates:
+Preserved, non-selectable deferred candidates:
 
 - Chain Warden
 - Hex Alchemist
@@ -57,26 +56,26 @@ Preserved deferred candidates:
 The complete mechanical overlap audit and return conditions live in
 `docs/HUNTER_IDENTITY_MATRIX.md`.
 
-## Current Order
+## Content Order
 
-| # | Hunter | Preferred family | Valid starters | Passive |
-|---:|---|---|---|---|
-| 1 | Gunslinger | `gunslinger` | Heavy Pistol, SMG, Shotgun | Quickdraw |
-| 2 | Harvester | `harvester` | Harvester Scythe, Soul Lantern, Grave Grimoire | Soul Harvest |
-| 3 | Demon Lord | `hellfire` | Cursed Lantern, Hellfire Orb, Demonic Crown | Infernal Tribute |
-| 4 | Riftwalker | `portal` | Void Revolver, Rift Bow, Rift Cannon | Phase Echo |
-| 5 | Devil | `devil` | Devil Fang, Sin Shuriken, Blood Chakram | Devil's Bargain |
-| 6 | Ritualist | `ritual` | Blood Needle, Ritual Candles, Cursed Bell | Blood Rite |
-| 7 | Ashen Knight | `hellfire` | Pact Blade, Hell Claw, Infernal Sigil | Cinder Guard |
-| 8 | Chain Warden | `devil` | Chain Crescent, Blood Chakram, Sin Shuriken | Unbroken Pursuit |
-| 9 | Hex Alchemist | `ritual` | Ash Censer, Hex Totem, Cursed Bell | Volatile Mixture |
-| 10 | Blood Duelist | `devil` | Blood Needle, Devil Fang, Sin Shuriken | Red Tempo |
-| 11 | Ember Vanguard | `hellfire` | Cursed Lantern, Hellfire Orb, Hell Sphere | Forward Blaze |
-| 12 | Void Monk | `portal` | Rift Staff, Void Revolver, Rift Bow | Phase Discipline |
-| 13 | Bone Artificer | `harvester` | Eye Scepter, Grave Grimoire, Soul Lantern | Salvage Matrix |
-| 14 | Cinder Witch | `hellfire` | Infernal Sigil, Ritual Candles, Ash Censer | Ember Trance |
-| 15 | Relic Seeker | `portal` | Rift Artifact, Void Revolver, Rift Bow | Lucky Find |
-| 16 | Abyss Herald | `portal` | Rift Cannon, Rift Staff, Grand Sigil | Deep Resonance |
+| # | Hunter | Status | Preferred family | Valid starters | Passive |
+|---:|---|---|---|---|---|
+| 1 | Gunslinger | Selectable | `gunslinger` | Heavy Pistol, SMG, Shotgun | Quickdraw |
+| 2 | Harvester | Selectable | `harvester` | Harvester Scythe, Soul Lantern, Grave Grimoire | Soul Harvest |
+| 3 | Demon Lord | Selectable | `hellfire` | Cursed Lantern, Hellfire Orb, Demonic Crown | Infernal Tribute |
+| 4 | Riftwalker | Selectable | `portal` | Void Revolver, Rift Bow, Rift Cannon | Phase Echo |
+| 5 | Devil | Selectable | `devil` | Devil Fang, Sin Shuriken, Blood Chakram | Devil's Bargain |
+| 6 | Ritualist | Selectable | `ritual` | Blood Needle, Ritual Candles, Cursed Bell | Blood Rite |
+| 7 | Ashen Knight | Selectable | `hellfire` | Pact Blade, Hell Claw, Infernal Sigil | Cinder Guard |
+| 8 | Chain Warden | Deferred | `devil` | Chain Crescent, Blood Chakram, Sin Shuriken | Unbroken Pursuit |
+| 9 | Hex Alchemist | Deferred | `ritual` | Ash Censer, Hex Totem, Cursed Bell | Volatile Mixture |
+| 10 | Blood Duelist | Deferred | `devil` | Blood Needle, Devil Fang, Sin Shuriken | Red Tempo |
+| 11 | Ember Vanguard | Deferred | `hellfire` | Cursed Lantern, Hellfire Orb, Hell Sphere | Forward Blaze |
+| 12 | Void Monk | Selectable | `portal` | Rift Staff, Void Revolver, Rift Bow | Phase Discipline |
+| 13 | Bone Artificer | Deferred | `harvester` | Eye Scepter, Grave Grimoire, Soul Lantern | Salvage Matrix |
+| 14 | Cinder Witch | Selectable | `hellfire` | Infernal Sigil, Ritual Candles, Ash Censer | Ember Trance |
+| 15 | Relic Seeker | Selectable | `portal` | Rift Artifact, Void Revolver, Rift Bow | Lucky Find |
+| 16 | Abyss Herald | Deferred | `portal` | Rift Cannon, Rift Staff, Grand Sigil | Deep Resonance |
 
 ---
 
@@ -280,7 +279,7 @@ The complete mechanical overlap audit and return conditions live in
 
 - Status: parked / non-selectable.
 - Keep out of active menu flow.
-- Do not count toward the 16 active hunters.
+- Do not count toward the 10 active hunters.
 - Do not revive accidentally through placeholder wiring.
 - Revisit only through a dedicated future character decision.
 

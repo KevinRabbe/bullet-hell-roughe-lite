@@ -27,7 +27,7 @@ Main Menu
 
 ## Hunters
 
-The current active roster contains **16 selectable hunters** built from a shared cursed-survivor visual and runtime foundation.
+The current active roster contains **10 selectable hunters** built from a shared cursed-survivor visual and runtime foundation. Six additional hunter concepts remain preserved as deferred, non-selectable candidates.
 
 Character Select reserves a fixed **30-slot, 5 x 6 roster** so the roster can expand without changing the core selection layout.
 
