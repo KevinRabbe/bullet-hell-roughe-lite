@@ -327,6 +327,11 @@ func get_status_stack_count(status_id: String) -> int:
 		return 0
 	return _status_runtime.get_status_stack_count(status_id)
 
+func consume_status(status_id: String) -> int:
+	if _status_runtime == null:
+		return 0
+	return _status_runtime.consume_status(status_id)
+
 func _spawn_enemy_hit_flash() -> void:
 	EnemyMotionVisualRuntime.spawn_hit_flash(visual, self)
 

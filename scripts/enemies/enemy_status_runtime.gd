@@ -71,6 +71,12 @@ func get_status_stack_count(status_id: String) -> int:
 		return 0
 	return maxi(int((status_variant as Dictionary).get("stacks", 0)), 0)
 
+func consume_status(status_id: String) -> int:
+	var consumed_stacks := get_status_stack_count(status_id)
+	if consumed_stacks > 0:
+		_active_statuses.erase(status_id)
+	return consumed_stacks
+
 static func compute_status_power_multiplier(source: Node, weapon_data: WeaponData) -> float:
 	var status_power_multiplier := 1.0
 	if source != null and source.has_method("get_status_power_multiplier"):
