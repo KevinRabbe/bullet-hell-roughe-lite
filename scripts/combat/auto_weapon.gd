@@ -177,6 +177,8 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		projectile.call("set_shooter", owner_player)
 	if projectile.has_method("set_source_context"):
 		projectile.call("set_source_context", weapon_id, slot_index)
+	if owner_player.has_method("notify_weapon_fired"):
+		owner_player.call("notify_weapon_fired", weapon_id, slot_index)
 	var total_damage_multiplier := 1.0
 	if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
 		total_damage_multiplier += float(set_bonus_manager.call("get_damage_multiplier_bonus"))
