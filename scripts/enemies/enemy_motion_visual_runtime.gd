@@ -10,6 +10,8 @@ const COLOR_DEATH := Color(1.0, 0.42, 0.18, 0.0)
 const COLOR_EMBER := Color(0.94, 0.42, 0.10, 0.9)
 const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
+const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
+const COLOR_RANGED_RELEASE_HIGH_CONTRAST := Color(1.0, 0.88, 0.62, 1.0)
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -92,6 +94,45 @@ static func spawn_hit_flash(visual: CanvasItem, owner: Node) -> void:
 	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		tween.tween_property(visual, "modulate", Color(1.12, 0.82, 0.62, 1.0), 0.035)
 	tween.tween_property(visual, "modulate", COLOR_NEUTRAL, 0.075)
+
+static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> void:
+	if owner == null or not is_instance_valid(owner) or owner.get_tree() == null:
+		return
+	var scene := owner.get_tree().current_scene
+	if scene == null:
+		return
+	var normalized_direction := direction.normalized()
+	if normalized_direction.length_squared() <= 0.0001:
+		normalized_direction = Vector2.RIGHT
+	var flash := Polygon2D.new()
+	flash.polygon = PackedVector2Array([
+		Vector2(-4.0, -5.0),
+		Vector2(22.0, 0.0),
+		Vector2(-4.0, 5.0),
+		Vector2(2.0, 0.0)
+	])
+	flash.global_position = owner.global_position + (normalized_direction * 20.0)
+	flash.global_rotation = normalized_direction.angle()
+	flash.z_index = owner.z_index + 2
+	flash.color = (
+		COLOR_RANGED_RELEASE_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_RANGED_RELEASE
+	)
+	scene.add_child(flash)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.06 if reduced_motion else 0.11
+	var tween := flash.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(flash, "scale", Vector2(1.55, 1.18), duration)
+	tween.tween_property(flash, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(flash):
+			flash.queue_free()
+	)
 
 static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 	if owner.get_tree() == null or owner.get_tree().current_scene == null:
