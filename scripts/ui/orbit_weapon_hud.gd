@@ -1,5 +1,8 @@
 extends Node2D
 
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+
 @export var player_path: NodePath
 @export var weapon_loadout_path: NodePath
 @export var orbit_radius: float = 86.0
@@ -14,6 +17,9 @@ var slot_base_positions: Array[Vector2] = []
 var slot_aim_directions: Array[Vector2] = []
 var slot_forward_signs: Array[float] = []
 var slot_projectile_rotation_offsets: Array[float] = []
+var slot_base_scales: Array[Vector2] = []
+var slot_base_modulates: Array[Color] = []
+var slot_attack_tweens: Array[Tween] = []
 var _weapon_data_cache: Dictionary = {}
 
 func _ready() -> void:
@@ -91,6 +97,9 @@ func _refresh_orbit() -> void:
 		slot_aim_directions.append(_fallback_aim_direction())
 		slot_forward_signs.append(forward_sign)
 		slot_projectile_rotation_offsets.append(float(icon_entries[i].get("projectile_rotation_offset", default_projectile_rotation_offset)))
+		slot_base_scales.append(sprite.scale)
+		slot_base_modulates.append(sprite.modulate)
+		slot_attack_tweens.append(null)
 
 func get_slot_count() -> int:
 	return slot_sprites.size()
@@ -138,6 +147,56 @@ func get_slot_projectile_rotation_offset(slot_index: int) -> float:
 		return default_projectile_rotation_offset
 	return slot_projectile_rotation_offsets[slot_index]
 
+func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
+	if slot_index < 0 or slot_index >= slot_sprites.size():
+		return
+	var sprite := slot_sprites[slot_index]
+	if sprite == null or not is_instance_valid(sprite):
+		return
+	var current_tween := slot_attack_tweens[slot_index]
+	if current_tween != null and current_tween.is_valid():
+		current_tween.kill()
+	var base_position := slot_base_positions[slot_index]
+	var base_scale := slot_base_scales[slot_index]
+	var base_modulate := slot_base_modulates[slot_index]
+	sprite.position = base_position
+	sprite.scale = base_scale
+	sprite.modulate = base_modulate
+
+	var weapon_data := _load_weapon_data(weapon_id)
+	var tags := WeaponTagRuntimeRef.weapon_tags(weapon_data)
+	var recoil_distance := 6.0
+	var recovery_duration := 0.10
+	var scale_multiplier := 1.08
+	if "rapid" in tags:
+		recoil_distance = 4.0
+		recovery_duration = 0.07
+		scale_multiplier = 1.05
+	elif "heavy" in tags:
+		recoil_distance = 10.0
+		recovery_duration = 0.14
+		scale_multiplier = 1.12
+	elif "melee" in tags or "thrown" in tags:
+		recoil_distance = 7.0
+		recovery_duration = 0.11
+		scale_multiplier = 1.10
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	if not reduced_motion:
+		var aim_direction := get_slot_aim_direction(slot_index)
+		sprite.position = base_position - (aim_direction * recoil_distance)
+		sprite.scale = base_scale * scale_multiplier
+	sprite.modulate = base_modulate.lightened(0.24)
+
+	var tween := sprite.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(sprite, "position", base_position, recovery_duration)
+		tween.tween_property(sprite, "scale", base_scale, recovery_duration)
+	tween.tween_property(sprite, "modulate", base_modulate, recovery_duration)
+	slot_attack_tweens[slot_index] = tween
+
 func _load_weapon_icon(weapon_id: String) -> Texture2D:
 	var weapon_data := _load_weapon_data(weapon_id)
 	if weapon_data == null:
@@ -167,6 +226,9 @@ func _rarity_color(rarity: String) -> Color:
 			return Color(1.0, 1.0, 1.0, 1.0)
 
 func _clear_sprites() -> void:
+	for tween in slot_attack_tweens:
+		if tween != null and tween.is_valid():
+			tween.kill()
 	for sprite in slot_sprites:
 		if sprite != null and is_instance_valid(sprite):
 			sprite.queue_free()
@@ -175,6 +237,9 @@ func _clear_sprites() -> void:
 	slot_aim_directions.clear()
 	slot_forward_signs.clear()
 	slot_projectile_rotation_offsets.clear()
+	slot_base_scales.clear()
+	slot_base_modulates.clear()
+	slot_attack_tweens.clear()
 
 func _fallback_aim_direction() -> Vector2:
 	if player != null and is_instance_valid(player):
