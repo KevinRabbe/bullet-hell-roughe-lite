@@ -95,7 +95,7 @@ The canonical product roadmap lives in `docs/PRODUCT_ROADMAP.md`.
 
 The detailed V3 execution plan lives in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
 
-The completed V2 presentation pass remains documented in `docs/V2_PRESENTATION_VALUE_ROADMAP.md`, with the capture routes in `docs/V2_CAPTURE_CHECKLIST.md`.
+The completed V2 presentation pass is preserved in Git history. Current work is governed by the canonical product and V3 documents.
 
 ## Reusable-foundation direction
 
@@ -133,9 +133,11 @@ The repository favors small, scoped changes and deterministic/data-driven runtim
 Important project contracts live in:
 
 - `AGENTS.md`
+- `docs/PRODUCT_PROMISE.md`
 - `docs/PRODUCT_ROADMAP.md`
 - `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`
-- `docs/V2_CAPTURE_CHECKLIST.md`
+- `docs/HUNTER_IDENTITY_MATRIX.md`
+- `docs/GLOBAL_WEAPON_VISUAL_CONTRACT.md`
 - `docs/REUSABLE_GAME_FOUNDATIONS.md`
 - `docs/UI_SYSTEM_SPEC.md`
 - `docs/ART_STYLE_RULES.md`

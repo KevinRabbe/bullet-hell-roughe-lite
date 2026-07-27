@@ -17,13 +17,12 @@
 - Do not turn project foundations into a generic framework, plugin architecture, public API, ECS rewrite, or broad scripting language without an explicit product requirement.
 
 # Product Milestone Direction
-- The current product north star is **V2 — Steam Page / Public Reveal Candidate** as defined in `docs/PRODUCT_ROADMAP.md`.
-- V1 foundation work is enabling work for that goal, not an open-ended architecture phase.
-- After remaining V1 foundations are qualified, prioritize work by how much it closes a concrete V2 gap in the real representative 10-wave run.
-- V2 means a stranger can understand Hellshot Frontier's identity, loop, and appeal from real gameplay/screenshots without being asked to ignore obvious prototype presentation.
-- Prefer capture-ready combat, arena presentation, build differentiation, portal/boss/Ascension readability, coherent UI/audio/VFX, and removal of visible prototype presentation over random polish.
-- Defer work that neither unblocks V1 foundations, closes a V2 gap, fixes a development blocker, nor establishes a shared system demanded by concrete V2 duplication.
-- V3 demo/external-playtest and V4 Early Access requirements should not drive current architecture unless they also materially improve V2.
+- The current product north star is **V3 — Public Demo / External Playtest Candidate** as defined in `docs/PRODUCT_ROADMAP.md`.
+- The product promise and release-quality gates are defined in `docs/PRODUCT_PROMISE.md`.
+- Prioritize stranger-safe input, onboarding, flow robustness, accessibility qualification, deterministic playtest reporting, and one convincing representative 10-wave run.
+- Preserve the approved presentation baseline while improving combat readability, build differentiation, portal/boss/Ascension clarity, coherent UI/VFX, and removal of visible prototype presentation.
+- Defer work that neither closes a V3 gap, strengthens the product promise, fixes a verified blocker, nor establishes a shared system demanded by concrete duplication.
+- V4 Early Access requirements should not drive current architecture unless they also materially improve the representative run or approved product foundation.
 
 # Reusable Foundation Direction
 - The shared hunter runtime/visual base is the reference pattern: one stable foundation, many bounded variants.
@@ -55,6 +54,7 @@
 
 # Current Progression Direction
 - The active roster contains 16 selectable hunters built from a shared visual foundation.
+- The next release-quality target is 10 mechanically complete hunters; the remaining six current hunters are preserved as deferred candidates until they pass the identity gate.
 - Families preserve hunter identity; canonical weapon tags provide cross-family build synergy.
 - Portal Mutation is an optional run-long risk/reward build distortion.
 - Gate Beast is the Wave 5 milestone guardian.
