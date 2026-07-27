@@ -154,6 +154,10 @@ func _try_ranged_damage_player() -> void:
 	if projectile != null:
 		if projectile.has_method("set_source_enemy"):
 			projectile.call("set_source_enemy", self)
+		EnemyMotionVisualRuntime.spawn_ranged_release_feedback(
+			self,
+			target.global_position - global_position
+		)
 		var projectile_visual := projectile.get_node_or_null("Visual")
 		if projectile_visual is Sprite2D:
 			var projectile_sprite := projectile_visual as Sprite2D
