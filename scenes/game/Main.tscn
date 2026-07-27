@@ -164,7 +164,7 @@ offset_top = 24.0
 offset_right = 416.0
 offset_bottom = 96.0
 autowrap_mode = 2
-text = "Wave complete. Reward/Shop placeholder."
+text = "Wave complete. The next push is ready."
 
 [node name="ContinueButton" type="Button" parent="WaveIntermission/Panel"]
 offset_left = 130.0
@@ -195,7 +195,7 @@ offset_left = 30.0
 offset_top = 20.0
 offset_right = 460.0
 offset_bottom = 60.0
-text = "Shop Placeholder - Pick one"
+text = "Shop - Pick one"
 
 [node name="Offer1" type="Button" parent="ShopUI/Panel"]
 offset_left = 40.0
