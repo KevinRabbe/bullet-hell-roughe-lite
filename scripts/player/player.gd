@@ -70,9 +70,13 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
+	var previous_position := global_position
 	var input_direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	velocity = input_direction * get_movement_speed_value()
 	move_and_slide()
+	var distance_moved := previous_position.distance_to(global_position)
+	if distance_moved > 0.0:
+		_apply_passive_runtime_trigger("on_distance_moved", {"trigger_progress": distance_moved})
 	_process_hp_regen(delta)
 	_process_passive_status_rules(delta)
 	_process_passive_runtime(delta)

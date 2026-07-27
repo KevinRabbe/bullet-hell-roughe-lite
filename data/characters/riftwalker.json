@@ -28,11 +28,12 @@
     {
       "id": "phase_echo",
       "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
+      "trigger": "on_distance_moved",
+      "trigger_progress_threshold": 260.0,
       "modifiers": [
         {
           "stat_id": "movement_speed",
-          "amount": 0.08
+          "amount": 18.0
         },
         {
           "stat_id": "attack_speed",
@@ -40,17 +41,18 @@
           "effect_tags": ["portal"]
         }
       ],
-      "duration": 3.0,
-      "max_stacks": 3,
+      "duration": 2.5,
+      "max_stacks": 2,
+      "hud_visible": true,
       "debug_label": "PHASE ECHO"
     }
   ],
   "presentation": {
-    "headline": "Dimensional skirmisher who converts kills into phase momentum.",
+    "headline": "Dimensional skirmisher who converts movement into phase momentum.",
     "fantasy_hook": "Void movement and unstable spacing make the Riftwalker feel slippery without turning him into pure chaos yet.",
     "identity_summary": "The Riftwalker bends ranged combat around void movement, unstable spacing, and portal-flavored tempo. He stays readable now, but already hints at future higher-risk dimension play.",
     "passive_name": "Phase Echo",
-    "passive_summary": "Enemy kills grant a brief burst of movement speed and phase tempo, helping the Riftwalker reposition and keep pressure alive.",
+    "passive_summary": "Crossing enough ground triggers a brief Phase Echo that increases movement speed and accelerates portal weapons.",
     "passive_icon_path": "res://assets/sprites/ui/passives/phase_echo.png",
     "playstyle_tags": ["portal", "mobility", "precision", "dimensional"],
     "difficulty": "medium",

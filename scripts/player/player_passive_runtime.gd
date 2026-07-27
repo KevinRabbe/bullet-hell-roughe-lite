@@ -34,6 +34,7 @@ func configure(character_data: Dictionary) -> void:
 		_rules.append(rule)
 		_state_by_rule_index[rule_index] = {
 			"charges": 0,
+			"trigger_progress": 0.0,
 			"stacks": 0,
 			"remaining": 0.0
 		}
@@ -52,6 +53,9 @@ func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 		if not (state_variant is Dictionary):
 			continue
 		var state: Dictionary = state_variant
+		if not _advance_trigger_progress(rule, state, context):
+			_state_by_rule_index[rule_index] = state
+			continue
 		if str(rule.get("effect", DEFAULT_EFFECT)) == THRESHOLD_EFFECT:
 			_trigger_threshold_rule(rule_index, rule, state, adjustments)
 			continue
@@ -68,6 +72,20 @@ func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 		state["remaining"] = duration
 		_state_by_rule_index[rule_index] = state
 	return adjustments
+
+func _advance_trigger_progress(rule: Dictionary, state: Dictionary, context: Dictionary) -> bool:
+	var threshold := maxf(float(rule.get("trigger_progress_threshold", 0.0)), 0.0)
+	if threshold <= 0.0:
+		return true
+	var progress_delta := maxf(float(context.get("trigger_progress", 0.0)), 0.0)
+	if progress_delta <= 0.0:
+		return false
+	var progress := maxf(float(state.get("trigger_progress", 0.0)), 0.0) + progress_delta
+	if progress < threshold:
+		state["trigger_progress"] = progress
+		return false
+	state["trigger_progress"] = fmod(progress, threshold)
+	return true
 
 func get_state_snapshot() -> Array[Dictionary]:
 	var entries: Array[Dictionary] = []
