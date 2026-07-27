@@ -16,6 +16,8 @@ Character JSON is authoritative for runtime values. When roster data changes, up
 ## Roster Rules
 
 - The active roster currently contains **16 selectable hunters**.
+- The next release-quality target is **10 mechanically complete hunters**.
+- Runtime availability and release-quality readiness are separate states.
 - Roster order is data-driven through `roster_order`.
 - Sand Lord remains parked and non-selectable.
 - Character Select reserves 30 visible slots in a fixed 5 x 6 grid.
@@ -24,6 +26,36 @@ Character JSON is authoritative for runtime values. When roster data changes, up
 - Starter selection must come from `starting_weapon_ids`, not the full `family_weapon_ids` arsenal.
 - Presented menu names remove a leading `The ` while prose may use normal grammar.
 - All active hunters follow the shared cursed-survivor visual foundation defined in `docs/ART_STYLE_RULES.md`.
+
+## Release-Quality Prioritization
+
+The current 16 selectable hunters remain available until a dedicated roster
+state change is approved. Documentation work must not silently disable them.
+
+The prioritized 10-hunter quality target is:
+
+1. Gunslinger
+2. Harvester
+3. Demon Lord
+4. Riftwalker
+5. Devil
+6. Ritualist
+7. Ashen Knight
+8. Cinder Witch
+9. Void Monk
+10. Relic Seeker
+
+Preserved deferred candidates:
+
+- Chain Warden
+- Hex Alchemist
+- Blood Duelist
+- Ember Vanguard
+- Bone Artificer
+- Abyss Herald
+
+The complete mechanical overlap audit and return conditions live in
+`docs/HUNTER_IDENTITY_MATRIX.md`.
 
 ## Current Order
 

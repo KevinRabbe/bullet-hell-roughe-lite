@@ -49,6 +49,42 @@ That means:
 
 ---
 
+## World-Fit Rule
+
+Mechanics may be broad. Presentation must remain infernal.
+
+Guns, alchemy, engineering, martial discipline, poison-like damage, relic
+hunting, and other broad mechanics are allowed when their names, shapes,
+materials, effects, and feedback look native to Hellshot Frontier.
+
+Use this composition rule:
+
+- `70%` shared infernal world language;
+- `20%` hunter, weapon, or enemy identity;
+- `10%` controlled wildcard.
+
+The wildcard may be strange, playful, or unexpected. It must not dominate the
+design or make it look imported from another setting.
+
+The project should feel infernal and adventurous rather than defaulting to
+graveyard imagery. Bones, death, and necromancy remain valid identity tools,
+but they are not the universal visual solution.
+
+---
+
+## Combat Attention Rule
+
+Hunters use restrained, reusable body animation. Weapons, projectiles,
+abilities, impacts, portals, and boss telegraphs carry the high-impact motion.
+
+This keeps six-weapon builds visually important and avoids producing bespoke
+held-weapon animation for every hunter/weapon combination.
+
+Use `GLOBAL_WEAPON_VISUAL_CONTRACT.md` for weapon motion, projectile orientation,
+and exception rules.
+
+---
+
 ## Shared Base Character Rule
 
 Playable characters must be built from **one shared base avatar style**.

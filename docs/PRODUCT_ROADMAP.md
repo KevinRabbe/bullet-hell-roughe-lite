@@ -1,5 +1,21 @@
 # Hellshot Frontier Product Roadmap
 
+## Canonical product lock
+
+Use these documents as the current decision layer:
+
+- `PRODUCT_PROMISE.md` defines what the game sells and the quality gates that
+  justify its release direction.
+- `HUNTER_IDENTITY_MATRIX.md` defines the 10-hunter release-quality target and
+  the six preserved deferred candidates.
+- `GLOBAL_WEAPON_VISUAL_CONTRACT.md` defines how visible weapons, projectiles,
+  and impacts carry combat spectacle without requiring a hunter/weapon
+  animation matrix.
+- `ART_STYLE_RULES.md` defines the shared infernal visual language.
+
+Older prototype, demo, Codex, V2, and roster-expansion roadmaps are historical
+inputs. They do not override this roadmap or the contracts above.
+
 ## Product north star
 
 Development should move toward explicit product milestones rather than polishing unrelated systems in isolation.
@@ -13,6 +29,79 @@ V3 means:
 > A stranger can launch Hellshot Frontier, understand the essential rules, control it with keyboard or controller, complete or fail the representative 10-wave run cleanly, and give useful feedback without the developer standing beside them.
 
 The detailed V3 execution plan lives in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
+
+## Current execution order
+
+The next product work should follow this order:
+
+1. approve the product promise, world-fit rule, weapon visual contract, and
+   hunter identity matrix;
+2. classify or archive superseded planning documents;
+3. select the 10-hunter release-quality roster without deleting deferred
+   content;
+4. upgrade one hunter identity at a time using the reusable trigger,
+   condition, and effect vocabulary;
+5. implement the shared weapon presentation contract;
+6. prove the contract with one hunter, one enemy role, and a small weapon/VFX
+   slice;
+7. roll out weapon, projectile, impact, portal, enemy, and boss presentation in
+   reviewed batches;
+8. qualify one complete 10-wave run for external playtest;
+9. capture real gameplay for store-page work only after the playable slice
+   looks release-credible.
+
+Do not bulk-produce hunter atlases, weapons, or roster entries before their
+mechanical and presentation contracts pass the relevant gate.
+
+## Planning document disposition
+
+### Canonical operational documents
+
+Keep current and actionable:
+
+- `ARCHITECTURE.md`
+- `ARENA_SYSTEM_SPEC.md`
+- `ART_STYLE_RULES.md`
+- `BUILD_PHILOSOPHY.md`
+- `CHARACTER_PRESENTATION_SCHEMA.md`
+- `CHARACTER_SELECT_FINAL_SPEC.md`
+- `CHARACTER_TEMPLATE_CHECKLIST.md`
+- `CHARACTERS.md`
+- `CONTENT_VALIDATION.md`
+- `DEVELOPMENT_SCENARIOS.md`
+- `ENEMIES_AND_BOSSES.md`
+- `GAME_VISION.md`
+- `GLOBAL_WEAPON_VISUAL_CONTRACT.md`
+- `HUNTER_IDENTITY_MATRIX.md`
+- `PORTAL_MUTATION_ASCENSION_CONTRACT.md`
+- `PRODUCT_PROMISE.md`
+- `PRODUCT_ROADMAP.md`
+- `REUSABLE_GAME_FOUNDATIONS.md`
+- `SHOP_AND_REWARDS.md`
+- `SMOKE_CHECKLIST.md`
+- `UI_SYSTEM_SPEC.md`
+- `V3_EXTERNAL_PLAYTEST_ROADMAP.md`
+- `WEAPON_TAGS.md`
+- `WEAPONS.md`
+
+### Historical or superseded candidates
+
+Audit references, then archive or remove in a separate docs-cleanup PR:
+
+- `CODEX_ROADMAP.md`
+- `ROADMAP.md`
+- `MVP_PLAN.md`
+- `FIRST_DEMO_SCOPE.md`
+- `ROSTER_EXPANSION_16_HUNTERS.md`
+- `REFACTOR_AUDIT_NEXT_PHASE.md`
+- completed Stage 11 gate/checklist documents;
+- completed V2 roadmap/capture documents;
+- menu planning and generation-prep documents whose contracts are already
+  represented by the shipped UI specification and current scenes.
+
+Do not remove smoke checklists or operational contracts merely because their
+original implementation phase is complete. Historical deletion requires a
+reference check and its own scoped PR.
 
 ## V1 — Internal Vertical Slice + Foundations
 
