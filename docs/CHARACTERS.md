@@ -73,7 +73,7 @@ The complete mechanical overlap audit and return conditions live in
 | 11 | Ember Vanguard | Deferred | `hellfire` | Cursed Lantern, Hellfire Orb, Hell Sphere | Forward Blaze |
 | 12 | Void Monk | Selectable | `portal` | Rift Staff, Void Revolver, Rift Bow | Phase Discipline |
 | 13 | Bone Artificer | Deferred | `harvester` | Eye Scepter, Grave Grimoire, Soul Lantern | Salvage Matrix |
-| 14 | Cinder Witch | Selectable | `hellfire` | Infernal Sigil, Ritual Candles, Ash Censer | Ember Trance |
+| 14 | Cinder Witch | Selectable | `hellfire` | Infernal Sigil, Ritual Candles, Ash Censer | Ember Field |
 | 15 | Relic Seeker | Selectable | `portal` | Rift Artifact, Void Revolver, Rift Bow | Lucky Find |
 | 16 | Abyss Herald | Deferred | `portal` | Rift Cannon, Rift Staff, Grand Sigil | Deep Resonance |
 
@@ -243,9 +243,9 @@ The complete mechanical overlap audit and return conditions live in
 
 **Identity:** infernal sigils, candles, censers, and escalating ritual flame pressure.
 
-**Passive — Ember Trance:** kills briefly grant attack speed and burn damage, stacking up to three times.
+**Passive — Ember Field:** hellfire burns deal increased damage and spread more reliably across nearby enemies as local enemy density rises.
 
-**Tradeoff:** less durable than armored hunters and needs kills to keep the trance alive.
+**Tradeoff:** less durable than armored hunters, and the propagation loses value against isolated targets.
 
 ---
 
