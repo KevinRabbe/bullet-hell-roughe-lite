@@ -925,9 +925,22 @@ func get_ui_snapshot() -> Dictionary:
 		"weapon_tag_counts": get_weapon_tag_counts(),
 		"item_tag_counts": get_owned_item_tag_counts(),
 		"passive_weapon_synergies": get_passive_weapon_synergy_entries(),
+		"passive_runtime_states": get_passive_runtime_states(),
 		"set_bonus_weapon_synergies": get_set_bonus_weapon_synergy_entries(),
 		"ascension": get_ascension_state()
 	}
+
+func get_passive_runtime_states() -> Array[Dictionary]:
+	if _passive_runtime == null or not _passive_runtime.has_method("get_state_snapshot"):
+		return []
+	var states_variant: Variant = _passive_runtime.call("get_state_snapshot")
+	if not (states_variant is Array):
+		return []
+	var states: Array[Dictionary] = []
+	for state_variant in states_variant:
+		if state_variant is Dictionary:
+			states.append((state_variant as Dictionary).duplicate(true))
+	return states
 
 func get_weapon_tag_counts() -> Dictionary:
 	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_tag_counts"):
