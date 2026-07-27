@@ -87,6 +87,7 @@ func _update_visual_animation(delta: float) -> void:
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		var weapon_data := _load_weapon_data()
+		var releases_status := ProjectileImpactUtil.should_release_on_hit_status(body, weapon_data)
 		var final_damage := ProjectileImpactUtil.compute_final_damage(
 			damage,
 			damage_multiplier,
@@ -95,6 +96,16 @@ func _on_body_entered(body: Node) -> void:
 			weapon_data
 		)
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
+		if releases_status and body.has_method("consume_status"):
+			var consumed_stacks := int(body.call("consume_status", weapon_data.on_hit_status_id))
+			if consumed_stacks > 0 and shooter != null and shooter.has_method("notify_status_released"):
+				shooter.call(
+					"notify_status_released",
+					weapon_data.on_hit_status_id,
+					source_weapon_id,
+					source_slot_index,
+					consumed_stacks
+				)
 		var impact_pitch := clampf(1.06 - (maxf(final_damage, 0.0) / 220.0), 0.80, 1.06)
 		SfxRuntimeRef.play(self, "impact", -19.0, impact_pitch, 50)
 		ProjectileVisualUtil.spawn_impact_feedback(self, visual, _visual_animation_profile)

@@ -13,10 +13,22 @@ static func compute_final_damage(
 		final_damage *= float(shooter.call("get_damage_multiplier_for_target", target))
 	if weapon_data == null:
 		return final_damage
+	if should_release_on_hit_status(target, weapon_data):
+		final_damage *= maxf(weapon_data.on_hit_status_release_damage_multiplier, 1.0)
 	final_damage = _apply_status_bonus_damage(final_damage, target, weapon_data)
 	final_damage = _apply_density_bonus_damage(final_damage, shooter, weapon_data)
 	final_damage = _apply_player_stat_bonus_damage(final_damage, shooter, weapon_data)
 	return final_damage
+
+static func should_release_on_hit_status(target: Node, weapon_data: WeaponData) -> bool:
+	if target == null or weapon_data == null:
+		return false
+	if weapon_data.on_hit_status_id == "" or weapon_data.on_hit_status_release_threshold <= 1:
+		return false
+	if not target.has_method("get_status_stack_count"):
+		return false
+	var current_stacks := int(target.call("get_status_stack_count", weapon_data.on_hit_status_id))
+	return current_stacks >= weapon_data.on_hit_status_release_threshold - 1
 
 static func _apply_status_bonus_damage(final_damage: float, target: Node, weapon_data: WeaponData) -> float:
 	if weapon_data.bonus_damage_vs_status_id == "":

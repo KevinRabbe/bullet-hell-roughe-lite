@@ -21,17 +21,19 @@
     {
       "id": "blood_rite",
       "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
+      "trigger": "on_status_released",
+      "required_source_weapon_tags": ["ritual"],
       "modifiers": [
         {
-          "stat_id": "damage",
-          "amount": 0.03,
+          "stat_id": "attack_speed",
+          "amount": 0.08,
           "effect_tags": ["ritual", "blood"]
         }
       ],
-      "duration": 6.0,
-      "max_stacks": 6,
-      "debug_label": "BLOOD RITE"
+      "duration": 2.5,
+      "max_stacks": 1,
+      "hud_visible": true,
+      "debug_label": "RITE COMPLETE"
     }
   ],
   "presentation": {
@@ -39,7 +41,7 @@
     "fantasy_hook": "Preparation, symbols, and blood-fed pacing make the Ritualist feel deliberate instead of merely dark.",
     "identity_summary": "The Ritualist leans into preparation, symbols, and controlled magical pressure instead of pure speed. Even before deeper ritual systems arrive, the character should read as an occult specialist rather than a generic dark caster.",
     "passive_name": "Blood Rite",
-    "passive_summary": "Enemy kills build a ritual damage buff that supports steady ceremonial pressure and sets up later mark-and-pulse mechanics.",
+    "passive_summary": "Ritual weapons mark enemies with Blood Rite. Every third hit releases the marks, then briefly accelerates ritual and blood weapons.",
     "passive_icon_path": "res://assets/sprites/ui/passives/blood_rite.png",
     "playstyle_tags": ["ritual", "blood", "curse", "ceremony"],
     "difficulty": "hard",

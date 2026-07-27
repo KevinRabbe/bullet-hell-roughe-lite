@@ -147,7 +147,7 @@ The complete mechanical overlap audit and return conditions live in
 
 **Identity:** sigils, blood tools, curses, candles, bells, and deliberate ceremonial pressure instead of pure speed.
 
-**Passive — Blood Rite:** kills build temporary ritual/blood damage stacks.
+**Passive — Blood Rite:** ritual weapons build a shared mark and consume it every third hit for a stronger ceremonial strike.
 
 **Tradeoff:** setup-oriented pacing and less immediate burst than direct tempo hunters.
 

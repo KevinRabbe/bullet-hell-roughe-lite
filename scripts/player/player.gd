@@ -676,6 +676,20 @@ func _configure_passive_runtime(character_data: Dictionary) -> void:
 	if _passive_runtime != null and _passive_runtime.has_method("configure"):
 		_passive_runtime.call("configure", character_data)
 
+func notify_status_released(status_id: String, weapon_id: String, slot_index: int, stacks: int) -> void:
+	if status_id == "" or stacks <= 0:
+		return
+	var trigger_context := {
+		"status_id": status_id,
+		"source_weapon_id": weapon_id,
+		"source_slot_index": slot_index,
+		"trigger_progress": float(stacks)
+	}
+	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
+	if weapon_resource != null:
+		trigger_context["source_weapon_tags"] = WeaponTagRuntimeRef.weapon_tags(weapon_resource)
+	_apply_passive_runtime_trigger("on_status_released", trigger_context)
+
 func _process_passive_runtime(delta: float) -> void:
 	if _passive_runtime == null or not _passive_runtime.has_method("tick"):
 		return
