@@ -82,6 +82,7 @@ func _play_close_animation() -> void:
 		_idle_tween.kill()
 	if _aura_tween != null and _aura_tween.is_valid():
 		_aura_tween.kill()
+	_spawn_activation_burst()
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		visual.position = _visual_rest_position
 		visual.scale = _visual_rest_scale
@@ -140,3 +141,32 @@ func _start_aura_motion() -> void:
 	_aura_tween.parallel().tween_property(_presence_aura, "modulate:a", 0.46, 0.78)
 	_aura_tween.tween_property(_presence_aura, "scale", Vector2.ONE * 0.88, 0.78)
 	_aura_tween.parallel().tween_property(_presence_aura, "modulate:a", 0.82, 0.78)
+
+func _spawn_activation_burst() -> void:
+	if get_tree() == null or get_tree().current_scene == null:
+		return
+	var ring := Line2D.new()
+	ring.points = _build_aura_points()
+	ring.width = 5.0
+	ring.default_color = (
+		COLOR_AURA_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else Color(COLOR_AURA.r, COLOR_AURA.g, COLOR_AURA.b, 0.96)
+	)
+	ring.global_position = global_position
+	ring.z_index = z_index + 2
+	get_tree().current_scene.add_child(ring)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.18 if reduced_motion else 0.32
+	ring.scale = Vector2.ONE * 0.82
+	var tween := ring.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(ring, "scale", Vector2.ONE * 1.65, duration)
+	tween.tween_property(ring, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(ring):
+			ring.queue_free()
+	)
