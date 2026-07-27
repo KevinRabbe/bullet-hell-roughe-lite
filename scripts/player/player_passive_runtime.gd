@@ -35,13 +35,15 @@ func configure(character_data: Dictionary) -> void:
 			"remaining": 0.0
 		}
 
-func trigger(trigger_id: String) -> Array[Dictionary]:
+func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 	var adjustments: Array[Dictionary] = []
 	if trigger_id == "":
 		return adjustments
 	for rule_index in range(_rules.size()):
 		var rule: Dictionary = _rules[rule_index]
 		if str(rule.get("trigger", "")) != trigger_id:
+			continue
+		if not _matches_trigger_context(rule, context):
 			continue
 		var state_variant: Variant = _state_by_rule_index.get(rule_index, {})
 		if not (state_variant is Dictionary):
@@ -60,6 +62,16 @@ func trigger(trigger_id: String) -> Array[Dictionary]:
 		state["remaining"] = duration
 		_state_by_rule_index[rule_index] = state
 	return adjustments
+
+func _matches_trigger_context(rule: Dictionary, context: Dictionary) -> bool:
+	var required_tags := WeaponTagRuntimeRef.resolve_effect_tags(rule.get("required_source_weapon_tags", []))
+	if required_tags.is_empty():
+		return true
+	var source_tags := WeaponTagRuntimeRef.resolve_effect_tags(context.get("source_weapon_tags", []))
+	for required_tag in required_tags:
+		if source_tags.has(required_tag):
+			return true
+	return false
 
 func tick(delta: float) -> Array[Dictionary]:
 	var adjustments: Array[Dictionary] = []

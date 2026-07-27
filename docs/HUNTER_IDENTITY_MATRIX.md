@@ -77,7 +77,7 @@ payoff.
 
 | Hunter | Core decision | Distinct trigger/condition | Desired build change | Tradeoff | Required identity work |
 |---|---|---|---|---|---|
-| Gunslinger | maintain clean ranged tempo and priority control | precision hit/kill cadence | gun, precision, rapid, ranged | less exotic utility | evolve Quickdraw beyond generic kill stacking toward a readable precision cadence |
+| Gunslinger | maintain clean ranged tempo and priority control | bounded gun-kill cadence | gun, precision, rapid, ranged | less exotic utility | Quickdraw now rewards uninterrupted gun kills; preserve the short readable streak and add feedback only through a separate presentation pass |
 | Harvester | feed a harvest engine and preserve kill chains | kills and collected soul/harvest charges | necromancy, curse, heavy, snowball | weaker opening tempo | make soul accumulation a visible bounded resource rather than another temporary damage stack |
 | Demon Lord | accept exposure for infernal authority | kills or power use while tribute is active | hellfire, heavy, burn, risk reward | defensive penalty | retain positive/negative tribute and give it a visible power window |
 | Riftwalker | reposition and exploit unstable dimensional rules | movement/distance plus portal state | portal, mobility, precision | instability and lower stopping power | connect Phase Echo to spacing or movement instead of kill-only stacking |

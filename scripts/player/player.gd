@@ -126,12 +126,18 @@ func grant_item(item: ItemData) -> void:
 	_print_debug_stats()
 
 func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
-	_apply_passive_runtime_trigger("on_enemy_kill")
+	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
+	var trigger_context := {
+		"source_weapon_id": weapon_id,
+		"source_slot_index": slot_index
+	}
+	if weapon_resource != null:
+		trigger_context["source_weapon_tags"] = WeaponTagRuntimeRef.weapon_tags(weapon_resource)
+	_apply_passive_runtime_trigger("on_enemy_kill", trigger_context)
 	if weapon_loadout == null or not weapon_loadout.has_method("register_weapon_kill"):
 		return
 	if weapon_id == "" or slot_index < 0:
 		return
-	var weapon_resource := _load_weapon_resource(weapon_id)
 	if weapon_resource == null:
 		return
 	var family_id := _resolve_weapon_family_id(weapon_resource)
@@ -670,10 +676,10 @@ func _process_passive_runtime(delta: float) -> void:
 	var adjustments_variant: Variant = _passive_runtime.call("tick", delta)
 	_apply_passive_runtime_adjustments(adjustments_variant)
 
-func _apply_passive_runtime_trigger(trigger_id: String) -> void:
+func _apply_passive_runtime_trigger(trigger_id: String, context: Dictionary = {}) -> void:
 	if trigger_id == "" or _passive_runtime == null or not _passive_runtime.has_method("trigger"):
 		return
-	var adjustments_variant: Variant = _passive_runtime.call("trigger", trigger_id)
+	var adjustments_variant: Variant = _passive_runtime.call("trigger", trigger_id, context)
 	_apply_passive_runtime_adjustments(adjustments_variant)
 
 func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
