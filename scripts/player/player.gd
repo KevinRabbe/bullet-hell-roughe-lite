@@ -482,6 +482,9 @@ func get_portal_reward_tier_bias(tier: int) -> float:
 	var portal_reward_tier_biases: Dictionary = portal_reward_tier_biases_variant
 	return float(portal_reward_tier_biases.get(str(tier), 0.0))
 
+func get_portal_reward_count_bonus() -> int:
+	return maxi(int(active_character_data.get("portal_reward_count_bonus", 0)), 0)
+
 func count_enemies_with_status(status_id: String, max_distance: float = 0.0) -> int:
 	if status_id == "":
 		return 0
