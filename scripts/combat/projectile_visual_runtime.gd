@@ -15,6 +15,7 @@ const COLOR_TRAIL_BONE := Color(1.0, 0.80, 0.48, 0.82)
 const COLOR_TRAIL_INFERNAL := Color(1.0, 0.30, 0.08, 0.86)
 const COLOR_TRAIL_OCCULT := Color(0.94, 0.16, 0.46, 0.82)
 const COLOR_TRAIL_HIGH_CONTRAST := Color(1.0, 0.92, 0.72, 0.94)
+const IMPACT_RING_SEGMENTS := 16
 
 static func build_profile(weapon_data: WeaponData) -> Dictionary:
 	var profile := {
@@ -24,6 +25,7 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 		"brightness_amount": 0.04,
 		"impact_scale": 1.35,
 		"impact_duration": 0.10,
+		"impact_color": COLOR_TRAIL_BONE,
 		"trail_enabled": false,
 		"trail_length": 14.0,
 		"trail_width": 2.0,
@@ -44,6 +46,7 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 		profile["pulse_amount"] = 0.08
 		profile["brightness_amount"] = 0.14
 		profile["impact_scale"] = 1.5
+		profile["impact_color"] = COLOR_TRAIL_INFERNAL if "hellfire" in tags or "burn" in tags else COLOR_TRAIL_OCCULT
 		profile["trail_enabled"] = true
 		profile["trail_length"] = 20.0
 		profile["trail_width"] = 3.0
@@ -138,6 +141,7 @@ static func spawn_impact_feedback(projectile: Node2D, visual: Sprite2D, profile:
 	scene.add_child(impact)
 
 	var duration := maxf(float(profile.get("impact_duration", 0.10)), 0.04)
+	_spawn_impact_ring(scene, projectile, profile, duration)
 	var tween := impact.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
@@ -150,6 +154,41 @@ static func spawn_impact_feedback(projectile: Node2D, visual: Sprite2D, profile:
 		if is_instance_valid(impact):
 			impact.queue_free()
 	)
+
+static func _spawn_impact_ring(scene: Node, projectile: Node2D, profile: Dictionary, duration: float) -> void:
+	var color_variant: Variant = profile.get("impact_color", COLOR_TRAIL_BONE)
+	var color := color_variant as Color if color_variant is Color else COLOR_TRAIL_BONE
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		color = COLOR_TRAIL_HIGH_CONTRAST
+
+	var ring := Line2D.new()
+	ring.points = _build_ring_points(7.0, IMPACT_RING_SEGMENTS)
+	ring.closed = true
+	ring.width = 2.0
+	ring.default_color = color
+	ring.global_position = projectile.global_position
+	ring.z_index = projectile.z_index + 2
+	scene.add_child(ring)
+
+	var tween := ring.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		var impact_scale := maxf(float(profile.get("impact_scale", 1.35)), 1.0)
+		tween.tween_property(ring, "scale", Vector2.ONE * impact_scale, duration)
+	tween.tween_property(ring, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(ring):
+			ring.queue_free()
+	)
+
+static func _build_ring_points(radius: float, segment_count: int) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var safe_segment_count := maxi(segment_count, 3)
+	for index in safe_segment_count:
+		var angle := TAU * (float(index) / float(safe_segment_count))
+		points.append(Vector2.from_angle(angle) * radius)
+	return points
 
 static func _contains_any(tags: Array[String], candidates: Array[String]) -> bool:
 	for candidate in candidates:
