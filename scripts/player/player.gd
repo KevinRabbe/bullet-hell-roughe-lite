@@ -3,6 +3,7 @@ extends CharacterBody2D
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const PlayerPassiveRuntime = preload("res://scripts/player/player_passive_runtime.gd")
+const PlayerDamageRuntimeRef = preload("res://scripts/player/player_damage_runtime.gd")
 
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
@@ -96,13 +97,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func take_damage(amount: float) -> void:
 	if is_dead:
 		return
-	current_hp = maxf(current_hp - amount, 0.0)
+	var resolved_damage := PlayerDamageRuntimeRef.resolve_incoming_damage(amount, stats.armor)
+	current_hp = maxf(current_hp - resolved_damage, 0.0)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
-	if amount > 0.0 and current_hp > 0.0:
-		_apply_passive_runtime_trigger("on_damage_taken", {"damage": amount})
+	if resolved_damage > 0.0 and current_hp > 0.0:
+		_apply_passive_runtime_trigger("on_damage_taken", {"damage": resolved_damage})
 	if log_runtime_events:
-		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
+		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [resolved_damage, current_hp, stats.max_hp])
 	if current_hp <= 0.0:
 		die()
 
