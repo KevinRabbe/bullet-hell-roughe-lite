@@ -55,6 +55,7 @@
       ],
       "duration": 4.0,
       "max_stacks": 4,
+      "hud_visible": true,
       "debug_label": "INFERNAL TRIBUTE"
     }
   ],
