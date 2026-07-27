@@ -102,7 +102,10 @@ func take_damage(amount: float) -> void:
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
 	if resolved_damage > 0.0 and current_hp > 0.0:
-		_apply_passive_runtime_trigger("on_damage_taken", {"damage": resolved_damage})
+		_apply_passive_runtime_trigger("on_damage_taken", {
+			"damage": resolved_damage,
+			"trigger_progress": resolved_damage
+		})
 	if log_runtime_events:
 		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [resolved_damage, current_hp, stats.max_hp])
 	if current_hp <= 0.0:
