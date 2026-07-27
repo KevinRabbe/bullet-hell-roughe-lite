@@ -19,38 +19,54 @@
   "shop_weapon_family_bias": 0.2,
   "passive_runtime_rules": [
     {
-      "id": "phase_discipline",
+      "id": "phase_focus",
       "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
+      "trigger": "on_distance_moved",
+      "trigger_progress_threshold": 220.0,
       "modifiers": [
         {
-          "stat_id": "dodge",
-          "amount": 0.04
-        },
-        {
-          "stat_id": "attack_speed",
-          "amount": 0.04
+          "stat_id": "damage",
+          "amount": 0.12,
+          "effect_tags": ["portal", "precision", "melee"]
         }
       ],
-      "duration": 4.0,
-      "max_stacks": 2,
-      "debug_label": "PHASE DISCIPLINE"
+      "duration": 3.0,
+      "max_stacks": 1,
+      "hud_visible": true,
+      "debug_label": "PHASE FOCUS"
+    },
+    {
+      "id": "phase_step",
+      "effect": "temporary_stat_bonus",
+      "trigger": "on_weapon_fired",
+      "trigger_progress_threshold": 3.0,
+      "required_source_weapon_tags": ["portal", "precision", "melee"],
+      "modifiers": [
+        {
+          "stat_id": "movement_speed",
+          "amount": 30.0
+        }
+      ],
+      "duration": 1.75,
+      "max_stacks": 1,
+      "hud_visible": true,
+      "debug_label": "PHASE STEP"
     }
   ],
   "presentation": {
-    "headline": "Dimensional martial hunter who turns takedowns into brief phase focus.",
+    "headline": "Dimensional martial hunter who alternates deliberate movement with focused attack windows.",
     "fantasy_hook": "Wrapped limbs, a broken void halo, and a compact rift staff frame a disciplined silhouette inside the infernal roster.",
-    "identity_summary": "The Void Monk combines portal precision, deliberate spacing, and select heavy tools. Kills briefly improve evasion and attack tempo without adding teleportation or invulnerability.",
+    "identity_summary": "The Void Monk combines portal precision, deliberate spacing, and select heavy tools. Moving charges focused offense; disciplined attack sequences answer with a short repositioning step.",
     "passive_name": "Phase Discipline",
-    "passive_summary": "Enemy kills briefly grant dodge and attack speed, stacking up to two times while focus holds.",
+    "passive_summary": "Traveling enough distance empowers portal, precision, and melee attacks. Every third matching shot then grants a brief movement burst to begin the rhythm again.",
     "passive_icon_path": "res://assets/sprites/ui/passives/phase_discipline.png",
     "playstyle_tags": ["portal", "precision", "mobility", "melee"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Rift Staff",
     "arsenal_label": "Monk Arsenal",
     "arsenal_preview": ["Rift Staff", "Void Revolver", "Rift Bow", "Rift Artifact", "Harvester Scythe", "Grand Sigil"],
-    "strengths": ["Flexible dimensional spacing", "Short evasive windows", "Precision and heavy tag overlap"],
-    "tradeoffs": ["Lower raw durability", "Requires takedowns to maintain phase focus"]
+    "strengths": ["Alternating offense and repositioning windows", "Flexible dimensional spacing", "Precision and melee tag overlap"],
+    "tradeoffs": ["Lower raw durability", "Loses value when movement and attacks fall out of rhythm"]
   },
-  "passive_tags": ["phase_discipline", "void_monk", "evasive_focus"]
+  "passive_tags": ["phase_discipline", "void_monk", "movement_attack_cadence"]
 }

@@ -219,9 +219,9 @@ The complete mechanical overlap audit and return conditions live in
 
 **Identity:** portal precision, spacing, selected heavy tools, and brief evasive focus rather than teleport spam or invulnerability.
 
-**Passive — Phase Discipline:** kills briefly grant dodge and attack speed, stacking up to two times.
+**Passive — Phase Discipline:** movement charges a short tagged damage window, while every third portal, precision, or melee shot grants a brief movement burst that restarts the cadence.
 
-**Tradeoff:** lower raw durability and reliance on takedowns to maintain phase focus.
+**Tradeoff:** lower raw durability, and the passive loses value when movement and attacks fall out of rhythm.
 
 ---
 

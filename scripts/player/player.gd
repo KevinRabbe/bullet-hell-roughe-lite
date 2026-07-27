@@ -174,6 +174,17 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	elif log_runtime_events:
 		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
 
+func notify_weapon_fired(weapon_id: String, slot_index: int) -> void:
+	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
+	var trigger_context := {
+		"source_weapon_id": weapon_id,
+		"source_slot_index": slot_index,
+		"trigger_progress": 1.0
+	}
+	if weapon_resource != null:
+		trigger_context["source_weapon_tags"] = WeaponTagRuntimeRef.weapon_tags(weapon_resource)
+	_apply_passive_runtime_trigger("on_weapon_fired", trigger_context)
+
 func _apply_item_effects(item: ItemData) -> void:
 	for stat_name in item.stat_modifiers.keys():
 		if not _has_stat_property(stat_name):

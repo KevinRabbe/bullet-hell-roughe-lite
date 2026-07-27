@@ -85,7 +85,7 @@ payoff.
 | Ritualist | prepare marks and cash them out in a pulse | ritual weapon hits build a shared three-mark cycle | ritual, blood, curse, wave | setup time | Blood Rite now consumes every third shared ritual mark for a stronger strike; visual release feedback can deepen later |
 | Ashen Knight | remain inside danger and convert absorbed pressure into force | every 25 post-armor damage endured opens Cinder Guard | heavy, melee, armor, hellfire | lower mobility | Cinder Guard now converts accumulated damage into one bounded armor and tagged-retaliation window |
 | Cinder Witch | spread and maintain burning zones | hellfire application scales its propagation with nearby enemy density | burn, ritual, wave, area | setup and positioning | Ember Field now turns crowded packs into stronger spreading burn networks without another kill-stack buff |
-| Void Monk | alternate disciplined movement and attack windows | distance moved, dodge, or rhythm state | portal, precision, mobility, melee | loses value when rhythm breaks | create a two-state cadence rather than another temporary speed buff |
+| Void Monk | alternate disciplined movement and attack windows | movement charges tagged offense; every third matching shot grants repositioning speed | portal, precision, mobility, melee | loses value when rhythm breaks | Phase Discipline now creates a two-state movement/attack cadence instead of another kill-triggered speed buff |
 | Relic Seeker | convert exploration and pickups into unusual build opportunities | pickup/reward/portal resolution | relic, luck, precision, hybrid tags | inconsistent immediate combat power | make discovery affect choices or rewards without becoming raw permanent luck stacking |
 
 ## Deferred Candidates
