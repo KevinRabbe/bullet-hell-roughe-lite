@@ -53,41 +53,42 @@
     {
       "id": "devils_bargain",
       "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
+      "trigger": "on_damage_taken",
       "modifiers": [
         {
           "stat_id": "attack_speed",
-          "amount": 0.08,
+          "amount": 0.12,
           "effect_tags": ["melee", "thrown"]
         },
         {
           "stat_id": "damage",
-          "amount": 0.04,
+          "amount": 0.08,
           "effect_tags": ["melee", "thrown"]
         },
         {
           "stat_id": "armor",
-          "amount": -0.03
+          "amount": -1.0
         }
       ],
-      "duration": 3.5,
-      "max_stacks": 3,
+      "duration": 4.0,
+      "max_stacks": 1,
+      "hud_visible": true,
       "debug_label": "DEVIL'S BARGAIN"
     }
   ],
   "presentation": {
-    "headline": "Aggressive pact fighter who converts kills into dangerous burst tempo.",
+    "headline": "Aggressive pact fighter who answers incoming damage with dangerous burst tempo.",
     "fantasy_hook": "Fast cursed blades and reckless tempo make the Devil feel sharp, risky, and always one bad trade from trouble.",
     "identity_summary": "The Devil is all about cursed aggression: fast thrown blades, close-range pressure, and short windows where trading safety for offense pays off. He should feel reckless, sharp, and rewarding when you stay on top of the fight.",
     "passive_name": "Devil's Bargain",
-    "passive_summary": "Enemy kills trigger a short offensive burst that increases damage and attack speed while shaving off a little armor.",
+    "passive_summary": "Surviving damage opens a short bargain window: melee and thrown weapons surge while one point of armor is surrendered.",
     "passive_icon_path": "res://assets/sprites/ui/passives/devils_bargain.png",
     "playstyle_tags": ["thrown", "aggressive", "curse", "risk_reward"],
     "difficulty": "hard",
     "starter_weapon_label": "Opening Fang",
     "arsenal_label": "Devil Arsenal",
     "arsenal_preview": ["Devil Fang", "Sin Shuriken", "Blood Chakram", "Hell Claw", "Chain Crescent", "Pact Blade"],
-    "strengths": ["Explosive kill-tempo windows", "Fast aggressive pressure", "Strong cursed melee-thrown identity"],
+    "strengths": ["Explosive retaliation windows", "Fast aggressive pressure", "Strong cursed melee-thrown identity"],
     "tradeoffs": ["Short defensive margin", "Rewards committing harder than safer builds"]
   },
   "passive_tags": ["unbreakable_pact", "low_direct_damage", "devils_bargain"]

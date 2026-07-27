@@ -99,6 +99,8 @@ func take_damage(amount: float) -> void:
 	current_hp = maxf(current_hp - amount, 0.0)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
+	if amount > 0.0 and current_hp > 0.0:
+		_apply_passive_runtime_trigger("on_damage_taken", {"damage": amount})
 	if log_runtime_events:
 		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [amount, current_hp, stats.max_hp])
 	if current_hp <= 0.0:
