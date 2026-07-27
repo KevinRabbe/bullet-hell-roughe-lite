@@ -22,6 +22,7 @@ const COLOR_BASE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_WINDUP := Color(0.94, 0.42, 0.10, 0.95)
 const COLOR_RUSH := Color(0.86, 0.14, 0.12, 0.92)
 const COLOR_HIGH_CONTRAST := Color(1.0, 0.72, 0.30, 1.0)
+const PHASE_CUE_RADIUS := 66.0
 
 var _phase: String = PHASE_CHASE
 var _phase_left: float = CHASE_SECONDS
@@ -84,6 +85,7 @@ func _apply_phase(boss: Node) -> void:
 			speed_multiplier = RECOVER_SPEED_MULTIPLIER
 	boss.set("move_speed", _base_move_speed * speed_multiplier)
 	_apply_presence_telegraph(boss)
+	_spawn_phase_cue(boss)
 
 func _apply_presence_telegraph(boss: Node) -> void:
 	var ring := boss.get_node_or_null("BossPresence") as Line2D
@@ -106,3 +108,48 @@ func _apply_presence_telegraph(boss: Node) -> void:
 			ring.width = 5.0
 		_:
 			ring.width = 3.5
+
+func _spawn_phase_cue(boss: Node) -> void:
+	if _phase != PHASE_WINDUP and _phase != PHASE_RUSH:
+		return
+	if not (boss is Node2D) or boss.get_tree() == null:
+		return
+	var cue := Line2D.new()
+	cue.name = "GateBeastPhaseCue"
+	cue.points = _build_cue_points()
+	cue.width = 5.0 if _phase == PHASE_WINDUP else 7.0
+	cue.default_color = _resolve_phase_cue_color()
+	cue.z_index = -1
+	(boss as Node2D).add_child(cue)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.22
+	if _phase == PHASE_WINDUP:
+		duration = WINDUP_SECONDS
+		cue.scale = Vector2.ONE * 1.28
+	else:
+		cue.scale = Vector2.ONE * 0.82
+	var tween := cue.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		var target_scale := Vector2.ONE * (0.84 if _phase == PHASE_WINDUP else 1.38)
+		tween.tween_property(cue, "scale", target_scale, duration)
+	tween.tween_property(cue, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(cue):
+			cue.queue_free()
+	)
+
+func _build_cue_points() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var point_count := 24
+	for index in range(point_count + 1):
+		var angle := TAU * float(index) / float(point_count)
+		points.append(Vector2(cos(angle), sin(angle)) * PHASE_CUE_RADIUS)
+	return points
+
+func _resolve_phase_cue_color() -> Color:
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		return COLOR_HIGH_CONTRAST
+	return COLOR_WINDUP if _phase == PHASE_WINDUP else COLOR_RUSH
