@@ -17,40 +17,47 @@
   ],
   "preferred_weapon_family": "hellfire",
   "shop_weapon_family_bias": 0.2,
+  "stat_bonuses": {
+    "armor": 3.0,
+    "movement_speed": -25.0
+  },
   "passive_runtime_rules": [
     {
       "id": "cinder_guard",
       "effect": "temporary_stat_bonus",
-      "trigger": "on_enemy_kill",
+      "trigger": "on_damage_taken",
+      "trigger_progress_threshold": 25.0,
       "modifiers": [
         {
           "stat_id": "armor",
-          "amount": 0.15
+          "amount": 3.0
         },
         {
           "stat_id": "damage",
-          "amount": 0.03
+          "amount": 0.12,
+          "effect_tags": ["heavy", "melee", "hellfire"]
         }
       ],
-      "duration": 4.0,
-      "max_stacks": 3,
+      "duration": 5.0,
+      "max_stacks": 1,
+      "hud_visible": true,
       "debug_label": "CINDER GUARD"
     }
   ],
   "presentation": {
-    "headline": "Armored frontline hunter who builds momentum through decisive takedowns.",
+    "headline": "Armored frontline hunter who turns endured damage into retaliation.",
     "fantasy_hook": "Soot-black plate, a chipped infernal shield, and a pact blade turn the shared hunter frame into a stubborn advancing wall.",
-    "identity_summary": "The Ashen Knight trades speed and reach for dependable close-range pressure. Each kill reinforces a short window of poise, letting the knight hold ground while infernal weapons keep the lane burning.",
+    "identity_summary": "The Ashen Knight trades speed for dependable close-range pressure. Enduring damage fills Cinder Guard, opening a short window of armor and tagged retaliation.",
     "passive_name": "Cinder Guard",
-    "passive_summary": "Enemy kills briefly grant armor and damage, stacking up to three times while the knight keeps advancing.",
+    "passive_summary": "After enduring 25 damage, Cinder Guard briefly grants armor and empowers heavy, melee, and hellfire weapons.",
     "passive_icon_path": "res://assets/sprites/ui/passives/cinder_guard.png",
     "playstyle_tags": ["hellfire", "heavy", "melee", "armored"],
     "difficulty": "medium",
     "starter_weapon_label": "Opening Pact Blade",
     "arsenal_label": "Ashen Arsenal",
     "arsenal_preview": ["Pact Blade", "Hell Claw", "Infernal Sigil", "Cursed Lantern", "Hellfire Orb", "Demonic Scepter"],
-    "strengths": ["Stable close-range pressure", "Kill-chain durability", "Hybrid melee and infernal casting"],
-    "tradeoffs": ["Less mobile than skirmishers", "Needs takedowns to reach full poise"]
+    "strengths": ["Stable close-range pressure", "Damage-fed retaliation", "Hybrid melee and infernal casting"],
+    "tradeoffs": ["Lower base movement speed", "Must absorb pressure before Cinder Guard answers"]
   },
-  "passive_tags": ["cinder_guard", "armored_advance", "kill_momentum"]
+  "passive_tags": ["cinder_guard", "armored_advance", "retaliation"]
 }

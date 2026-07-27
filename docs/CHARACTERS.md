@@ -159,7 +159,7 @@ The complete mechanical overlap audit and return conditions live in
 
 **Identity:** soot-black plate, close-range infernal weapons, and stubborn forward pressure built around surviving inside danger.
 
-**Passive — Cinder Guard:** kills briefly grant armor and damage, stacking up to three times.
+**Passive — Cinder Guard:** every 25 post-armor damage endured briefly grants armor and empowers heavy, melee, and hellfire weapons.
 
 **Tradeoff:** less mobile than skirmishers and needs takedowns to reach full poise.
 
