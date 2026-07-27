@@ -6,10 +6,15 @@ const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_
 
 @export var activation_radius: float = 108.0
 
+const COLOR_AURA := Color(0.92, 0.18, 0.08, 0.72)
+const COLOR_AURA_HIGH_CONTRAST := Color(1.0, 0.78, 0.34, 0.94)
+
 var is_active: bool = true
 var _visual_rest_position: Vector2
 var _visual_rest_scale: Vector2
 var _idle_tween: Tween
+var _aura_tween: Tween
+var _presence_aura: Line2D
 
 @onready var visual: Sprite2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -19,6 +24,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	_visual_rest_position = visual.position
 	_visual_rest_scale = visual.scale
+	_create_presence_aura()
 	_play_emerge_animation()
 
 func _on_body_entered(body: Node2D) -> void:
@@ -46,6 +52,7 @@ func _play_emerge_animation() -> void:
 		visual.position = _visual_rest_position
 		visual.scale = _visual_rest_scale
 		visual.modulate = _readable_idle_modulate()
+		_start_aura_motion()
 		return
 	visual.position = _visual_rest_position + Vector2(0.0, 72.0)
 	visual.scale = Vector2(_visual_rest_scale.x, 0.02)
@@ -61,6 +68,7 @@ func _start_idle_motion() -> void:
 	if not is_active or not is_instance_valid(visual):
 		return
 	visual.modulate = _readable_idle_modulate()
+	_start_aura_motion()
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		visual.scale = _visual_rest_scale
 		return
@@ -72,10 +80,14 @@ func _start_idle_motion() -> void:
 func _play_close_animation() -> void:
 	if _idle_tween != null and _idle_tween.is_valid():
 		_idle_tween.kill()
+	if _aura_tween != null and _aura_tween.is_valid():
+		_aura_tween.kill()
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		visual.position = _visual_rest_position
 		visual.scale = _visual_rest_scale
 		visual.modulate = Color(1.0, 0.4, 0.2, 0.0)
+		if _presence_aura != null:
+			_presence_aura.modulate.a = 0.0
 		queue_free()
 		return
 	var tween := create_tween().set_parallel(true)
@@ -83,9 +95,48 @@ func _play_close_animation() -> void:
 	tween.tween_property(visual, "position", _visual_rest_position + Vector2(0.0, 72.0), 0.4)
 	tween.tween_property(visual, "scale", Vector2(_visual_rest_scale.x, 0.02), 0.4)
 	tween.tween_property(visual, "modulate", Color(1.0, 0.4, 0.2, 0.0), 0.32)
+	if _presence_aura != null:
+		tween.tween_property(_presence_aura, "scale", Vector2(0.45, 0.45), 0.32)
+		tween.tween_property(_presence_aura, "modulate:a", 0.0, 0.28)
 	tween.finished.connect(queue_free)
 
 func _readable_idle_modulate() -> Color:
 	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
 		return Color(1.18, 1.12, 1.06, 1.0)
 	return Color.WHITE
+
+func _create_presence_aura() -> void:
+	_presence_aura = Line2D.new()
+	_presence_aura.name = "PresenceAura"
+	_presence_aura.points = _build_aura_points()
+	_presence_aura.width = 3.0
+	_presence_aura.default_color = (
+		COLOR_AURA_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_AURA
+	)
+	_presence_aura.z_index = -1
+	_presence_aura.scale = Vector2.ONE * 0.88
+	add_child(_presence_aura)
+
+func _build_aura_points() -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var point_count := 32
+	for index in range(point_count + 1):
+		var angle := TAU * float(index) / float(point_count)
+		points.append(Vector2(cos(angle) * 48.0, sin(angle) * 15.0))
+	return points
+
+func _start_aura_motion() -> void:
+	if _presence_aura == null or not is_instance_valid(_presence_aura):
+		return
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		_presence_aura.scale = Vector2.ONE
+		_presence_aura.modulate.a = 0.82
+		return
+	_aura_tween = _presence_aura.create_tween().set_loops()
+	_aura_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_aura_tween.tween_property(_presence_aura, "scale", Vector2.ONE * 1.08, 0.78)
+	_aura_tween.parallel().tween_property(_presence_aura, "modulate:a", 0.46, 0.78)
+	_aura_tween.tween_property(_presence_aura, "scale", Vector2.ONE * 0.88, 0.78)
+	_aura_tween.parallel().tween_property(_presence_aura, "modulate:a", 0.82, 0.78)
