@@ -84,9 +84,10 @@ Keep current and actionable:
 - `WEAPON_TAGS.md`
 - `WEAPONS.md`
 
-### Historical or superseded candidates
+### Removed historical planning layers
 
-Audit references, then archive or remove in a separate docs-cleanup PR:
+The following superseded planning layers are retained in Git history rather than
+the active documentation tree:
 
 - `CODEX_ROADMAP.md`
 - `ROADMAP.md`
@@ -95,7 +96,11 @@ Audit references, then archive or remove in a separate docs-cleanup PR:
 - `ROSTER_EXPANSION_16_HUNTERS.md`
 - `REFACTOR_AUDIT_NEXT_PHASE.md`
 - completed Stage 11 gate/checklist documents;
-- completed V2 roadmap/capture documents;
+- completed V2 roadmap/capture documents.
+
+The following documents remain pending a separate UI documentation audit
+because some still describe active image-slot or smoke contracts:
+
 - menu planning and generation-prep documents whose contracts are already
   represented by the shipped UI specification and current scenes.
 
@@ -283,7 +288,8 @@ V2 did not require:
 - a generic framework
 - Early Access completeness
 
-**Status: complete.** The canonical presentation/value-density closeout is recorded in `docs/V2_PRESENTATION_VALUE_ROADMAP.md`.
+**Status: complete.** Historical execution details remain available in Git
+history; current work proceeds from the approved V2 baseline.
 
 ## V3 — Public Demo / External Playtest Candidate
 
