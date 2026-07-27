@@ -11,6 +11,10 @@ const ARCANE_TAGS: Array[String] = [
 	"necromancy",
 	"curse"
 ]
+const COLOR_TRAIL_BONE := Color(1.0, 0.80, 0.48, 0.82)
+const COLOR_TRAIL_INFERNAL := Color(1.0, 0.30, 0.08, 0.86)
+const COLOR_TRAIL_OCCULT := Color(0.94, 0.16, 0.46, 0.82)
+const COLOR_TRAIL_HIGH_CONTRAST := Color(1.0, 0.92, 0.72, 0.94)
 
 static func build_profile(weapon_data: WeaponData) -> Dictionary:
 	var profile := {
@@ -19,30 +23,70 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 		"pulse_speed": 5.0,
 		"brightness_amount": 0.04,
 		"impact_scale": 1.35,
-		"impact_duration": 0.10
+		"impact_duration": 0.10,
+		"trail_enabled": false,
+		"trail_length": 14.0,
+		"trail_width": 2.0,
+		"trail_color": COLOR_TRAIL_BONE
 	}
 	if weapon_data == null:
 		return profile
 	var tags := WeaponTagUtil.weapon_tags(weapon_data)
 	if "thrown" in tags:
 		profile["spin_speed"] = 7.0
+		profile["trail_enabled"] = true
+		profile["trail_length"] = 16.0
+		profile["trail_width"] = 2.5
+		profile["trail_color"] = COLOR_TRAIL_OCCULT
 	elif "orbit" in tags:
 		profile["spin_speed"] = 2.4
 	if _contains_any(tags, ARCANE_TAGS):
 		profile["pulse_amount"] = 0.08
 		profile["brightness_amount"] = 0.14
 		profile["impact_scale"] = 1.5
+		profile["trail_enabled"] = true
+		profile["trail_length"] = 20.0
+		profile["trail_width"] = 3.0
+		profile["trail_color"] = COLOR_TRAIL_INFERNAL if "hellfire" in tags or "burn" in tags else COLOR_TRAIL_OCCULT
 	if "rapid" in tags:
 		profile["pulse_speed"] = 9.0
 		profile["brightness_amount"] = maxf(float(profile["brightness_amount"]), 0.07)
 		profile["impact_scale"] = minf(float(profile["impact_scale"]), 1.22)
 		profile["impact_duration"] = 0.07
+		profile["trail_enabled"] = true
+		profile["trail_length"] = 10.0
+		profile["trail_width"] = 1.4
+		profile["trail_color"] = COLOR_TRAIL_BONE
 	elif "heavy" in tags:
 		profile["pulse_speed"] = 3.5
 		profile["brightness_amount"] = maxf(float(profile["brightness_amount"]), 0.06)
 		profile["impact_scale"] = maxf(float(profile["impact_scale"]), 1.7)
 		profile["impact_duration"] = 0.14
+		profile["trail_enabled"] = true
+		profile["trail_length"] = 28.0
+		profile["trail_width"] = 4.0
 	return profile
+
+static func create_trail(profile: Dictionary) -> Line2D:
+	if profile.get("trail_enabled", false) != true:
+		return null
+	var length := maxf(float(profile.get("trail_length", 14.0)), 2.0)
+	var width := maxf(float(profile.get("trail_width", 2.0)), 0.5)
+	var color_variant: Variant = profile.get("trail_color", COLOR_TRAIL_BONE)
+	var color := color_variant as Color if color_variant is Color else COLOR_TRAIL_BONE
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		color = COLOR_TRAIL_HIGH_CONTRAST
+	var gradient := Gradient.new()
+	var transparent_color := color
+	transparent_color.a = 0.0
+	gradient.set_color(0, transparent_color)
+	gradient.set_color(1, color)
+	var trail := Line2D.new()
+	trail.points = PackedVector2Array([Vector2(-length, 0.0), Vector2.ZERO])
+	trail.width = width
+	trail.gradient = gradient
+	trail.z_index = -1
+	return trail
 
 static func sample_scale_multiplier(profile: Dictionary, elapsed: float, phase: float) -> float:
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():

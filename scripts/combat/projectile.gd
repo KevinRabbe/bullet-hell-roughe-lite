@@ -24,6 +24,7 @@ var _visual_base_rotation: float = 0.0
 var _visual_base_modulate: Color = Color.WHITE
 var _visual_elapsed: float = 0.0
 var _visual_phase: float = 0.0
+var _visual_trail: Line2D
 @onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
@@ -57,6 +58,7 @@ func set_source_context(weapon_id: String, slot_index: int) -> void:
 func set_source_weapon_data(new_weapon_data: WeaponData) -> void:
 	source_weapon_data = new_weapon_data
 	_visual_animation_profile = ProjectileVisualUtil.build_profile(new_weapon_data)
+	_refresh_visual_trail()
 
 func set_visual_texture(texture: Texture2D) -> void:
 	if visual == null or texture == null:
@@ -83,6 +85,13 @@ func _update_visual_animation(delta: float) -> void:
 		_visual_phase,
 		_visual_base_modulate
 	)
+
+func _refresh_visual_trail() -> void:
+	if _visual_trail != null and is_instance_valid(_visual_trail):
+		_visual_trail.queue_free()
+	_visual_trail = ProjectileVisualUtil.create_trail(_visual_animation_profile)
+	if _visual_trail != null:
+		add_child(_visual_trail)
 
 func _on_body_entered(body: Node) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
