@@ -3,6 +3,7 @@ extends Button
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
 @export var eyebrow_text: String = ""
 @export var title_text: String = ""
@@ -95,14 +96,30 @@ func _apply_responsive_layout() -> void:
 	title_stack.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class))
 	footer.add_theme_constant_override("separation", UiLayoutMetricsRef.row_gap(layout_class))
 	var tight: bool = layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT
+	var large_text := AccessibilitySettingsRuntimeRef.is_large_text_enabled()
 	var icon_size: float = 40.0 if tight else 48.0
 	icon_rect.custom_minimum_size = Vector2(icon_size, icon_size)
-	custom_minimum_size.y = 148.0 if tight else 166.0
-	eyebrow_label.add_theme_font_size_override("font_size", 11 if tight else 12)
-	title_label.add_theme_font_size_override("font_size", 16 if tight else 18)
-	body_label.add_theme_font_size_override("font_size", 12 if tight else 13)
-	value_label.add_theme_font_size_override("font_size", 13 if tight else 14)
-	hint_label.add_theme_font_size_override("font_size", 11 if tight else 12)
+	custom_minimum_size.y = (148.0 if tight else 166.0) + (16.0 if large_text else 0.0)
+	eyebrow_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(11 if tight else 12)
+	)
+	title_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(16 if tight else 18)
+	)
+	body_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(12 if tight else 13)
+	)
+	value_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(13 if tight else 14)
+	)
+	hint_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(11 if tight else 12)
+	)
 
 func _set_descendants_mouse_passthrough(root: Node) -> void:
 	for child in root.get_children():
