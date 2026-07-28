@@ -3,6 +3,7 @@ extends CanvasLayer
 signal ascension_selected(definition: Dictionary)
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 
@@ -25,6 +26,7 @@ var _choices: Array[Dictionary] = []
 var _resolved: bool = false
 
 func _ready() -> void:
+	_build_ritual_backdrop()
 	_apply_presentation()
 	_apply_responsive_layout()
 	for index in choice_buttons.size():
@@ -34,6 +36,15 @@ func _ready() -> void:
 		viewport.size_changed.connect(_apply_responsive_layout)
 	_refresh()
 	MenuAnimationRuntimeRef.animate_modal_open(backdrop, panel)
+
+func _build_ritual_backdrop() -> void:
+	if panel == null or panel.get_node_or_null("RitualBackdrop") != null:
+		return
+	var ritual_backdrop := InfernalRitualBackdropRef.new() as Control
+	ritual_backdrop.name = "RitualBackdrop"
+	panel.add_child(ritual_backdrop)
+	ritual_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.move_child(ritual_backdrop, 0)
 
 func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_panel(panel, InfernalUiStyleRef.PANEL_MODAL)
