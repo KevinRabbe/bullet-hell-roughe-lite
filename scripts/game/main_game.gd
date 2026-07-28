@@ -123,10 +123,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	var key_event := event as InputEventKey
 	if not key_event.pressed or key_event.echo:
 		return
-	if key_event.keycode == KEY_PLUS or key_event.keycode == KEY_KP_ADD:
+	var debug_input_enabled := OS.is_debug_build()
+	if debug_input_enabled and (key_event.keycode == KEY_PLUS or key_event.keycode == KEY_KP_ADD):
 		_cycle_debug_run_preset()
 		return
 	if not run_started:
+		if not debug_input_enabled:
+			return
 		if key_event.keycode == KEY_M:
 			_open_character_select_scene()
 			return
@@ -149,7 +152,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_pause()
 		return
 
-	if key_event.keycode == KEY_Q:
+	if debug_input_enabled and key_event.keycode == KEY_Q:
 		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
 		return
 

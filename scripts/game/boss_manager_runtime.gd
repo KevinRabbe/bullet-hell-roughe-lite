@@ -11,6 +11,8 @@ static func should_auto_spawn(boss_spawned: bool, elapsed_seconds: float, spawn_
 	return not boss_spawned and elapsed_seconds >= spawn_after_seconds
 
 static func is_debug_spawn_event(event: InputEvent, boss_spawned: bool, debug_spawn_key: Key) -> bool:
+	if not OS.is_debug_build():
+		return false
 	if boss_spawned:
 		return false
 	if not (event is InputEventKey):
