@@ -56,6 +56,8 @@ func _ready() -> void:
 		new_character_button.pressed.connect(_on_new_character_pressed)
 	if main_menu_button != null:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
+	if retry_button != null and retry_button.visible and not retry_button.disabled:
+		retry_button.grab_focus()
 
 func set_standalone_mode(enabled: bool) -> void:
 	standalone_mode = enabled
