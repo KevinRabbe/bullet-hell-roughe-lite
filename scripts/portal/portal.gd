@@ -3,8 +3,10 @@ extends Area2D
 signal activated(portal_position: Vector2)
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 
 @export var activation_radius: float = 108.0
+@export var prompt_radius: float = 220.0
 
 const COLOR_AURA := Color(0.92, 0.18, 0.08, 0.72)
 const COLOR_AURA_HIGH_CONTRAST := Color(1.0, 0.78, 0.34, 0.94)
@@ -15,17 +17,31 @@ var _visual_rest_scale: Vector2
 var _idle_tween: Tween
 var _aura_tween: Tween
 var _presence_aura: Line2D
+var _prompt_player: Node2D
 
 @onready var visual: Sprite2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
+@onready var interaction_prompt: Label2D = $InteractionPrompt
 
 func _ready() -> void:
 	add_to_group("portals")
 	body_entered.connect(_on_body_entered)
 	_visual_rest_position = visual.position
 	_visual_rest_scale = visual.scale
+	interaction_prompt.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
 	_create_presence_aura()
 	_play_emerge_animation()
+
+func _process(_delta: float) -> void:
+	if not is_active:
+		interaction_prompt.visible = false
+		return
+	if _prompt_player == null or not is_instance_valid(_prompt_player):
+		_prompt_player = get_tree().get_first_node_in_group("players") as Node2D
+	interaction_prompt.visible = (
+		_prompt_player != null
+		and global_position.distance_to(_prompt_player.global_position) <= prompt_radius
+	)
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.has_method("get_ui_snapshot"):
@@ -42,6 +58,7 @@ func try_activate(player: Node2D) -> bool:
 	if not can_activate(player):
 		return false
 	is_active = false
+	interaction_prompt.visible = false
 	collision_shape.set_deferred("disabled", true)
 	activated.emit(global_position)
 	_play_close_animation()

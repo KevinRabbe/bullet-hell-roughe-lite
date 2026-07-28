@@ -15,5 +15,15 @@ position = Vector2(0, -64)
 scale = Vector2(0.32, 0.32)
 texture = ExtResource("2")
 
+[node name="InteractionPrompt" type="Label2D" parent="."]
+visible = false
+position = Vector2(0, -158)
+z_index = 4
+text = "OPTIONAL RIFT - APPROACH OR E / A - RISK FOR POWER"
+horizontal_alignment = 1
+font_size = 18
+outline_size = 6
+outline_modulate = Color(0.0705882, 0.0431373, 0.0627451, 0.96)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("1")
