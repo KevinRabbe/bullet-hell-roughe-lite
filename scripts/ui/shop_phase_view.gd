@@ -6,6 +6,7 @@ const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoi
 const StandardTooltipScene = preload("res://scenes/ui/components/StandardTooltip.tscn")
 const ShopStatSheetPanelRef = preload("res://scripts/ui/shop_stat_sheet_panel.gd")
 const ShopInventoryDetailRuntimeRef = preload("res://scripts/ui/shop_inventory_detail_runtime.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -130,6 +131,7 @@ func _build_layout_once() -> void:
 	if panel == null:
 		return
 	_build_panel_style()
+	_build_ritual_backdrop()
 	_build_top_labels()
 	_build_offer_card_layout()
 	_build_stats_panel()
@@ -152,6 +154,15 @@ func _build_layout_once() -> void:
 
 	for button in offer_buttons:
 		panel.move_child(button, panel.get_child_count() - 1)
+
+func _build_ritual_backdrop() -> void:
+	if panel.get_node_or_null("RitualBackdrop") != null:
+		return
+	var backdrop := InfernalRitualBackdropRef.new()
+	backdrop.name = "RitualBackdrop"
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.add_child(backdrop)
+	panel.move_child(backdrop, 0)
 
 func _build_offer_card_layout() -> void:
 	var card_width := 229.0

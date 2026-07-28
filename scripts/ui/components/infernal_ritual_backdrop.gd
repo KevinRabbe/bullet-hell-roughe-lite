@@ -12,7 +12,12 @@ var _elapsed: float = 0.0
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(queue_redraw)
-	set_process(not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled())
+	visibility_changed.connect(_sync_process_state)
+	_sync_process_state()
+	queue_redraw()
+
+func _sync_process_state() -> void:
+	set_process(is_visible_in_tree() and not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled())
 	queue_redraw()
 
 func _process(delta: float) -> void:
