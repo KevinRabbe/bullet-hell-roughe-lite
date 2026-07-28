@@ -8,6 +8,7 @@ signal main_menu_requested
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const OptionsMenuScene = preload("res://scenes/ui/OptionsMenuStandardized.tscn")
@@ -39,6 +40,7 @@ func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_apply_shell_panel_style()
+	_build_ritual_backdrop()
 	_apply_responsive_layout()
 	_apply_action_styles()
 	_refresh_hint_copy()
@@ -54,6 +56,15 @@ func _ready() -> void:
 		main_menu_button.pressed.connect(_on_main_menu_pressed)
 	if resume_button != null:
 		resume_button.grab_focus()
+
+func _build_ritual_backdrop() -> void:
+	if panel == null or panel.get_node_or_null("RitualBackdrop") != null:
+		return
+	var backdrop := InfernalRitualBackdropRef.new() as Control
+	backdrop.name = "RitualBackdrop"
+	panel.add_child(backdrop)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	panel.move_child(backdrop, 0)
 
 func set_standalone_mode(enabled: bool) -> void:
 	standalone_mode = enabled
