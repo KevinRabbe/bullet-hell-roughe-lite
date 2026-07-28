@@ -1,6 +1,8 @@
 class_name InfernalUiStyle
 extends RefCounted
 
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+
 const COLOR_ALMOST_BLACK := Color("#120B10")
 const COLOR_BURNT_BROWN := Color("#2A1711")
 const COLOR_DEEP_BLOOD_RED := Color("#5A0F1B")
@@ -91,6 +93,8 @@ static func apply_button(button: Button, button_role: StringName = BUTTON_SECOND
 				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_OLD_PARCHMENT, 2, 10, 16),
 				_build_style(COLOR_ALMOST_BLACK, COLOR_OLD_PARCHMENT, 2, 10, 16)
 			)
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		_apply_high_contrast_button_states(button, button_role)
 
 static func apply_primary_button(button: Button) -> void:
 	apply_button(button, BUTTON_PRIMARY)
@@ -113,17 +117,24 @@ static func apply_icon_button(button: Button) -> void:
 static func apply_text_role(label: Label, text_role: StringName = TEXT_BODY) -> void:
 	if label == null:
 		return
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
 	match text_role:
 		TEXT_DISPLAY_TITLE, TEXT_SCREEN_TITLE, TEXT_CARD_TITLE, TEXT_VALUE:
 			label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
 		TEXT_SECTION_TITLE:
-			label.add_theme_color_override("font_color", COLOR_OLD_PARCHMENT)
+			label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT if high_contrast else COLOR_OLD_PARCHMENT)
 		TEXT_WARNING:
 			label.add_theme_color_override("font_color", COLOR_HELL_ORANGE)
 		TEXT_MUTED, TEXT_HINT:
-			label.add_theme_color_override("font_color", COLOR_OLD_PARCHMENT.darkened(0.22))
+			label.add_theme_color_override(
+				"font_color",
+				COLOR_OLD_PARCHMENT if high_contrast else COLOR_OLD_PARCHMENT.darkened(0.22)
+			)
 		_:
-			label.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT.darkened(0.18))
+			label.add_theme_color_override(
+				"font_color",
+				COLOR_BONE_HIGHLIGHT if high_contrast else COLOR_BONE_HIGHLIGHT.darkened(0.18)
+			)
 
 static func apply_title(label: Label) -> void:
 	apply_text_role(label, TEXT_SCREEN_TITLE)
@@ -149,9 +160,10 @@ static func apply_accent_text(label: Label) -> void:
 static func apply_progress_bar(progress_bar: ProgressBar) -> void:
 	if progress_bar == null:
 		return
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
 	progress_bar.add_theme_stylebox_override(
 		"background",
-		_build_progress_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN)
+		_build_progress_style(COLOR_ALMOST_BLACK, COLOR_BONE_HIGHLIGHT if high_contrast else COLOR_BURNT_BROWN)
 	)
 	progress_bar.add_theme_stylebox_override(
 		"fill",
@@ -160,6 +172,19 @@ static func apply_progress_bar(progress_bar: ProgressBar) -> void:
 	progress_bar.add_theme_color_override("font_color", COLOR_BONE_HIGHLIGHT)
 
 static func build_panel_style(panel_role: StringName = PANEL_SECTION) -> StyleBoxFlat:
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+	if high_contrast:
+		match panel_role:
+			PANEL_SHELL:
+				return _build_style(COLOR_ALMOST_BLACK, COLOR_BONE_HIGHLIGHT, 2, 12, 18)
+			PANEL_CARD:
+				return _build_style(COLOR_ALMOST_BLACK.lightened(0.025), COLOR_OLD_PARCHMENT, 2, 8, 12)
+			PANEL_MODAL:
+				return _build_style(COLOR_ALMOST_BLACK.lightened(0.01), COLOR_BONE_HIGHLIGHT, 3, 12, 18)
+			PANEL_TOOLTIP:
+				return _build_style(COLOR_ALMOST_BLACK.lightened(0.02), COLOR_BONE_HIGHLIGHT, 2, 8, 12)
+			_:
+				return _build_style(COLOR_ALMOST_BLACK.lightened(0.015), COLOR_OLD_PARCHMENT, 2, 10, 16)
 	match panel_role:
 		PANEL_SHELL:
 			return _build_style(COLOR_ALMOST_BLACK, COLOR_BURNT_BROWN, 1, 12, 18)
@@ -192,6 +217,22 @@ static func _apply_button_styles(
 	button.add_theme_color_override("font_pressed_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_focus_color", COLOR_BONE_HIGHLIGHT)
 	button.add_theme_color_override("font_disabled_color", COLOR_OLD_PARCHMENT.darkened(0.42))
+
+static func _apply_high_contrast_button_states(button: Button, button_role: StringName) -> void:
+	var corner_radius := 8 if button_role in [BUTTON_CARD, BUTTON_TAB, BUTTON_ICON] else 10
+	var content_margin := 8 if button_role in [BUTTON_CARD, BUTTON_ICON] else (12 if button_role == BUTTON_TAB else 16)
+	button.add_theme_stylebox_override(
+		"hover",
+		_build_style(COLOR_BURNT_BROWN, COLOR_BONE_HIGHLIGHT, 3, corner_radius, content_margin)
+	)
+	button.add_theme_stylebox_override(
+		"pressed",
+		_build_style(COLOR_DEEP_BLOOD_RED, COLOR_BONE_HIGHLIGHT, 3, corner_radius, content_margin)
+	)
+	button.add_theme_stylebox_override(
+		"focus",
+		_build_style(COLOR_ALMOST_BLACK, COLOR_BONE_HIGHLIGHT, 4, corner_radius, content_margin)
+	)
 
 static func _build_progress_style(background_color: Color, border_color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

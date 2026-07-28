@@ -405,6 +405,7 @@ func _apply_staged_audio_preview() -> void:
 
 func _apply_staged_accessibility_preview() -> void:
 	AccessibilitySettingsRuntimeRef.apply_settings(staged_accessibility_settings)
+	_apply_shared_frame_styles()
 	_apply_responsive_layout()
 	_refresh_tab_styles()
 
