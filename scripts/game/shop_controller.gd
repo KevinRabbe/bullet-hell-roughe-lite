@@ -261,6 +261,18 @@ func _open_shop_for_wave() -> void:
 	if panel != null:
 		panel.visible = true
 	shop_opened.emit(_current_wave_index)
+	_focus_initial_shop_action()
+
+func _focus_initial_shop_action() -> void:
+	for offer_button in offer_buttons:
+		if offer_button != null and offer_button.visible and not offer_button.disabled:
+			offer_button.grab_focus()
+			return
+	if reroll_button != null and reroll_button.visible and not reroll_button.disabled:
+		reroll_button.grab_focus()
+		return
+	if continue_button != null and continue_button.visible and not continue_button.disabled:
+		continue_button.grab_focus()
 
 func _refresh_shop_offers() -> void:
 	_roll_offers()
