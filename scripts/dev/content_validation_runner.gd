@@ -7,7 +7,9 @@ func _initialize() -> void:
 	var registry := DataRegistryScript.new()
 	registry.name = "ContentValidationDataRegistry"
 	root.add_child(registry)
+	call_deferred("_run_validation", registry)
 
+func _run_validation(registry: Node) -> void:
 	var report := ContentValidatorRef.validate_registry(registry)
 	_print_report(report)
 	var exit_code := 0 if report.get("valid", false) == true else 1
