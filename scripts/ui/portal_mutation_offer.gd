@@ -4,6 +4,7 @@ signal accepted
 signal declined
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 
 @onready var modal_shell: PanelContainer = $Backdrop/Center/ModalShell
 
@@ -19,10 +20,20 @@ var _definition: Dictionary = {}
 var _resolved: bool = false
 
 func _ready() -> void:
+	_build_ritual_backdrop()
 	_build_standard_content()
 	_refresh()
 	if accept_button != null:
 		accept_button.grab_focus()
+
+func _build_ritual_backdrop() -> void:
+	if modal_shell == null or modal_shell.get_node_or_null("RitualBackdrop") != null:
+		return
+	var backdrop := InfernalRitualBackdropRef.new() as Control
+	backdrop.name = "RitualBackdrop"
+	modal_shell.add_child(backdrop)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal_shell.move_child(backdrop, 0)
 
 func _build_standard_content() -> void:
 	var content_container: VBoxContainer = modal_shell.call("get_content_container") as VBoxContainer
