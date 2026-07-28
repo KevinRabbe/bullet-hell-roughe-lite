@@ -60,7 +60,7 @@ static func _validate_characters(
 			continue
 		var character: Dictionary = entry
 		_validate_embedded_id(issues, "character", character_id, character)
-		var selectable := character.get("selectable", true) != false
+		var selectable: bool = character.get("selectable", true) != false
 		if not selectable:
 			continue
 		selectable_count += 1
