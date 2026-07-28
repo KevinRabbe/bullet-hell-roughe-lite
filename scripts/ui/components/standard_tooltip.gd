@@ -3,6 +3,7 @@ extends PanelContainer
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
 @export var minimum_width: float = 320.0
 @export var title_text: String = ""
@@ -58,8 +59,14 @@ func _apply_responsive_layout() -> void:
 	margin.add_theme_constant_override("margin_bottom", padding)
 	stack.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class) + 2)
 	custom_minimum_size.x = minf(minimum_width, maxf(get_viewport_rect().size.x - 36.0, 220.0))
-	title_label.add_theme_font_size_override("font_size", 15 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 16)
-	body_label.add_theme_font_size_override("font_size", 12 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 13)
+	title_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(15 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 16)
+	)
+	body_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(12 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 13)
+	)
 
 func _clamp_to_viewport() -> void:
 	var viewport_size := get_viewport_rect().size

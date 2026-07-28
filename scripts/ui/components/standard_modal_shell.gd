@@ -3,6 +3,7 @@ extends PanelContainer
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
 @export var title_text: String = ""
 @export_multiline var subtitle_text: String = ""
@@ -59,3 +60,11 @@ func _apply_responsive_layout() -> void:
 	content.add_theme_constant_override("separation", gap)
 	actions.add_theme_constant_override("separation", gap)
 	custom_minimum_size.x = tight_minimum_width if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else normal_minimum_width
+	title_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(26 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 28)
+	)
+	subtitle_label.add_theme_font_size_override(
+		"font_size",
+		AccessibilitySettingsRuntimeRef.scale_font(13 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 14)
+	)
