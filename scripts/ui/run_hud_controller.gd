@@ -2,6 +2,8 @@ extends Control
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
+const ONBOARDING_HINT_MIN_SECONDS := 4.0
+const ONBOARDING_HINT_MAX_SECONDS := 8.0
 
 @export var player_path: NodePath
 @export var enemy_spawner_path: NodePath
@@ -39,6 +41,12 @@ var wave_progress_bar: ProgressBar
 @onready var stats_caption: Label = $TopMargin/TopRow/StatsPanel/StatsMargin/StatsVBox/StatsCaption
 @onready var progress_caption: Label = $TopMargin/TopRow/ProgressPanel/ProgressMargin/ProgressVBox/ProgressCaption
 @onready var state_caption: Label = $TopMargin/TopRow/StatePanel/StateMargin/StateVBox/StateCaption
+@onready var onboarding_hint_panel: PanelContainer = $OnboardingHintPanel
+@onready var onboarding_hint_label: Label = $OnboardingHintPanel/HintMargin/HintLabel
+
+var onboarding_hint_elapsed := 0.0
+var onboarding_movement_seen := false
+var onboarding_hint_active := true
 
 func _ready() -> void:
 	if player_path != NodePath():
@@ -66,8 +74,31 @@ func _ready() -> void:
 	resized.connect(_apply_responsive_layout)
 	_update_hud()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	_update_hud()
+	_update_onboarding_hint(delta)
+
+func _update_onboarding_hint(delta: float) -> void:
+	if onboarding_hint_panel == null:
+		return
+	if not onboarding_hint_active:
+		onboarding_hint_panel.visible = false
+		return
+	var current_wave := int(enemy_spawner.get("current_wave_index")) if enemy_spawner != null else 0
+	onboarding_hint_panel.visible = visible and current_wave <= 1
+	if not onboarding_hint_panel.visible:
+		return
+	onboarding_hint_elapsed += delta
+	if player != null:
+		var velocity_variant: Variant = player.get("velocity")
+		if velocity_variant is Vector2:
+			var player_velocity: Vector2 = velocity_variant
+			onboarding_movement_seen = onboarding_movement_seen or player_velocity.length_squared() > 1.0
+	if onboarding_hint_elapsed >= ONBOARDING_HINT_MAX_SECONDS or (
+		onboarding_movement_seen and onboarding_hint_elapsed >= ONBOARDING_HINT_MIN_SECONDS
+	):
+		onboarding_hint_active = false
+		onboarding_hint_panel.visible = false
 
 func _update_hud() -> void:
 	if player == null or enemy_spawner == null:
@@ -183,6 +214,8 @@ func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_text_role(progress_caption, InfernalUiStyleRef.TEXT_SECTION_TITLE)
 	InfernalUiStyleRef.apply_text_role(stats_label, InfernalUiStyleRef.TEXT_BODY)
 	InfernalUiStyleRef.apply_text_role(state_label, InfernalUiStyleRef.TEXT_VALUE)
+	InfernalUiStyleRef.apply_panel(onboarding_hint_panel, InfernalUiStyleRef.PANEL_CARD)
+	InfernalUiStyleRef.apply_text_role(onboarding_hint_label, InfernalUiStyleRef.TEXT_HINT)
 	InfernalUiStyleRef.apply_progress_bar(wave_progress_bar)
 
 func _apply_responsive_layout() -> void:
@@ -226,6 +259,12 @@ func _apply_responsive_layout() -> void:
 		state_label.add_theme_font_size_override("font_size", 13 if tight else 14)
 	if wave_progress_bar != null:
 		wave_progress_bar.custom_minimum_size.y = 14 if tight else 16
+	if onboarding_hint_panel != null:
+		var hint_width := minf(get_viewport_rect().size.x - 32.0, 900.0)
+		onboarding_hint_panel.offset_left = -hint_width * 0.5
+		onboarding_hint_panel.offset_right = hint_width * 0.5
+	if onboarding_hint_label != null:
+		onboarding_hint_label.add_theme_font_size_override("font_size", 12 if tight else 13)
 
 func _get_player_snapshot() -> Dictionary:
 	if player != null and player.has_method("get_ui_snapshot"):
