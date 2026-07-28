@@ -12,6 +12,10 @@ const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
 const COLOR_RANGED_RELEASE_HIGH_CONTRAST := Color(1.0, 0.88, 0.62, 1.0)
+const COLOR_STATUS_BURN := Color(1.0, 0.25, 0.06, 0.78)
+const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
+const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
+const COLOR_STATUS_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.92)
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -134,6 +138,31 @@ static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> 
 			flash.queue_free()
 	)
 
+static func update_status_presence(
+	owner: Node2D,
+	current_ring: Line2D,
+	status_ids: Array[String],
+	is_boss: bool
+) -> Line2D:
+	if owner == null or not is_instance_valid(owner):
+		return current_ring
+	if status_ids.is_empty():
+		if current_ring != null and is_instance_valid(current_ring):
+			current_ring.visible = false
+		return current_ring
+
+	var ring := current_ring
+	if ring == null or not is_instance_valid(ring):
+		ring = Line2D.new()
+		ring.name = "StatusPresence"
+		ring.points = _build_status_ring_points(64.0 if is_boss else 23.0)
+		ring.width = 2.4 if is_boss else 2.0
+		ring.z_index = -2
+		owner.add_child(ring)
+	ring.default_color = _resolve_status_color(status_ids)
+	ring.visible = true
+	return ring
+
 static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 	if owner.get_tree() == null or owner.get_tree().current_scene == null:
 		return
@@ -246,3 +275,21 @@ static func _resolve_hit_color() -> Color:
 	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
 		return COLOR_HIT_HIGH_CONTRAST
 	return COLOR_HIT
+
+static func _build_status_ring_points(radius: float) -> PackedVector2Array:
+	var points := PackedVector2Array()
+	var point_count := 20
+	for index in range(point_count + 1):
+		var angle := TAU * float(index) / float(point_count)
+		var irregularity := 1.0 + (0.08 * sin((angle * 4.0) + 0.5))
+		points.append(Vector2.from_angle(angle) * radius * irregularity)
+	return points
+
+static func _resolve_status_color(status_ids: Array[String]) -> Color:
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		return COLOR_STATUS_HIGH_CONTRAST
+	if "ritual_mark" in status_ids:
+		return COLOR_STATUS_RITUAL
+	if "hellfire_burn" in status_ids:
+		return COLOR_STATUS_BURN
+	return COLOR_STATUS_DEBT
