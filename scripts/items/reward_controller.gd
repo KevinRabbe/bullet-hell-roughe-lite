@@ -29,6 +29,8 @@ func _ready() -> void:
 		portal_event_manager.connect("portal_event_completed", _on_portal_event_completed)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not OS.is_debug_build():
+		return
 	if event.is_action_pressed("debug_grant_item"):
 		_grant_random_item("debug_key")
 
