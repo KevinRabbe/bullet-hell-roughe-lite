@@ -30,6 +30,7 @@ var _weapon_data_cache: Dictionary = {}
 var _texture_cache: Dictionary = {}
 var _status_runtime: EnemyStatusRuntime
 var _lifecycle_runtime: EnemyLifecycleRuntime
+var _status_presence: Line2D
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -46,6 +47,7 @@ const ENEMY_DATA_DIR: String = "res://data/enemies"
 
 func _ready() -> void:
 	_status_runtime = EnemyStatusRuntime.new()
+	_status_runtime.statuses_changed.connect(_on_statuses_changed)
 	_status_runtime.configure(
 		self,
 		_resolve_rng("status_effects"),
@@ -335,6 +337,14 @@ func consume_status(status_id: String) -> int:
 	if _status_runtime == null:
 		return 0
 	return _status_runtime.consume_status(status_id)
+
+func _on_statuses_changed(status_ids: Array[String]) -> void:
+	_status_presence = EnemyMotionVisualRuntime.update_status_presence(
+		self,
+		_status_presence,
+		status_ids,
+		is_boss
+	)
 
 func _spawn_enemy_hit_flash() -> void:
 	EnemyMotionVisualRuntime.spawn_hit_flash(visual, self)

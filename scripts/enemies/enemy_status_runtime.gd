@@ -1,6 +1,8 @@
 class_name EnemyStatusRuntime
 extends RefCounted
 
+signal statuses_changed(status_ids: Array[String])
+
 var _owner: Node2D
 var _status_rng: RandomNumberGenerator
 var _load_weapon_data_callback: Callable
@@ -19,7 +21,10 @@ func configure(
 	_tick_damage_callback = tick_damage_callback
 
 func tick(delta: float) -> void:
+	var status_count_before := _active_statuses.size()
 	tick_statuses(_active_statuses, delta, _tick_damage_callback)
+	if _active_statuses.size() != status_count_before:
+		_emit_statuses_changed()
 
 func apply_weapon_status_effect(source: Node, source_weapon_id: String, source_slot_index: int = -1) -> bool:
 	if source_weapon_id == "":
@@ -49,9 +54,13 @@ func apply_status_payload(
 	source_slot_index: int = -1,
 	status_power_multiplier: float = 1.0
 ) -> bool:
+	var status_id := str(status_payload.get("status_id", ""))
+	var had_status := _active_statuses.has(status_id)
 	var applied := EnemyStatusRuntime.apply_status_payload_to_dict(_active_statuses, status_payload)
 	if not applied:
 		return false
+	if not had_status:
+		_emit_statuses_changed()
 	EnemyStatusRuntime.try_spread_status(
 		_owner,
 		_status_rng,
@@ -75,7 +84,15 @@ func consume_status(status_id: String) -> int:
 	var consumed_stacks := get_status_stack_count(status_id)
 	if consumed_stacks > 0:
 		_active_statuses.erase(status_id)
+		_emit_statuses_changed()
 	return consumed_stacks
+
+func _emit_statuses_changed() -> void:
+	var status_ids: Array[String] = []
+	for status_id_variant in _active_statuses.keys():
+		status_ids.append(str(status_id_variant))
+	status_ids.sort()
+	statuses_changed.emit(status_ids)
 
 static func compute_status_power_multiplier(source: Node, weapon_data: WeaponData) -> float:
 	var status_power_multiplier := 1.0
