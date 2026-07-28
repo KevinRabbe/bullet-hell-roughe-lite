@@ -616,7 +616,7 @@ func _show_run_results(state: String) -> void:
 	if active_run_results.has_method("set_standalone_mode"):
 		active_run_results.call("set_standalone_mode", false)
 	if active_run_results.has_method("apply_result_state"):
-		active_run_results.call("apply_result_state", _build_run_results_state(copy))
+		active_run_results.call("apply_result_state", _build_run_results_state(copy, state))
 	if active_run_results.has_signal("retry_requested"):
 		active_run_results.connect("retry_requested", _restart_run)
 	if active_run_results.has_signal("new_character_requested"):
@@ -631,47 +631,88 @@ func _hide_run_results() -> void:
 	active_run_results.queue_free()
 	active_run_results = null
 
-func _build_run_results_state(copy: Dictionary) -> Dictionary:
-	var stats: Array[String] = []
-	if enemy_spawner != null and "current_wave" in enemy_spawner:
-		stats.append("Wave reached: %s" % str(enemy_spawner.get("current_wave")))
+func _build_run_results_state(copy: Dictionary, state: String) -> Dictionary:
+	var player_snapshot: Dictionary = {}
 	if player != null:
-		var player_snapshot: Dictionary = {}
 		if player.has_method("get_ui_snapshot"):
 			var snapshot_variant: Variant = player.call("get_ui_snapshot")
 			if snapshot_variant is Dictionary:
 				player_snapshot = snapshot_variant
-		var gold_value: int = _resolve_run_results_int(
-			player_snapshot,
-			"gold",
-			player,
-			["current_gold", "gold", "gold_count"],
-			0
-		)
-		var level_value: int = _resolve_run_results_int(
+	var stats: Array[String] = [
+		"Result: %s" % _resolve_run_result_label(state),
+		"Run seed: %s" % _resolve_run_seed(),
+		"Hunter: %s" % _resolve_run_hunter_name(),
+		"Wave reached: %s" % str(_get_current_wave_index()),
+		"Level reached: %s" % str(_resolve_run_results_int(
 			player_snapshot,
 			"level",
 			player,
 			["current_level", "level"],
 			1
-		)
-		stats.append("Gold carried: %s" % str(gold_value))
-		stats.append("Level reached: %s" % str(level_value))
-	if stats.is_empty():
-		stats = [
-			"Wave reached: -",
-			"Gold carried: -",
-			"Level reached: -"
-		]
+		)),
+		"Gold carried: %s" % str(_resolve_run_results_int(
+			player_snapshot,
+			"gold",
+			player,
+			["current_gold", "gold", "gold_count"],
+			0
+		)),
+		"Loadout: %s" % _resolve_run_loadout(player_snapshot)
+	]
+	print("LOCAL RUN REPORT | %s" % " | ".join(stats))
 	return {
 		"title": str(copy.get("title", "Run Complete")),
 		"summary": str(copy.get("body", "The arena is clear. Press Retry or choose a new hunter.")),
 		"stats": stats
 	}
 
+func _resolve_run_result_label(state: String) -> String:
+	if state == "game_over":
+		return "Defeat"
+	if state == "victory":
+		return "Victory"
+	return state.replace("_", " ").capitalize()
+
+func _resolve_run_seed() -> String:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng == null:
+		return "-"
+	if run_rng.has_method("current_seed"):
+		return str(run_rng.call("current_seed"))
+	if "run_seed" in run_rng:
+		return str(run_rng.get("run_seed"))
+	return "-"
+
+func _resolve_run_hunter_name() -> String:
+	if player == null or not ("active_character_id" in player):
+		return "-"
+	var character_id := str(player.get("active_character_id"))
+	if character_id == "":
+		return "-"
+	var data_registry := get_node_or_null("/root/DataRegistry")
+	if data_registry != null and data_registry.has_method("get_character_display_name"):
+		return str(data_registry.call("get_character_display_name", character_id))
+	return character_id
+
+func _resolve_run_loadout(player_snapshot: Dictionary) -> String:
+	var entries_variant: Variant = player_snapshot.get("weapon_entries", [])
+	if not (entries_variant is Array):
+		return "-"
+	var names: Array[String] = []
+	for entry_variant in entries_variant:
+		if not (entry_variant is Dictionary):
+			continue
+		var entry: Dictionary = entry_variant
+		var weapon_name := str(entry.get("display_name", entry.get("id", ""))).strip_edges()
+		if weapon_name != "":
+			names.append(weapon_name)
+	return ", ".join(names) if not names.is_empty() else "-"
+
 func _resolve_run_results_int(snapshot: Dictionary, snapshot_key: String, target: Node, property_names: Array[String], fallback_value: int) -> int:
 	if snapshot.has(snapshot_key):
 		return _coerce_run_results_int(snapshot.get(snapshot_key, fallback_value), fallback_value)
+	if target == null:
+		return fallback_value
 	for property_name in property_names:
 		if property_name in target:
 			return _coerce_run_results_int(target.get(property_name), fallback_value)
