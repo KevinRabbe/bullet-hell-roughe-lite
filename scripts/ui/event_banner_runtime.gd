@@ -3,6 +3,7 @@ extends RefCounted
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 
 const DEFAULT_SECONDS := 1.65
 const PANEL_WIDTH := 560.0
@@ -42,6 +43,11 @@ static func show(
 	panel.offset_right = PANEL_WIDTH * 0.5
 	panel.offset_top = PANEL_TOP
 	panel.offset_bottom = PANEL_TOP + 126.0
+
+	var ritual_backdrop := InfernalRitualBackdropRef.new() as Control
+	ritual_backdrop.name = "RitualBackdrop"
+	panel.add_child(ritual_backdrop)
+	ritual_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var margin := MarginContainer.new()
 	margin.add_theme_constant_override("margin_left", 20)
