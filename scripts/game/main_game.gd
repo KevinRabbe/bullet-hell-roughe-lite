@@ -118,6 +118,9 @@ func _ready() -> void:
 	_try_auto_start_from_pending_selection()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if run_started and event.is_action_pressed("pause_game"):
+		_toggle_pause()
+		return
 	if not (event is InputEventKey):
 		return
 	var key_event := event as InputEventKey
@@ -148,10 +151,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if waiting_for_level_up_choice:
 		return
-	if key_event.keycode == KEY_ESCAPE or key_event.keycode == KEY_P:
-		_toggle_pause()
-		return
-
 	if debug_input_enabled and key_event.keycode == KEY_Q:
 		print("DEBUG QUIT PLACEHOLDER: no menu scene wired yet.")
 		return
