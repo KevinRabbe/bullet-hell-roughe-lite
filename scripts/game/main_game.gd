@@ -453,6 +453,10 @@ func _open_level_up_screen() -> void:
 		level_up_reroll_button,
 		_current_level_up_reroll_cost()
 	)
+	for choice_button in level_up_choice_buttons:
+		if choice_button != null and choice_button.visible and not choice_button.disabled:
+			choice_button.grab_focus()
+			break
 	print("Level-up choices shown.")
 
 func _roll_level_up_choices() -> void:
