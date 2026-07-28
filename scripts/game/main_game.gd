@@ -118,7 +118,7 @@ func _ready() -> void:
 	_try_auto_start_from_pending_selection()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if run_started and event.is_action_pressed("pause_game"):
+	if run_started and not waiting_for_restart and event.is_action_pressed("pause_game"):
 		_toggle_pause()
 		return
 	if not (event is InputEventKey):
