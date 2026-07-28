@@ -2,6 +2,9 @@ extends Area2D
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
+const TRAIL_COLOR := Color(1.0, 0.20, 0.12, 0.88)
+const TRAIL_COLOR_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.96)
+
 @export var speed: float = 320.0
 @export var damage: float = 4.0
 @export var lifetime_seconds: float = 2.2
@@ -12,11 +15,13 @@ var life_left: float = 0.0
 var source_enemy: Node
 var _visual_elapsed: float = 0.0
 var _visual_base_modulate: Color = Color.WHITE
+var _visual_trail: Line2D
 @onready var visual: Sprite2D = get_node_or_null("Visual")
 
 func _ready() -> void:
 	life_left = lifetime_seconds
 	body_entered.connect(_on_body_entered)
+	_create_visual_trail()
 	if visual != null:
 		visual.rotation = direction.angle() + visual_rotation_offset
 		_visual_base_modulate = visual.modulate
@@ -35,6 +40,8 @@ func set_direction(new_direction: Vector2) -> void:
 		direction = new_direction.normalized()
 		if visual != null:
 			visual.rotation = direction.angle() + visual_rotation_offset
+		if _visual_trail != null:
+			_visual_trail.rotation = direction.angle()
 
 func set_source_enemy(new_source_enemy: Node) -> void:
 	source_enemy = new_source_enemy
@@ -75,6 +82,27 @@ func _apply_static_readability() -> void:
 		_visual_base_modulate.b * factor,
 		_visual_base_modulate.a
 	)
+
+func _create_visual_trail() -> void:
+	var color := (
+		TRAIL_COLOR_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else TRAIL_COLOR
+	)
+	var transparent_color := color
+	transparent_color.a = 0.0
+	var gradient := Gradient.new()
+	gradient.set_color(0, transparent_color)
+	gradient.set_color(1, color)
+
+	_visual_trail = Line2D.new()
+	_visual_trail.name = "ThreatTrail"
+	_visual_trail.points = PackedVector2Array([Vector2(-18.0, 0.0), Vector2.ZERO])
+	_visual_trail.width = 2.6
+	_visual_trail.gradient = gradient
+	_visual_trail.rotation = direction.angle()
+	_visual_trail.z_index = -1
+	add_child(_visual_trail)
 
 func _spawn_impact_effect() -> void:
 	if get_tree() == null or get_tree().current_scene == null:
