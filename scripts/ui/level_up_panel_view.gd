@@ -1,6 +1,7 @@
 extends Panel
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
 const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoiceCard.tscn")
 
 @onready var title_label: Label = $Title
@@ -9,6 +10,7 @@ const StandardChoiceCardScene = preload("res://scenes/ui/components/StandardChoi
 var choice_buttons: Array[Button] = []
 
 func _ready() -> void:
+	_add_ritual_backdrop()
 	_upgrade_choice_buttons()
 	choice_buttons = [
 		get_node("Choice1") as Button,
@@ -25,6 +27,15 @@ func _ready() -> void:
 		else:
 			InfernalUiStyleRef.apply_card_button(button)
 	InfernalUiStyleRef.apply_secondary_button(reroll_button)
+
+func _add_ritual_backdrop() -> void:
+	var backdrop := InfernalRitualBackdropRef.new() as Control
+	if backdrop == null:
+		return
+	backdrop.name = "RitualBackdrop"
+	add_child(backdrop)
+	move_child(backdrop, 0)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 func _upgrade_choice_buttons() -> void:
 	for child_name in ["Choice1", "Choice2", "Choice3", "Choice4"]:
