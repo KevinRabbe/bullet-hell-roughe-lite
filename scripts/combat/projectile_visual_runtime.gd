@@ -2,6 +2,7 @@ extends RefCounted
 
 const WeaponTagUtil = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const IMPACT_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/projectile_impact_burst_pixel_v1.png")
 
 const ARCANE_TAGS: Array[String] = [
 	"magic",
@@ -16,6 +17,7 @@ const COLOR_TRAIL_INFERNAL := Color(1.0, 0.30, 0.08, 0.86)
 const COLOR_TRAIL_OCCULT := Color(0.94, 0.16, 0.46, 0.82)
 const COLOR_TRAIL_HIGH_CONTRAST := Color(1.0, 0.92, 0.72, 0.94)
 const IMPACT_RING_SEGMENTS := 16
+const IMPACT_TEXTURE_SCALE := 0.28
 
 static func build_profile(weapon_data: WeaponData) -> Dictionary:
 	var profile := {
@@ -121,21 +123,18 @@ static func sample_modulate(profile: Dictionary, elapsed: float, phase: float, b
 		base_modulate.a
 	)
 
-static func spawn_impact_feedback(projectile: Node2D, visual: Sprite2D, profile: Dictionary) -> void:
+static func spawn_impact_feedback(projectile: Node2D, _visual: Sprite2D, profile: Dictionary) -> void:
 	if projectile == null or not is_instance_valid(projectile) or projectile.get_tree() == null:
 		return
 	var scene := projectile.get_tree().current_scene
 	if scene == null:
 		return
 	var impact := Sprite2D.new()
+	impact.texture = IMPACT_TEXTURE
 	impact.global_position = projectile.global_position
 	impact.global_rotation = projectile.global_rotation
 	impact.z_index = projectile.z_index + 1
-	if visual != null and visual.texture != null:
-		impact.texture = visual.texture
-		impact.scale = visual.scale * 0.72
-	else:
-		impact.scale = Vector2.ONE * 0.12
+	impact.scale = Vector2.ONE * IMPACT_TEXTURE_SCALE
 	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
 	impact.modulate = Color(1.0, 0.92, 0.78, 1.0) if high_contrast else Color(1.0, 0.76, 0.42, 0.9)
 	scene.add_child(impact)
