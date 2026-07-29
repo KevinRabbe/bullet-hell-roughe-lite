@@ -15,12 +15,12 @@ static func play(
 	pitch_scale: float = 1.0,
 	minimum_interval_ms: int = 0
 ) -> void:
-	var runtime := _ensure_runtime(owner)
+	var runtime: SfxRuntime = _ensure_runtime(owner)
 	if runtime == null:
 		return
 	runtime._play(cue, volume_db, pitch_scale, minimum_interval_ms)
 
-static func _ensure_runtime(owner: Node):
+static func _ensure_runtime(owner: Node) -> SfxRuntime:
 	if owner == null or not is_instance_valid(owner) or owner.get_tree() == null:
 		return null
 	var scene := owner.get_tree().current_scene
