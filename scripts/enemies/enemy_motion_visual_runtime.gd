@@ -2,6 +2,7 @@ class_name EnemyMotionVisualRuntime
 extends RefCounted
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const RELEASE_FLASH_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/weapon_release_flash_pixel_v1.png")
 
 const COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_HIT := Color(1.35, 1.12, 0.82, 1.0)
@@ -16,6 +17,7 @@ const COLOR_STATUS_BURN := Color(1.0, 0.25, 0.06, 0.78)
 const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
 const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
 const COLOR_STATUS_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.92)
+const RELEASE_FLASH_TEXTURE_SCALE := 0.22
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -108,17 +110,13 @@ static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> 
 	var normalized_direction := direction.normalized()
 	if normalized_direction.length_squared() <= 0.0001:
 		normalized_direction = Vector2.RIGHT
-	var flash := Polygon2D.new()
-	flash.polygon = PackedVector2Array([
-		Vector2(-4.0, -5.0),
-		Vector2(22.0, 0.0),
-		Vector2(-4.0, 5.0),
-		Vector2(2.0, 0.0)
-	])
+	var flash := Sprite2D.new()
+	flash.texture = RELEASE_FLASH_TEXTURE
 	flash.global_position = owner.global_position + (normalized_direction * 20.0)
 	flash.global_rotation = normalized_direction.angle()
 	flash.z_index = owner.z_index + 2
-	flash.color = (
+	flash.scale = Vector2.ONE * RELEASE_FLASH_TEXTURE_SCALE
+	flash.modulate = (
 		COLOR_RANGED_RELEASE_HIGH_CONTRAST
 		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
 		else COLOR_RANGED_RELEASE
@@ -131,7 +129,7 @@ static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> 
 	tween.set_parallel(true)
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if not reduced_motion:
-		tween.tween_property(flash, "scale", Vector2(1.55, 1.18), duration)
+		tween.tween_property(flash, "scale", flash.scale * Vector2(1.55, 1.18), duration)
 	tween.tween_property(flash, "modulate:a", 0.0, duration)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(flash):
