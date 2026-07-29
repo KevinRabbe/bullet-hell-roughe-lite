@@ -3,12 +3,12 @@ extends RefCounted
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const RELEASE_FLASH_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/weapon_release_flash_pixel_v1.png")
+const DEATH_BURST_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/enemy_death_burst_pixel_v1.png")
 
 const COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_HIT := Color(1.35, 1.12, 0.82, 1.0)
 const COLOR_HIT_HIGH_CONTRAST := Color(1.6, 1.6, 1.6, 1.0)
 const COLOR_DEATH := Color(1.0, 0.42, 0.18, 0.0)
-const COLOR_EMBER := Color(0.94, 0.42, 0.10, 0.9)
 const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
@@ -18,6 +18,7 @@ const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
 const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
 const COLOR_STATUS_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.92)
 const RELEASE_FLASH_TEXTURE_SCALE := 0.22
+const DEATH_BURST_TEXTURE_SCALE := 0.28
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -190,7 +191,7 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 			puff.queue_free()
 	)
 
-	_spawn_death_ring(scene, owner.global_position, owner.z_index + 2, reduced_motion)
+	_spawn_death_burst(scene, owner.global_position, owner.z_index + 2, reduced_motion)
 
 static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	if visual_sprite == null or not is_instance_valid(visual_sprite):
@@ -240,33 +241,27 @@ static func _apply_boss_presence(visual_sprite: Sprite2D) -> void:
 	tween.tween_property(ring, "scale", Vector2.ONE * 0.96, 0.72)
 	tween.parallel().tween_property(ring, "modulate:a", 0.46, 0.72)
 
-static func _spawn_death_ring(scene: Node, position: Vector2, z_index: int, reduced_motion: bool) -> void:
+static func _spawn_death_burst(scene: Node, position: Vector2, z_index: int, reduced_motion: bool) -> void:
 	if scene == null or not is_instance_valid(scene):
 		return
-	var ring := Line2D.new()
-	ring.points = PackedVector2Array([
-		Vector2(0.0, -9.0),
-		Vector2(9.0, 0.0),
-		Vector2(0.0, 9.0),
-		Vector2(-9.0, 0.0),
-		Vector2(0.0, -9.0)
-	])
-	ring.width = 2.0
-	ring.default_color = COLOR_EMBER
-	ring.global_position = position
-	ring.z_index = z_index
-	ring.scale = Vector2.ONE * 0.75
-	scene.add_child(ring)
-	var tween := ring.create_tween()
+	var burst := Sprite2D.new()
+	burst.texture = DEATH_BURST_TEXTURE
+	burst.global_position = position
+	burst.z_index = z_index
+	burst.scale = Vector2.ONE * DEATH_BURST_TEXTURE_SCALE
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		burst.modulate = Color(1.16, 1.08, 0.90, 1.0)
+	scene.add_child(burst)
+	var tween := burst.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if reduced_motion:
-		tween.tween_property(ring, "modulate:a", 0.0, 0.16)
+		tween.tween_property(burst, "modulate:a", 0.0, 0.16)
 	else:
-		tween.tween_property(ring, "scale", Vector2.ONE * 1.8, 0.16)
-		tween.parallel().tween_property(ring, "modulate:a", 0.0, 0.16)
+		tween.tween_property(burst, "scale", burst.scale * 1.55, 0.16)
+		tween.parallel().tween_property(burst, "modulate:a", 0.0, 0.16)
 	tween.finished.connect(func() -> void:
-		if is_instance_valid(ring):
-			ring.queue_free()
+		if is_instance_valid(burst):
+			burst.queue_free()
 	)
 
 static func _resolve_hit_color() -> Color:
