@@ -1,9 +1,11 @@
 extends Area2D
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const IMPACT_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/projectile_impact_burst_pixel_v1.png")
 
 const TRAIL_COLOR := Color(1.0, 0.20, 0.12, 0.88)
 const TRAIL_COLOR_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.96)
+const IMPACT_TEXTURE_SCALE := 0.28
 
 @export var speed: float = 320.0
 @export var damage: float = 4.0
@@ -108,14 +110,11 @@ func _spawn_impact_effect() -> void:
 	if get_tree() == null or get_tree().current_scene == null:
 		return
 	var impact := Sprite2D.new()
+	impact.texture = IMPACT_TEXTURE
 	impact.global_position = global_position
 	impact.global_rotation = global_rotation
 	impact.z_index = z_index + 1
-	if visual != null and visual.texture != null:
-		impact.texture = visual.texture
-		impact.scale = visual.scale * 0.62
-	else:
-		impact.self_modulate = Color(1.0, 0.6, 0.4, 0.9)
+	impact.scale = Vector2.ONE * IMPACT_TEXTURE_SCALE
 	get_tree().current_scene.add_child(impact)
 	impact.modulate = Color(1.0, 0.72, 0.48, 0.95)
 	var tween := impact.create_tween()
