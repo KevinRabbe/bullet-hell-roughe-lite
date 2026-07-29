@@ -2,9 +2,11 @@ extends Node2D
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const RELEASE_FLASH_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/weapon_release_flash_pixel_v1.png")
 
 const RELEASE_FLASH_COLOR := Color(1.0, 0.46, 0.16, 0.92)
 const RELEASE_FLASH_BONE_COLOR := Color(1.0, 0.88, 0.66, 0.94)
+const RELEASE_FLASH_TEXTURE_SCALE := 0.24
 
 @export var player_path: NodePath
 @export var weapon_loadout_path: NodePath
@@ -207,17 +209,12 @@ func _spawn_release_flash(
 	tags: Array[String],
 	reduced_motion: bool
 ) -> void:
-	var flash := Polygon2D.new()
-	flash.polygon = PackedVector2Array([
-		Vector2(-3.0, -3.0),
-		Vector2(15.0, 0.0),
-		Vector2(-3.0, 3.0),
-		Vector2(1.0, 0.0)
-	])
+	var flash := Sprite2D.new()
+	flash.texture = RELEASE_FLASH_TEXTURE
 	flash.position = base_position + (aim_direction * 16.0)
 	flash.rotation = aim_direction.angle()
 	flash.z_index = 2
-	flash.color = RELEASE_FLASH_BONE_COLOR if "gun" in tags or "precision" in tags else RELEASE_FLASH_COLOR
+	flash.modulate = RELEASE_FLASH_BONE_COLOR if "gun" in tags or "precision" in tags else RELEASE_FLASH_COLOR
 	var flash_scale := 1.0
 	if "rapid" in tags:
 		flash_scale = 0.72
@@ -225,7 +222,7 @@ func _spawn_release_flash(
 		flash_scale = 1.35
 	elif "melee" in tags or "thrown" in tags:
 		flash_scale = 1.12
-	flash.scale = Vector2.ONE * flash_scale
+	flash.scale = Vector2.ONE * (flash_scale * RELEASE_FLASH_TEXTURE_SCALE)
 	add_child(flash)
 
 	var duration := 0.05 if reduced_motion else 0.09
