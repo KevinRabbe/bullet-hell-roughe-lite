@@ -20,12 +20,16 @@ const WALL_INNER_COLOR := Color(0.52, 0.16, 0.13, 0.84)
 const WALL_OUTER_WIDTH := 40.0
 const WALL_BODY_WIDTH := 27.0
 const WALL_INNER_WIDTH := 4.0
+const WALL_VISUAL_WIDTH := 48.0
 const PERIMETER_SHADOW_COLOR := Color(0.07, 0.035, 0.045, 0.70)
 const PERIMETER_EMBER_COLOR := Color(0.70, 0.12, 0.16, 0.70)
 const PERIMETER_SHADOW_WIDTH := 18.0
 const PERIMETER_EMBER_WIDTH := 3.0
 const WALL_INSET := Vector2(24.0, 24.0)
 const META_BASE_ART_SCALE := "_arena_base_art_scale"
+const WALL_TEXTURE := preload(
+	"res://assets/sprites/arena/hellshot_frontier/arena_perimeter_wall_pixel_v1.png"
+)
 
 @export_enum("compact", "standard", "large") var size_class: String = SIZE_STANDARD
 @export var player_inset: float = 48.0
@@ -235,14 +239,73 @@ func _apply_perimeter(playable_rect: Rect2) -> void:
 	# A fixed arena needs a continuous physical wall first. The thinner broken ember lines
 	# are only surface character; they must never be the thing that explains the boundary.
 	var boundary_loop := _build_boundary_loop(playable_rect)
-	_add_perimeter_line(perimeter, boundary_loop, WALL_OUTER_COLOR, WALL_OUTER_WIDTH, 0)
-	_add_perimeter_line(perimeter, boundary_loop, WALL_BODY_COLOR, WALL_BODY_WIDTH, 1)
-	_add_perimeter_line(perimeter, boundary_loop, WALL_INNER_COLOR, WALL_INNER_WIDTH, 2)
+	if WALL_TEXTURE != null:
+		_add_perimeter_wall_art(perimeter, playable_rect)
+		_add_perimeter_line(perimeter, boundary_loop, WALL_INNER_COLOR, WALL_INNER_WIDTH, 2)
+	else:
+		_add_perimeter_line(perimeter, boundary_loop, WALL_OUTER_COLOR, WALL_OUTER_WIDTH, 0)
+		_add_perimeter_line(perimeter, boundary_loop, WALL_BODY_COLOR, WALL_BODY_WIDTH, 1)
+		_add_perimeter_line(perimeter, boundary_loop, WALL_INNER_COLOR, WALL_INNER_WIDTH, 2)
 
 	var segments := _build_perimeter_segments(playable_rect)
 	for points in segments:
 		_add_perimeter_line(perimeter, points, PERIMETER_SHADOW_COLOR, PERIMETER_SHADOW_WIDTH, 3)
 		_add_perimeter_line(perimeter, points, PERIMETER_EMBER_COLOR, PERIMETER_EMBER_WIDTH, 4)
+
+func _add_perimeter_wall_art(perimeter: Node2D, playable_rect: Rect2) -> void:
+	var wall_rect := playable_rect.grow_individual(
+		-WALL_INSET.x,
+		-WALL_INSET.y,
+		-WALL_INSET.x,
+		-WALL_INSET.y
+	)
+	var center := wall_rect.get_center()
+	_add_wall_strip(
+		perimeter,
+		Vector2(center.x, wall_rect.position.y),
+		wall_rect.size.x,
+		0.0
+	)
+	_add_wall_strip(
+		perimeter,
+		Vector2(center.x, wall_rect.end.y),
+		wall_rect.size.x,
+		PI
+	)
+	_add_wall_strip(
+		perimeter,
+		Vector2(wall_rect.position.x, center.y),
+		wall_rect.size.y,
+		-PI * 0.5
+	)
+	_add_wall_strip(
+		perimeter,
+		Vector2(wall_rect.end.x, center.y),
+		wall_rect.size.y,
+		PI * 0.5
+	)
+
+func _add_wall_strip(
+	perimeter: Node2D,
+	world_position: Vector2,
+	length: float,
+	rotation_radians: float
+) -> void:
+	if WALL_TEXTURE == null:
+		return
+	var texture_size := WALL_TEXTURE.get_size()
+	if texture_size.x <= 0.0 or texture_size.y <= 0.0:
+		return
+	var strip := Sprite2D.new()
+	strip.texture = WALL_TEXTURE
+	strip.position = world_position
+	strip.rotation = rotation_radians
+	strip.scale = Vector2(
+		maxf(length, 1.0) / texture_size.x,
+		WALL_VISUAL_WIDTH / texture_size.y
+	)
+	strip.z_index = 0
+	perimeter.add_child(strip)
 
 func _build_boundary_loop(playable_rect: Rect2) -> PackedVector2Array:
 	var top_left := playable_rect.position + WALL_INSET
