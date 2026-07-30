@@ -17,6 +17,8 @@ const COLOR_STATUS_BURN := Color(1.0, 0.25, 0.06, 0.78)
 const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
 const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
 const COLOR_STATUS_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.92)
+const COLOR_SPAWN_SIGIL := Color(0.92, 0.10, 0.20, 0.72)
+const COLOR_SPAWN_SIGIL_HIGH_CONTRAST := Color(1.0, 0.72, 0.28, 0.90)
 const RELEASE_FLASH_TEXTURE_SCALE := 0.22
 const DEATH_BURST_TEXTURE_SCALE := 0.28
 
@@ -205,6 +207,7 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	if visual_sprite == null or not is_instance_valid(visual_sprite):
 		return
+	_spawn_arrival_sigil(visual_sprite)
 	visual_sprite.modulate = COLOR_NEUTRAL
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
 		return
@@ -215,6 +218,57 @@ static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(visual_sprite, "scale", rest_scale, 0.14)
 	tween.parallel().tween_property(visual_sprite, "modulate:a", 1.0, 0.12)
+
+static func _spawn_arrival_sigil(visual_sprite: Sprite2D) -> void:
+	var owner := visual_sprite.get_parent() as Node2D
+	if owner == null or owner.get_node_or_null("SpawnSigil") != null:
+		return
+	var radius := 58.0 if owner.get("is_boss") == true else 24.0
+	var color := (
+		COLOR_SPAWN_SIGIL_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_SPAWN_SIGIL
+	)
+	var sigil := Node2D.new()
+	sigil.name = "SpawnSigil"
+	sigil.z_index = visual_sprite.z_index - 2
+	sigil.scale = Vector2.ONE * 0.62
+	sigil.modulate.a = 0.0
+	owner.add_child(sigil)
+
+	var ring := Line2D.new()
+	ring.points = _build_status_ring_points(radius)
+	ring.width = 2.0 if radius < 40.0 else 3.0
+	ring.default_color = color
+	sigil.add_child(ring)
+
+	var diamond := Line2D.new()
+	diamond.points = PackedVector2Array([
+		Vector2(0.0, -radius * 0.72),
+		Vector2(radius * 0.72, 0.0),
+		Vector2(0.0, radius * 0.72),
+		Vector2(-radius * 0.72, 0.0),
+		Vector2(0.0, -radius * 0.72)
+	])
+	diamond.width = 1.5 if radius < 40.0 else 2.2
+	diamond.default_color = Color(color, color.a * 0.72)
+	sigil.add_child(diamond)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var tween := sigil.create_tween()
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if reduced_motion:
+		sigil.scale = Vector2.ONE
+		tween.tween_property(sigil, "modulate:a", 0.58, 0.02)
+		tween.tween_property(sigil, "modulate:a", 0.0, 0.10)
+	else:
+		tween.tween_property(sigil, "modulate:a", 0.78, 0.05)
+		tween.parallel().tween_property(sigil, "scale", Vector2.ONE * 1.08, 0.15)
+		tween.tween_property(sigil, "modulate:a", 0.0, 0.12)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(sigil):
+			sigil.queue_free()
+	)
 
 static func _apply_boss_presence(visual_sprite: Sprite2D) -> void:
 	if visual_sprite == null or not is_instance_valid(visual_sprite):
