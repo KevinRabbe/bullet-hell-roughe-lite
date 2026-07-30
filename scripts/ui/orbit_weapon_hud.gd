@@ -90,8 +90,10 @@ func _refresh_orbit() -> void:
 		var base_position := Vector2(cos(angle), sin(angle)) * radius
 		sprite.position = base_position
 		var scale_value := icon_scale * float(icon_entries[i].get("scale_multiplier", 1.0))
-		sprite.scale = Vector2(scale_value, scale_value)
-		sprite.modulate = _rarity_color(str(icon_entries[i]["rarity"]))
+		var base_scale := Vector2(scale_value, scale_value)
+		var base_modulate := _rarity_color(str(icon_entries[i]["rarity"]))
+		sprite.scale = base_scale
+		sprite.modulate = base_modulate
 		var weapon_id := str(icon_entries[i]["weapon_id"])
 		var forward_sign := float(icon_entries[i].get("forward_sign", default_weapon_forward_sign))
 		var orientation_offset := PI if forward_sign < 0.0 else 0.0
@@ -102,9 +104,10 @@ func _refresh_orbit() -> void:
 		slot_aim_directions.append(_fallback_aim_direction())
 		slot_forward_signs.append(forward_sign)
 		slot_projectile_rotation_offsets.append(float(icon_entries[i].get("projectile_rotation_offset", default_projectile_rotation_offset)))
-		slot_base_scales.append(sprite.scale)
-		slot_base_modulates.append(sprite.modulate)
+		slot_base_scales.append(base_scale)
+		slot_base_modulates.append(base_modulate)
 		slot_attack_tweens.append(null)
+		_play_slot_equip_reveal(sprite, base_scale, base_modulate, i)
 
 func get_slot_count() -> int:
 	return slot_sprites.size()
@@ -256,6 +259,22 @@ func _spawn_release_flash(
 		if is_instance_valid(flash):
 			flash.queue_free()
 	)
+
+func _play_slot_equip_reveal(
+	sprite: Sprite2D,
+	base_scale: Vector2,
+	base_modulate: Color,
+	slot_index: int
+) -> void:
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		return
+	sprite.scale = base_scale * 0.62
+	sprite.modulate = Color(base_modulate, 0.0)
+	var tween := sprite.create_tween()
+	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(float(slot_index) * 0.025)
+	tween.tween_property(sprite, "scale", base_scale, 0.18)
+	tween.parallel().tween_property(sprite, "modulate", base_modulate, 0.14)
 
 func _load_weapon_icon(weapon_id: String) -> Texture2D:
 	var weapon_data := _load_weapon_data(weapon_id)
