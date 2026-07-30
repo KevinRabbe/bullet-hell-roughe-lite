@@ -109,6 +109,7 @@ static func spawn_hit_flash(visual: CanvasItem, owner: Node) -> void:
 	if visual == null or owner == null or not is_instance_valid(visual) or not is_instance_valid(owner):
 		return
 	visual.modulate = _resolve_hit_color()
+	_spawn_hit_spark(owner)
 	var tween := owner.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
@@ -414,6 +415,42 @@ static func _spawn_status_application_pulse(owner: Node2D, status_ring: Line2D, 
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(pulse):
 			pulse.queue_free()
+	)
+
+static func _spawn_hit_spark(owner: Node) -> void:
+	var actor := owner as Node2D
+	if actor == null or not is_instance_valid(actor):
+		return
+	var color := _resolve_hit_color()
+	var spark := Node2D.new()
+	spark.name = "HitSpark"
+	spark.z_index = 4
+	spark.scale = Vector2.ONE * 0.82
+	actor.add_child(spark)
+
+	var primary_slash := Line2D.new()
+	primary_slash.points = PackedVector2Array([Vector2(-9.0, -2.0), Vector2(9.0, 2.0)])
+	primary_slash.width = 2.2
+	primary_slash.default_color = color
+	spark.add_child(primary_slash)
+
+	var secondary_slash := Line2D.new()
+	secondary_slash.points = PackedVector2Array([Vector2(-3.0, 7.0), Vector2(4.0, -8.0)])
+	secondary_slash.width = 1.6
+	secondary_slash.default_color = Color(color, color.a * 0.72)
+	spark.add_child(secondary_slash)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.07 if reduced_motion else 0.12
+	var tween := spark.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(spark, "scale", Vector2.ONE * 1.24, duration)
+	tween.tween_property(spark, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(spark):
+			spark.queue_free()
 	)
 
 static func _resolve_hit_color() -> Color:
