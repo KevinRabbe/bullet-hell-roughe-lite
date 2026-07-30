@@ -157,6 +157,58 @@ static func spawn_impact_feedback(projectile: Node2D, _visual: Sprite2D, profile
 			impact.queue_free()
 	)
 
+static func spawn_dissipation_feedback(projectile: Node2D, visual: Sprite2D, profile: Dictionary) -> void:
+	if projectile == null or not is_instance_valid(projectile) or projectile.get_tree() == null:
+		return
+	var scene := projectile.get_tree().current_scene
+	if scene == null:
+		return
+	var color_variant: Variant = profile.get("impact_color", COLOR_TRAIL_BONE)
+	var color := color_variant as Color if color_variant is Color else COLOR_TRAIL_BONE
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		color = COLOR_TRAIL_HIGH_CONTRAST
+
+	var dissipation := Node2D.new()
+	dissipation.global_position = projectile.global_position
+	dissipation.global_rotation = projectile.global_rotation
+	dissipation.z_index = projectile.z_index + 1
+	scene.add_child(dissipation)
+
+	if visual != null and is_instance_valid(visual) and visual.texture != null:
+		var echo := Sprite2D.new()
+		echo.texture = visual.texture
+		echo.hframes = visual.hframes
+		echo.vframes = visual.vframes
+		echo.frame = visual.frame
+		echo.centered = visual.centered
+		echo.offset = visual.offset
+		echo.flip_h = visual.flip_h
+		echo.flip_v = visual.flip_v
+		echo.rotation = visual.rotation
+		echo.scale = visual.scale
+		echo.modulate = Color(color, minf(visual.modulate.a, 0.72))
+		dissipation.add_child(echo)
+
+	var ring := Line2D.new()
+	ring.points = _build_ring_points(5.0, 12)
+	ring.closed = true
+	ring.width = 1.5
+	ring.default_color = Color(color, color.a * 0.62)
+	dissipation.add_child(ring)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.07 if reduced_motion else 0.12
+	var tween := dissipation.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(dissipation, "scale", Vector2.ONE * 1.34, duration)
+	tween.tween_property(dissipation, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(dissipation):
+			dissipation.queue_free()
+	)
+
 static func spawn_status_release_feedback(projectile: Node2D, status_id: String) -> void:
 	if projectile == null or not is_instance_valid(projectile) or projectile.get_tree() == null:
 		return
