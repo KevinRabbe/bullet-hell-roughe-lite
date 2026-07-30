@@ -544,13 +544,18 @@ func _on_merge_selected_pressed() -> void:
 		return
 	if weapon_loadout == null or not weapon_loadout.has_method("try_merge_slot"):
 		return
-	var result_variant: Variant = weapon_loadout.call("try_merge_slot", selected_weapon_slot)
+	var merged_slot_index: int = selected_weapon_slot
+	var merge_succeeded: bool = false
+	var result_variant: Variant = weapon_loadout.call("try_merge_slot", merged_slot_index)
 	if result_variant is Dictionary:
 		var result: Dictionary = result_variant
 		print(str(result.get("message", "")))
 		if result.get("success", false) == true:
 			selected_weapon_slot = -1
+			merge_succeeded = true
 	_refresh_all()
+	if merge_succeeded and merged_slot_index < weapon_slot_buttons.size():
+		MenuAnimationRuntimeRef.pulse_focus(weapon_slot_buttons[merged_slot_index], 1.08)
 
 func _update_merge_button_state() -> void:
 	if merge_selected_button == null:
