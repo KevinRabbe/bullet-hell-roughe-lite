@@ -71,6 +71,7 @@ func _play_damage_feedback() -> void:
 	SfxRuntimeRef.play(self, "player_hit", -8.0, 1.0, 120)
 	_play_visual_flash()
 	_play_camera_kick()
+	_play_damage_burst()
 
 func _play_visual_flash() -> void:
 	if _visual == null or not is_instance_valid(_visual):
@@ -93,6 +94,49 @@ func _play_camera_kick() -> void:
 	_camera_tween = _camera.create_tween()
 	_camera_tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_camera_tween.tween_property(_camera, "offset", _base_camera_offset, 0.10)
+
+func _play_damage_burst() -> void:
+	var player_node := _player as Node2D
+	if player_node == null or not is_instance_valid(player_node):
+		return
+	var color := _resolve_damage_flash_color()
+	var burst := Node2D.new()
+	burst.name = "PlayerHitBurst"
+	burst.z_index = 4
+	burst.scale = Vector2.ONE * 0.72
+	player_node.add_child(burst)
+
+	var ring := Line2D.new()
+	ring.points = _build_ring_points(24.0, 16)
+	ring.closed = true
+	ring.width = 2.6
+	ring.default_color = color
+	burst.add_child(ring)
+
+	for slash_index in range(2):
+		var slash_angle: float = -0.72 if slash_index == 0 else 0.72
+		var slash := Line2D.new()
+		var direction := Vector2.from_angle(slash_angle)
+		slash.points = PackedVector2Array([
+			direction * -18.0,
+			direction * 20.0
+		])
+		slash.width = 2.2
+		slash.default_color = Color(color, color.a * 0.78)
+		burst.add_child(slash)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.10 if reduced_motion else 0.18
+	var tween := burst.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(burst, "scale", Vector2.ONE * 1.36, duration)
+	tween.tween_property(burst, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(burst):
+			burst.queue_free()
+	)
 
 func _play_level_up_feedback() -> void:
 	var player_node := _player as Node2D
