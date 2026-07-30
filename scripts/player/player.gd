@@ -84,6 +84,8 @@ func _physics_process(delta: float) -> void:
 	_process_passive_runtime(delta)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not OS.is_debug_build():
+		return
 	if not (event is InputEventKey):
 		return
 	var key_event := event as InputEventKey
