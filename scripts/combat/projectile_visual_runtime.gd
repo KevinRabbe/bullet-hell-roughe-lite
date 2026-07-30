@@ -31,6 +31,7 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 		"impact_scale": 1.35,
 		"impact_duration": 0.10,
 		"impact_color": COLOR_TRAIL_BONE,
+		"impact_accent": "standard",
 		"trail_enabled": false,
 		"trail_length": 14.0,
 		"trail_width": 2.0,
@@ -73,6 +74,14 @@ static func build_profile(weapon_data: WeaponData) -> Dictionary:
 		profile["trail_enabled"] = true
 		profile["trail_length"] = 28.0
 		profile["trail_width"] = 4.0
+	if "heavy" in tags:
+		profile["impact_accent"] = "heavy"
+	elif "thrown" in tags or "melee" in tags:
+		profile["impact_accent"] = "slash"
+	elif _contains_any(tags, ARCANE_TAGS) or "burn" in tags:
+		profile["impact_accent"] = "ritual"
+	elif "gun" in tags or "precision" in tags or "rapid" in tags:
+		profile["impact_accent"] = "crisp"
 	return profile
 
 static func create_trail(profile: Dictionary) -> Line2D:
@@ -144,6 +153,7 @@ static func spawn_impact_feedback(projectile: Node2D, _visual: Sprite2D, profile
 
 	var duration := maxf(float(profile.get("impact_duration", 0.10)), 0.04)
 	_spawn_impact_ring(scene, projectile, profile, duration)
+	_spawn_impact_accent(scene, projectile, profile, duration)
 	var tween := impact.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
@@ -283,6 +293,93 @@ static func _spawn_impact_ring(scene: Node, projectile: Node2D, profile: Diction
 		if is_instance_valid(ring):
 			ring.queue_free()
 	)
+
+static func _spawn_impact_accent(
+	scene: Node,
+	projectile: Node2D,
+	profile: Dictionary,
+	duration: float
+) -> void:
+	var accent_mode := str(profile.get("impact_accent", "standard"))
+	if accent_mode == "standard":
+		return
+	var color_variant: Variant = profile.get("impact_color", COLOR_TRAIL_BONE)
+	var color := color_variant as Color if color_variant is Color else COLOR_TRAIL_BONE
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		color = COLOR_TRAIL_HIGH_CONTRAST
+
+	var accent := Node2D.new()
+	accent.global_position = projectile.global_position
+	accent.global_rotation = projectile.global_rotation
+	accent.z_index = projectile.z_index + 3
+	scene.add_child(accent)
+
+	match accent_mode:
+		"heavy":
+			for ray_index in range(4):
+				var angle: float = PI * 0.5 * float(ray_index)
+				var direction := Vector2.from_angle(angle)
+				_add_accent_line(
+					accent,
+					PackedVector2Array([direction * 5.0, direction * 15.0]),
+					3.0,
+					color
+				)
+		"ritual":
+			_add_accent_line(
+				accent,
+				PackedVector2Array([
+					Vector2(0.0, -12.0),
+					Vector2(12.0, 0.0),
+					Vector2(0.0, 12.0),
+					Vector2(-12.0, 0.0),
+					Vector2(0.0, -12.0)
+				]),
+				2.0,
+				color
+			)
+		"slash":
+			var arc_points := PackedVector2Array()
+			for point_index in range(9):
+				var arc_angle: float = lerpf(-0.9, 0.9, float(point_index) / 8.0)
+				arc_points.append(Vector2.from_angle(arc_angle) * 13.0)
+			_add_accent_line(accent, arc_points, 2.8, color)
+		"crisp":
+			_add_accent_line(
+				accent,
+				PackedVector2Array([Vector2(-4.0, 0.0), Vector2(15.0, 0.0)]),
+				2.2,
+				color
+			)
+			_add_accent_line(
+				accent,
+				PackedVector2Array([Vector2(5.0, -4.0), Vector2(5.0, 4.0)]),
+				1.6,
+				Color(color, color.a * 0.76)
+			)
+
+	var tween := accent.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		tween.tween_property(accent, "scale", Vector2.ONE * 1.28, duration)
+	tween.tween_property(accent, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(accent):
+			accent.queue_free()
+	)
+
+static func _add_accent_line(
+	parent: Node2D,
+	points: PackedVector2Array,
+	width: float,
+	color: Color
+) -> void:
+	var line := Line2D.new()
+	line.points = points
+	line.width = width
+	line.default_color = color
+	parent.add_child(line)
 
 static func _build_ring_points(radius: float, segment_count: int) -> PackedVector2Array:
 	var points := PackedVector2Array()
