@@ -12,6 +12,10 @@ const FULL_HEAL_COLOR := Color(0.98, 0.72, 0.30, 0.88)
 const FULL_HEAL_COLOR_HIGH_CONTRAST := Color(1.0, 0.96, 0.76, 1.0)
 const PASSIVE_ACTIVE_COLOR := Color(0.96, 0.14, 0.42, 0.90)
 const PASSIVE_ACTIVE_COLOR_HIGH_CONTRAST := Color(1.0, 0.80, 0.34, 1.0)
+const LOW_HEALTH_COLOR := Color(0.82, 0.04, 0.12, 0.72)
+const LOW_HEALTH_COLOR_HIGH_CONTRAST := Color(1.0, 0.54, 0.16, 0.94)
+const LOW_HEALTH_ENTER_FRACTION := 0.30
+const LOW_HEALTH_EXIT_FRACTION := 0.36
 const CAMERA_KICK := Vector2(5.0, -3.0)
 
 var _player: Node
@@ -24,6 +28,7 @@ var _base_visual_modulate: Color = Color.WHITE
 var _base_camera_offset: Vector2 = Vector2.ZERO
 var _flash_tween: Tween
 var _camera_tween: Tween
+var _low_health_presence: Node2D
 
 func _ready() -> void:
 	_player = get_parent()
@@ -47,6 +52,7 @@ func _initialize_from_player() -> void:
 	if _camera != null and is_instance_valid(_camera):
 		_base_camera_offset = _camera.offset
 	_initialized = true
+	_update_low_health_presence(_last_hp)
 
 func _on_player_snapshot_changed() -> void:
 	if not _initialized or _player == null or not is_instance_valid(_player):
@@ -59,6 +65,7 @@ func _on_player_snapshot_changed() -> void:
 	var current_level := maxi(int(_player.get("current_level")), 1)
 	if current_level > _last_level:
 		_play_level_up_feedback()
+	_update_low_health_presence(current_hp)
 	_last_hp = current_hp
 	_last_level = current_level
 
@@ -137,6 +144,66 @@ func _play_damage_burst() -> void:
 		if is_instance_valid(burst):
 			burst.queue_free()
 	)
+
+func _update_low_health_presence(current_hp: float) -> void:
+	var max_hp := _resolve_max_hp()
+	if current_hp <= 0.0 or max_hp <= 0.0:
+		_remove_low_health_presence()
+		return
+	var health_fraction := current_hp / max_hp
+	if _low_health_presence != null and is_instance_valid(_low_health_presence):
+		if health_fraction >= LOW_HEALTH_EXIT_FRACTION:
+			_remove_low_health_presence()
+		return
+	if health_fraction > LOW_HEALTH_ENTER_FRACTION:
+		return
+	_create_low_health_presence()
+
+func _create_low_health_presence() -> void:
+	var player_node := _player as Node2D
+	if player_node == null or not is_instance_valid(player_node):
+		return
+	if _low_health_presence != null and is_instance_valid(_low_health_presence):
+		return
+	var color := (
+		LOW_HEALTH_COLOR_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else LOW_HEALTH_COLOR
+	)
+	var presence := Node2D.new()
+	presence.name = "LowHealthPresence"
+	presence.z_index = -2
+	player_node.add_child(presence)
+	_low_health_presence = presence
+
+	var outer_ring := Line2D.new()
+	outer_ring.points = _build_ring_points(32.0, 20)
+	outer_ring.closed = true
+	outer_ring.width = 2.4
+	outer_ring.default_color = color
+	presence.add_child(outer_ring)
+
+	var inner_ring := Line2D.new()
+	inner_ring.points = _build_ring_points(24.0, 16)
+	inner_ring.closed = true
+	inner_ring.width = 1.4
+	inner_ring.default_color = Color(color, color.a * 0.56)
+	presence.add_child(inner_ring)
+
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		presence.modulate.a = 0.72
+		return
+	var tween := presence.create_tween().set_loops()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(presence, "scale", Vector2.ONE * 1.08, 0.48)
+	tween.parallel().tween_property(presence, "modulate:a", 0.48, 0.48)
+	tween.tween_property(presence, "scale", Vector2.ONE * 0.94, 0.48)
+	tween.parallel().tween_property(presence, "modulate:a", 0.92, 0.48)
+
+func _remove_low_health_presence() -> void:
+	if _low_health_presence != null and is_instance_valid(_low_health_presence):
+		_low_health_presence.queue_free()
+	_low_health_presence = null
 
 func _play_level_up_feedback() -> void:
 	var player_node := _player as Node2D
@@ -285,13 +352,16 @@ func _play_passive_activation_feedback() -> void:
 	)
 
 func _is_at_full_health(current_hp: float) -> bool:
+	var max_hp := _resolve_max_hp()
+	return max_hp > 0.0 and is_equal_approx(current_hp, max_hp)
+
+func _resolve_max_hp() -> float:
 	if _player == null or not is_instance_valid(_player):
-		return false
+		return 0.0
 	var stats_variant: Variant = _player.get("stats")
 	if not (stats_variant is Object):
-		return false
-	var max_hp := maxf(float((stats_variant as Object).get("max_hp")), 0.0)
-	return max_hp > 0.0 and is_equal_approx(current_hp, max_hp)
+		return 0.0
+	return maxf(float((stats_variant as Object).get("max_hp")), 0.0)
 
 func _build_ring_points(radius: float, segment_count: int) -> PackedVector2Array:
 	var points := PackedVector2Array()
