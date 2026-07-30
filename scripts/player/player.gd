@@ -12,6 +12,7 @@ const PlayerDamageRuntimeRef = preload("res://scripts/player/player_damage_runti
 signal player_died
 signal level_up_pending_changed
 signal ui_snapshot_changed
+signal passive_activated
 
 var stats: StatBlock = StatBlock.new()
 var current_hp: float
@@ -719,12 +720,14 @@ func _apply_passive_runtime_trigger(trigger_id: String, context: Dictionary = {}
 	if trigger_id == "" or _passive_runtime == null or not _passive_runtime.has_method("trigger"):
 		return
 	var adjustments_variant: Variant = _passive_runtime.call("trigger", trigger_id, context)
-	_apply_passive_runtime_adjustments(adjustments_variant)
+	if _apply_passive_runtime_adjustments(adjustments_variant):
+		passive_activated.emit()
 
-func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
+func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> bool:
 	if not (adjustments_variant is Array):
-		return
+		return false
 	var adjustments: Array = adjustments_variant
+	var applied_adjustment: bool = false
 	for adjustment_variant in adjustments:
 		if not (adjustment_variant is Dictionary):
 			continue
@@ -735,11 +738,13 @@ func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> void:
 		var value := float(adjustment.get("value", 0.0))
 		if is_zero_approx(value):
 			continue
+		applied_adjustment = true
 		var effect_tags := WeaponTagRuntimeRef.resolve_effect_tags(adjustment.get("effect_tags", []))
 		if not effect_tags.is_empty():
 			_apply_passive_weapon_tag_bonus(stat_id, value, effect_tags)
 			continue
 		_apply_runtime_stat_bonus(stat_id, value, str(adjustment.get("label", "Passive")))
+	return applied_adjustment
 
 func _reset_passive_weapon_tag_bonus_state() -> void:
 	_passive_weapon_tag_bonus_state.clear()
