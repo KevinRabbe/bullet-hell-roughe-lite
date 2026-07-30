@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/combat/auto_weapon.gd" id="2"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/game/arena_camera_driver.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/visual/actor_motion_driver.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/visual/actor_ground_shadow.gd" id="14"]
+[ext_resource type="Script" path="res://scripts/visual/actor_entry_effect.gd" id="15"]
 
 [sub_resource type="CircleShape2D" id="1"]
 radius = 16.0
@@ -23,6 +24,9 @@ script = ExtResource("1")
 
 [node name="GroundShadow" type="Node2D" parent="."]
 script = ExtResource("14")
+
+[node name="EntryEffect" type="Node2D" parent="."]
+script = ExtResource("15")
 
 [node name="Visual" type="Sprite2D" parent="."]
 texture = ExtResource("8")
