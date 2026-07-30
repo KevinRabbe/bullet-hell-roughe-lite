@@ -162,6 +162,7 @@ static func update_status_presence(
 		return current_ring
 
 	var ring := current_ring
+	var should_pulse := ring == null or not is_instance_valid(ring) or not ring.visible
 	if ring == null or not is_instance_valid(ring):
 		ring = Line2D.new()
 		ring.name = "StatusPresence"
@@ -171,6 +172,8 @@ static func update_status_presence(
 		owner.add_child(ring)
 	ring.default_color = _resolve_status_color(status_ids)
 	ring.visible = true
+	if should_pulse:
+		_spawn_status_application_pulse(owner, ring, is_boss)
 	return ring
 
 static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
@@ -325,6 +328,31 @@ static func _spawn_death_burst(scene: Node, position: Vector2, z_index: int, red
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(burst):
 			burst.queue_free()
+	)
+
+static func _spawn_status_application_pulse(owner: Node2D, status_ring: Line2D, is_boss: bool) -> void:
+	if owner == null or status_ring == null or not is_instance_valid(status_ring):
+		return
+	var pulse := Line2D.new()
+	pulse.points = status_ring.points
+	pulse.width = 3.4 if is_boss else 2.6
+	pulse.default_color = status_ring.default_color
+	pulse.z_index = status_ring.z_index + 1
+	pulse.scale = Vector2.ONE * 0.76
+	pulse.modulate.a = 0.92
+	owner.add_child(pulse)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.10 if reduced_motion else 0.18
+	var tween := pulse.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(pulse, "scale", Vector2.ONE * 1.34, duration)
+	tween.tween_property(pulse, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(pulse):
+			pulse.queue_free()
 	)
 
 static func _resolve_hit_color() -> Color:
