@@ -7,6 +7,7 @@ const StandardTooltipScene = preload("res://scenes/ui/components/StandardTooltip
 const ShopStatSheetPanelRef = preload("res://scripts/ui/shop_stat_sheet_panel.gd")
 const ShopInventoryDetailRuntimeRef = preload("res://scripts/ui/shop_inventory_detail_runtime.gd")
 const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
+const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -97,7 +98,7 @@ func _connect_runtime_updates() -> void:
 		_connect_signal_if_needed(shop_controller, "shop_closed", state_changed_callable)
 		_connect_signal_if_needed(shop_controller, "offers_changed", payload_changed_callable)
 		_connect_signal_if_needed(shop_controller, "reroll_cost_changed", payload_changed_callable)
-		_connect_signal_if_needed(shop_controller, "offer_purchased", payload_changed_callable)
+		_connect_signal_if_needed(shop_controller, "offer_purchased", Callable(self, "_on_offer_purchased"))
 	_connect_signal_if_needed(weapon_loadout, "loadout_changed", payload_changed_callable)
 	_connect_signal_if_needed(player, "ui_snapshot_changed", payload_changed_callable)
 
@@ -126,6 +127,13 @@ func _on_shop_state_changed(_value: Variant = null) -> void:
 func _on_shop_payload_changed(_arg0: Variant = null, _arg1: Variant = null) -> void:
 	_mark_dirty()
 	_refresh_if_needed()
+
+func _on_offer_purchased(index: int, _offer: Dictionary) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
+	if index < 0 or index >= offer_buttons.size():
+		return
+	MenuAnimationRuntimeRef.pulse_focus(offer_buttons[index], 1.035)
 
 func _build_layout_once() -> void:
 	if panel == null:
