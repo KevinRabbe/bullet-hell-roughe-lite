@@ -21,6 +21,8 @@ const COLOR_SPAWN_SIGIL := Color(0.92, 0.10, 0.20, 0.72)
 const COLOR_SPAWN_SIGIL_HIGH_CONTRAST := Color(1.0, 0.72, 0.28, 0.90)
 const RELEASE_FLASH_TEXTURE_SCALE := 0.22
 const DEATH_BURST_TEXTURE_SCALE := 0.28
+const ELITE_DEATH_WEIGHT := 1.35
+const BOSS_DEATH_WEIGHT := 2.10
 
 static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 	if current_target != null and is_instance_valid(current_target):
@@ -205,7 +207,18 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 			puff.queue_free()
 	)
 
-	_spawn_death_burst(scene, owner.global_position, owner.z_index + 2, reduced_motion)
+	var death_weight := 1.0
+	if owner.get("is_boss") == true:
+		death_weight = BOSS_DEATH_WEIGHT
+	elif owner.get("is_elite") == true:
+		death_weight = ELITE_DEATH_WEIGHT
+	_spawn_death_burst(
+		scene,
+		owner.global_position,
+		owner.z_index + 2,
+		reduced_motion,
+		death_weight
+	)
 
 static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:
 	if visual_sprite == null or not is_instance_valid(visual_sprite):
@@ -307,27 +320,75 @@ static func _apply_boss_presence(visual_sprite: Sprite2D) -> void:
 	tween.tween_property(ring, "scale", Vector2.ONE * 0.96, 0.72)
 	tween.parallel().tween_property(ring, "modulate:a", 0.46, 0.72)
 
-static func _spawn_death_burst(scene: Node, position: Vector2, z_index: int, reduced_motion: bool) -> void:
+static func _spawn_death_burst(
+	scene: Node,
+	position: Vector2,
+	z_index: int,
+	reduced_motion: bool,
+	visual_weight: float = 1.0
+) -> void:
 	if scene == null or not is_instance_valid(scene):
 		return
+	var safe_visual_weight := maxf(visual_weight, 1.0)
 	var burst := Sprite2D.new()
 	burst.texture = DEATH_BURST_TEXTURE
 	burst.global_position = position
 	burst.z_index = z_index
-	burst.scale = Vector2.ONE * DEATH_BURST_TEXTURE_SCALE
+	burst.scale = Vector2.ONE * DEATH_BURST_TEXTURE_SCALE * safe_visual_weight
 	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
 		burst.modulate = Color(1.16, 1.08, 0.90, 1.0)
 	scene.add_child(burst)
+	if safe_visual_weight > 1.0:
+		_spawn_weighted_defeat_ring(
+			scene,
+			position,
+			z_index - 1,
+			reduced_motion,
+			safe_visual_weight
+		)
+	var duration := 0.16 + ((safe_visual_weight - 1.0) * 0.07)
 	var tween := burst.create_tween()
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if reduced_motion:
-		tween.tween_property(burst, "modulate:a", 0.0, 0.16)
+		tween.tween_property(burst, "modulate:a", 0.0, duration)
 	else:
-		tween.tween_property(burst, "scale", burst.scale * 1.55, 0.16)
-		tween.parallel().tween_property(burst, "modulate:a", 0.0, 0.16)
+		tween.tween_property(burst, "scale", burst.scale * 1.55, duration)
+		tween.parallel().tween_property(burst, "modulate:a", 0.0, duration)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(burst):
 			burst.queue_free()
+	)
+
+static func _spawn_weighted_defeat_ring(
+	scene: Node,
+	position: Vector2,
+	z_index: int,
+	reduced_motion: bool,
+	visual_weight: float
+) -> void:
+	var ring := Line2D.new()
+	ring.points = _build_status_ring_points(24.0 * visual_weight)
+	ring.width = 2.4 * minf(visual_weight, 1.7)
+	ring.default_color = (
+		COLOR_BOSS_PRESENCE_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_SPAWN_SIGIL
+	)
+	ring.global_position = position
+	ring.z_index = z_index
+	ring.scale = Vector2.ONE * 0.72
+	scene.add_child(ring)
+
+	var duration := 0.14 if reduced_motion else 0.24
+	var tween := ring.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(ring, "scale", Vector2.ONE * 1.30, duration)
+	tween.tween_property(ring, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(ring):
+			ring.queue_free()
 	)
 
 static func _spawn_status_application_pulse(owner: Node2D, status_ring: Line2D, is_boss: bool) -> void:
