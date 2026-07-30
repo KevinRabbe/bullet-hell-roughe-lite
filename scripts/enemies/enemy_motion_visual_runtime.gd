@@ -9,6 +9,8 @@ const COLOR_NEUTRAL := Color(1.0, 1.0, 1.0, 1.0)
 const COLOR_HIT := Color(1.35, 1.12, 0.82, 1.0)
 const COLOR_HIT_HIGH_CONTRAST := Color(1.6, 1.6, 1.6, 1.0)
 const COLOR_DEATH := Color(1.0, 0.42, 0.18, 0.0)
+const COLOR_ELITE_PRESENCE := Color(0.96, 0.24, 0.08, 0.58)
+const COLOR_ELITE_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.78, 0.28, 0.90)
 const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
@@ -91,6 +93,8 @@ static func apply_fallback_variant_visuals(
 			visual_sprite.texture = textures.get("gate_beast", null)
 			visual_sprite.scale = Vector2(0.14, 0.14)
 	_play_spawn_intro(visual_sprite)
+	if elite_role != "":
+		_apply_elite_presence(visual_sprite)
 
 static func apply_enemy_data_visual(data: EnemyData, visual_sprite: Sprite2D, load_texture_callback: Callable) -> void:
 	if visual_sprite == null:
@@ -104,6 +108,8 @@ static func apply_enemy_data_visual(data: EnemyData, visual_sprite: Sprite2D, lo
 		_play_spawn_intro(visual_sprite)
 		if data.is_boss:
 			_apply_boss_presence(visual_sprite)
+		elif data.is_elite:
+			_apply_elite_presence(visual_sprite)
 
 static func spawn_hit_flash(visual: CanvasItem, owner: Node) -> void:
 	if visual == null or owner == null or not is_instance_valid(visual) or not is_instance_valid(owner):
@@ -320,6 +326,46 @@ static func _apply_boss_presence(visual_sprite: Sprite2D) -> void:
 	tween.parallel().tween_property(ring, "modulate:a", 0.72, 0.72)
 	tween.tween_property(ring, "scale", Vector2.ONE * 0.96, 0.72)
 	tween.parallel().tween_property(ring, "modulate:a", 0.46, 0.72)
+
+static func _apply_elite_presence(visual_sprite: Sprite2D) -> void:
+	if visual_sprite == null or not is_instance_valid(visual_sprite):
+		return
+	var parent := visual_sprite.get_parent() as Node2D
+	if parent == null or parent.get_node_or_null("ElitePresence") != null:
+		return
+	var marker := Node2D.new()
+	marker.name = "ElitePresence"
+	marker.z_index = visual_sprite.z_index - 1
+	parent.add_child(marker)
+
+	var color := (
+		COLOR_ELITE_PRESENCE_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_ELITE_PRESENCE
+	)
+	var radius := 30.0
+	var arc_span := PI * 0.20
+	for arc_index in range(4):
+		var center_angle := (PI * 0.25) + (float(arc_index) * PI * 0.5)
+		var arc := Line2D.new()
+		var points := PackedVector2Array()
+		for point_index in range(4):
+			var progress := float(point_index) / 3.0
+			var angle := center_angle - (arc_span * 0.5) + (arc_span * progress)
+			points.append(Vector2.from_angle(angle) * radius)
+		arc.points = points
+		arc.width = 2.2
+		arc.default_color = color
+		marker.add_child(arc)
+
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		return
+	var tween := marker.create_tween().set_loops()
+	tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(marker, "scale", Vector2.ONE * 1.06, 0.62)
+	tween.parallel().tween_property(marker, "modulate:a", 0.88, 0.62)
+	tween.tween_property(marker, "scale", Vector2.ONE, 0.62)
+	tween.parallel().tween_property(marker, "modulate:a", 0.56, 0.62)
 
 static func _spawn_death_burst(
 	scene: Node,
