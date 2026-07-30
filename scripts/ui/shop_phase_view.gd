@@ -40,6 +40,7 @@ var inventory_tooltip: Control
 var shop_view_model: RefCounted
 var _snapshot: Dictionary = {}
 var _is_dirty: bool = true
+var _last_reroll_cost: int = -1
 
 func _ready() -> void:
 	set("layer", 20)
@@ -97,7 +98,7 @@ func _connect_runtime_updates() -> void:
 		_connect_signal_if_needed(shop_controller, "shop_opened", state_changed_callable)
 		_connect_signal_if_needed(shop_controller, "shop_closed", state_changed_callable)
 		_connect_signal_if_needed(shop_controller, "offers_changed", payload_changed_callable)
-		_connect_signal_if_needed(shop_controller, "reroll_cost_changed", payload_changed_callable)
+		_connect_signal_if_needed(shop_controller, "reroll_cost_changed", Callable(self, "_on_reroll_cost_changed"))
 		_connect_signal_if_needed(shop_controller, "offer_purchased", Callable(self, "_on_offer_purchased"))
 	_connect_signal_if_needed(weapon_loadout, "loadout_changed", payload_changed_callable)
 	_connect_signal_if_needed(player, "ui_snapshot_changed", payload_changed_callable)
@@ -127,6 +128,13 @@ func _on_shop_state_changed(_value: Variant = null) -> void:
 func _on_shop_payload_changed(_arg0: Variant = null, _arg1: Variant = null) -> void:
 	_mark_dirty()
 	_refresh_if_needed()
+
+func _on_reroll_cost_changed(new_cost: int) -> void:
+	_mark_dirty()
+	_refresh_if_needed()
+	if _last_reroll_cost >= 0 and new_cost > _last_reroll_cost:
+		MenuAnimationRuntimeRef.pulse_focus(reroll_button, 1.035)
+	_last_reroll_cost = new_cost
 
 func _on_offer_purchased(index: int, _offer: Dictionary) -> void:
 	_mark_dirty()
