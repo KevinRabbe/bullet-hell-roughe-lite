@@ -23,6 +23,8 @@ const COLOR_WINDUP := Color(0.94, 0.42, 0.10, 0.95)
 const COLOR_RUSH := Color(0.86, 0.14, 0.12, 0.92)
 const COLOR_HIGH_CONTRAST := Color(1.0, 0.72, 0.30, 1.0)
 const PHASE_CUE_RADIUS := 66.0
+const RUSH_STREAK_LENGTH := 74.0
+const RUSH_STREAK_OFFSETS: Array[float] = [-18.0, 0.0, 18.0]
 
 var _phase: String = PHASE_CHASE
 var _phase_left: float = CHASE_SECONDS
@@ -86,6 +88,8 @@ func _apply_phase(boss: Node) -> void:
 	boss.set("move_speed", _base_move_speed * speed_multiplier)
 	_apply_presence_telegraph(boss)
 	_spawn_phase_cue(boss)
+	if _phase == PHASE_RUSH:
+		_spawn_rush_streak(boss)
 
 func _apply_presence_telegraph(boss: Node) -> void:
 	var ring := boss.get_node_or_null("BossPresence") as Line2D
@@ -139,6 +143,52 @@ func _spawn_phase_cue(boss: Node) -> void:
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(cue):
 			cue.queue_free()
+	)
+
+func _spawn_rush_streak(boss: Node) -> void:
+	var boss_node := boss as Node2D
+	if boss_node == null or not is_instance_valid(boss_node):
+		return
+	var direction := Vector2.RIGHT
+	var target_variant: Variant = boss.get("target")
+	if target_variant is Node2D and is_instance_valid(target_variant):
+		direction = ((target_variant as Node2D).global_position - boss_node.global_position).normalized()
+	if direction.length_squared() <= 0.0001:
+		direction = Vector2.RIGHT
+
+	var streak_root := Node2D.new()
+	streak_root.name = "GateBeastRushStreak"
+	streak_root.rotation = direction.angle()
+	streak_root.z_index = -3
+	boss_node.add_child(streak_root)
+
+	var color := COLOR_HIGH_CONTRAST if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled() else COLOR_RUSH
+	for offset_y in RUSH_STREAK_OFFSETS:
+		var streak := Line2D.new()
+		streak.points = PackedVector2Array([
+			Vector2(-RUSH_STREAK_LENGTH, offset_y),
+			Vector2(10.0, offset_y)
+		])
+		streak.width = 3.0 if is_zero_approx(offset_y) else 2.0
+		var gradient := Gradient.new()
+		var transparent_color := color
+		transparent_color.a = 0.0
+		gradient.set_color(0, transparent_color)
+		gradient.set_color(1, color)
+		streak.gradient = gradient
+		streak_root.add_child(streak)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.18 if reduced_motion else RUSH_SECONDS
+	var tween := streak_root.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(streak_root, "scale:x", 1.32, duration)
+	tween.tween_property(streak_root, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(streak_root):
+			streak_root.queue_free()
 	)
 
 func _build_cue_points() -> PackedVector2Array:
