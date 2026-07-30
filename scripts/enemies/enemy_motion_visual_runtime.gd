@@ -17,6 +17,9 @@ const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
 const COLOR_RANGED_RELEASE_HIGH_CONTRAST := Color(1.0, 0.88, 0.62, 1.0)
 const COLOR_CONTACT_ATTACK := Color(1.0, 0.22, 0.08, 0.88)
 const COLOR_CONTACT_ATTACK_HIGH_CONTRAST := Color(1.0, 0.92, 0.68, 1.0)
+const COLOR_REWARD_GOLD := Color(0.94, 0.62, 0.20, 0.92)
+const COLOR_REWARD_XP := Color(0.92, 0.12, 0.48, 0.88)
+const COLOR_REWARD_HIGH_CONTRAST := Color(1.0, 0.94, 0.68, 1.0)
 const COLOR_STATUS_BURN := Color(1.0, 0.25, 0.06, 0.78)
 const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
 const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
@@ -281,6 +284,93 @@ static func spawn_death_puff(owner: Node2D, visual_sprite: Sprite2D) -> void:
 		owner.z_index + 2,
 		reduced_motion,
 		death_weight
+	)
+
+static func spawn_reward_mote(
+	owner: Node2D,
+	player_node: Node,
+	gold_reward: int,
+	xp_reward: int
+) -> void:
+	if (
+		owner == null
+		or not is_instance_valid(owner)
+		or not (player_node is Node2D)
+		or not is_instance_valid(player_node)
+		or owner.get_tree() == null
+	):
+		return
+	var scene := owner.get_tree().current_scene
+	if scene == null:
+		return
+	var target := player_node as Node2D
+	var direction := (target.global_position - owner.global_position).normalized()
+	if direction.length_squared() <= 0.0001:
+		direction = Vector2.UP
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+	var primary_color := COLOR_REWARD_HIGH_CONTRAST if high_contrast else COLOR_REWARD_GOLD
+	var secondary_color := COLOR_REWARD_HIGH_CONTRAST if high_contrast else COLOR_REWARD_XP
+	if gold_reward <= 0:
+		primary_color = secondary_color
+
+	var mote := Node2D.new()
+	mote.name = "RewardMote"
+	mote.global_position = owner.global_position
+	mote.global_rotation = direction.angle()
+	mote.z_index = owner.z_index + 4
+	mote.scale = Vector2.ONE * clampf(
+		0.82 + (float(maxi(gold_reward, 0) + maxi(xp_reward, 0)) * 0.015),
+		0.82,
+		1.18
+	)
+	scene.add_child(mote)
+
+	var trail := Line2D.new()
+	trail.points = PackedVector2Array([
+		Vector2(-14.0, 0.0),
+		Vector2(-6.0, 0.0),
+		Vector2.ZERO
+	])
+	trail.width = 2.2
+	trail.default_color = Color(secondary_color, secondary_color.a * 0.72)
+	mote.add_child(trail)
+
+	var diamond := Polygon2D.new()
+	diamond.polygon = PackedVector2Array([
+		Vector2(0.0, -5.5),
+		Vector2(5.5, 0.0),
+		Vector2(0.0, 5.5),
+		Vector2(-5.5, 0.0)
+	])
+	diamond.color = primary_color
+	mote.add_child(diamond)
+
+	var outline := Line2D.new()
+	outline.points = PackedVector2Array([
+		Vector2(0.0, -7.0),
+		Vector2(7.0, 0.0),
+		Vector2(0.0, 7.0),
+		Vector2(-7.0, 0.0),
+		Vector2(0.0, -7.0)
+	])
+	outline.width = 1.5
+	outline.default_color = secondary_color
+	mote.add_child(outline)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.12 if reduced_motion else 0.34
+	var tween := mote.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	if reduced_motion:
+		tween.tween_property(mote, "scale", mote.scale * 1.18, duration)
+	else:
+		tween.tween_property(mote, "global_position", target.global_position, duration)
+		tween.tween_property(mote, "scale", mote.scale * 0.62, duration)
+	tween.tween_property(mote, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(mote):
+			mote.queue_free()
 	)
 
 static func _play_spawn_intro(visual_sprite: Sprite2D) -> void:

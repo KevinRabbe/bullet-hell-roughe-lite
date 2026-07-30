@@ -3,14 +3,20 @@ extends RefCounted
 
 var _owner: Node
 var _death_vfx_callback: Callable
+var _reward_vfx_callback: Callable
 var _last_hit_player: Node
 var _last_hit_weapon_id: String = ""
 var _last_hit_slot_index: int = -1
 var _death_started: bool = false
 
-func configure(owner: Node, death_vfx_callback: Callable) -> void:
+func configure(
+	owner: Node,
+	death_vfx_callback: Callable,
+	reward_vfx_callback: Callable = Callable()
+) -> void:
 	_owner = owner
 	_death_vfx_callback = death_vfx_callback
+	_reward_vfx_callback = reward_vfx_callback
 
 func register_damage_source(source: Node, source_weapon_id: String = "", source_slot_index: int = -1) -> void:
 	if source == null or not source.is_in_group("players"):
@@ -42,6 +48,12 @@ func _grant_kill_rewards(reward_gold: int, reward_xp: int) -> void:
 	if players.is_empty() and (_last_hit_player == null or not is_instance_valid(_last_hit_player)):
 		return
 	var player_node: Node = _resolve_reward_player(players)
+	if (
+		player_node != null
+		and (reward_gold > 0 or reward_xp > 0)
+		and _reward_vfx_callback.is_valid()
+	):
+		_reward_vfx_callback.call(player_node, reward_gold, reward_xp)
 	if player_node != null and player_node.has_method("add_gold"):
 		player_node.call("add_gold", reward_gold)
 	if player_node != null and player_node.has_method("add_xp"):
