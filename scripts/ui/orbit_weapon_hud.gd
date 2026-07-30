@@ -164,12 +164,15 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 	var base_position := slot_base_positions[slot_index]
 	var base_scale := slot_base_scales[slot_index]
 	var base_modulate := slot_base_modulates[slot_index]
+	var rest_rotation := _resolve_slot_rest_rotation(slot_index)
 	sprite.position = base_position
 	sprite.scale = base_scale
 	sprite.modulate = base_modulate
+	sprite.rotation = rest_rotation
 
 	var weapon_data := _load_weapon_data(weapon_id)
 	var tags := WeaponTagRuntimeRef.weapon_tags(weapon_data)
+	var attack_motion := _resolve_attack_motion(tags)
 	var recoil_distance := 6.0
 	var recovery_duration := 0.10
 	var scale_multiplier := 1.08
@@ -189,8 +192,24 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
 	var aim_direction := get_slot_aim_direction(slot_index)
 	if not reduced_motion:
-		sprite.position = base_position - (aim_direction * recoil_distance)
-		sprite.scale = base_scale * scale_multiplier
+		match attack_motion:
+			"slash_arc":
+				sprite.position = base_position + (aim_direction * 5.0)
+				sprite.rotation = rest_rotation - 0.48
+				sprite.scale = base_scale * maxf(scale_multiplier, 1.10)
+				recovery_duration = maxf(recovery_duration, 0.11)
+			"spin_throw":
+				sprite.position = base_position + (aim_direction * 6.0)
+				sprite.rotation = rest_rotation - 0.78
+				sprite.scale = base_scale * maxf(scale_multiplier, 1.08)
+				recovery_duration = maxf(recovery_duration, 0.10)
+			"pulse_cast":
+				sprite.position = base_position + (aim_direction * 3.0)
+				sprite.scale = base_scale * maxf(scale_multiplier, 1.15)
+				recovery_duration = maxf(recovery_duration, 0.12)
+			_:
+				sprite.position = base_position - (aim_direction * recoil_distance)
+				sprite.scale = base_scale * scale_multiplier
 	sprite.modulate = base_modulate.lightened(0.24)
 	_spawn_release_flash(base_position, aim_direction, tags, reduced_motion)
 
@@ -200,6 +219,7 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 	if not reduced_motion:
 		tween.tween_property(sprite, "position", base_position, recovery_duration)
 		tween.tween_property(sprite, "scale", base_scale, recovery_duration)
+		tween.tween_property(sprite, "rotation", rest_rotation, recovery_duration)
 	tween.tween_property(sprite, "modulate", base_modulate, recovery_duration)
 	slot_attack_tweens[slot_index] = tween
 
@@ -310,3 +330,28 @@ func _resolve_projectile_rotation_offset(weapon_data: WeaponData) -> float:
 	if weapon_data == null:
 		return default_projectile_rotation_offset
 	return weapon_data.projectile_rotation_offset
+
+func _resolve_slot_rest_rotation(slot_index: int) -> float:
+	var aim_direction := get_slot_aim_direction(slot_index)
+	var orientation_offset := 0.0
+	if slot_index >= 0 and slot_index < slot_forward_signs.size():
+		if slot_forward_signs[slot_index] < 0.0:
+			orientation_offset = PI
+	return aim_direction.angle() + orientation_offset
+
+func _resolve_attack_motion(tags: Array[String]) -> String:
+	if "melee" in tags:
+		return "slash_arc"
+	if "thrown" in tags:
+		return "spin_throw"
+	if (
+		"magic" in tags
+		or "ritual" in tags
+		or "portal" in tags
+		or "necromancy" in tags
+		or "curse" in tags
+		or "wave" in tags
+		or "mine" in tags
+	):
+		return "pulse_cast"
+	return "recoil"
