@@ -57,7 +57,11 @@ func _ready() -> void:
 		Callable(self, "_apply_status_tick_damage")
 	)
 	_lifecycle_runtime = EnemyLifecycleRuntime.new()
-	_lifecycle_runtime.configure(self, Callable(self, "_spawn_death_puff"))
+	_lifecycle_runtime.configure(
+		self,
+		Callable(self, "_spawn_death_puff"),
+		Callable(self, "_spawn_reward_feedback")
+	)
 	_apply_variant_stats()
 	current_hp = max_hp
 	add_to_group("enemies")
@@ -360,6 +364,14 @@ func _spawn_enemy_hit_flash() -> void:
 
 func _spawn_death_puff() -> void:
 	EnemyMotionVisualRuntime.spawn_death_puff(self, visual_sprite)
+
+func _spawn_reward_feedback(player_node: Node, gold_reward: int, xp_reward: int) -> void:
+	EnemyMotionVisualRuntime.spawn_reward_mote(
+		self,
+		player_node,
+		gold_reward,
+		xp_reward
+	)
 
 func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
 	var run_rng := get_node_or_null("/root/RunRng")
