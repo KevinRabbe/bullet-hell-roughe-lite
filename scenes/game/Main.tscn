@@ -46,6 +46,58 @@ z_index = -12
 texture = ExtResource("15")
 z_index = -12
 
+[node name="GroundNorthWest" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(-1254, -1254)
+texture = ExtResource("15")
+flip_h = true
+flip_v = true
+z_index = -12
+
+[node name="GroundNorth" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(0, -1254)
+texture = ExtResource("15")
+flip_v = true
+z_index = -12
+
+[node name="GroundNorthEast" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(1254, -1254)
+texture = ExtResource("15")
+flip_h = true
+flip_v = true
+z_index = -12
+
+[node name="GroundWest" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(-1254, 0)
+texture = ExtResource("15")
+flip_h = true
+z_index = -12
+
+[node name="GroundEast" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(1254, 0)
+texture = ExtResource("15")
+flip_h = true
+z_index = -12
+
+[node name="GroundSouthWest" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(-1254, 1254)
+texture = ExtResource("15")
+flip_h = true
+flip_v = true
+z_index = -12
+
+[node name="GroundSouth" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(0, 1254)
+texture = ExtResource("15")
+flip_v = true
+z_index = -12
+
+[node name="GroundSouthEast" type="Sprite2D" parent="ArenaArt/Ground"]
+position = Vector2(1254, 1254)
+texture = ExtResource("15")
+flip_h = true
+flip_v = true
+z_index = -12
+
 [node name="Decals" type="Node2D" parent="ArenaArt"]
 z_index = -10
 
