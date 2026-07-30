@@ -31,6 +31,7 @@ var _texture_cache: Dictionary = {}
 var _status_runtime: EnemyStatusRuntime
 var _lifecycle_runtime: EnemyLifecycleRuntime
 var _status_presence: Line2D
+var _ranged_telegraph: Node2D
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
@@ -79,6 +80,14 @@ func _physics_process(delta: float) -> void:
 	target = EnemyMotionVisualRuntime.resolve_target(target, self)
 
 	if target == null or not is_instance_valid(target):
+		_ranged_telegraph = EnemyMotionVisualRuntime.update_ranged_attack_telegraph(
+			self,
+			_ranged_telegraph,
+			Vector2.RIGHT,
+			ranged_cooldown_left,
+			ranged_interval_seconds,
+			false
+		)
 		velocity = Vector2.ZERO
 		move_and_slide()
 		return
@@ -91,6 +100,20 @@ func _physics_process(delta: float) -> void:
 		ranged_attack_range
 	)
 	move_and_slide()
+	var target_offset := target.global_position - global_position
+	var is_ranged_variant := (
+		enemy_variant == "spit_fiend"
+		or enemy_variant == "skeleton_rifleman"
+		or enemy_variant == "rift_caller"
+	)
+	_ranged_telegraph = EnemyMotionVisualRuntime.update_ranged_attack_telegraph(
+		self,
+		_ranged_telegraph,
+		target_offset,
+		ranged_cooldown_left,
+		ranged_interval_seconds,
+		is_ranged_variant and target_offset.length() <= ranged_attack_range
+	)
 	_try_damage_player()
 	_try_ranged_damage_player()
 

@@ -15,6 +15,8 @@ const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
 const COLOR_RANGED_RELEASE_HIGH_CONTRAST := Color(1.0, 0.88, 0.62, 1.0)
+const COLOR_RANGED_TELEGRAPH := Color(0.94, 0.16, 0.34, 0.88)
+const COLOR_RANGED_TELEGRAPH_HIGH_CONTRAST := Color(1.0, 0.86, 0.42, 1.0)
 const COLOR_CONTACT_ATTACK := Color(1.0, 0.22, 0.08, 0.88)
 const COLOR_CONTACT_ATTACK_HIGH_CONTRAST := Color(1.0, 0.92, 0.68, 1.0)
 const COLOR_REWARD_GOLD := Color(0.94, 0.62, 0.20, 0.92)
@@ -161,6 +163,87 @@ static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> 
 		if is_instance_valid(flash):
 			flash.queue_free()
 	)
+
+static func update_ranged_attack_telegraph(
+	owner: Node2D,
+	current_cue: Node2D,
+	direction: Vector2,
+	cooldown_left: float,
+	cooldown_duration: float,
+	target_in_range: bool
+) -> Node2D:
+	if owner == null or not is_instance_valid(owner):
+		return current_cue
+	var telegraph_window := maxf(cooldown_duration * 0.28, 0.16)
+	var should_show := (
+		target_in_range
+		and cooldown_left > 0.0
+		and cooldown_left <= telegraph_window
+	)
+	if not should_show:
+		if current_cue != null and is_instance_valid(current_cue):
+			current_cue.visible = false
+		return current_cue
+
+	var cue := current_cue
+	if cue == null or not is_instance_valid(cue):
+		cue = _create_ranged_attack_telegraph(owner)
+	var normalized_direction := direction.normalized()
+	if normalized_direction.length_squared() <= 0.0001:
+		normalized_direction = Vector2.RIGHT
+	var charge_progress := 1.0 - clampf(cooldown_left / telegraph_window, 0.0, 1.0)
+	cue.visible = true
+	cue.rotation = normalized_direction.angle()
+	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		cue.scale = Vector2.ONE
+	else:
+		cue.scale = Vector2.ONE * lerpf(0.82, 1.08, charge_progress)
+	cue.modulate.a = lerpf(0.42, 0.96, charge_progress)
+	return cue
+
+static func _create_ranged_attack_telegraph(owner: Node2D) -> Node2D:
+	var cue := Node2D.new()
+	cue.name = "RangedAttackTelegraph"
+	cue.z_index = 3
+	owner.add_child(cue)
+	var color := (
+		COLOR_RANGED_TELEGRAPH_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_RANGED_TELEGRAPH
+	)
+
+	var outer_bracket := Line2D.new()
+	outer_bracket.points = PackedVector2Array([
+		Vector2(8.0, -13.0),
+		Vector2(18.0, -9.0),
+		Vector2(23.0, 0.0),
+		Vector2(18.0, 9.0),
+		Vector2(8.0, 13.0)
+	])
+	outer_bracket.width = 2.2
+	outer_bracket.default_color = color
+	cue.add_child(outer_bracket)
+
+	var inner_chevron := Line2D.new()
+	inner_chevron.points = PackedVector2Array([
+		Vector2(9.0, -6.0),
+		Vector2(15.0, 0.0),
+		Vector2(9.0, 6.0)
+	])
+	inner_chevron.width = 1.6
+	inner_chevron.default_color = Color(color, color.a * 0.72)
+	cue.add_child(inner_chevron)
+
+	var focus_point := Polygon2D.new()
+	focus_point.polygon = PackedVector2Array([
+		Vector2(25.0, -3.0),
+		Vector2(28.0, 0.0),
+		Vector2(25.0, 3.0),
+		Vector2(22.0, 0.0)
+	])
+	focus_point.color = color
+	cue.add_child(focus_point)
+	return cue
 
 static func spawn_contact_attack_feedback(owner: Node2D, direction: Vector2) -> void:
 	if owner == null or not is_instance_valid(owner):
