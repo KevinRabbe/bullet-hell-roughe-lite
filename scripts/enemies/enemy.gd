@@ -34,11 +34,13 @@ var _status_presence: Line2D
 @onready var visual: CanvasItem = get_node_or_null("Visual")
 @onready var visual_sprite: Sprite2D = get_node_or_null("Visual")
 
-const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_brute.png")
-const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/final_boss_shadow_assassin.png")
-const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/hell_lantern_mage.png")
-const SKELETON_RIFLEMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/skeleton_marshal.png")
-const ARCHMAGE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_archmage.png")
+const IMP_RUNNER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/imp_runner_pixel_v2.png")
+const HUSK_BRUTE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/husk_brute_pixel_v2.png")
+const SPIT_FIEND_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/rift_cultist_pixel_v2.png")
+const SKELETON_RIFLEMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/skeleton_rifleman_pixel_v2.png")
+const ARCHMAGE_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/rift_caller_pixel_v2.png")
+const HORNED_BRUISER_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/horned_bruiser_pixel_v2.png")
+const GATE_BEAST_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/gate_beast_pixel_v2.png")
 const MARKSMAN_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/hellshot_frontier/demon_marksman.png")
 const SKULL_FIREBALL_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/skull_fireball.png")
 const RIFT_SHARD_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/enemies/hell_arcane_shot.png")
@@ -208,6 +210,9 @@ func _apply_variant_stats() -> void:
 				ranged_damage = 6.0
 				ranged_interval_seconds = 1.35
 				ranged_attack_range = 290.0
+				_apply_fallback_variant_visuals()
+		"rift_caller", "horned_bruiser":
+			if not has_data:
 				_apply_fallback_variant_visuals()
 		"gate_beast":
 			if not has_data:
@@ -381,6 +386,8 @@ func _apply_fallback_variant_visuals() -> void:
 			"spit_fiend": SPIT_FIEND_TEXTURE,
 			"skeleton_rifleman": SKELETON_RIFLEMAN_TEXTURE,
 			"archmage": ARCHMAGE_TEXTURE,
+			"horned_bruiser": HORNED_BRUISER_TEXTURE,
+			"gate_beast": GATE_BEAST_TEXTURE,
 			"marksman": MARKSMAN_TEXTURE
 		}
 	)

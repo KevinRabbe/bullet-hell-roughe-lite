@@ -77,6 +77,15 @@ static func apply_fallback_variant_visuals(
 		"skeleton_rifleman":
 			visual_sprite.texture = textures.get("marksman", null) if elite_role == "marksman" else textures.get("skeleton_rifleman", null)
 			visual_sprite.scale = Vector2(0.09, 0.09)
+		"rift_caller":
+			visual_sprite.texture = textures.get("archmage", null)
+			visual_sprite.scale = Vector2(0.098, 0.098)
+		"horned_bruiser":
+			visual_sprite.texture = textures.get("horned_bruiser", null)
+			visual_sprite.scale = Vector2(0.105, 0.105)
+		"gate_beast":
+			visual_sprite.texture = textures.get("gate_beast", null)
+			visual_sprite.scale = Vector2(0.14, 0.14)
 	_play_spawn_intro(visual_sprite)
 
 static func apply_enemy_data_visual(data: EnemyData, visual_sprite: Sprite2D, load_texture_callback: Callable) -> void:
