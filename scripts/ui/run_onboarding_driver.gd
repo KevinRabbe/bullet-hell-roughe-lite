@@ -1,0 +1,102 @@
+class_name RunOnboardingDriver
+extends Node
+
+const EventBannerRuntimeRef = preload("res://scripts/ui/event_banner_runtime.gd")
+
+const CONFIG_PATH := "user://onboarding_state.cfg"
+const CONFIG_SECTION := "onboarding"
+const KEY_INTRO_SHOWN := "run_intro_shown"
+const KEY_PORTAL_HINT_SHOWN := "portal_hint_shown"
+
+const INTRO_DELAY_SECONDS := 0.55
+const INTRO_DURATION_SECONDS := 3.4
+const PORTAL_HINT_DURATION_SECONDS := 2.8
+const PORTAL_HINT_GAP_SECONDS := 0.35
+
+var _intro_delay_left: float = INTRO_DELAY_SECONDS
+var _intro_shown: bool = false
+var _portal_hint_shown: bool = false
+var _portal_seen: bool = false
+var _next_banner_allowed_msec: int = 0
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
+	_load_state()
+
+func _process(delta: float) -> void:
+	if delta <= 0.0 or _portal_hint_shown:
+		return
+	var scene := _current_game_scene()
+	if scene == null or not _is_normal_run(scene) or not bool(scene.get("run_started")):
+		return
+	if not _portal_seen and _has_active_portal():
+		_portal_seen = true
+	if not _intro_shown:
+		_intro_delay_left = maxf(_intro_delay_left - delta, 0.0)
+		if _intro_delay_left <= 0.0:
+			_show_intro()
+		return
+	if Time.get_ticks_msec() < _next_banner_allowed_msec:
+		return
+	if _portal_seen:
+		_show_portal_hint()
+
+func _show_intro() -> void:
+	_intro_shown = true
+	_save_state()
+	EventBannerRuntimeRef.show(
+		self,
+		"FRONTIER RULES",
+		"MOVE. SURVIVE. BUILD.",
+		"Move with WASD, arrow keys, left stick, or D-pad. Weapons fire automatically. Shop and Level Up choices shape your build. Esc / Menu pauses.",
+		INTRO_DURATION_SECONDS
+	)
+	_next_banner_allowed_msec = Time.get_ticks_msec() + int(round((INTRO_DURATION_SECONDS + PORTAL_HINT_GAP_SECONDS) * 1000.0))
+
+func _show_portal_hint() -> void:
+	_portal_hint_shown = true
+	_save_state()
+	EventBannerRuntimeRef.show(
+		self,
+		"RIFT SIGHTED",
+		"OPTIONAL DANGER",
+		"Portals are optional risk/reward events. Cross one when the possible reward is worth accepting its danger.",
+		PORTAL_HINT_DURATION_SECONDS
+	)
+
+func _load_state() -> void:
+	var config := ConfigFile.new()
+	if config.load(CONFIG_PATH) != OK:
+		return
+	_intro_shown = config.get_value(CONFIG_SECTION, KEY_INTRO_SHOWN, false) == true
+	_portal_hint_shown = config.get_value(CONFIG_SECTION, KEY_PORTAL_HINT_SHOWN, false) == true
+
+func _save_state() -> void:
+	var config := ConfigFile.new()
+	config.set_value(CONFIG_SECTION, KEY_INTRO_SHOWN, _intro_shown)
+	config.set_value(CONFIG_SECTION, KEY_PORTAL_HINT_SHOWN, _portal_hint_shown)
+	var error := config.save(CONFIG_PATH)
+	if error != OK:
+		push_warning("Could not persist onboarding state: %s" % error_string(error))
+
+func _current_game_scene() -> Node:
+	if get_tree() == null:
+		return null
+	return get_tree().current_scene
+
+func _is_normal_run(scene: Node) -> bool:
+	if scene == null:
+		return false
+	if scene.has_method("_get_effective_debug_preset"):
+		return str(scene.call("_get_effective_debug_preset")) == "normal"
+	return true
+
+func _has_active_portal() -> bool:
+	if get_tree() == null:
+		return false
+	for portal in get_tree().get_nodes_in_group("portals"):
+		if portal == null or not is_instance_valid(portal):
+			continue
+		if bool(portal.get("is_active")):
+			return true
+	return false
