@@ -16,6 +16,9 @@ const COLOR_TRAIL_BONE := Color(1.0, 0.80, 0.48, 0.82)
 const COLOR_TRAIL_INFERNAL := Color(1.0, 0.30, 0.08, 0.86)
 const COLOR_TRAIL_OCCULT := Color(0.94, 0.16, 0.46, 0.82)
 const COLOR_TRAIL_HIGH_CONTRAST := Color(1.0, 0.92, 0.72, 0.94)
+const COLOR_RELEASE_RITUAL := Color(0.98, 0.16, 0.50, 0.94)
+const COLOR_RELEASE_BURN := Color(1.0, 0.30, 0.06, 0.94)
+const COLOR_RELEASE_DEBT := Color(0.76, 0.05, 0.16, 0.94)
 const IMPACT_RING_SEGMENTS := 16
 const IMPACT_TEXTURE_SCALE := 0.28
 
@@ -154,6 +157,54 @@ static func spawn_impact_feedback(projectile: Node2D, _visual: Sprite2D, profile
 			impact.queue_free()
 	)
 
+static func spawn_status_release_feedback(projectile: Node2D, status_id: String) -> void:
+	if projectile == null or not is_instance_valid(projectile) or projectile.get_tree() == null:
+		return
+	var scene := projectile.get_tree().current_scene
+	if scene == null:
+		return
+	var color := _resolve_status_release_color(status_id)
+	if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled():
+		color = COLOR_TRAIL_HIGH_CONTRAST
+
+	var release := Node2D.new()
+	release.z_index = projectile.z_index + 3
+	release.scale = Vector2.ONE * 0.64
+	scene.add_child(release)
+	release.global_position = projectile.global_position
+
+	var outer_ring := Line2D.new()
+	outer_ring.points = _build_ring_points(13.0, 20)
+	outer_ring.closed = true
+	outer_ring.width = 2.6
+	outer_ring.default_color = color
+	release.add_child(outer_ring)
+
+	var diamond := Line2D.new()
+	diamond.points = PackedVector2Array([
+		Vector2(0.0, -10.0),
+		Vector2(10.0, 0.0),
+		Vector2(0.0, 10.0),
+		Vector2(-10.0, 0.0),
+		Vector2(0.0, -10.0)
+	])
+	diamond.width = 2.0
+	diamond.default_color = Color(color, color.a * 0.78)
+	release.add_child(diamond)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.10 if reduced_motion else 0.20
+	var tween := release.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(release, "scale", Vector2.ONE * 1.85, duration)
+	tween.tween_property(release, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(release):
+			release.queue_free()
+	)
+
 static func _spawn_impact_ring(scene: Node, projectile: Node2D, profile: Dictionary, duration: float) -> void:
 	var color_variant: Variant = profile.get("impact_color", COLOR_TRAIL_BONE)
 	var color := color_variant as Color if color_variant is Color else COLOR_TRAIL_BONE
@@ -194,3 +245,12 @@ static func _contains_any(tags: Array[String], candidates: Array[String]) -> boo
 		if candidate in tags:
 			return true
 	return false
+
+static func _resolve_status_release_color(status_id: String) -> Color:
+	match status_id:
+		"hellfire_burn":
+			return COLOR_RELEASE_BURN
+		"devils_debt":
+			return COLOR_RELEASE_DEBT
+		_:
+			return COLOR_RELEASE_RITUAL
