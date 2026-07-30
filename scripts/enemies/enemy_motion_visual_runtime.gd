@@ -15,6 +15,8 @@ const COLOR_BOSS_PRESENCE := Color(0.62, 0.10, 0.18, 0.68)
 const COLOR_BOSS_PRESENCE_HIGH_CONTRAST := Color(1.0, 0.42, 0.20, 0.9)
 const COLOR_RANGED_RELEASE := Color(1.0, 0.34, 0.10, 0.92)
 const COLOR_RANGED_RELEASE_HIGH_CONTRAST := Color(1.0, 0.88, 0.62, 1.0)
+const COLOR_CONTACT_ATTACK := Color(1.0, 0.22, 0.08, 0.88)
+const COLOR_CONTACT_ATTACK_HIGH_CONTRAST := Color(1.0, 0.92, 0.68, 1.0)
 const COLOR_STATUS_BURN := Color(1.0, 0.25, 0.06, 0.78)
 const COLOR_STATUS_RITUAL := Color(0.94, 0.12, 0.50, 0.78)
 const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
@@ -155,6 +157,60 @@ static func spawn_ranged_release_feedback(owner: Node2D, direction: Vector2) -> 
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(flash):
 			flash.queue_free()
+	)
+
+static func spawn_contact_attack_feedback(owner: Node2D, direction: Vector2) -> void:
+	if owner == null or not is_instance_valid(owner):
+		return
+	var normalized_direction := direction.normalized()
+	if normalized_direction.length_squared() <= 0.0001:
+		normalized_direction = Vector2.RIGHT
+	var slash := Node2D.new()
+	slash.name = "ContactAttackCue"
+	slash.position = normalized_direction * 18.0
+	slash.rotation = normalized_direction.angle()
+	slash.z_index = 4
+	slash.scale = Vector2(0.78, 0.88)
+	owner.add_child(slash)
+
+	var color := (
+		COLOR_CONTACT_ATTACK_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else COLOR_CONTACT_ATTACK
+	)
+	var outer_arc := Line2D.new()
+	outer_arc.points = PackedVector2Array([
+		Vector2(4.0, -10.0),
+		Vector2(11.0, -6.0),
+		Vector2(14.0, 0.0),
+		Vector2(11.0, 6.0),
+		Vector2(4.0, 10.0)
+	])
+	outer_arc.width = 2.6
+	outer_arc.default_color = color
+	slash.add_child(outer_arc)
+
+	var inner_arc := Line2D.new()
+	inner_arc.points = PackedVector2Array([
+		Vector2(5.0, -5.0),
+		Vector2(9.0, 0.0),
+		Vector2(5.0, 5.0)
+	])
+	inner_arc.width = 1.4
+	inner_arc.default_color = Color(color, color.a * 0.62)
+	slash.add_child(inner_arc)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.08 if reduced_motion else 0.14
+	var tween := slash.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(slash, "scale", Vector2(1.24, 1.08), duration)
+	tween.tween_property(slash, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(slash):
+			slash.queue_free()
 	)
 
 static func update_status_presence(

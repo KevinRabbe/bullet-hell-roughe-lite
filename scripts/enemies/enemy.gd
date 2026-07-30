@@ -118,6 +118,10 @@ func _try_damage_player() -> void:
 	if log_combat_events:
 		print("ENEMY HIT PLAYER | distance %.1f | damage %.1f" % [distance_to_player, contact_damage])
 	target.call("take_damage", contact_damage)
+	EnemyMotionVisualRuntime.spawn_contact_attack_feedback(
+		self,
+		target.global_position - global_position
+	)
 	if target.has_method("notify_damaged_by_enemy"):
 		target.call("notify_damaged_by_enemy", self)
 	damage_cooldown_left = damage_interval_seconds
