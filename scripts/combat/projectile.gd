@@ -40,6 +40,7 @@ func _physics_process(delta: float) -> void:
 	_update_visual_animation(delta)
 	life_left -= delta
 	if life_left <= 0.0:
+		ProjectileVisualUtil.spawn_dissipation_feedback(self, visual, _visual_animation_profile)
 		queue_free()
 
 func set_direction(new_direction: Vector2) -> void:
