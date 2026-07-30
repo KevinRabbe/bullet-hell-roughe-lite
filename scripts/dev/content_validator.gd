@@ -70,7 +70,7 @@ static func _validate_characters(
 		var visual_path := str(character.get("visual_path", "")).strip_edges()
 		if visual_path == "":
 			_add_error(issues, "character_visual_path", "character", character_id, "Selectable hunter is missing visual_path.")
-		elif not ResourceLoader.exists(visual_path):
+		elif not _resource_or_source_exists(visual_path):
 			_add_error(issues, "character_visual_missing", "character", character_id, "Selectable hunter visual resource does not exist: %s" % visual_path)
 
 		var roster_order := int(character.get("roster_order", -1))
@@ -193,7 +193,7 @@ static func _validate_enemies(issues: Array[Dictionary], enemies: Dictionary) ->
 		if int(_value(enemy, "reward_gold", -1)) < 0 or int(_value(enemy, "reward_xp", -1)) < 0:
 			_add_error(issues, "enemy_reward", "enemy", enemy_id, "Enemy rewards cannot be negative.")
 		var visual_path := str(_value(enemy, "visual_texture_path", "")).strip_edges()
-		if visual_path != "" and not ResourceLoader.exists(visual_path):
+		if visual_path != "" and not _resource_or_source_exists(visual_path):
 			_add_error(issues, "enemy_visual_missing", "enemy", enemy_id, "Enemy visual resource does not exist: %s" % visual_path)
 
 static func _validate_portal_events(issues: Array[Dictionary], portal_events: Dictionary) -> void:
@@ -327,6 +327,9 @@ static func _is_placeholder_weapon(weapon: Object) -> bool:
 static func _dictionary_property(owner: Object, property_name: String) -> Dictionary:
 	var value: Variant = owner.get(property_name)
 	return value if value is Dictionary else {}
+
+static func _resource_or_source_exists(path: String) -> bool:
+	return ResourceLoader.exists(path) or FileAccess.file_exists(path)
 
 static func _value(entry: Variant, key: String, fallback: Variant) -> Variant:
 	if entry is Dictionary:
