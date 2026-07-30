@@ -10,6 +10,8 @@ const LEVEL_UP_COLOR := Color(1.0, 0.50, 0.16, 0.92)
 const LEVEL_UP_COLOR_HIGH_CONTRAST := Color(1.0, 0.92, 0.68, 1.0)
 const FULL_HEAL_COLOR := Color(0.98, 0.72, 0.30, 0.88)
 const FULL_HEAL_COLOR_HIGH_CONTRAST := Color(1.0, 0.96, 0.76, 1.0)
+const PASSIVE_ACTIVE_COLOR := Color(0.96, 0.14, 0.42, 0.90)
+const PASSIVE_ACTIVE_COLOR_HIGH_CONTRAST := Color(1.0, 0.80, 0.34, 1.0)
 const CAMERA_KICK := Vector2(5.0, -3.0)
 
 var _player: Node
@@ -31,6 +33,8 @@ func _ready() -> void:
 	_camera = _player.get_node_or_null("Camera2D") as Camera2D
 	if _player.has_signal("ui_snapshot_changed"):
 		_player.connect("ui_snapshot_changed", _on_player_snapshot_changed)
+	if _player.has_signal("passive_activated"):
+		_player.connect("passive_activated", _on_passive_activated)
 	call_deferred("_initialize_from_player")
 
 func _initialize_from_player() -> void:
@@ -57,6 +61,11 @@ func _on_player_snapshot_changed() -> void:
 		_play_level_up_feedback()
 	_last_hp = current_hp
 	_last_level = current_level
+
+func _on_passive_activated() -> void:
+	if not _initialized:
+		return
+	_play_passive_activation_feedback()
 
 func _play_damage_feedback() -> void:
 	SfxRuntimeRef.play(self, "player_hit", -8.0, 1.0, 120)
@@ -181,6 +190,50 @@ func _play_full_heal_feedback() -> void:
 	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	if not reduced_motion:
 		tween.tween_property(burst, "scale", Vector2.ONE * 1.42, duration)
+	tween.tween_property(burst, "modulate:a", 0.0, duration)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(burst):
+			burst.queue_free()
+	)
+
+func _play_passive_activation_feedback() -> void:
+	var player_node := _player as Node2D
+	if player_node == null or not is_instance_valid(player_node):
+		return
+	var color := (
+		PASSIVE_ACTIVE_COLOR_HIGH_CONTRAST
+		if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled()
+		else PASSIVE_ACTIVE_COLOR
+	)
+	var burst := Node2D.new()
+	burst.name = "PassiveActivationBurst"
+	burst.z_index = -1
+	burst.scale = Vector2.ONE * 0.66
+	player_node.add_child(burst)
+
+	var ring := Line2D.new()
+	ring.points = _build_ring_points(30.0, 20)
+	ring.closed = true
+	ring.width = 2.6
+	ring.default_color = color
+	burst.add_child(ring)
+
+	for ray_index in range(4):
+		var ray := Line2D.new()
+		var angle: float = PI * 0.5 * float(ray_index)
+		var direction := Vector2.from_angle(angle)
+		ray.points = PackedVector2Array([direction * 22.0, direction * 38.0])
+		ray.width = 2.2
+		ray.default_color = Color(color, color.a * 0.72)
+		burst.add_child(ray)
+
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	var duration := 0.12 if reduced_motion else 0.22
+	var tween := burst.create_tween()
+	tween.set_parallel(true)
+	tween.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	if not reduced_motion:
+		tween.tween_property(burst, "scale", Vector2.ONE * 1.34, duration)
 	tween.tween_property(burst, "modulate:a", 0.0, duration)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(burst):
