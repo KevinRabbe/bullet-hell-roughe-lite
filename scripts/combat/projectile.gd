@@ -107,14 +107,19 @@ func _on_body_entered(body: Node) -> void:
 		body.call("take_damage", final_damage, shooter, source_weapon_id, source_slot_index)
 		if releases_status and body.has_method("consume_status"):
 			var consumed_stacks := int(body.call("consume_status", weapon_data.on_hit_status_id))
-			if consumed_stacks > 0 and shooter != null and shooter.has_method("notify_status_released"):
-				shooter.call(
-					"notify_status_released",
-					weapon_data.on_hit_status_id,
-					source_weapon_id,
-					source_slot_index,
-					consumed_stacks
+			if consumed_stacks > 0:
+				ProjectileVisualUtil.spawn_status_release_feedback(
+					self,
+					weapon_data.on_hit_status_id
 				)
+				if shooter != null and shooter.has_method("notify_status_released"):
+					shooter.call(
+						"notify_status_released",
+						weapon_data.on_hit_status_id,
+						source_weapon_id,
+						source_slot_index,
+						consumed_stacks
+					)
 		var impact_pitch := clampf(1.06 - (maxf(final_damage, 0.0) / 220.0), 0.80, 1.06)
 		SfxRuntimeRef.play(self, "impact", -19.0, impact_pitch, 50)
 		ProjectileVisualUtil.spawn_impact_feedback(self, visual, _visual_animation_profile)
