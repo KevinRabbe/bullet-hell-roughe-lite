@@ -1,5 +1,7 @@
 extends Node2D
 
+const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+
 const EMBER_COUNT: int = 18
 const EMBER_CORE_COLOR := Color(1.0, 0.28, 0.10, 1.0)
 const EMBER_HALO_COLOR := Color(0.82, 0.05, 0.10, 1.0)
@@ -14,6 +16,7 @@ var elapsed: float = 0.0
 func _ready() -> void:
 	_apply_ambient_pulse()
 	queue_redraw()
+	set_process(not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled())
 
 func _process(delta: float) -> void:
 	elapsed = fmod(elapsed + maxf(delta, 0.0), 120.0)
