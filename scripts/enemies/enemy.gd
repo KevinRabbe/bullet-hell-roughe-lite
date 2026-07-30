@@ -121,7 +121,7 @@ func _try_damage_player() -> void:
 	damage_cooldown_left = damage_interval_seconds
 
 func _try_ranged_damage_player() -> void:
-	if enemy_variant != "spit_fiend" and enemy_variant != "skeleton_rifleman":
+	if enemy_variant != "spit_fiend" and enemy_variant != "skeleton_rifleman" and enemy_variant != "rift_caller":
 		return
 	if ranged_cooldown_left > 0.0:
 		return
@@ -137,7 +137,7 @@ func _try_ranged_damage_player() -> void:
 	if enemy_variant == "skeleton_rifleman":
 		projectile_speed = 560.0
 		projectile_lifetime = 1.7
-	elif elite_role == "rift_caller":
+	elif enemy_variant == "rift_caller" or elite_role == "rift_caller":
 		projectile_speed = 300.0
 		projectile_lifetime = 2.3
 	else:

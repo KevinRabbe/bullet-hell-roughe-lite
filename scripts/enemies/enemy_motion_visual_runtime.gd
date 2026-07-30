@@ -39,7 +39,7 @@ static func compute_movement_velocity(
 		return Vector2.ZERO
 	var direction := (target.global_position - owner_position).normalized()
 	var velocity := direction * move_speed
-	if enemy_variant == "spit_fiend":
+	if enemy_variant == "spit_fiend" or enemy_variant == "rift_caller":
 		var distance_to_player := owner_position.distance_to(target.global_position)
 		if distance_to_player <= ranged_attack_range:
 			velocity *= 0.25
