@@ -71,7 +71,7 @@ static func _apply_walk(
 	var cadence := float(profile.get("cadence", 8.0)) * lerpf(0.82, 1.12, clampf(speed_ratio, 0.0, 1.0))
 	var phase := elapsed * cadence
 	var stride := sin(phase)
-	var lift := abs(stride)
+	var lift := absf(stride)
 	var compression := cos(phase * 2.0)
 	var bob_px := float(profile.get("bob_px", 2.0)) * clampf(speed_ratio, 0.6, 1.15)
 	var sway_px := float(profile.get("sway_px", 0.4))
