@@ -181,6 +181,7 @@ func _on_offer_pressed(index: int) -> void:
 	_refresh_offer_buttons()
 	offer_purchased.emit(index, offer.duplicate(true))
 	offers_changed.emit()
+	call_deferred("_focus_shop_action_after_purchase", index)
 
 func _can_purchase_offer(offer_type: String, offer_id: String, offer: Dictionary) -> bool:
 	if offer_type != "weapon":
@@ -263,6 +264,19 @@ func _open_shop_for_wave() -> void:
 
 func _focus_initial_shop_action() -> void:
 	for offer_button in offer_buttons:
+		if offer_button != null and offer_button.visible and not offer_button.disabled:
+			offer_button.grab_focus()
+			return
+	if reroll_button != null and reroll_button.visible and not reroll_button.disabled:
+		reroll_button.grab_focus()
+		return
+	if continue_button != null and continue_button.visible and not continue_button.disabled:
+		continue_button.grab_focus()
+
+func _focus_shop_action_after_purchase(purchased_index: int) -> void:
+	for offset in range(1, offer_buttons.size() + 1):
+		var candidate_index := (purchased_index + offset) % offer_buttons.size()
+		var offer_button := offer_buttons[candidate_index]
 		if offer_button != null and offer_button.visible and not offer_button.disabled:
 			offer_button.grab_focus()
 			return
