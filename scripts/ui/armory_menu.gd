@@ -107,6 +107,18 @@ func _ready() -> void:
 	resized.connect(_apply_responsive_layout)
 	if back_button != null:
 		back_button.pressed.connect(_on_back_pressed)
+	call_deferred("_focus_selected_section_button")
+
+func _focus_selected_section_button() -> void:
+	await get_tree().process_frame
+	if nav_buttons == null or nav_buttons.get_child_count() == 0:
+		return
+	var selected_index := SECTION_ORDER.find(selected_section_id)
+	if selected_index < 0 or selected_index >= nav_buttons.get_child_count():
+		selected_index = 0
+	var selected_button := nav_buttons.get_child(selected_index) as Button
+	if selected_button != null and selected_button.visible and not selected_button.disabled:
+		selected_button.grab_focus()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
