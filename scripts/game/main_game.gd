@@ -355,6 +355,8 @@ func _on_wave_continue_pressed() -> void:
 
 func _enter_intermission_phase(wave_index: int) -> void:
 	waiting_for_wave_continue = true
+	if _is_shop_enabled() and shop_controller != null and shop_controller.has_method("open_for_wave"):
+		shop_controller.call("open_for_wave", wave_index)
 	IntermissionRuntime.begin_intermission(self, wave_panel, level_up_panel, _is_shop_enabled())
 	print("Wave %d complete. Press Continue to start next wave." % wave_index)
 

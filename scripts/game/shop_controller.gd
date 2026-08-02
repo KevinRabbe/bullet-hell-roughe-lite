@@ -74,8 +74,6 @@ func _connect_buttons() -> void:
 func _initialize_panel_state() -> void:
 	if panel != null:
 		panel.visible = false
-	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
-		enemy_spawner.connect("wave_completed", _on_wave_completed)
 
 func _build_weapon_offer_pool() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
@@ -87,7 +85,7 @@ func _build_weapon_offer_pool() -> void:
 func _build_item_offer_pool() -> void:
 	_item_offer_pool = ShopOfferRuntime.build_item_offer_pool()
 
-func _on_wave_completed(wave_index: int) -> void:
+func open_for_wave(wave_index: int) -> void:
 	if not enabled:
 		return
 	_current_wave_index = maxi(wave_index, 1)
