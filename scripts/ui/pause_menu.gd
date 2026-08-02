@@ -84,7 +84,7 @@ func _refresh_hint_copy() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if active_options_menu != null and is_instance_valid(active_options_menu):
 		return
-	if event.is_action_pressed("pause_game"):
+	if event.is_action_pressed("pause_game") or event.is_action_pressed("ui_cancel"):
 		_on_resume_pressed()
 		get_viewport().set_input_as_handled()
 		return
