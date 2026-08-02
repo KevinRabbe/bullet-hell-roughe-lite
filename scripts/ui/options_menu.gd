@@ -203,7 +203,7 @@ func _refresh_content() -> void:
 			_refresh_video_content()
 		TAB_CONTROLS:
 			tab_title_label.text = "Controls"
-			tab_summary_label.text = "Review the current keyboard controls for menus and the arena."
+			tab_summary_label.text = "Review the current keyboard and controller controls for menus and the arena."
 			_refresh_controls_content()
 		TAB_ACCESSIBILITY:
 			tab_title_label.text = "Accessibility"
@@ -319,9 +319,9 @@ func _refresh_controls_content() -> void:
 		controls_runtime_box,
 		"Menu Flow Shortcuts",
 		[
-			{"label": "Browse roster or starters", "binding": "Up / Down"},
-			{"label": "Confirm selection", "binding": "Enter / Space"},
-			{"label": "Back / close", "binding": "Esc"},
+			{"label": "Browse roster or starters", "binding": "Arrow Keys / D-pad / Left Stick"},
+			{"label": "Confirm selection", "binding": _format_action_bindings("ui_accept")},
+			{"label": "Back / close", "binding": _format_action_bindings("ui_cancel")},
 			{"label": "Random starter", "binding": "R (starter screen)"},
 			{"label": "Default starter", "binding": "T (starter screen)"}
 		]
@@ -330,13 +330,13 @@ func _refresh_controls_content() -> void:
 		controls_runtime_box,
 		"In-Run Essentials",
 		[
-			{"label": "Pause", "binding": "Esc / P"},
+			{"label": "Pause", "binding": _format_action_bindings("pause_game")},
 			{"label": "Retry end state", "binding": "R"},
-			{"label": "Continue wave/shop prompts", "binding": "Enter / Space"}
+			{"label": "Continue wave/shop prompts", "binding": _format_action_bindings("ui_accept")}
 		]
 	)
 	var status_label := Label.new()
-	status_label.text = "Status: live keyboard reference is in place, full rebinding stays deferred to a dedicated controls pass."
+	status_label.text = "Status: live keyboard and controller reference is in place; full rebinding stays deferred to a dedicated controls pass."
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	InfernalUiStyleRef.apply_accent_text(status_label)
 	controls_runtime_box.add_child(status_label)
@@ -812,4 +812,38 @@ func _format_action_bindings(action_name: String) -> String:
 		elif event_variant is InputEventMouseButton:
 			var mouse_event: InputEventMouseButton = event_variant
 			parts.append("Mouse %d" % mouse_event.button_index)
+		elif event_variant is InputEventJoypadButton:
+			var button_event: InputEventJoypadButton = event_variant
+			parts.append(_format_joypad_button(button_event.button_index))
+		elif event_variant is InputEventJoypadMotion:
+			var motion_event: InputEventJoypadMotion = event_variant
+			parts.append(_format_joypad_motion(motion_event.axis, motion_event.axis_value))
 	return ", ".join(parts) if not parts.is_empty() else "-"
+
+func _format_joypad_button(button_index: int) -> String:
+	match button_index:
+		JOY_BUTTON_A:
+			return "Controller A"
+		JOY_BUTTON_B:
+			return "Controller B"
+		JOY_BUTTON_X:
+			return "Controller X"
+		JOY_BUTTON_Y:
+			return "Controller Y"
+		JOY_BUTTON_START:
+			return "Controller Menu"
+		_:
+			return "Controller Button %d" % button_index
+
+func _format_joypad_motion(axis: int, axis_value: float) -> String:
+	match axis:
+		JOY_AXIS_LEFT_X:
+			return "Left Stick %s" % ("Left" if axis_value < 0.0 else "Right")
+		JOY_AXIS_LEFT_Y:
+			return "Left Stick %s" % ("Up" if axis_value < 0.0 else "Down")
+		JOY_AXIS_RIGHT_X:
+			return "Right Stick %s" % ("Left" if axis_value < 0.0 else "Right")
+		JOY_AXIS_RIGHT_Y:
+			return "Right Stick %s" % ("Up" if axis_value < 0.0 else "Down")
+		_:
+			return "Controller Axis %d" % axis
