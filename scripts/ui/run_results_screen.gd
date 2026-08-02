@@ -77,6 +77,10 @@ func set_standalone_mode(enabled: bool) -> void:
 	_refresh_action_hint()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_on_main_menu_pressed()
+		return
 	if not (event is InputEventKey):
 		return
 	var key_event: InputEventKey = event as InputEventKey
