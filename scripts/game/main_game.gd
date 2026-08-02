@@ -249,6 +249,8 @@ func get_debug_preset_label() -> String:
 	return "DebugPreset: %s" % _get_effective_debug_preset()
 
 func _get_effective_debug_preset() -> String:
+	if not OS.is_debug_build():
+		return "normal"
 	return DebugRunPresetRuntime.effective_preset(debug_quick_shop_mode, debug_run_preset)
 
 func _get_debug_wave_duration_for_preset(preset: String) -> float:
