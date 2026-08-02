@@ -21,7 +21,7 @@ var _prompt_player: Node2D
 
 @onready var visual: Sprite2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
-@onready var interaction_prompt: Label2D = $InteractionPrompt
+@onready var interaction_prompt: Label = $InteractionPrompt
 
 func _ready() -> void:
 	add_to_group("portals")
