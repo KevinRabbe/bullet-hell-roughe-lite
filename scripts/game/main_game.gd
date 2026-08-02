@@ -166,6 +166,8 @@ func _on_player_died() -> void:
 	_enter_run_end_state("game_over")
 
 func _toggle_pause() -> void:
+	if get_tree().paused and (active_pause_menu == null or not is_instance_valid(active_pause_menu)):
+		return
 	var should_pause := not get_tree().paused
 	get_tree().paused = should_pause
 	if should_pause:
