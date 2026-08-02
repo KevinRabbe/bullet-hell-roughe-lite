@@ -22,6 +22,14 @@ RunRng="*res://scripts/autoload/run_rng.gd"
 
 [input]
 
+ui_accept={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":0,"keycode":4194309,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventKey,"physical_keycode":0,"keycode":4194310,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventKey,"physical_keycode":0,"keycode":32,"unicode":32,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":0,"pressure":0.0,"pressed":false,"script":null)]
+}
+ui_cancel={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":0,"keycode":4194305,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":1,"pressure":0.0,"pressed":false,"script":null)]
+}
 move_left={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"physical_keycode":65,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventKey,"physical_keycode":4194319,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventJoypadMotion,"resource_local_to_scene":false,"resource_name":"","device":-1,"axis":0,"axis_value":-1.0,"script":null)]
