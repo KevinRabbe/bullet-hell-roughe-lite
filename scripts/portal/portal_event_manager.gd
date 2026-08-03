@@ -189,6 +189,11 @@ func _finish_portal_mutation_offer() -> void:
 	active_mutation_offer = null
 	active_mutation_event_result = {}
 
+func dismiss_active_offer_for_run_end() -> void:
+	if active_mutation_offer == null or not is_instance_valid(active_mutation_offer):
+		return
+	_finish_portal_mutation_offer()
+
 func _start_double_elite_event(portal_position: Vector2, event_result: Dictionary) -> void:
 	if log_portal_events:
 		print("Portal event started: Double Elite")

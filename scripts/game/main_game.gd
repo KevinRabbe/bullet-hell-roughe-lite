@@ -414,9 +414,15 @@ func _enter_run_end_state(state: String) -> void:
 	waiting_for_restart = transition.get("waiting_for_restart", false) == true
 	waiting_for_wave_continue = transition.get("waiting_for_wave_continue", false) == true
 	waiting_for_level_up_choice = transition.get("waiting_for_level_up_choice", false) == true
+	_dismiss_portal_offer_for_run_end()
 	_set_combat_active(false)
 	_hide_run_overlays()
 	_show_run_results(state)
+
+func _dismiss_portal_offer_for_run_end() -> void:
+	var portal_event_manager := get_node_or_null("PortalEventManager")
+	if portal_event_manager != null and portal_event_manager.has_method("dismiss_active_offer_for_run_end"):
+		portal_event_manager.call("dismiss_active_offer_for_run_end")
 
 func _restart_run() -> void:
 	_hide_run_results()
