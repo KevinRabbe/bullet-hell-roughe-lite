@@ -282,10 +282,10 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	margin.layout_mode = 1
 	margin.anchor_right = 1.0
 	margin.anchor_bottom = 1.0
-	margin.offset_left = 4.0
-	margin.offset_top = 4.0
-	margin.offset_right = -4.0
-	margin.offset_bottom = -4.0
+	margin.offset_left = 1.0
+	margin.offset_top = 1.0
+	margin.offset_right = -1.0
+	margin.offset_bottom = -1.0
 	button.add_child(margin)
 
 	var content := VBoxContainer.new()
@@ -298,13 +298,13 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	margin.add_child(content)
 
 	var portrait_box := CenterContainer.new()
-	portrait_box.custom_minimum_size = Vector2(0, 20)
+	portrait_box.custom_minimum_size = Vector2(0, 32)
 	portrait_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(portrait_box)
 
 	var portrait_texture := TextureRect.new()
 	portrait_texture.name = ROSTER_TILE_PORTRAIT_NODE
-	portrait_texture.custom_minimum_size = Vector2(18, 18)
+	portrait_texture.custom_minimum_size = Vector2(32, 32)
 	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -312,7 +312,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 
 	var placeholder := ColorRect.new()
 	placeholder.name = ROSTER_TILE_PLACEHOLDER_NODE
-	placeholder.custom_minimum_size = Vector2(18, 18)
+	placeholder.custom_minimum_size = Vector2(32, 32)
 	placeholder.color = Color(0.22, 0.16, 0.13, 1.0)
 	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_box.add_child(placeholder)
