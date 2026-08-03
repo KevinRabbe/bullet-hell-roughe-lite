@@ -48,7 +48,7 @@ move_down={
 }
 interact={
 "deadzone": 0.5,
-"events": [Object(InputEventKey,"physical_keycode":69,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":0,"pressure":0.0,"pressed":false,"script":null)]
+"events": [Object(InputEventKey,"physical_keycode":70,"keycode":0,"unicode":0,"location":0,"echo":false,"pressed":false,"script":null), Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":0,"pressure":0.0,"pressed":false,"script":null)]
 }
 pause_game={
 "deadzone": 0.5,
