@@ -10,14 +10,12 @@ const CHARACTER_SELECT_SCENE_PATH := "res://scenes/ui/CharacterSelect.tscn"
 const ARMORY_SCENE_PATH := "res://scenes/ui/ArmoryMenu.tscn"
 const CREDITS_SCENE_PATH := "res://scenes/ui/CreditsMenu.tscn"
 const OPTIONS_SCENE_PATH := "res://scenes/ui/OptionsMenuStandardized.tscn"
-const MAIN_MENU_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 const MAIN_MENU_HERO_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_hero_art.png"
 
 @onready var arena_texture: TextureRect = $ArenaTexture
 @onready var root_margin: MarginContainer = $RootMargin
 @onready var main_hbox: Control = $RootMargin/MainHBox
 @onready var hero_panel: PanelContainer = $RootMargin/MainHBox/HeroPanel
-@onready var hero_art_slot: TextureRect = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroArtSlot
 @onready var eyebrow_label: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/Eyebrow
 @onready var title_label: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/Title
 @onready var subtitle_label: Label = $RootMargin/MainHBox/HeroPanel/HeroStage/HeroContentMargin/HeroContent/Subtitle
@@ -40,8 +38,7 @@ var accessibility_settings: Dictionary = {}
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
-	_apply_optional_texture(arena_texture, MAIN_MENU_BACKGROUND_ART_PATH)
-	_apply_optional_texture(hero_art_slot, MAIN_MENU_HERO_ART_PATH)
+	_apply_optional_texture(arena_texture, MAIN_MENU_HERO_ART_PATH)
 	_apply_presentation()
 	resized.connect(_apply_responsive_layout)
 	call_deferred("_finish_initial_layout")
@@ -50,7 +47,7 @@ func _finish_initial_layout() -> void:
 	_apply_responsive_layout()
 	MenuAnimationRuntimeRef.play_screen_intro([hero_panel, menu_panel])
 	MenuAnimationRuntimeRef.play_ambient_pulse(
-		hero_art_slot,
+		arena_texture,
 		Color(0.92, 0.84, 0.86, 0.96),
 		Color(1.0, 0.96, 0.92, 1.0),
 		3.2
