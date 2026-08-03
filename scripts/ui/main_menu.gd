@@ -82,7 +82,7 @@ func _apply_optional_texture(target: TextureRect, texture_path: String) -> void:
 	target.texture = texture_variant if texture_variant is Texture2D else null
 
 func _apply_presentation() -> void:
-	InfernalUiStyleRef.apply_panel(hero_panel, InfernalUiStyleRef.PANEL_CARD)
+	hero_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	menu_panel.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	InfernalUiStyleRef.apply_text_role(title_label, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
 	InfernalUiStyleRef.apply_text_role(menu_title, InfernalUiStyleRef.TEXT_SCREEN_TITLE)
@@ -91,7 +91,7 @@ func _apply_presentation() -> void:
 	InfernalUiStyleRef.apply_text_role(subtitle_label, InfernalUiStyleRef.TEXT_MUTED)
 	InfernalUiStyleRef.apply_text_role(menu_body, InfernalUiStyleRef.TEXT_BODY)
 	InfernalUiStyleRef.apply_text_role(hero_callout, InfernalUiStyleRef.TEXT_BODY)
-	InfernalUiStyleRef.apply_text_role(footer_label, InfernalUiStyleRef.TEXT_HINT)
+	footer_label.visible = false
 	InfernalUiStyleRef.apply_button(start_button, InfernalUiStyleRef.BUTTON_PRIMARY)
 	for button in [armory_button, options_button, credits_button, quit_button]:
 		InfernalUiStyleRef.apply_button(button, InfernalUiStyleRef.BUTTON_SECONDARY)
@@ -101,12 +101,10 @@ func _apply_responsive_layout() -> void:
 	var layout_class: int = UiLayoutMetricsRef.layout_class_for_size(viewport_size)
 	var tight: bool = layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT
 	var font_scale: float = AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
-	var horizontal_margin := UiLayoutMetricsRef.screen_margin_horizontal(layout_class)
-	var vertical_margin := UiLayoutMetricsRef.screen_margin_vertical(layout_class)
-	root_margin.offset_left = horizontal_margin
-	root_margin.offset_top = vertical_margin
-	root_margin.offset_right = -horizontal_margin
-	root_margin.offset_bottom = -vertical_margin
+	root_margin.offset_left = 0.0
+	root_margin.offset_top = 0.0
+	root_margin.offset_right = 0.0
+	root_margin.offset_bottom = 0.0
 	var menu_half_width: float = 190.0 if tight else 210.0
 	var menu_half_height: float = 176.0 if tight else 190.0
 	menu_panel.offset_left = -menu_half_width
