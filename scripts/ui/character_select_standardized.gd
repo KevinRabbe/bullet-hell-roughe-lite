@@ -259,17 +259,16 @@ func _rebuild_starter_option_buttons() -> void:
 			continue
 		var card := card_variant as Button
 		card.custom_minimum_size.x = 230.0
-		var tags := _normalize_string_array(option.get("tags", []))
 		var eyebrow := "DEFAULT STARTER" if option.get("default_selected", false) == true else "STARTER WEAPON"
 		var icon_variant: Variant = option.get("icon", null)
 		var icon: Texture2D = icon_variant if icon_variant is Texture2D else null
 		card.call(
 			"configure",
 			str(option.get("display_name", option.get("id", "Weapon"))),
-			_truncate_text(str(option.get("description", "")), 90),
+			"",
 			eyebrow,
-			" / ".join(tags).to_upper(),
-			"Select",
+			"",
+			"",
 			icon
 		)
 		card.call("set_selected", option_index == selected_starter_index)
