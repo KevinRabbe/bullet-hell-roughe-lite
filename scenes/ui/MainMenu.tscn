@@ -30,24 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
 stretch_mode = 6
-modulate = Color(0.58, 0.42, 0.44, 0.42)
-
-[node name="PrimaryDimmer" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.0705882, 0.0431373, 0.0627451, 0.74)
-
-[node name="TopGlow" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 150.0
-grow_horizontal = 2
-color = Color(0.352941, 0.0588235, 0.105882, 0.18)
+modulate = Color(1, 1, 1, 1)
 
 [node name="RootMargin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -78,16 +61,6 @@ grow_vertical = 2
 custom_minimum_size = Vector2(0, 560)
 layout_mode = 2
 clip_contents = true
-
-[node name="HeroArtSlot" type="TextureRect" parent="RootMargin/MainHBox/HeroPanel/HeroStage"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-expand_mode = 1
-stretch_mode = 6
 
 [node name="HeroShade" type="ColorRect" parent="RootMargin/MainHBox/HeroPanel/HeroStage"]
 layout_mode = 1
