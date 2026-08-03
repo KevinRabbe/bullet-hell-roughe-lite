@@ -25,7 +25,6 @@ var _prompt_player: Node2D
 
 func _ready() -> void:
 	add_to_group("portals")
-	body_entered.connect(_on_body_entered)
 	_visual_rest_position = visual.position
 	_visual_rest_scale = visual.scale
 	interaction_prompt.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
@@ -42,10 +41,6 @@ func _process(_delta: float) -> void:
 		_prompt_player != null
 		and global_position.distance_to(_prompt_player.global_position) <= prompt_radius
 	)
-
-func _on_body_entered(body: Node2D) -> void:
-	if body.has_method("get_ui_snapshot"):
-		try_activate(body)
 
 func can_activate(player: Node2D) -> bool:
 	if not is_active:
