@@ -14,6 +14,7 @@ const ROSTER_CAPACITY: int = 30
 const ROSTER_COLUMNS: int = 5
 const ROSTER_ROWS: int = 6
 const ROSTER_TILE_SIZE := Vector2(190, 72)
+const ACTIVE_ROSTER_TILE_SIZE := Vector2(190, 92)
 
 const COLOR_ALMOST_BLACK := Color("#120B10")
 const COLOR_DARK_NEUTRAL := Color("#181218")
@@ -269,7 +270,7 @@ func _rebuild_roster_grid() -> void:
 func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	var button := Button.new()
 	button.text = ""
-	button.custom_minimum_size = ROSTER_TILE_SIZE
+	button.custom_minimum_size = ACTIVE_ROSTER_TILE_SIZE
 	button.focus_mode = Control.FOCUS_ALL
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -298,13 +299,13 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	margin.add_child(content)
 
 	var portrait_box := CenterContainer.new()
-	portrait_box.custom_minimum_size = Vector2(0, 38)
+	portrait_box.custom_minimum_size = Vector2(0, 56)
 	portrait_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	content.add_child(portrait_box)
 
 	var portrait_texture := TextureRect.new()
 	portrait_texture.name = ROSTER_TILE_PORTRAIT_NODE
-	portrait_texture.custom_minimum_size = Vector2(38, 38)
+	portrait_texture.custom_minimum_size = Vector2(56, 56)
 	portrait_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -312,7 +313,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 
 	var placeholder := ColorRect.new()
 	placeholder.name = ROSTER_TILE_PLACEHOLDER_NODE
-	placeholder.custom_minimum_size = Vector2(38, 38)
+	placeholder.custom_minimum_size = Vector2(56, 56)
 	placeholder.color = Color(0.22, 0.16, 0.13, 1.0)
 	placeholder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	portrait_box.add_child(placeholder)
@@ -324,7 +325,7 @@ func _build_active_roster_tile(character_id: String, slot_index: int) -> Button:
 	name.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name.clip_text = true
 	name.max_lines_visible = 2
-	name.custom_minimum_size = Vector2(0, 30)
+	name.custom_minimum_size = Vector2(0, 32)
 	name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(name)
