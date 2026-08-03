@@ -29,7 +29,7 @@ static func spawn_projectile(
 		projectile.set("lifetime_seconds", lifetime_seconds)
 	var visual := projectile.get_node_or_null("Visual")
 	if visual is Node2D:
-		(visual as Node2D).rotation = normalized_direction.angle() + rotation_offset
+		(visual as Node2D).rotation = rotation_offset
 	parent.add_child(projectile)
 	var launch_pitch := clampf(1.08 - (maxf(damage, 0.0) / 180.0), 0.78, 1.10)
 	SfxRuntimeRef.play(parent, "projectile_launch", -18.0, launch_pitch, 65)
