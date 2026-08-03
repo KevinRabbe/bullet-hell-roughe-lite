@@ -4,7 +4,7 @@
   "description": "Occult ritual master who weaponizes sigils, blood marks, curses, and forbidden ceremony.",
   "selectable": true,
   "roster_order": 6,
-  "visual_path": "res://assets/sprites/characters/ritualist/ritualist_shared_base.png",
+  "visual_path": "res://assets/sprites/characters/ritualist/ritualist_neutral_body.png",
   "visual_scale": 0.12,
   "starting_weapon_ids": ["blood_needle", "ritual_candles", "cursed_bell"],
   "family_weapon_ids": [
