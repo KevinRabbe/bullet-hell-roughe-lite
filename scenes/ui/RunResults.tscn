@@ -116,6 +116,11 @@ custom_minimum_size = Vector2(260, 54)
 layout_mode = 2
 text = "Choose New Hunter"
 
+[node name="CopyReportButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Copy Report"
+
 [node name="MainMenuButton" type="Button" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox/ActionRow"]
 custom_minimum_size = Vector2(220, 54)
 layout_mode = 2
@@ -124,4 +129,4 @@ text = "Main Menu"
 [node name="ActionHint" type="Label" parent="RootMargin/RootVBox/MainPanel/MainMargin/MainVBox"]
 layout_mode = 2
 horizontal_alignment = 1
-text = "R Retry - Enter New Character - Esc Main Menu"
+text = "Use Copy Report when sending a playtest bug report."
