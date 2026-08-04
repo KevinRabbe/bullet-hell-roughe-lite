@@ -1,6 +1,7 @@
 extends Control
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const AudioSettingsRuntimeRef = preload("res://scripts/ui/audio_settings_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
@@ -37,6 +38,7 @@ var accessibility_settings: Dictionary = {}
 
 func _ready() -> void:
 	DisplaySettingsRuntimeRef.apply_saved_settings()
+	AudioSettingsRuntimeRef.apply_saved_settings()
 	accessibility_settings = AccessibilitySettingsRuntimeRef.apply_saved_settings()
 	_apply_optional_texture(arena_texture, MAIN_MENU_HERO_ART_PATH)
 	_apply_presentation()
