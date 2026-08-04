@@ -8,6 +8,8 @@ const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_
 const DEFAULT_SECONDS := 1.65
 const PANEL_WIDTH := 560.0
 const PANEL_TOP := 84.0
+const PANEL_HEIGHT := 126.0
+const LARGE_TEXT_PANEL_HEIGHT := 150.0
 
 static func show(
 	owner: Node,
@@ -21,6 +23,15 @@ static func show(
 	var scene := owner.get_tree().current_scene
 	if scene == null:
 		return
+
+	var accessibility_settings := AccessibilitySettingsRuntimeRef.get_active_settings()
+	var font_scale := AccessibilitySettingsRuntimeRef.get_font_scale(accessibility_settings)
+	var large_text := AccessibilitySettingsRuntimeRef.is_large_text_enabled(accessibility_settings)
+	var high_contrast := AccessibilitySettingsRuntimeRef.is_high_contrast_enabled(accessibility_settings)
+	var viewport_width := scene.get_viewport().get_visible_rect().size.x
+	var target_width := PANEL_WIDTH * (1.08 if large_text else 1.0)
+	var panel_width := minf(target_width, maxf(viewport_width - 32.0, 320.0))
+	var panel_height := LARGE_TEXT_PANEL_HEIGHT if large_text else PANEL_HEIGHT
 
 	var layer := CanvasLayer.new()
 	layer.layer = 42
@@ -39,10 +50,10 @@ static func show(
 	root.add_child(panel)
 	panel.anchor_left = 0.5
 	panel.anchor_right = 0.5
-	panel.offset_left = -PANEL_WIDTH * 0.5
-	panel.offset_right = PANEL_WIDTH * 0.5
+	panel.offset_left = -panel_width * 0.5
+	panel.offset_right = panel_width * 0.5
 	panel.offset_top = PANEL_TOP
-	panel.offset_bottom = PANEL_TOP + 126.0
+	panel.offset_bottom = PANEL_TOP + panel_height
 
 	var ritual_backdrop := InfernalRitualBackdropRef.new() as Control
 	ritual_backdrop.name = "RitualBackdrop"
@@ -63,23 +74,29 @@ static func show(
 	var eyebrow := Label.new()
 	eyebrow.text = eyebrow_text
 	eyebrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	eyebrow.add_theme_font_size_override("font_size", 12)
+	eyebrow.add_theme_font_size_override("font_size", int(round(12.0 * font_scale)))
 	InfernalUiStyleRef.apply_text_role(eyebrow, InfernalUiStyleRef.TEXT_WARNING)
+	if high_contrast:
+		eyebrow.add_theme_color_override("font_color", Color(1.0, 0.82, 0.38, 1.0))
 	content.add_child(eyebrow)
 
 	var title := Label.new()
 	title.text = title_text
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_font_size_override("font_size", int(round(28.0 * font_scale)))
 	InfernalUiStyleRef.apply_text_role(title, InfernalUiStyleRef.TEXT_DISPLAY_TITLE)
+	if high_contrast:
+		title.add_theme_color_override("font_color", Color.WHITE)
 	content.add_child(title)
 
 	var body := Label.new()
 	body.text = body_text
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	body.add_theme_font_size_override("font_size", 13)
+	body.add_theme_font_size_override("font_size", int(round(13.0 * font_scale)))
 	InfernalUiStyleRef.apply_text_role(body, InfernalUiStyleRef.TEXT_BODY)
+	if high_contrast:
+		body.add_theme_color_override("font_color", Color.WHITE)
 	content.add_child(body)
 
 	_play_lifetime(layer, panel, maxf(duration_seconds, 0.5))
