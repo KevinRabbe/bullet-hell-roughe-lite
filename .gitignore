@@ -5,3 +5,4 @@
 *.uid
 /.codex_tmp_art/
 /_tmp_*/
+/build/
