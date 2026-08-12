@@ -199,6 +199,8 @@ func _apply_sold_out_card(card: Dictionary) -> void:
 
 func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> void:
 	var weapon_id := str(offer.get("id", ""))
+	if weapon_data != null:
+		card["icon"] = weapon_data.icon
 	card["description"] = _build_weapon_offer_description(offer, weapon_data, player_snapshot)
 	if _can_buy_weapon_offer(offer):
 		return
