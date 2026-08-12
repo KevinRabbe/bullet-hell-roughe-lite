@@ -143,8 +143,12 @@ static func _validate_weapons(issues: Array[Dictionary], weapons: Dictionary) ->
 			var invalid_tags := WeaponTagRuntimeRef.list_noncanonical_gameplay_tags(tags_variant)
 			if not invalid_tags.is_empty():
 				_add_error(issues, "weapon_tags", "weapon", weapon_id, "Non-canonical gameplay tags: %s" % ", ".join(invalid_tags))
-		if bool(_value(weapon, "shop_enabled", true)) and not _is_placeholder_weapon(weapon) and int(_value(weapon, "price", 0)) <= 0:
+		var shop_enabled := bool(_value(weapon, "shop_enabled", true))
+		var placeholder := _is_placeholder_weapon(weapon)
+		if shop_enabled and not placeholder and int(_value(weapon, "price", 0)) <= 0:
 			_add_error(issues, "weapon_price", "weapon", weapon_id, "Shop-enabled weapon must have a positive price.")
+		if shop_enabled and not placeholder and _value(weapon, "icon", null) == null:
+			_add_error(issues, "weapon_icon", "weapon", weapon_id, "Shop-enabled weapon is missing icon.")
 
 static func _validate_items(issues: Array[Dictionary], items: Dictionary) -> void:
 	for item_id in _sorted_keys(items):
@@ -155,6 +159,8 @@ static func _validate_items(issues: Array[Dictionary], items: Dictionary) -> voi
 		_validate_embedded_id(issues, "item", item_id, item)
 		if str(_value(item, "name", "")).strip_edges() == "":
 			_add_error(issues, "item_name", "item", item_id, "Item is missing name.")
+		if _value(item, "icon", null) == null:
+			_add_error(issues, "item_icon", "item", item_id, "Shop item is missing icon.")
 		if int(_value(item, "price", 0)) <= 0:
 			_add_error(issues, "item_price", "item", item_id, "Item price must be positive.")
 		if int(_value(item, "stack_limit", 0)) <= 0:
