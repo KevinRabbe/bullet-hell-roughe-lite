@@ -184,6 +184,7 @@ func _create_offer_card_base(offer: Dictionary) -> Dictionary:
 		"title": str(offer.get("label", "Offer")),
 		"type_label": str(offer.get("type", "")).capitalize(),
 		"icon": null,
+		"rarity": "",
 		"description": "",
 		"button_text": "%dG" % int(offer.get("price", 0)),
 		"button_disabled": false,
@@ -199,8 +200,12 @@ func _apply_sold_out_card(card: Dictionary) -> void:
 
 func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> void:
 	var weapon_id := str(offer.get("id", ""))
+	card["rarity"] = _get_offer_weapon_rarity(offer, weapon_data)
 	if weapon_data != null:
 		card["icon"] = weapon_data.icon
+		var family := weapon_data.get_family_value() if weapon_data.has_method("get_family_value") else weapon_data.family
+		if family != "":
+			card["type_label"] = "%s · WEAPON" % family.replace("_", " ").to_upper()
 	card["description"] = _build_weapon_offer_description(offer, weapon_data, player_snapshot)
 	if _can_buy_weapon_offer(offer):
 		return
@@ -213,6 +218,7 @@ func _apply_item_offer_card(card: Dictionary, offer: Dictionary, player_snapshot
 	var item_data: ItemData = _find_item(item_id)
 	if item_data != null:
 		card["icon"] = item_data.icon
+		card["rarity"] = str(item_data.rarity)
 	card["description"] = _build_item_offer_description(item_id, player_snapshot)
 
 func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
@@ -280,12 +286,10 @@ func _get_player_snapshot() -> Dictionary:
 func _build_weapon_offer_description(offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> String:
 	if weapon_data == null:
 		return "Weapon"
-	var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
 	var desc_text := weapon_data.description
 	if desc_text == "":
 		desc_text = "No description."
 	var lines: Array[String] = [
-		"[color=#7fd0ff]Rarity: %s[/color]" % rarity_text,
 		desc_text,
 		"DMG %.1f" % weapon_data.get_damage_value(),
 		"CD %.2fs" % weapon_data.get_cooldown_value(),
@@ -301,10 +305,7 @@ func _build_item_offer_description(item_id: String, player_snapshot: Dictionary)
 	var item_desc := item_data.description
 	if item_desc == "":
 		item_desc = "No description."
-	var lines: Array[String] = [
-		"[color=#b5ff9a]Rarity: %s[/color]" % str(item_data.rarity).capitalize(),
-		item_desc
-	]
+	var lines: Array[String] = [item_desc]
 	lines.append_array(_build_item_offer_synergy_lines(item_data, player_snapshot))
 	return "\n".join(lines)
 
