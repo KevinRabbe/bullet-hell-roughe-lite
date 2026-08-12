@@ -196,6 +196,7 @@ func _create_offer_card_base(offer: Dictionary) -> Dictionary:
 		"title": str(offer.get("label", "Offer")),
 		"type_label": str(offer.get("type", "")).capitalize(),
 		"icon": null,
+		"rarity": "",
 		"description": "",
 		"button_text": "%dG" % int(offer.get("price", 0)),
 		"button_disabled": false,
@@ -211,8 +212,12 @@ func _apply_sold_out_card(card: Dictionary) -> void:
 
 func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> void:
 	var weapon_id := str(offer.get("id", ""))
+	card["rarity"] = _get_offer_weapon_rarity(offer, weapon_data)
 	if weapon_data != null:
 		card["icon"] = weapon_data.icon
+		var family := weapon_data.get_family_value() if weapon_data.has_method("get_family_value") else weapon_data.family
+		if family != "":
+			card["type_label"] = "%s · WEAPON" % family.replace("_", " ").to_upper()
 	card["description"] = _build_weapon_offer_description(offer, weapon_data, player_snapshot)
 	if _can_buy_weapon_offer(offer):
 		return
@@ -225,6 +230,7 @@ func _apply_item_offer_card(card: Dictionary, offer: Dictionary, player_snapshot
 	var item_data: ItemData = _find_item(item_id)
 	if item_data != null:
 		card["icon"] = item_data.icon
+		card["rarity"] = str(item_data.rarity)
 	card["description"] = _build_item_offer_description(item_id, player_snapshot)
 	if item_data == null:
 		card["button_text"] = "Blocked"
