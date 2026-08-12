@@ -10,34 +10,34 @@ const PRIMARY_STATS: Array[Dictionary] = [
 	{"id": "level", "label": "Level", "format": "int", "neutral": 1.0},
 	{"id": "max_hp", "label": "Max HP", "format": "whole", "neutral": 100.0},
 	{"id": "hp_regen", "label": "HP Regen", "format": "one", "neutral": 0.0},
-	{"id": "damage", "label": "Damage", "format": "mult", "neutral": 1.0},
-	{"id": "attack_speed", "label": "Attack Speed", "format": "mult", "neutral": 1.0},
-	{"id": "attack_range", "label": "Range", "format": "mult", "neutral": 1.0},
-	{"id": "projectile_speed", "label": "Projectile Speed", "format": "mult", "neutral": 1.0},
-	{"id": "crit_chance", "label": "Crit Chance", "format": "one", "neutral": 0.0},
-	{"id": "crit_damage", "label": "Crit Damage", "format": "mult", "neutral": 1.5},
+	{"id": "damage", "label": "Damage", "format": "delta_percent", "neutral": 1.0},
+	{"id": "attack_speed", "label": "Attack Speed", "format": "delta_percent", "neutral": 1.0},
+	{"id": "attack_range", "label": "Range", "format": "delta_percent", "neutral": 1.0},
+	{"id": "projectile_speed", "label": "Projectile Speed", "format": "delta_percent", "neutral": 1.0},
+	{"id": "crit_chance", "label": "Crit Chance", "format": "percent_value", "neutral": 0.0},
+	{"id": "crit_damage", "label": "Crit Damage", "format": "percent_from_one", "neutral": 1.5},
 	{"id": "armor", "label": "Armor", "format": "one", "neutral": 0.0},
-	{"id": "dodge", "label": "Dodge", "format": "one", "neutral": 0.0},
-	{"id": "movement_speed", "label": "Move Speed", "format": "whole", "neutral": 300.0},
+	{"id": "dodge", "label": "Dodge", "format": "percent_value", "neutral": 0.0},
+	{"id": "movement_speed", "label": "Move Speed", "format": "delta_percent", "neutral": 300.0},
 	{"id": "luck", "label": "Luck", "format": "one", "neutral": 0.0},
-	{"id": "pickup_range", "label": "Pickup Range", "format": "whole", "neutral": 48.0}
+	{"id": "pickup_range", "label": "Pickup Range", "format": "delta_percent", "neutral": 48.0}
 ]
 
 const SECONDARY_STATS: Array[Dictionary] = [
-	{"id": "xp_gain", "label": "XP Gain", "format": "mult", "neutral": 1.0},
-	{"id": "coin_gain", "label": "Gold Gain", "format": "mult", "neutral": 1.0},
-	{"id": "shop_discount", "label": "Shop Discount", "format": "one", "neutral": 0.0},
-	{"id": "reroll_cost", "label": "Reroll Cost", "format": "mult", "neutral": 1.0},
-	{"id": "portal_luck", "label": "Portal Luck", "format": "two", "neutral": 0.0},
-	{"id": "portal_frequency", "label": "Portal Frequency", "format": "mult", "neutral": 1.0},
-	{"id": "portal_instability", "label": "Portal Instability", "format": "two", "neutral": 0.0},
-	{"id": "portal_reward_multiplier", "label": "Portal Reward", "format": "mult", "neutral": 1.0},
+	{"id": "xp_gain", "label": "XP Gain", "format": "delta_percent", "neutral": 1.0},
+	{"id": "coin_gain", "label": "Gold Gain", "format": "delta_percent", "neutral": 1.0},
+	{"id": "shop_discount", "label": "Shop Discount", "format": "percent_value", "neutral": 0.0},
+	{"id": "reroll_cost", "label": "Reroll Cost", "format": "delta_percent", "neutral": 1.0},
+	{"id": "portal_luck", "label": "Portal Luck", "format": "percent_value", "neutral": 0.0},
+	{"id": "portal_frequency", "label": "Portal Frequency", "format": "delta_percent", "neutral": 1.0},
+	{"id": "portal_instability", "label": "Portal Instability", "format": "percent_value", "neutral": 0.0},
+	{"id": "portal_reward_multiplier", "label": "Portal Reward", "format": "delta_percent", "neutral": 1.0},
 	{"id": "corruption", "label": "Corruption", "format": "one", "neutral": 0.0},
-	{"id": "burn_damage", "label": "Burn Power", "format": "mult", "neutral": 1.0},
-	{"id": "poison_damage", "label": "Poison Power", "format": "mult", "neutral": 1.0},
-	{"id": "bleed_damage", "label": "Bleed Power", "format": "mult", "neutral": 1.0},
-	{"id": "fear_chance", "label": "Fear Chance", "format": "one", "neutral": 0.0},
-	{"id": "frost_power", "label": "Frost Power", "format": "mult", "neutral": 1.0}
+	{"id": "burn_damage", "label": "Burn Power", "format": "delta_percent", "neutral": 1.0},
+	{"id": "poison_damage", "label": "Poison Power", "format": "delta_percent", "neutral": 1.0},
+	{"id": "bleed_damage", "label": "Bleed Power", "format": "delta_percent", "neutral": 1.0},
+	{"id": "fear_chance", "label": "Fear Chance", "format": "percent_value", "neutral": 0.0},
+	{"id": "frost_power", "label": "Frost Power", "format": "delta_percent", "neutral": 1.0}
 ]
 
 var _player: Node
@@ -132,12 +132,12 @@ func _add_stat_row(definition: Dictionary) -> void:
 	row.add_child(label)
 
 	var value := _resolve_value(definition)
+	var neutral := float(definition.get("neutral", 0.0))
 	var value_label := Label.new()
 	value_label.custom_minimum_size = Vector2(42.0, 0.0)
 	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.text = _format_value(value, str(definition.get("format", "one")))
+	value_label.text = _format_value(value, str(definition.get("format", "one")), neutral)
 	value_label.add_theme_font_size_override("font_size", 11)
-	var neutral := float(definition.get("neutral", 0.0))
 	if is_equal_approx(value, neutral):
 		value_label.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.darkened(0.28)
 	else:
@@ -161,13 +161,19 @@ func _resolve_value(definition: Dictionary) -> float:
 		return float(_player.call("get_effective_stat_value", stat_id, base_value))
 	return base_value
 
-func _format_value(value: float, format_id: String) -> String:
+func _format_value(value: float, format_id: String, neutral: float) -> String:
 	match format_id:
 		"int", "whole":
 			return "%d" % int(round(value))
 		"two":
 			return "%.2f" % value
-		"mult":
-			return "x%.2f" % value
+		"percent_value":
+			return "%+.0f%%" % (value * 100.0)
+		"percent_from_one":
+			return "%+.0f%%" % ((value - 1.0) * 100.0)
+		"delta_percent":
+			if is_zero_approx(neutral):
+				return "%+.0f%%" % (value * 100.0)
+			return "%+.0f%%" % (((value / neutral) - 1.0) * 100.0)
 		_:
 			return "%.1f" % value

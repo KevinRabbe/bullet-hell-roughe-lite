@@ -349,7 +349,8 @@ func _refresh_stats_panel() -> void:
 func _refresh_bottom_sections() -> void:
 	_refresh_owned_items()
 	if bottom_weapons_title != null:
-		bottom_weapons_title.text = "ARSENAL (%d/6)" % int(_snapshot.get("weapon_count", 0))
+		var merge_suffix := " · MERGE READY" if _has_merge_available() else ""
+		bottom_weapons_title.text = "ARSENAL (%d/6)%s" % [int(_snapshot.get("weapon_count", 0)), merge_suffix]
 	_refresh_weapon_slots()
 
 func _refresh_owned_items() -> void:
@@ -466,6 +467,8 @@ func _clear_offer_card(button: Button) -> void:
 	button.disabled = true
 	if button.has_method("configure"):
 		button.call("configure", "N/A", "No offer available.", "SHOP", "", "", null)
+	if button.has_method("set_rarity"):
+		button.call("set_rarity", "")
 
 func _apply_offer_card(card: Dictionary, button: Button) -> void:
 	if button == null:
@@ -490,6 +493,8 @@ func _apply_offer_card(card: Dictionary, button: Button) -> void:
 			hint,
 			card.get("icon", null)
 		)
+	if button.has_method("set_rarity"):
+		button.call("set_rarity", str(card.get("rarity", "")))
 	if button.has_method("set_selected"):
 		button.call("set_selected", false)
 
@@ -501,7 +506,7 @@ func _build_card_body(card: Dictionary) -> String:
 		if line != "":
 			all_lines.append(line)
 	var body_lines: Array[String] = []
-	for prefix in ["Rarity:", "DMG ", "CD ", "Range ", "Matches loadout tags:", "Boosts current loadout:"]:
+	for prefix in ["DMG ", "CD ", "Range ", "Matches loadout tags:", "Boosts current loadout:"]:
 		for line in all_lines:
 			if line.begins_with(prefix) and line not in body_lines:
 				body_lines.append(line)
@@ -558,12 +563,21 @@ func _on_merge_selected_pressed() -> void:
 	if merge_succeeded and merged_slot_index < weapon_slot_buttons.size():
 		MenuAnimationRuntimeRef.pulse_focus(weapon_slot_buttons[merged_slot_index], 1.08)
 
+func _has_merge_available() -> bool:
+	if shop_view_model == null:
+		return false
+	for slot_index in range(6):
+		var state_variant: Variant = shop_view_model.get_merge_slot_state(slot_index)
+		if state_variant is Dictionary and (state_variant as Dictionary).get("can_merge", false) == true:
+			return true
+	return false
+
 func _update_merge_button_state() -> void:
 	if merge_selected_button == null:
 		return
 	if selected_weapon_slot < 0:
 		merge_selected_button.disabled = true
-		merge_selected_button.text = "SELECT WEAPON"
+		merge_selected_button.text = "MERGE READY" if _has_merge_available() else "SELECT WEAPON"
 		return
 	if shop_view_model != null:
 		var state_variant: Variant = shop_view_model.get_merge_slot_state(selected_weapon_slot)
