@@ -38,7 +38,7 @@ var _weapon_offer_pool: Array[Dictionary] = []
 var _item_offer_pool: Array[Dictionary] = []
 var active_offers: Array[Dictionary] = []
 var _weapon_data_cache: Dictionary = {}
-var _locked_offer_slots: Dictionary = {}
+var _locked_offer_snapshots: Dictionary = {}
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
@@ -101,7 +101,7 @@ func open_for_wave(wave_index: int) -> void:
 		return
 	_current_wave_index = maxi(wave_index, 1)
 	reroll_count = 0
-	_locked_offer_slots.clear()
+	_locked_offer_snapshots.clear()
 	_open_shop_for_wave()
 	if log_shop_events:
 		print("Shop opened with %d offers." % active_offers.size())
@@ -123,7 +123,7 @@ func get_current_wave_index() -> int:
 	return _current_wave_index
 
 func is_offer_locked(index: int) -> bool:
-	return index >= 0 and _locked_offer_slots.get(index, false) == true
+	return index >= 0 and _locked_offer_snapshots.has(index)
 
 func toggle_offer_lock(index: int) -> bool:
 	if index < 0 or index >= active_offers.size():
@@ -133,9 +133,9 @@ func toggle_offer_lock(index: int) -> bool:
 		return false
 	var locked := not is_offer_locked(index)
 	if locked:
-		_locked_offer_slots[index] = true
+		_locked_offer_snapshots[index] = offer.duplicate(true)
 	else:
-		_locked_offer_slots.erase(index)
+		_locked_offer_snapshots.erase(index)
 	if log_shop_events:
 		print("%s shop offer %d: %s" % ["Locked" if locked else "Unlocked", index + 1, str(offer.get("label", "Offer"))])
 	offer_lock_changed.emit(index, locked)
@@ -165,7 +165,6 @@ func _reroll_unlocked_offers() -> void:
 	var standard_offer_slots := maxi(int(config.get("standard_offer_slots", 4)), 1)
 	var early_wave := _current_wave_index <= early_wave_max
 	var offer_slot_count := early_guaranteed_weapon_slots + early_random_slots if early_wave else standard_offer_slots
-	var existing_offers := get_active_offers()
 	var available_item_pool := _get_available_item_offer_pool()
 	var combined_pool: Array = _weapon_offer_pool.duplicate(true)
 	for item_offer in available_item_pool:
@@ -174,12 +173,14 @@ func _reroll_unlocked_offers() -> void:
 	var luck := _get_player_luck()
 
 	for slot_index in range(offer_slot_count):
-		if is_offer_locked(slot_index) and slot_index < existing_offers.size():
-			var preserved_offer: Dictionary = existing_offers[slot_index]
-			if str(preserved_offer.get("type", "")) != "sold_out":
-				rerolled_offers.append(preserved_offer.duplicate(true))
-				continue
-			_locked_offer_slots.erase(slot_index)
+		if is_offer_locked(slot_index):
+			var preserved_variant: Variant = _locked_offer_snapshots.get(slot_index, {})
+			if preserved_variant is Dictionary:
+				var preserved_offer: Dictionary = preserved_variant
+				if str(preserved_offer.get("type", "")) != "sold_out":
+					rerolled_offers.append(preserved_offer.duplicate(true))
+					continue
+			_locked_offer_snapshots.erase(slot_index)
 
 		var source_pool: Array = combined_pool
 		if early_wave and slot_index < early_guaranteed_weapon_slots:
@@ -257,7 +258,7 @@ func _on_offer_pressed(index: int) -> void:
 	if log_shop_events:
 		print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
 	var was_locked := is_offer_locked(index)
-	_locked_offer_slots.erase(index)
+	_locked_offer_snapshots.erase(index)
 	active_offers[index] = ShopOfferRuntime.sold_out_offer()
 	_refresh_offer_buttons()
 	if was_locked:
@@ -451,7 +452,7 @@ func _player_has_method(method_name: StringName) -> bool:
 	return player != null and player.has_method(method_name)
 
 func _on_continue_pressed() -> void:
-	_locked_offer_slots.clear()
+	_locked_offer_snapshots.clear()
 	if panel != null:
 		panel.visible = false
 	shop_closed.emit()
