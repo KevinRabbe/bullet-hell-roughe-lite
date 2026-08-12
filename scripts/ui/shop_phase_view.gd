@@ -251,7 +251,8 @@ func _build_weapons_panel() -> void:
 
 	for slot_index in range(6):
 		var icon_button := Button.new()
-		icon_button.custom_minimum_size = Vector2(52.0, 58.0)
+		icon_button.custom_minimum_size = Vector2(50.0, 58.0)
+		icon_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		icon_button.text = ""
 		icon_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_button.expand_icon = true
