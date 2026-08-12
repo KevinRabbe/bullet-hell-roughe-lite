@@ -260,6 +260,7 @@ func _build_weapons_panel() -> void:
 		icon_button.focus_mode = Control.FOCUS_ALL
 		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		InfernalUiStyleRef.apply_card_button(icon_button)
+		icon_button.mouse_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
 		icon_button.pressed.connect(_on_weapon_slot_pressed.bind(slot_index))
 		icon_button.focus_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
 		weapon_slots_container.add_child(icon_button)
