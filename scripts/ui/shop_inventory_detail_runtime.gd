@@ -50,7 +50,7 @@ static func build_weapon_detail(weapon_id: String, rarity: String = "common") ->
 		"%s · %s" % [rarity.to_upper(), str(family).replace("_", " ").to_upper()],
 		"DMG %.1f" % weapon_data.get_damage_value(),
 		"CD %.2fs" % weapon_data.get_cooldown_value(),
-		"RANGE x%.2f" % weapon_data.get_attack_range_value()
+		_format_multiplier_delta("RANGE", weapon_data.get_attack_range_value())
 	]
 	lines.append_array(WeaponAttackPatternRuntimeRef.build_behavior_lines(weapon_data))
 	if weapon_data.description.strip_edges() != "":
@@ -61,3 +61,6 @@ static func build_weapon_detail(weapon_id: String, rarity: String = "common") ->
 		"title": display_name,
 		"body": "\n".join(lines)
 	}
+
+static func _format_multiplier_delta(label: String, multiplier: float) -> String:
+	return "%s %+.0f%%" % [label, (multiplier - 1.0) * 100.0]
