@@ -20,7 +20,7 @@ const PRIMARY_STATS: Array[Dictionary] = [
 	{"id": "dodge", "label": "Dodge", "format": "percent_value", "neutral": 0.0},
 	{"id": "movement_speed", "label": "Move Speed", "format": "delta_percent", "neutral": 300.0},
 	{"id": "luck", "label": "Luck", "format": "one", "neutral": 0.0},
-	{"id": "pickup_range", "label": "Pickup Range", "format": "delta_percent", "neutral": 48.0}
+	{"id": "pickup_range", "label": "Pickup Range", "format": "delta_percent", "neutral": 40.0}
 ]
 
 const SECONDARY_STATS: Array[Dictionary] = [
