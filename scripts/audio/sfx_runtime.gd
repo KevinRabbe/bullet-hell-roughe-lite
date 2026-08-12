@@ -1,6 +1,7 @@
 class_name SfxRuntime
 extends Node
 
+const AUDIO_ENABLED := false
 const SAMPLE_RATE := 22050
 const MAX_ACTIVE_PLAYERS := 12
 const RUNTIME_NODE_NAME := "HellshotSfxRuntime"
@@ -15,6 +16,8 @@ static func play(
 	pitch_scale: float = 1.0,
 	minimum_interval_ms: int = 0
 ) -> void:
+	if not AUDIO_ENABLED:
+		return
 	var runtime: SfxRuntime = _ensure_runtime(owner)
 	if runtime == null:
 		return
