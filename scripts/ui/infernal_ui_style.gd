@@ -39,7 +39,7 @@ static func apply_panel(control: Control, panel_role: StringName = PANEL_SECTION
 		return
 	control.add_theme_stylebox_override("panel", build_panel_style(panel_role))
 
-static func apply_button(button: Button, button_role: StringName = BUTTON_SECONDARY, selected: bool = false) -> void:
+static func apply_button(button: Button, button_role: StringName = BUTTON_SECONDARY, selected: bool = false, rarity_id: String = "") -> void:
 	if button == null:
 		return
 	match button_role:
@@ -60,14 +60,15 @@ static func apply_button(button: Button, button_role: StringName = BUTTON_SECOND
 				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_BONE_HIGHLIGHT, 3, 10, 16)
 			)
 		BUTTON_CARD:
-			var normal_border := COLOR_HELL_ORANGE if selected else COLOR_BURNT_BROWN
-			var normal_width := 2 if selected else 1
+			var rarity_border := _rarity_border_color(rarity_id)
+			var normal_border := COLOR_HELL_ORANGE if selected else rarity_border
+			var normal_width := 3 if selected else (1 if rarity_id.strip_edges().to_lower() in ["", "common"] else 2)
 			_apply_button_styles(
 				button,
 				_build_style(COLOR_ALMOST_BLACK, normal_border, normal_width, 8, 12),
-				_build_style(COLOR_BURNT_BROWN, COLOR_OLD_PARCHMENT, 2, 8, 12),
-				_build_style(COLOR_DEEP_BLOOD_RED, COLOR_HELL_ORANGE, 2, 8, 12),
-				_build_style(COLOR_ALMOST_BLACK, COLOR_HELL_ORANGE, 2, 8, 12)
+				_build_style(COLOR_BURNT_BROWN, rarity_border.lightened(0.18), maxi(normal_width, 2), 8, 12),
+				_build_style(COLOR_DEEP_BLOOD_RED, rarity_border.lightened(0.25), maxi(normal_width, 2), 8, 12),
+				_build_style(COLOR_ALMOST_BLACK, COLOR_BONE_HIGHLIGHT, 3, 8, 12)
 			)
 		BUTTON_TAB:
 			_apply_button_styles(
@@ -105,8 +106,8 @@ static func apply_secondary_button(button: Button) -> void:
 static func apply_danger_button(button: Button) -> void:
 	apply_button(button, BUTTON_DANGER)
 
-static func apply_card_button(button: Button, selected: bool = false) -> void:
-	apply_button(button, BUTTON_CARD, selected)
+static func apply_card_button(button: Button, selected: bool = false, rarity_id: String = "") -> void:
+	apply_button(button, BUTTON_CARD, selected, rarity_id)
 
 static func apply_tab_button(button: Button) -> void:
 	apply_button(button, BUTTON_TAB)
@@ -196,6 +197,17 @@ static func build_panel_style(panel_role: StringName = PANEL_SECTION) -> StyleBo
 			return _build_style(COLOR_ALMOST_BLACK.lightened(0.02), COLOR_OLD_PARCHMENT.darkened(0.2), 1, 8, 12)
 		_:
 			return _build_style(COLOR_ALMOST_BLACK.lightened(0.015), COLOR_DEEP_BLOOD_RED, 1, 10, 16)
+
+static func _rarity_border_color(rarity_id: String) -> Color:
+	match rarity_id.strip_edges().to_lower():
+		"rare":
+			return COLOR_OLD_PARCHMENT
+		"epic":
+			return COLOR_RITUAL_CRIMSON
+		"legendary":
+			return COLOR_HELL_ORANGE
+		_:
+			return COLOR_BURNT_BROWN
 
 static func _apply_button_styles(
 	button: Button,
