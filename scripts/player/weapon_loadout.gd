@@ -24,16 +24,16 @@ func can_grant_weapon(weapon_id: String, incoming_rarity: String = "common") -> 
 		return false
 	if has_space():
 		return true
-	return _find_upgrade_target_for_incoming(weapon_id, incoming_rarity) != -1
+	if _find_upgrade_target_for_incoming(weapon_id, incoming_rarity) != -1:
+		return true
+	return not _find_combine_pair(weapon_id).is_empty()
 
 func get_grant_block_reason(weapon_id: String, incoming_rarity: String = "common") -> String:
 	if weapon_id == "":
 		return "Missing weapon id."
-	if has_space():
+	if can_grant_weapon(weapon_id, incoming_rarity):
 		return ""
-	if _find_upgrade_target_for_incoming(weapon_id, incoming_rarity) != -1:
-		return ""
-	return "Need matching %s (%s) to auto-combine." % [_pretty_weapon_name(weapon_id), incoming_rarity.capitalize()]
+	return "Need an empty slot or a mergeable duplicate %s." % _pretty_weapon_name(weapon_id)
 
 func can_merge_slot(slot_index: int) -> bool:
 	var result := _evaluate_slot_merge(slot_index)
@@ -57,22 +57,9 @@ func try_merge_slot(slot_index: int) -> Dictionary:
 		}
 	var target_index := int(result.get("target_index", -1))
 	var partner_index := int(result.get("partner_index", -1))
-	if target_index < 0 or partner_index < 0:
-		return {"success": false, "message": "Cannot merge this slot.", "new_rarity": ""}
-	var current_entry: Dictionary = equipped_weapons[target_index]
-	var partner_entry := _get_entry(partner_index)
 	var next_rarity := str(result.get("new_rarity", ""))
-	equipped_weapons.remove_at(partner_index)
-	if partner_index < target_index:
-		target_index -= 1
-	current_entry["kill_count"] = int(current_entry.get("kill_count", 0)) + int(partner_entry.get("kill_count", 0))
-	current_entry["milestones_earned"] = int(current_entry.get("milestones_earned", 0)) + int(partner_entry.get("milestones_earned", 0))
-	current_entry["weapon_bonus_overrides"] = _merge_bonus_overrides(
-		current_entry.get("weapon_bonus_overrides", {}),
-		partner_entry.get("weapon_bonus_overrides", {})
-	)
-	current_entry["rarity"] = next_rarity
-	equipped_weapons[target_index] = current_entry
+	if not _merge_existing_pair(target_index, partner_index, next_rarity):
+		return {"success": false, "message": "Cannot merge this slot.", "new_rarity": ""}
 	_sync_legacy_ids()
 	loadout_changed.emit()
 	return {"success": true, "message": "Merged to %s." % next_rarity.capitalize(), "new_rarity": next_rarity}
@@ -116,18 +103,41 @@ func grant_or_combine_weapon(weapon_id: String, incoming_rarity: String = "commo
 		return {"success": true, "combined": false, "rarity": incoming_rarity}
 
 	var target_index := _find_upgrade_target_for_incoming(weapon_id, incoming_rarity)
-	if target_index == -1:
-		return {"success": false, "combined": false, "rarity": ""}
-	var current_entry: Dictionary = equipped_weapons[target_index]
-	var current_rarity := str(current_entry.get("rarity", "common"))
-	var next_rarity := _next_rarity(current_rarity)
-	if next_rarity == current_rarity:
-		return {"success": false, "combined": true, "rarity": current_rarity}
-	current_entry["rarity"] = next_rarity
-	equipped_weapons[target_index] = current_entry
+	if target_index != -1:
+		var upgraded_rarity := _upgrade_existing_with_incoming(target_index)
+		if upgraded_rarity == "":
+			return {"success": false, "combined": true, "rarity": incoming_rarity}
+		_sync_legacy_ids()
+		loadout_changed.emit()
+		return {"success": true, "combined": true, "rarity": upgraded_rarity}
+
+	var consolidated_existing := false
+	while not has_space():
+		var pair := _find_combine_pair(weapon_id)
+		if pair.size() < 2:
+			return {"success": false, "combined": consolidated_existing, "rarity": ""}
+		var pair_target := int(pair[0])
+		var pair_partner := int(pair[1])
+		var pair_entry := _get_entry(pair_target)
+		var pair_rarity := str(pair_entry.get("rarity", "common"))
+		var pair_next_rarity := _next_rarity(pair_rarity)
+		if pair_next_rarity == pair_rarity or not _merge_existing_pair(pair_target, pair_partner, pair_next_rarity):
+			return {"success": false, "combined": consolidated_existing, "rarity": ""}
+		consolidated_existing = true
+
+	target_index = _find_upgrade_target_for_incoming(weapon_id, incoming_rarity)
+	if target_index != -1:
+		var chained_rarity := _upgrade_existing_with_incoming(target_index)
+		if chained_rarity == "":
+			return {"success": false, "combined": consolidated_existing, "rarity": ""}
+		_sync_legacy_ids()
+		loadout_changed.emit()
+		return {"success": true, "combined": true, "rarity": chained_rarity}
+
+	equipped_weapons.append(_build_weapon_entry(weapon_id, incoming_rarity))
 	_sync_legacy_ids()
 	loadout_changed.emit()
-	return {"success": true, "combined": true, "rarity": next_rarity}
+	return {"success": true, "combined": consolidated_existing, "rarity": incoming_rarity}
 
 func register_weapon_kill(slot_index: int, weapon_data: WeaponData, kill_requirement_multiplier: float = 1.0) -> Dictionary:
 	if slot_index < 0 or slot_index >= equipped_weapons.size():
@@ -218,6 +228,8 @@ func _find_weapon_entry_index(weapon_id: String) -> int:
 	return -1
 
 func _get_entry(index: int) -> Dictionary:
+	if index < 0 or index >= equipped_weapons.size():
+		return {}
 	var entry_variant := equipped_weapons[index]
 	if entry_variant is Dictionary:
 		return (entry_variant as Dictionary).duplicate(true)
@@ -262,6 +274,44 @@ func _find_upgrade_target_for_incoming(weapon_id: String, incoming_rarity: Strin
 			continue
 		return index
 	return -1
+
+func _upgrade_existing_with_incoming(target_index: int) -> String:
+	if target_index < 0 or target_index >= equipped_weapons.size():
+		return ""
+	var current_entry := _get_entry(target_index)
+	var current_rarity := str(current_entry.get("rarity", "common"))
+	var next_rarity := _next_rarity(current_rarity)
+	if next_rarity == current_rarity:
+		return ""
+	current_entry["rarity"] = next_rarity
+	equipped_weapons[target_index] = current_entry
+	return next_rarity
+
+func _merge_existing_pair(target_index: int, partner_index: int, next_rarity: String) -> bool:
+	if target_index < 0 or partner_index < 0 or target_index == partner_index:
+		return false
+	if target_index >= equipped_weapons.size() or partner_index >= equipped_weapons.size():
+		return false
+	var current_entry := _get_entry(target_index)
+	var partner_entry := _get_entry(partner_index)
+	if current_entry.is_empty() or partner_entry.is_empty():
+		return false
+	if str(current_entry.get("id", "")) != str(partner_entry.get("id", "")):
+		return false
+	if str(current_entry.get("rarity", "common")) != str(partner_entry.get("rarity", "common")):
+		return false
+	equipped_weapons.remove_at(partner_index)
+	if partner_index < target_index:
+		target_index -= 1
+	current_entry["kill_count"] = int(current_entry.get("kill_count", 0)) + int(partner_entry.get("kill_count", 0))
+	current_entry["milestones_earned"] = int(current_entry.get("milestones_earned", 0)) + int(partner_entry.get("milestones_earned", 0))
+	current_entry["weapon_bonus_overrides"] = _merge_bonus_overrides(
+		current_entry.get("weapon_bonus_overrides", {}),
+		partner_entry.get("weapon_bonus_overrides", {})
+	)
+	current_entry["rarity"] = next_rarity
+	equipped_weapons[target_index] = current_entry
+	return true
 
 func _evaluate_slot_merge(slot_index: int) -> Dictionary:
 	if slot_index < 0 or slot_index >= equipped_weapons.size():
