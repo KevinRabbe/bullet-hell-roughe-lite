@@ -6,10 +6,12 @@ signal shop_closed
 signal offers_changed
 signal reroll_cost_changed(new_cost: int)
 signal offer_purchased(index: int, offer: Dictionary)
+signal offer_lock_changed(index: int, locked: bool)
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const ShopOfferRuntime = preload("res://scripts/game/shop_offer_runtime.gd")
+const ShopOfferLockRuntimeRef = preload("res://scripts/ui/shop_offer_lock_runtime.gd")
 
 @export var enemy_spawner_path: NodePath
 @export var player_path: NodePath
@@ -36,6 +38,7 @@ var _weapon_offer_pool: Array[Dictionary] = []
 var _item_offer_pool: Array[Dictionary] = []
 var active_offers: Array[Dictionary] = []
 var _weapon_data_cache: Dictionary = {}
+var _locked_offer_slots: Dictionary = {}
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
@@ -44,6 +47,7 @@ func _ready() -> void:
 	_resolve_references()
 	_connect_buttons()
 	_initialize_panel_state()
+	_install_offer_lock_runtime()
 
 func _resolve_references() -> void:
 	if enemy_spawner_path != NodePath():
@@ -75,6 +79,13 @@ func _initialize_panel_state() -> void:
 	if panel != null:
 		panel.visible = false
 
+func _install_offer_lock_runtime() -> void:
+	if panel == null or offer_buttons.is_empty():
+		return
+	var lock_runtime := ShopOfferLockRuntimeRef.new()
+	lock_runtime.call("configure", self, panel, offer_buttons)
+	add_child(lock_runtime)
+
 func _build_weapon_offer_pool() -> void:
 	var data_registry := get_node_or_null("/root/DataRegistry")
 	_weapon_offer_pool = ShopOfferRuntime.build_weapon_offer_pool(
@@ -90,6 +101,7 @@ func open_for_wave(wave_index: int) -> void:
 		return
 	_current_wave_index = maxi(wave_index, 1)
 	reroll_count = 0
+	_locked_offer_slots.clear()
 	_open_shop_for_wave()
 	if log_shop_events:
 		print("Shop opened with %d offers." % active_offers.size())
@@ -110,7 +122,30 @@ func is_shop_open() -> bool:
 func get_current_wave_index() -> int:
 	return _current_wave_index
 
-func _roll_offers() -> void:
+func is_offer_locked(index: int) -> bool:
+	return index >= 0 and _locked_offer_slots.get(index, false) == true
+
+func toggle_offer_lock(index: int) -> bool:
+	if index < 0 or index >= active_offers.size():
+		return false
+	var offer: Dictionary = active_offers[index]
+	if str(offer.get("type", "")) == "sold_out":
+		return false
+	var locked := not is_offer_locked(index)
+	if locked:
+		_locked_offer_slots[index] = true
+	else:
+		_locked_offer_slots.erase(index)
+	if log_shop_events:
+		print("%s shop offer %d: %s" % ["Locked" if locked else "Unlocked", index + 1, str(offer.get("label", "Offer"))])
+	offer_lock_changed.emit(index, locked)
+	offers_changed.emit()
+	return locked
+
+func _roll_offers(preserve_locked: bool = false) -> void:
+	if preserve_locked:
+		_reroll_unlocked_offers()
+		return
 	active_offers = ShopOfferRuntime.roll_offers(
 		_weapon_offer_pool,
 		_get_available_item_offer_pool(),
@@ -121,6 +156,48 @@ func _roll_offers() -> void:
 		_get_player_luck()
 	)
 	_apply_player_offer_prices()
+
+func _reroll_unlocked_offers() -> void:
+	var config := ShopOfferRuntime.get_shop_config()
+	var early_wave_max := int(config.get("early_wave_max", 2))
+	var early_guaranteed_weapon_slots := maxi(int(config.get("early_guaranteed_weapon_slots", 2)), 0)
+	var early_random_slots := maxi(int(config.get("early_random_slots", 2)), 0)
+	var standard_offer_slots := maxi(int(config.get("standard_offer_slots", 4)), 1)
+	var early_wave := _current_wave_index <= early_wave_max
+	var offer_slot_count := early_guaranteed_weapon_slots + early_random_slots if early_wave else standard_offer_slots
+	var existing_offers := get_active_offers()
+	var available_item_pool := _get_available_item_offer_pool()
+	var combined_pool: Array = _weapon_offer_pool.duplicate(true)
+	for item_offer in available_item_pool:
+		combined_pool.append(item_offer)
+	var rerolled_offers: Array[Dictionary] = []
+	var luck := _get_player_luck()
+
+	for slot_index in range(offer_slot_count):
+		if is_offer_locked(slot_index) and slot_index < existing_offers.size():
+			var preserved_offer: Dictionary = existing_offers[slot_index]
+			if str(preserved_offer.get("type", "")) != "sold_out":
+				rerolled_offers.append(preserved_offer.duplicate(true))
+				continue
+			_locked_offer_slots.erase(slot_index)
+
+		var source_pool: Array = combined_pool
+		if early_wave and slot_index < early_guaranteed_weapon_slots:
+			source_pool = _weapon_offer_pool
+		var rolled_offer := ShopOfferRuntime.pick_random_offer(
+			source_pool,
+			rng,
+			_get_preferred_weapon_family(),
+			_get_preferred_weapon_family_bias(),
+			_current_wave_index,
+			luck
+		)
+		if rolled_offer.is_empty():
+			rerolled_offers.append(ShopOfferRuntime.sold_out_offer())
+		else:
+			rerolled_offers.append(_apply_player_offer_price(rolled_offer))
+
+	active_offers = rerolled_offers
 
 func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
@@ -179,8 +256,12 @@ func _on_offer_pressed(index: int) -> void:
 
 	if log_shop_events:
 		print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
+	var was_locked := is_offer_locked(index)
+	_locked_offer_slots.erase(index)
 	active_offers[index] = ShopOfferRuntime.sold_out_offer()
 	_refresh_offer_buttons()
+	if was_locked:
+		offer_lock_changed.emit(index, false)
 	offer_purchased.emit(index, offer.duplicate(true))
 	offers_changed.emit()
 	call_deferred("_focus_shop_action_after_purchase", index)
@@ -269,7 +350,7 @@ func _on_reroll_pressed() -> void:
 	reroll_count += 1
 	if log_shop_events:
 		print("Reroll shop. Cost: %d" % total_cost)
-	_refresh_shop_offers()
+	_refresh_shop_offers(true)
 
 func _update_reroll_button_text() -> void:
 	if reroll_button == null:
@@ -286,18 +367,21 @@ func _current_reroll_cost() -> int:
 	return raw_cost
 
 func _apply_player_offer_prices() -> void:
-	if player == null or not is_instance_valid(player) or not player.has_method("get_discounted_shop_price"):
-		return
 	for index in range(active_offers.size()):
-		var offer := active_offers[index]
-		if str(offer.get("type", "")) == "sold_out":
-			continue
-		var raw_price := int(offer.get("price", 0))
-		offer["undiscounted_price"] = raw_price
-		var discounted_price := int(player.call("get_discounted_shop_price", raw_price))
-		offer["price"] = discounted_price
-		offer["final_price"] = discounted_price
-		active_offers[index] = offer
+		active_offers[index] = _apply_player_offer_price(active_offers[index])
+
+func _apply_player_offer_price(offer: Dictionary) -> Dictionary:
+	var resolved := offer.duplicate(true)
+	if str(resolved.get("type", "")) == "sold_out":
+		return resolved
+	if player == null or not is_instance_valid(player) or not player.has_method("get_discounted_shop_price"):
+		return resolved
+	var raw_price := int(resolved.get("price", 0))
+	resolved["undiscounted_price"] = raw_price
+	var discounted_price := int(player.call("get_discounted_shop_price", raw_price))
+	resolved["price"] = discounted_price
+	resolved["final_price"] = discounted_price
+	return resolved
 
 func _get_player_luck() -> float:
 	if player != null and is_instance_valid(player) and player.has_method("get_luck_value"):
@@ -305,7 +389,7 @@ func _get_player_luck() -> float:
 	return 0.0
 
 func _open_shop_for_wave() -> void:
-	_refresh_shop_offers()
+	_refresh_shop_offers(false)
 	if title_label != null:
 		title_label.text = "Shop - Pick one"
 	if panel != null:
@@ -337,8 +421,8 @@ func _focus_shop_action_after_purchase(purchased_index: int) -> void:
 	if continue_button != null and continue_button.visible and not continue_button.disabled:
 		continue_button.grab_focus()
 
-func _refresh_shop_offers() -> void:
-	_roll_offers()
+func _refresh_shop_offers(preserve_locked: bool = false) -> void:
+	_roll_offers(preserve_locked)
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
 	offers_changed.emit()
@@ -367,6 +451,7 @@ func _player_has_method(method_name: StringName) -> bool:
 	return player != null and player.has_method(method_name)
 
 func _on_continue_pressed() -> void:
+	_locked_offer_slots.clear()
 	if panel != null:
 		panel.visible = false
 	shop_closed.emit()
