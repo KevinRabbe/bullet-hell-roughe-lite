@@ -294,10 +294,7 @@ func _build_weapons_panel() -> void:
 		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		InfernalUiStyleRef.apply_card_button(icon_button)
 		icon_button.pressed.connect(_on_weapon_slot_pressed.bind(slot_index))
-		icon_button.mouse_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
-		icon_button.mouse_exited.connect(_hide_inventory_tooltip)
 		icon_button.focus_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
-		icon_button.focus_exited.connect(_hide_inventory_tooltip)
 		weapon_slots_container.add_child(icon_button)
 		weapon_slot_buttons.append(icon_button)
 
@@ -602,6 +599,8 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
 	_mark_dirty()
 	_refresh_if_needed()
+	if slot_index >= 0 and slot_index < weapon_slot_buttons.size():
+		_show_weapon_detail(slot_index, weapon_slot_buttons[slot_index])
 
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
