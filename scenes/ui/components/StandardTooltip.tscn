@@ -4,6 +4,7 @@
 
 [node name="StandardTooltip" type="PanelContainer"]
 custom_minimum_size = Vector2(320, 0)
+mouse_filter = 2
 script = ExtResource("1_tooltip")
 
 [node name="Margin" type="MarginContainer" parent="."]
