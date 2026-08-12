@@ -310,16 +310,14 @@ func _get_player_snapshot() -> Dictionary:
 func _build_weapon_offer_description(offer: Dictionary, weapon_data: WeaponData, player_snapshot: Dictionary) -> String:
 	if weapon_data == null:
 		return "Weapon"
-	var rarity_text := _get_offer_weapon_rarity(offer, weapon_data).capitalize()
 	var desc_text := weapon_data.description
 	if desc_text == "":
 		desc_text = "No description."
 	var lines: Array[String] = [
-		"[color=#7fd0ff]Rarity: %s[/color]" % rarity_text,
 		desc_text,
 		"DMG %.1f" % weapon_data.get_damage_value(),
 		"CD %.2fs" % weapon_data.get_cooldown_value(),
-		"Range x%.2f" % weapon_data.get_attack_range_value()
+		_format_multiplier_delta("Range", weapon_data.get_attack_range_value())
 	]
 	lines.append_array(WeaponAttackPatternRuntimeRef.build_behavior_lines(weapon_data))
 	lines.append_array(_build_weapon_offer_synergy_lines(weapon_data, player_snapshot))
@@ -332,10 +330,7 @@ func _build_item_offer_description(item_id: String, player_snapshot: Dictionary)
 	var item_desc := item_data.description
 	if item_desc == "":
 		item_desc = "No description."
-	var lines: Array[String] = [
-		"[color=#b5ff9a]Rarity: %s[/color]" % str(item_data.rarity).capitalize(),
-		item_desc
-	]
+	var lines: Array[String] = [item_desc]
 	var direct_stat_lines := ItemEffectPresentationRuntimeRef.build_stat_lines(item_data.stat_modifiers)
 	var tag_bonus_lines := ItemEffectPresentationRuntimeRef.build_tag_bonus_lines(item_data.weapon_tag_stat_bonuses)
 	var conversion_rule_lines := ItemEffectPresentationRuntimeRef.build_conversion_rule_lines(item_data.stat_conversion_rules)
@@ -504,6 +499,9 @@ func _format_tag_stat_bonus(stat_id: String, amount: float) -> String:
 			return "%+.0f%% %s" % [amount * 100.0, stat_id.replace("_", " ")]
 		_:
 			return "%+.2f %s" % [amount, stat_id.replace("_", " ")]
+
+func _format_multiplier_delta(label: String, multiplier: float) -> String:
+	return "%s %+.0f%%" % [label, (multiplier - 1.0) * 100.0]
 
 func _get_snapshot_dictionary(player_snapshot: Dictionary, key: String) -> Dictionary:
 	var value: Variant = player_snapshot.get(key, {})
