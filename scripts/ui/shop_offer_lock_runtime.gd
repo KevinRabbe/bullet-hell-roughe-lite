@@ -35,7 +35,7 @@ func _initialize() -> void:
 func _build_controls() -> void:
 	for index in range(_offer_buttons.size()):
 		var offer_button := _offer_buttons[index]
-		offer_button.size.y = OFFER_CARD_HEIGHT
+		offer_button.size = Vector2(offer_button.size.x, OFFER_CARD_HEIGHT)
 
 		var lock_button := Button.new()
 		lock_button.name = "OfferLock%d" % (index + 1)
