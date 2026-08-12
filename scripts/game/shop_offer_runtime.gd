@@ -133,9 +133,11 @@ static func roll_offers(
 	preferred_family: String,
 	preferred_family_bias: float
 ) -> Array[Dictionary]:
+	var existing_offers: Array[Dictionary] = []
+	var locked_indices: Array[int] = []
 	return reroll_offers(
-		[],
-		[],
+		existing_offers,
+		locked_indices,
 		weapon_offer_pool,
 		item_offer_pool,
 		wave_index,
