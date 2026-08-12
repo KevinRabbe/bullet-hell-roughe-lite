@@ -12,6 +12,7 @@ const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_
 @export var hint_text: String = ""
 @export var icon_texture: Texture2D
 @export var selected: bool = false
+@export var rarity_id: String = ""
 
 @onready var margin: MarginContainer = $Margin
 @onready var stack: VBoxContainer = $Margin/Stack
@@ -59,8 +60,13 @@ func set_selected(value: bool) -> void:
 	if is_node_ready():
 		_apply_style()
 
+func set_rarity(value: String) -> void:
+	rarity_id = value.strip_edges().to_lower()
+	if is_node_ready():
+		_apply_style()
+
 func _apply_style() -> void:
-	InfernalUiStyleRef.apply_card_button(self, selected)
+	InfernalUiStyleRef.apply_card_button(self, selected, rarity_id)
 
 func _apply_text_styles() -> void:
 	InfernalUiStyleRef.apply_text_role(eyebrow_label, InfernalUiStyleRef.TEXT_SECTION_TITLE)
