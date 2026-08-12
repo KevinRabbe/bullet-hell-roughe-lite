@@ -5,7 +5,7 @@
   "roster_order": 14,
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/cinder_witch/cinder_witch_neutral_body.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.095,
   "starting_weapon_ids": ["infernal_sigil", "ritual_candles", "ash_censer"],
   "family_weapon_ids": [
     "infernal_sigil",

@@ -37,13 +37,14 @@ Start with no developer explanation.
 - [ ] The first-run hint explains movement, auto-fire, wave survival, and pause.
 - [ ] The tester can move and understands that weapons fire automatically.
 - [ ] Enemy deaths, XP, gold, and Level Up choices work.
-- [ ] A Portal is understood as optional risk/reward and can be activated or ignored.
+- [ ] A Portal is understood as an optional hidden bargain and can be committed
+  to with a short hold or ignored without exposing its severity or result.
 - [ ] Shop offers are readable; buy, reroll, and Next Wave work.
 - [ ] Bought offers remain sold out until the intended refresh.
 - [ ] Gate Beast appears at the Wave 5 milestone.
 - [ ] Defeating Gate Beast and clearing the arena opens Ascension.
 - [ ] Choosing an Ascension continues the run.
-- [ ] Victory occurs only after the Wave 10 arena clear.
+- [ ] Victory occurs only after the Wave 20 arena clear.
 - [ ] Death or victory opens Run Results with complete reproduction fields.
 - [ ] Retry, Choose New Hunter, and Main Menu all leave Run Results cleanly.
 

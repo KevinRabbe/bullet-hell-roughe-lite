@@ -14,6 +14,7 @@ tags = Array[String](["survivability"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 3
 stat_modifiers = {
 "armor": 2.0,
 "max_hp": 25.0

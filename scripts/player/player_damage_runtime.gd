@@ -10,3 +10,9 @@ static func resolve_incoming_damage(raw_damage: float, armor: float) -> float:
 	if armor > 0.0:
 		return safe_damage * (ARMOR_SCALING / (ARMOR_SCALING + armor))
 	return safe_damage * (1.0 + (absf(armor) / ARMOR_SCALING))
+
+static func should_dodge(rng: RandomNumberGenerator, dodge_chance: float) -> bool:
+	if rng == null:
+		return false
+	var resolved_chance := clampf(dodge_chance, 0.0, 0.75)
+	return resolved_chance > 0.0 and rng.randf() < resolved_chance

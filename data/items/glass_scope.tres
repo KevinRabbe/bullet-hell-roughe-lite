@@ -7,13 +7,14 @@
 script = ExtResource("1")
 id = "glass_scope"
 name = "Glass Scope"
-description = "Projectiles travel farther and faster. Precision weapons gain extra reach and velocity, and ranged weapons stay accurate at longer distance."
+description = "Projectiles travel farther and faster. Precision kills build a short-lived execution rhythm."
 category = "offense"
-rarity = "common"
+rarity = "rare"
 tags = Array[String](["projectile"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 2
 stat_modifiers = {
 "attack_range": 0.2,
 "projectile_speed": 0.25
@@ -30,4 +31,20 @@ weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.08,
 "stat_id": "attack_range",
 "tag": "ranged"
+}])
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Glass Scope Focus",
+"display_text": "Precision kills: +6% Precision Damage for 4s, stacking up to 3 times.",
+"duration": 4.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "glass_scope_focus",
+"max_stacks": 3,
+"modifiers": Array[Dictionary]([{
+"amount": 0.06,
+"effect_tags": Array[String](["precision"]),
+"stat_id": "damage"
+}]),
+"required_source_weapon_tags": Array[String](["precision"]),
+"trigger": "on_enemy_kill"
 }])

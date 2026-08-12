@@ -5,7 +5,7 @@
   "roster_order": 99,
   "selectable": false,
   "visual_path": "res://assets/sprites/characters/new_character/new_character.png",
-  "visual_scale": 1.0,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["new_character_starter"],
   "family_weapon_ids": [
     "new_character_starter",

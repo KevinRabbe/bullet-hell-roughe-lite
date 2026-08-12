@@ -18,7 +18,8 @@ gameplay layer.
 
 ## Portal Mutation Role
 
-A portal mutation is an optional, risk-driven build distortion.
+A portal mutation is a risk-driven build distortion reached through an optional
+portal commitment.
 
 Portal mutations may:
 
@@ -36,17 +37,19 @@ ordinary flat-stat rewards with a different name.
 
 - Mutations are offered through portal events during a run.
 - A run may encounter multiple mutation opportunities.
-- The player must see the risk, reward, duration, and affected tags before
-  accepting.
+- Before entry, the player sees none of the rolled risk, reward, duration, or
+  affected tags.
+- Completing the portal hold immediately commits the rolled mutation; the
+  reveal screen explains the result afterward and only offers Continue.
 - A mutation may last for an event, a wave, or the rest of the run.
-- Duration must always be explicit.
+- Duration must be explicit in the post-commit reveal.
 
 ### Portal Mutation Limits
 
 - Only one major mutation may be active in v1.
 - Minor portal effects may coexist when their stacking rule explicitly allows it.
-- A new major mutation replaces the current major mutation only after explicit
-  player confirmation.
+- A new major mutation may replace the current major mutation as part of the
+  committed hidden bargain and must report that replacement in the reveal.
 - Mutations must not silently rewrite family ownership, starter identity, weapon
   rarity, or merge rules.
 
@@ -107,7 +110,8 @@ Build incremental power and cross-tag synergy.
 
 ### Portal Mutations
 
-Create optional risk, adaptation, and build distortion.
+Create committed risk, adaptation, and build distortion through optional portal
+entry.
 
 ### Ascension
 

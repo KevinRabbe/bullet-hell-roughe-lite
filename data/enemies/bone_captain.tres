@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "bone_captain"
+display_name = "Bone Captain"
+description = "A skeletal field officer whose visible command aura strengthens nearby non-boss enemies until he falls."
+archetype = "support_commander"
+tags = Array[String](["skeleton", "marksman", "support", "commander", "ranged"])
+movement_profile = "ranged_hold"
+combat_profile = "support_commander"
+max_hp = 70.0
+move_speed = 110.0
+collision_radius = 20.0
+contact_damage = 7.0
+contact_range = 48.0
+damage_interval_seconds = 1.1
+ranged_damage = 6.0
+ranged_interval_seconds = 1.6
+ranged_attack_range = 310.0
+projectile_count = 1
+projectile_spread_degrees = 0.0
+projectile_speed = 500.0
+projectile_lifetime_seconds = 1.8
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/demon_marksman.png"
+visual_scale = 0.075
+projectile_texture_path = "res://assets/sprites/projectiles/enemies/hell_arcane_shot.png"
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = false
+threat_tier = 5
+reward_gold = 3
+reward_xp = 5

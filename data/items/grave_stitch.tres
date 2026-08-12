@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/grave_stitch.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "grave_stitch"
+name = "Grave Stitch"
+description = "Necromantic kills stitch a short regeneration window into the hunter."
+category = "defense"
+rarity = "rare"
+tags = Array[String](["necromancy", "defense"])
+icon = ExtResource("2")
+price = 6
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"active_label": "GRAVE STITCH",
+"debug_label": "Grave Stitch Regeneration",
+"display_text": "Every 5 Necromancy kills: +2 HP Regen for 5s.",
+"duration": 5.0,
+"effect": "threshold_stat_bonus",
+"hud_visible": true,
+"id": "grave_stitch_regeneration",
+"modifiers": Array[Dictionary]([{
+"amount": 2.0,
+"stat_id": "hp_regen"
+}]),
+"required_source_weapon_tags": Array[String](["necromancy"]),
+"resource_label": "NECRO KILLS",
+"threshold": 5,
+"trigger": "on_enemy_kill"
+}])
+

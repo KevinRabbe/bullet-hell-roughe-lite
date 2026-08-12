@@ -5,7 +5,7 @@
   "roster_order": 13,
   "selectable": false,
   "visual_path": "res://assets/sprites/characters/bone_artificer/bone_artificer.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["harvester_eye_scepter", "harvester_grimoire", "harvester_lantern"],
   "family_weapon_ids": [
     "harvester_eye_scepter",

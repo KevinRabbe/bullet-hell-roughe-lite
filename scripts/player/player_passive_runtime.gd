@@ -4,6 +4,16 @@ const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd
 
 const DEFAULT_EFFECT := "temporary_stat_bonus"
 const THRESHOLD_EFFECT := "threshold_stat_bonus"
+const REWARD_PROC_EFFECT := "reward_proc"
+const SUPPORTED_EFFECTS: Array[String] = [DEFAULT_EFFECT, THRESHOLD_EFFECT, REWARD_PROC_EFFECT]
+const SUPPORTED_TRIGGERS: Array[String] = [
+	"on_enemy_kill",
+	"on_critical_hit",
+	"on_damage_taken",
+	"on_distance_moved",
+	"on_weapon_fired",
+	"on_status_released"
+]
 
 var _rules: Array[Dictionary] = []
 var _state_by_rule_index: Dictionary = {}
@@ -20,9 +30,23 @@ func configure(character_data: Dictionary) -> void:
 			continue
 		var rule: Dictionary = (rule_variant as Dictionary).duplicate(true)
 		var effect_id := str(rule.get("effect", DEFAULT_EFFECT))
-		if effect_id != DEFAULT_EFFECT and effect_id != THRESHOLD_EFFECT:
+		if effect_id not in SUPPORTED_EFFECTS:
 			continue
 		if str(rule.get("trigger", "")) == "":
+			continue
+		if effect_id == REWARD_PROC_EFFECT:
+			if int(rule.get("reward_gold", 0)) <= 0:
+				continue
+			if float(rule.get("trigger_progress_threshold", 0.0)) <= 0.0:
+				continue
+			var reward_rule_index: int = _rules.size()
+			_rules.append(rule)
+			_state_by_rule_index[reward_rule_index] = {
+				"charges": 0,
+				"trigger_progress": 0.0,
+				"stacks": 0,
+				"remaining": 0.0
+			}
 			continue
 		if maxf(float(rule.get("duration", 0.0)), 0.0) <= 0.0:
 			continue
@@ -54,6 +78,13 @@ func trigger(trigger_id: String, context: Dictionary = {}) -> Array[Dictionary]:
 			continue
 		var state: Dictionary = state_variant
 		if not _advance_trigger_progress(rule, state, context):
+			_state_by_rule_index[rule_index] = state
+			continue
+		if str(rule.get("effect", DEFAULT_EFFECT)) == REWARD_PROC_EFFECT:
+			adjustments.append({
+				"reward_gold": maxi(int(rule.get("reward_gold", 0)), 0),
+				"label": str(rule.get("debug_label", "Reward Proc"))
+			})
 			_state_by_rule_index[rule_index] = state
 			continue
 		if str(rule.get("effect", DEFAULT_EFFECT)) == THRESHOLD_EFFECT:
@@ -98,6 +129,16 @@ func get_state_snapshot() -> Array[Dictionary]:
 			continue
 		var state: Dictionary = state_variant
 		var effect_id := str(rule.get("effect", DEFAULT_EFFECT))
+		if effect_id == REWARD_PROC_EFFECT:
+			entries.append({
+				"id": str(rule.get("id", "")),
+				"label": str(rule.get("resource_label", rule.get("debug_label", "Reward Proc"))),
+				"value": int(floor(maxf(float(state.get("trigger_progress", 0.0)), 0.0))),
+				"max_value": maxi(int(rule.get("trigger_progress_threshold", 1.0)), 1),
+				"remaining": 0.0,
+				"phase": "charging"
+			})
+			continue
 		if effect_id == THRESHOLD_EFFECT:
 			var remaining := maxf(float(state.get("remaining", 0.0)), 0.0)
 			var active := int(state.get("stacks", 0)) > 0 and remaining > 0.0
@@ -146,13 +187,41 @@ func _trigger_threshold_rule(
 
 func _matches_trigger_context(rule: Dictionary, context: Dictionary) -> bool:
 	var required_tags := WeaponTagRuntimeRef.resolve_effect_tags(rule.get("required_source_weapon_tags", []))
-	if required_tags.is_empty():
-		return true
-	var source_tags := WeaponTagRuntimeRef.resolve_effect_tags(context.get("source_weapon_tags", []))
-	for required_tag in required_tags:
-		if source_tags.has(required_tag):
-			return true
-	return false
+	if not required_tags.is_empty():
+		var source_tags := WeaponTagRuntimeRef.resolve_effect_tags(context.get("source_weapon_tags", []))
+		var tag_match := false
+		for required_tag in required_tags:
+			if source_tags.has(required_tag):
+				tag_match = true
+				break
+		if not tag_match:
+			return false
+
+	var required_status_ids := _resolve_string_filters(rule.get("required_status_ids", []))
+	if not required_status_ids.is_empty():
+		var context_status_id := str(context.get("status_id", "")).strip_edges()
+		if context_status_id not in required_status_ids:
+			return false
+
+	if rule.has("max_health_fraction"):
+		var max_health_fraction := clampf(float(rule.get("max_health_fraction", 1.0)), 0.0, 1.0)
+		if float(context.get("health_fraction", 1.0)) > max_health_fraction:
+			return false
+	if rule.get("required_portal_combat_event", false) == true:
+		if context.get("portal_combat_event_active", false) != true:
+			return false
+	return true
+
+func _resolve_string_filters(value: Variant) -> Array[String]:
+	var filters: Array[String] = []
+	if not (value is Array):
+		return filters
+	for filter_variant in value:
+		var filter_value := str(filter_variant).strip_edges()
+		if filter_value == "" or filter_value in filters:
+			continue
+		filters.append(filter_value)
+	return filters
 
 func tick(delta: float) -> Array[Dictionary]:
 	var adjustments: Array[Dictionary] = []

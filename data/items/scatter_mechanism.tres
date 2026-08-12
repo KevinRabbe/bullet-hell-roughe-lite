@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/scatter_mechanism.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "scatter_mechanism"
+name = "Scatter Mechanism"
+description = "Repeated spread attacks spin the close-range arsenal into a short firing frenzy."
+category = "offense"
+rarity = "rare"
+tags = Array[String](["spread", "close_range", "gun"])
+icon = ExtResource("2")
+price = 6
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"active_label": "SCATTER DRIVE",
+"debug_label": "Scatter Mechanism Drive",
+"display_text": "Every 8 Spread attacks: +18% Attack Speed for Spread and Close Range weapons for 4s.",
+"duration": 4.0,
+"effect": "threshold_stat_bonus",
+"hud_visible": true,
+"id": "scatter_mechanism_drive",
+"modifiers": Array[Dictionary]([{
+"amount": 0.18,
+"effect_tags": Array[String](["spread", "close_range"]),
+"stat_id": "attack_speed"
+}]),
+"required_source_weapon_tags": Array[String](["spread"]),
+"resource_label": "SPREAD SHOTS",
+"threshold": 8,
+"trigger": "on_weapon_fired"
+}])
+

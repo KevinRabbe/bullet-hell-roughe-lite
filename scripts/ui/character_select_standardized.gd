@@ -47,6 +47,58 @@ func _apply_shell_styles() -> void:
 	portrait_placeholder.color = Color(0.23, 0.17, 0.12, 0.82)
 	_apply_standard_layout()
 	_apply_dossier_label_layout()
+	_apply_condensed_dossier_layout()
+
+func _apply_accessibility_scaling() -> void:
+	super._apply_accessibility_scaling()
+	var layout_class := StandardUiLayoutMetricsRef.layout_class_for_size(get_viewport_rect().size)
+	if layout_class != StandardUiLayoutMetricsRef.LayoutClass.TIGHT:
+		return
+	# The base screen's showcase minimum targets larger viewports. Constrain only
+	# the tight layout so the full dossier and action row remain inside 648p.
+	portrait_stage.custom_minimum_size.y = 180.0
+	portrait_rect.custom_minimum_size = Vector2(180.0, 170.0)
+	portrait_placeholder.custom_minimum_size = Vector2(120.0, 120.0)
+	header_title.add_theme_font_size_override("font_size", 30)
+	identity_summary.add_theme_font_size_override("font_size", 13)
+	identity_fantasy_hook.add_theme_font_size_override("font_size", 12)
+	passive_name.add_theme_font_size_override("font_size", 14)
+	passive_summary.add_theme_font_size_override("font_size", 12)
+	opening_weapon_name.add_theme_font_size_override("font_size", 14)
+	opening_weapon_summary.add_theme_font_size_override("font_size", 12)
+	_apply_condensed_dossier_layout()
+
+func _apply_condensed_dossier_layout() -> void:
+	var layout_class := StandardUiLayoutMetricsRef.layout_class_for_size(get_viewport_rect().size)
+	if layout_class == StandardUiLayoutMetricsRef.LayoutClass.NORMAL:
+		return
+	var detail_vbox := get_node_or_null("RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox") as VBoxContainer
+	if detail_vbox != null:
+		detail_vbox.add_theme_constant_override("separation", 6)
+	var detail_style := StandardInfernalUiStyleRef.build_panel_style(StandardInfernalUiStyleRef.PANEL_SECTION)
+	for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+		detail_style.set_content_margin(side, 8.0)
+	detail_panel.add_theme_stylebox_override("panel", detail_style)
+	for card_path in [
+		"RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/IdentityCard",
+		"RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/PassiveCard",
+		"RootMargin/RootVBox/MainHBox/DetailPanel/DetailMargin/DetailVBox/OpeningWeaponCard"
+	]:
+		var card := get_node_or_null(card_path) as PanelContainer
+		if card == null:
+			continue
+		var card_style := StandardInfernalUiStyleRef.build_panel_style(StandardInfernalUiStyleRef.PANEL_CARD)
+		for side in [SIDE_LEFT, SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM]:
+			card_style.set_content_margin(side, 6.0)
+		card.add_theme_stylebox_override("panel", card_style)
+		var inner_margin := card.get_child(0) as MarginContainer if card.get_child_count() > 0 else null
+		if inner_margin != null:
+			for margin_name in ["margin_left", "margin_top", "margin_right", "margin_bottom"]:
+				inner_margin.add_theme_constant_override(margin_name, 4)
+	identity_summary.custom_minimum_size.y = 48.0
+	identity_fantasy_hook.custom_minimum_size.y = 30.0
+	passive_summary.custom_minimum_size.y = 34.0
+	opening_weapon_summary.custom_minimum_size.y = 32.0
 
 func _apply_standard_layout() -> void:
 	var viewport_size := get_viewport_rect().size
@@ -69,7 +121,7 @@ func _apply_standard_layout() -> void:
 	if root_vbox != null:
 		root_vbox.add_theme_constant_override("separation", StandardUiLayoutMetricsRef.row_gap(layout_class))
 	if header != null:
-		header.custom_minimum_size.y = 52.0 if tight else 72.0
+		header.custom_minimum_size.y = 64.0 if tight else 72.0
 	if main_hbox != null:
 		main_hbox.custom_minimum_size.y = 462.0
 		main_hbox.add_theme_constant_override("separation", StandardUiLayoutMetricsRef.row_gap(layout_class) + 4)

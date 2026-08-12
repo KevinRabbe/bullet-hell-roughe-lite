@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ritual_refrain.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ritual_refrain"
+name = "Ritual Refrain"
+description = "Released ritual marks echo into waves and orbiting weapons."
+category = "offense"
+rarity = "epic"
+tags = Array[String](["ritual", "wave", "orbit"])
+icon = ExtResource("2")
+price = 8
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Ritual Refrain Echo",
+"display_text": "Release a status with a Ritual weapon: +10% Damage for Wave and Orbit weapons for 5s, up to 2 stacks.",
+"duration": 5.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "ritual_refrain_echo",
+"max_stacks": 2,
+"modifiers": Array[Dictionary]([{
+"amount": 0.1,
+"effect_tags": Array[String](["wave", "orbit"]),
+"stat_id": "damage"
+}]),
+"required_source_weapon_tags": Array[String](["ritual"]),
+"required_status_ids": Array[String](["ritual_mark"]),
+"trigger": "on_status_released"
+}])

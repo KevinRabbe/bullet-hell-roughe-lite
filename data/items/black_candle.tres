@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/black_candle.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "black_candle"
+name = "Black Candle"
+description = "Carry corruption into the next portal and make its rewards answer the same dangerous power."
+category = "utility"
+rarity = "rare"
+tags = Array[String](["portal", "curse"])
+icon = ExtResource("2")
+price = 7
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {
+"corruption": 0.1,
+"portal_instability": 0.05
+}
+stat_conversion_rules = Array[Dictionary]([{
+"amount_per_step": 0.1,
+"display_text": "Every 0.10 Corruption grants +10% Portal Reward (up to +50%); Corruption remains.",
+"id": "black_candle_corruption_reward",
+"max_steps": 5,
+"source_stat_id": "corruption",
+"source_step": 0.1,
+"target_stat_id": "portal_reward_multiplier"
+}])

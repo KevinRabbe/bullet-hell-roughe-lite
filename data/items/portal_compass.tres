@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/portal_compass.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "portal_compass"
+name = "Portal Compass"
+description = "Find portals more often, but pull the run toward more extreme outcomes."
+category = "utility"
+rarity = "common"
+tags = Array[String](["portal"])
+icon = ExtResource("2")
+price = 4
+stack_limit = 1
+reward_tier = 1
+stat_modifiers = {
+"portal_frequency": 0.12,
+"portal_instability": 0.08
+}
+

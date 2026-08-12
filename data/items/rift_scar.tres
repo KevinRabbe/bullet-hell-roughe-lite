@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/rift_scar.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "rift_scar"
+name = "Rift Scar"
+description = "Let unstable portal energy scar the run, then feed that instability back into Portal weapons."
+category = "utility"
+rarity = "epic"
+tags = Array[String](["portal"])
+icon = ExtResource("2")
+price = 10
+stack_limit = 1
+reward_tier = 3
+stat_modifiers = {
+"portal_instability": 0.1
+}
+stat_conversion_rules = Array[Dictionary]([{
+"amount_per_step": 0.08,
+"display_text": "Every 0.10 Portal Instability grants Portal weapons +8% Damage (up to +40%).",
+"effect_tags": Array[String](["portal"]),
+"id": "rift_scar_instability_damage",
+"max_steps": 5,
+"source_stat_id": "portal_instability",
+"source_step": 0.1,
+"target_stat_id": "damage"
+}])

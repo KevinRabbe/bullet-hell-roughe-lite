@@ -70,6 +70,18 @@ The project should feel infernal and adventurous rather than defaulting to
 graveyard imagery. Bones, death, and necromancy remain valid identity tools,
 but they are not the universal visual solution.
 
+### Arena World-Continuity Rule
+
+The approved main-menu gate scene is the environmental world anchor. Gameplay
+should feel like the hunters stepped forward from that scene into the same
+infernal frontier rather than entering an unrelated cracked-ground test room.
+
+- use the same basalt masonry, fortress silhouettes, chains, braziers, portal architecture, and ember lighting language;
+- keep monumental architecture at the arena perimeter, especially the north gate landmark;
+- reserve the central combat field for low-contrast floor detail and clear gameplay silhouettes;
+- never bake player characters, enemies, pickups, or obstacle-like props into active combat space;
+- preserve the dark gothic-western pixel-art treatment and restrained red/orange illumination of the home-screen hero art.
+
 ---
 
 ## Combat Attention Rule
@@ -77,11 +89,25 @@ but they are not the universal visual solution.
 Hunters use restrained, reusable body animation. Weapons, projectiles,
 abilities, impacts, portals, and boss telegraphs carry the high-impact motion.
 
+Every weapon has a recognizable visible attack signature. Shared code and
+motion vocabularies remain the production foundation, but names, icons, color,
+and stat differences alone do not count as distinct attacks.
+
 This keeps six-weapon builds visually important and avoids producing bespoke
 held-weapon animation for every hunter/weapon combination.
 
 Use `GLOBAL_WEAPON_VISUAL_CONTRACT.md` for weapon motion, projectile orientation,
 and exception rules.
+
+### Enemy Locomotion Rule
+
+An enemy that changes travel direction on screen must not visibly run backward.
+
+- The preferred reusable format is a `2 x 4` locomotion atlas: two run frames per direction, with rows ordered down/front, up/back, right, then left.
+- Direction is selected from the dominant velocity axis; horizontal mirroring is not applied to a directional atlas.
+- Procedural bob, squash, and lean remain restrained support motion rather than a replacement for missing directional poses.
+- A single-sprite enemy remains a supported fallback, but any clearly humanlike or legged enemy that visibly moonwalks must graduate to directional art before release qualification.
+- Dust Imp is the first approved proof asset for this contract.
 
 ---
 
@@ -284,6 +310,42 @@ Even if portrait/menu art becomes richer, runtime sprites must remain:
 - highly readable at play scale
 
 Do not let portrait polish drive runtime clutter.
+
+---
+
+## Runtime Combat Presentation Scale
+
+All gameplay actors and equipped weapon icons use one measured reference:
+
+- viewport: `1152 x 648`;
+- gameplay camera zoom: `0.8`;
+- measurement: the non-transparent bounds of the rendered texture or the largest visible frame in a directional atlas.
+
+At that reference view, content must stay inside these ranges:
+
+| Runtime role | Visible reference size |
+| --- | ---: |
+| Hunter | `72-86 px` tall |
+| Standard enemy | `45-72 px` tall |
+| Elite enemy | `55-82 px` tall |
+| Boss enemy | `85-126 px` tall |
+| Equipped weapon | `38-64 px` on its longest side |
+
+The default equipped-weapon orbit radius is `64` world units. Weapon-specific
+radius multipliers may resolve between `52` and `76` world units.
+
+This is a readability hierarchy, not a requirement that every texture use the
+same source dimensions or raw scale value:
+
+1. equipped weapons support the hunter silhouette instead of covering it;
+2. standard enemies usually remain smaller than the hunter;
+3. elites may approach hunter size;
+4. bosses may clearly exceed hunter size.
+
+Temporary VFX, projectiles, telegraphs, hazards, portraits, and menu previews
+are not actor-scale measurements. Do not change the gameplay camera or add a
+per-scene scale override to rescue one oversized asset. Calibrate the content
+data and run the strict content validator instead.
 
 ---
 

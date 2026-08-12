@@ -1,6 +1,6 @@
 {
-  "id": "vertical_slice",
-  "total_waves": 10,
+  "id": "commercial_run",
+  "total_waves": 20,
   "milestones": [
     {
       "id": "first_ascension",
@@ -8,11 +8,41 @@
       "type": "boss",
       "boss_id": "gate_beast",
       "reward": "ascension",
+      "completion": "intermission",
       "choice_count": 3
+    },
+    {
+      "id": "midpoint_bounty",
+      "wave": 10,
+      "type": "boss",
+      "boss_id": "cinder_marshal",
+      "reward": "none",
+      "completion": "intermission"
+    },
+    {
+      "id": "late_control_trial",
+      "wave": 15,
+      "type": "boss",
+      "boss_id": "pyre_archon",
+      "reward": "none",
+      "completion": "intermission"
+    },
+    {
+      "id": "final_frontier",
+      "wave": 20,
+      "type": "boss",
+      "boss_id": "last_shade",
+      "reward": "none",
+      "completion": "victory"
     }
   ],
+  "portal_cadence": {
+    "first_eligible_wave": 2,
+    "guaranteed_first_spawn_wave": 3,
+    "suppressed_waves": [1, 5, 10, 15, 20]
+  },
   "victory": {
-    "wave": 10,
-    "condition": "arena_clear"
+    "wave": 20,
+    "condition": "boss_defeat"
   }
 }

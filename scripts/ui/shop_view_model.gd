@@ -2,7 +2,9 @@ class_name ShopViewModel
 extends RefCounted
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const ItemEffectPresentationRuntimeRef = preload("res://scripts/ui/item_effect_presentation_runtime.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const WeaponAttackPatternRuntimeRef = preload("res://scripts/weapons/weapon_attack_pattern_runtime.gd")
 
 var shop_controller: Node
 var player: Node
@@ -54,6 +56,16 @@ func get_weapon_offer_block_reason(weapon_id: String, incoming_rarity: String = 
 		if reason != "":
 			return reason
 	return "Need empty slot or valid same-rarity merge."
+
+func get_item_offer_block_reason(item_id: String) -> String:
+	var item_data := _find_item(item_id)
+	if item_data == null:
+		return "Item unavailable."
+	if player != null and player.has_method("get_item_grant_block_reason"):
+		var reason := str(player.call("get_item_grant_block_reason", item_data))
+		if reason != "":
+			return reason
+	return "Item stack limit reached."
 
 func get_merge_slot_state(slot_index: int) -> Dictionary:
 	if slot_index < 0:
@@ -212,6 +224,18 @@ func _apply_item_offer_card(card: Dictionary, offer: Dictionary, player_snapshot
 	if item_data != null:
 		card["icon"] = item_data.icon
 	card["description"] = _build_item_offer_description(item_id, player_snapshot)
+	if item_data == null:
+		card["button_text"] = "Blocked"
+		card["button_disabled"] = true
+		card["block_reason"] = get_item_offer_block_reason(item_id)
+		return
+	if player == null or not player.has_method("can_grant_item"):
+		return
+	if player.call("can_grant_item", item_data) == true:
+		return
+	card["button_text"] = "Blocked"
+	card["button_disabled"] = true
+	card["block_reason"] = get_item_offer_block_reason(item_id)
 
 func _build_weapon_slots(player_snapshot: Dictionary = {}) -> Array[Dictionary]:
 	var entries := _get_weapon_entries(player_snapshot)
@@ -289,6 +313,7 @@ func _build_weapon_offer_description(offer: Dictionary, weapon_data: WeaponData,
 		"CD %.2fs" % weapon_data.get_cooldown_value(),
 		"Range x%.2f" % weapon_data.get_attack_range_value()
 	]
+	lines.append_array(WeaponAttackPatternRuntimeRef.build_behavior_lines(weapon_data))
 	lines.append_array(_build_weapon_offer_synergy_lines(weapon_data, player_snapshot))
 	return "\n".join(lines)
 
@@ -303,6 +328,16 @@ func _build_item_offer_description(item_id: String, player_snapshot: Dictionary)
 		"[color=#b5ff9a]Rarity: %s[/color]" % str(item_data.rarity).capitalize(),
 		item_desc
 	]
+	var direct_stat_lines := ItemEffectPresentationRuntimeRef.build_stat_lines(item_data.stat_modifiers)
+	var tag_bonus_lines := ItemEffectPresentationRuntimeRef.build_tag_bonus_lines(item_data.weapon_tag_stat_bonuses)
+	var conversion_rule_lines := ItemEffectPresentationRuntimeRef.build_conversion_rule_lines(item_data.stat_conversion_rules)
+	var runtime_rule_lines := ItemEffectPresentationRuntimeRef.build_runtime_rule_lines(item_data.runtime_rules)
+	if not direct_stat_lines.is_empty() or not tag_bonus_lines.is_empty() or not conversion_rule_lines.is_empty() or not runtime_rule_lines.is_empty():
+		lines.append("[color=#e7c77d]Exact effects:[/color]")
+		lines.append_array(direct_stat_lines)
+		lines.append_array(tag_bonus_lines)
+		lines.append_array(conversion_rule_lines)
+		lines.append_array(runtime_rule_lines)
 	lines.append_array(_build_item_offer_synergy_lines(item_data, player_snapshot))
 	return "\n".join(lines)
 

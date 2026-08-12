@@ -31,12 +31,21 @@
       }
     },
     {
-      "max_wave": 9999,
+      "max_wave": 14,
       "weights": {
         "common": 45.0,
         "rare": 38.0,
         "epic": 15.0,
         "legendary": 2.0
+      }
+    },
+    {
+      "max_wave": 20,
+      "weights": {
+        "common": 32.0,
+        "rare": 40.0,
+        "epic": 23.0,
+        "legendary": 5.0
       }
     }
   ],

@@ -7,6 +7,7 @@ const PortalEventResolver = preload("res://scripts/portal/portal_event_resolver.
 const PortalEventManagerRuntime = preload("res://scripts/portal/portal_event_manager_runtime.gd")
 const PortalRiskRewardRuntime = preload("res://scripts/portal/portal_risk_reward_runtime.gd")
 const PortalMutationOfferScene = preload("res://scenes/ui/PortalMutationOffer.tscn")
+const RunProgressionRuntimeRef = preload("res://scripts/game/run_progression_runtime.gd")
 const PortalEventPresentationRuntimeRef = preload("res://scripts/ui/portal_event_presentation_runtime.gd")
 
 @export var portal_scene: PackedScene
@@ -19,6 +20,7 @@ const PortalEventPresentationRuntimeRef = preload("res://scripts/ui/portal_event
 @export var elite_max_hp: float = 80.0
 @export var log_portal_spawns: bool = false
 @export var log_portal_events: bool = false
+@export var run_progression_path: String = "res://data/waves/run_progression.json"
 
 var player: Node2D
 var enemy_spawner: Node
@@ -35,9 +37,12 @@ var active_mutation_offer: Node
 var active_mutation_event_result: Dictionary = {}
 var previous_tree_paused: bool = false
 var debug_forced_event_id: String = ""
+var run_progression: Dictionary = {}
+var first_portal_spawned: bool = false
 
 func _ready() -> void:
 	rng = _resolve_rng("portal")
+	run_progression = RunProgressionRuntimeRef.load_progression(run_progression_path)
 	player = PortalEventManagerRuntime.resolve_player(self, player_path)
 	enemy_spawner = PortalEventManagerRuntime.resolve_enemy_spawner(self, enemy_spawner_path)
 	if enemy_spawner != null and enemy_spawner.has_signal("wave_completed"):
@@ -48,24 +53,24 @@ func _ready() -> void:
 	add_child(flood_timer)
 	_try_spawn_portal_for_wave(1)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact"):
-		_try_activate_nearest_portal()
-
 func configure_debug_capture_event(event_id: String) -> void:
 	debug_forced_event_id = event_id.strip_edges()
 	if debug_forced_event_id != "":
 		_spawn_first_portal()
 
-func _spawn_first_portal() -> void:
+func _spawn_first_portal() -> bool:
 	if _active_portal_count() >= 1:
-		return
-	PortalEventManagerRuntime.instantiate_portal(
+		return false
+	var portal := PortalEventManagerRuntime.instantiate_portal(
 		self,
 		portal_scene,
 		first_portal_position,
 		Callable(self, "_on_portal_activated")
 	)
+	if portal == null:
+		return false
+	first_portal_spawned = true
+	return true
 
 func _on_wave_completed(wave_index: int) -> void:
 	if speed_pressure_active:
@@ -73,9 +78,23 @@ func _on_wave_completed(wave_index: int) -> void:
 	_try_spawn_portal_for_wave(wave_index + 1)
 
 func _try_spawn_portal_for_wave(wave_index: int) -> void:
+	var spawn_mode := RunProgressionRuntimeRef.get_portal_spawn_mode(
+		run_progression,
+		wave_index,
+		first_portal_spawned
+	)
+	if spawn_mode == "suppressed":
+		if log_portal_spawns:
+			print("Portal spawn suppressed for wave %d by run progression." % wave_index)
+		return
 	if _active_portal_count() >= 1:
 		if log_portal_spawns:
 			print("Portal spawn skipped for wave %d: active portal already exists." % wave_index)
+		return
+	if spawn_mode == "guaranteed":
+		if log_portal_spawns:
+			print("Portal first exposure guaranteed for wave %d." % wave_index)
+		_spawn_first_portal()
 		return
 	var chance := _compute_portal_spawn_chance()
 	var roll := rng.randf()
@@ -89,11 +108,6 @@ func _compute_portal_spawn_chance() -> float:
 
 func _active_portal_count() -> int:
 	return PortalEventManagerRuntime.count_active_portals(get_tree())
-
-func _try_activate_nearest_portal() -> void:
-	var nearest_portal := PortalEventManagerRuntime.find_nearest_portal(get_tree(), player)
-	if nearest_portal != null and nearest_portal.has_method("try_activate"):
-		nearest_portal.call("try_activate", player)
 
 func _on_portal_activated(portal_position: Vector2) -> void:
 	var event_result := _resolve_portal_event_result()
@@ -138,19 +152,22 @@ func _start_portal_mutation_offer(event_result: Dictionary, mutation_id: String)
 		and str(active_major.get("id", "")) != str(mutation.get("id", ""))
 	)
 	if replaces_active_major:
-		mutation["replacement_warning"] = "Replaces active major mutation: %s." % str(
+		mutation["replacement_notice"] = "Replaced active major mutation: %s." % str(
 			active_major.get("title", active_major.get("id", "Unknown"))
 		)
-	active_mutation_event_result = event_result.duplicate(true)
+	var application_result := _apply_portal_mutation(mutation, replaces_active_major)
+	active_mutation_event_result = event_result.merged(application_result, true)
+	active_mutation_event_result["mutation_id"] = str(mutation.get("id", ""))
+	active_mutation_event_result["mutation_accepted"] = true
+	active_mutation_event_result["mutation_committed"] = true
 	active_mutation_offer = PortalMutationOfferScene.instantiate()
 	add_child(active_mutation_offer)
 	active_mutation_offer.call("configure", mutation)
-	active_mutation_offer.connect("accepted", _on_portal_mutation_accepted.bind(mutation, replaces_active_major))
-	active_mutation_offer.connect("declined", _on_portal_mutation_declined)
+	active_mutation_offer.connect("continued", _on_portal_mutation_reveal_continued)
 	previous_tree_paused = get_tree().paused
 	get_tree().paused = true
 
-func _on_portal_mutation_accepted(mutation: Dictionary, allow_major_replacement: bool) -> void:
+func _apply_portal_mutation(mutation: Dictionary, allow_major_replacement: bool) -> Dictionary:
 	var result := {"applied": false, "reason": "player_unavailable"}
 	if player != null and is_instance_valid(player) and player.has_method("apply_portal_mutation"):
 		var result_variant: Variant = player.call(
@@ -160,9 +177,10 @@ func _on_portal_mutation_accepted(mutation: Dictionary, allow_major_replacement:
 		)
 		if result_variant is Dictionary:
 			result = result_variant
-	var payload := active_mutation_event_result.merged(result, true)
-	payload["mutation_id"] = str(mutation.get("id", ""))
-	payload["mutation_accepted"] = true
+	return result
+
+func _on_portal_mutation_reveal_continued() -> void:
+	var payload := active_mutation_event_result.duplicate(true)
 	_finish_portal_mutation_offer()
 	_emit_portal_event_completed(payload)
 
@@ -174,13 +192,6 @@ func _get_active_major_mutation() -> Dictionary:
 		return {}
 	var major_variant: Variant = (state_variant as Dictionary).get("major_mutation", {})
 	return (major_variant as Dictionary).duplicate(true) if major_variant is Dictionary else {}
-
-func _on_portal_mutation_declined() -> void:
-	var payload := active_mutation_event_result.duplicate(true)
-	payload["mutation_accepted"] = false
-	payload["reward_count"] = 0
-	_finish_portal_mutation_offer()
-	_emit_portal_event_completed(payload)
 
 func _finish_portal_mutation_offer() -> void:
 	get_tree().paused = previous_tree_paused
@@ -199,6 +210,7 @@ func _start_double_elite_event(portal_position: Vector2, event_result: Dictionar
 		print("Portal event started: Double Elite")
 	active_event_elites.clear()
 	active_event_result = event_result.duplicate(true)
+	_set_player_portal_combat_event_active(true)
 	_track_event_elite(_spawn_elite(portal_position + Vector2.LEFT * elite_spawn_distance))
 	_track_event_elite(_spawn_elite(portal_position + Vector2.RIGHT * elite_spawn_distance))
 	if active_event_elites.is_empty():
@@ -234,6 +246,7 @@ func _start_enemy_flood_event(event_result: Dictionary) -> void:
 		print("Portal event started: 20-second enemy flood")
 	var result := PortalEventManagerRuntime.apply_enemy_flood(enemy_spawner)
 	if result.get("applied", false) == true:
+		_set_player_portal_combat_event_active(true)
 		flood_original_spawn_interval = float(result.get("original_spawn_interval", flood_original_spawn_interval))
 		flood_original_max_alive = int(result.get("original_max_alive", flood_original_max_alive))
 	flood_timer.set_meta("event_result", event_result.merged(result, true))
@@ -249,6 +262,7 @@ func _start_triple_reward_for_enemy_speed_event(event_result: Dictionary) -> voi
 	speed_pressure_reward_result = event_result.merged(result, true)
 	speed_pressure_reward_result["reward_count"] = max(int(speed_pressure_reward_result.get("reward_count", 3)), 3)
 	if speed_pressure_active:
+		_set_player_portal_combat_event_active(true)
 		if log_portal_events:
 			print("Greed pressure applied: enemy move speed x%.2f until wave end" % float(result.get("move_speed_multiplier", 1.25)))
 		return
@@ -336,9 +350,14 @@ func _finish_enemy_speed_pressure_event() -> void:
 	speed_pressure_original_multiplier = 1.0
 
 func _emit_portal_event_completed(result: Dictionary) -> void:
+	_set_player_portal_combat_event_active(false)
 	var payload := result.duplicate(true)
 	if str(payload.get("event_id", "")) == "":
 		payload["event_id"] = "double_elite"
 	if not payload.has("reward_count"):
 		payload["reward_count"] = 1
 	portal_event_completed.emit(payload)
+
+func _set_player_portal_combat_event_active(active: bool) -> void:
+	if player != null and is_instance_valid(player) and player.has_method("set_portal_combat_event_active"):
+		player.call("set_portal_combat_event_active", active)

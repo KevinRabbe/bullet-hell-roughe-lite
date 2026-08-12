@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/last_ember.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "last_ember"
+name = "Last Ember"
+description = "Near death, the final ember hardens your body and turns desperation into killing power."
+category = "defense"
+rarity = "legendary"
+tags = Array[String](["defense", "last_stand"])
+icon = ExtResource("2")
+price = 14
+stack_limit = 1
+reward_tier = 3
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Last Ember",
+"display_text": "Taking damage at 35% HP or lower: +25% Damage and +3 Armor for 5s.",
+"duration": 5.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "last_ember_stand",
+"max_health_fraction": 0.35,
+"max_stacks": 1,
+"modifiers": Array[Dictionary]([{
+"amount": 0.25,
+"stat_id": "damage"
+}, {
+"amount": 3.0,
+"stat_id": "armor"
+}]),
+"trigger": "on_damage_taken"
+}])

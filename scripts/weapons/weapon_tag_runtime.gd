@@ -53,6 +53,16 @@ const CANONICAL_GAMEPLAY_TAGS: Array[String] = [
 	"ranged"
 ]
 
+const SUPPORTED_WEAPON_BONUS_STAT_IDS: Array[String] = [
+	"damage",
+	"attack_speed",
+	"attack_range",
+	"projectile_speed"
+]
+
+static func is_supported_weapon_bonus_stat(stat_id: String) -> bool:
+	return stat_id in SUPPORTED_WEAPON_BONUS_STAT_IDS
+
 static func normalize_tag(raw_tag: String) -> String:
 	var normalized := raw_tag.strip_edges().to_lower().replace("-", "_").replace(" ", "_")
 	return normalized

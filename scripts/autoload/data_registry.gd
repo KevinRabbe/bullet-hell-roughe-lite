@@ -19,6 +19,7 @@ var portal_events: Dictionary = {}
 var portal_mutations: Dictionary = {}
 var ascensions: Dictionary = {}
 var set_bonuses: Dictionary = {}
+var load_failures: Array[Dictionary] = []
 
 func _ready() -> void:
 	_register_defaults()
@@ -34,6 +35,7 @@ func _ready() -> void:
 	])
 
 func _register_defaults() -> void:
+	load_failures.clear()
 	_load_character_json_data("res://data/characters")
 	_register_by_id(weapons, _load_resource_directory(WEAPON_RESOURCE_DIR))
 	_register_by_id(items, _load_resource_directory(ITEM_RESOURCE_DIR))
@@ -52,6 +54,7 @@ func _load_enemy_resources() -> Array:
 func _load_character_json_data(directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
+		_record_load_failure("directory_missing", directory_path, "Character data directory cannot be opened.")
 		push_warning("Character data directory missing: %s" % directory_path)
 		return
 
@@ -65,6 +68,7 @@ func _load_character_json_data(directory_path: String) -> void:
 			if character_id != "":
 				characters[character_id] = data
 			else:
+				_record_load_failure("entry_id_missing", full_path, "Character data file is missing id and was skipped.")
 				push_warning("Character data file is missing id and was skipped: %s" % full_path)
 		file_name = directory.get_next()
 	directory.list_dir_end()
@@ -72,6 +76,7 @@ func _load_character_json_data(directory_path: String) -> void:
 func _load_json_directory_into(target: Dictionary, directory_path: String) -> void:
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
+		_record_load_failure("directory_missing", directory_path, "JSON data directory cannot be opened.")
 		push_warning("JSON data directory missing: %s" % directory_path)
 		return
 	directory.list_dir_begin()
@@ -84,18 +89,21 @@ func _load_json_directory_into(target: Dictionary, directory_path: String) -> vo
 			if entry_id != "":
 				target[entry_id] = data
 			else:
+				_record_load_failure("entry_id_missing", full_path, "JSON data file is missing id and was skipped.")
 				push_warning("JSON data file is missing id and was skipped: %s" % full_path)
 		file_name = directory.get_next()
 	directory.list_dir_end()
 
 func _load_json_dictionary(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
+		_record_load_failure("json_missing", path, "JSON data file does not exist.")
 		push_warning("JSON data file missing: %s" % path)
 		return {}
 	var json_text := FileAccess.get_file_as_string(path)
 	var parsed: Variant = JSON.parse_string(json_text)
 	if parsed is Dictionary:
 		return parsed
+	_record_load_failure("json_invalid", path, "JSON data file is invalid or not a dictionary.")
 	push_warning("JSON data file is invalid or not a dictionary: %s" % path)
 	return {}
 
@@ -114,6 +122,7 @@ func _load_resource_directory(directory_path: String) -> Array:
 	var loaded: Array = []
 	var directory := DirAccess.open(directory_path)
 	if directory == null:
+		_record_load_failure("directory_missing", directory_path, "Resource directory cannot be opened.")
 		return loaded
 	var file_names: Array[String] = []
 	directory.list_dir_begin()
@@ -126,11 +135,22 @@ func _load_resource_directory(directory_path: String) -> Array:
 	file_names.sort()
 	for sorted_file_name in file_names:
 		var full_path := "%s/%s" % [directory_path, sorted_file_name]
-		if ResourceLoader.exists(full_path):
-			var resource := load(full_path)
-			if resource != null:
-				loaded.append(resource)
+		if not ResourceLoader.exists(full_path):
+			_record_load_failure("resource_unreadable", full_path, "ResourceLoader cannot resolve this content resource.")
+			continue
+		var resource := load(full_path)
+		if resource == null:
+			_record_load_failure("resource_load_failed", full_path, "Content resource resolved but failed to load.")
+			continue
+		loaded.append(resource)
 	return loaded
+
+func _record_load_failure(code: String, path: String, message: String) -> void:
+	load_failures.append({
+		"code": code,
+		"path": path,
+		"message": message
+	})
 
 func _validate_registry_entries() -> void:
 	_validate_character_entries()

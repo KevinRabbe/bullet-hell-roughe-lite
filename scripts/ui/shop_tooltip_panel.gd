@@ -1,8 +1,10 @@
 extends Node
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
+const ItemEffectPresentationRuntimeRef = preload("res://scripts/ui/item_effect_presentation_runtime.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const StandardTooltipScene = preload("res://scenes/ui/components/StandardTooltip.tscn")
+const WeaponAttackPatternRuntimeRef = preload("res://scripts/weapons/weapon_attack_pattern_runtime.gd")
 
 @export var shop_controller_path: NodePath
 @export var player_path: NodePath
@@ -99,11 +101,15 @@ func _on_offer_hovered(index: int) -> void:
 		tooltip_title.text = title
 		tooltip_body.text = body
 	if tooltip_panel != null:
-		var mouse := get_viewport().get_mouse_position()
+		var anchor := get_viewport().get_mouse_position()
+		if index >= 0 and index < offer_buttons.size():
+			var offer_button := offer_buttons[index]
+			var offer_rect := offer_button.get_global_rect()
+			anchor = offer_rect.position + Vector2(offer_rect.size.x, 0.0)
 		if tooltip_panel.has_method("show_at"):
-			tooltip_panel.call("show_at", mouse)
+			tooltip_panel.call("show_at", anchor, Vector2(12.0, 0.0))
 		else:
-			tooltip_panel.position = mouse + Vector2(16.0, 16.0)
+			tooltip_panel.position = anchor + Vector2(12.0, 0.0)
 			tooltip_panel.visible = true
 
 func _get_offer(index: int) -> Dictionary:
@@ -130,6 +136,7 @@ func _build_weapon_tooltip(weapon_id: String) -> String:
 	var sections: Array[String] = [
 		"Family: %s" % family,
 		"Tags: %s" % tags_text,
+		"\n".join(WeaponAttackPatternRuntimeRef.build_behavior_lines(weapon_data)),
 		weapon_data.description
 	]
 	var player_snapshot := _get_player_snapshot()
@@ -158,26 +165,19 @@ func _format_item_tooltip(item: ItemData) -> String:
 		tags_text = "-"
 	sections.append("Tags: %s" % tags_text)
 	sections.append(item.description)
-	var bonus_lines := _build_item_weapon_tag_bonus_lines(item)
+	var stat_lines := ItemEffectPresentationRuntimeRef.build_stat_lines(item.stat_modifiers)
+	if not stat_lines.is_empty():
+		sections.append("Stats:\n%s" % "\n".join(stat_lines))
+	var bonus_lines := ItemEffectPresentationRuntimeRef.build_tag_bonus_lines(item.weapon_tag_stat_bonuses)
 	if not bonus_lines.is_empty():
 		sections.append("Weapon Tag Bonuses:\n%s" % "\n".join(bonus_lines))
+	var conversion_rule_lines := ItemEffectPresentationRuntimeRef.build_conversion_rule_lines(item.stat_conversion_rules)
+	if not conversion_rule_lines.is_empty():
+		sections.append("Live Conversions:\n%s" % "\n".join(conversion_rule_lines))
+	var runtime_rule_lines := ItemEffectPresentationRuntimeRef.build_runtime_rule_lines(item.runtime_rules)
+	if not runtime_rule_lines.is_empty():
+		sections.append("Triggered Effects:\n%s" % "\n".join(runtime_rule_lines))
 	return "\n".join(sections)
-
-func _build_item_weapon_tag_bonus_lines(item: ItemData) -> Array[String]:
-	var lines: Array[String] = []
-	for rule_variant in item.weapon_tag_stat_bonuses:
-		if not (rule_variant is Dictionary):
-			continue
-		var rule: Dictionary = rule_variant
-		var tag := WeaponTagRuntime.normalize_tag(str(rule.get("tag", "")))
-		var stat_id := str(rule.get("stat_id", ""))
-		if tag == "" or stat_id == "":
-			continue
-		var amount := float(rule.get("amount", 0.0))
-		if is_zero_approx(amount):
-			continue
-		lines.append("- %s: %s" % [tag, _format_stat_bonus(stat_id, amount)])
-	return lines
 
 func _build_owned_item_weapon_bonus_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
 	var lines: Array[String] = []

@@ -7,15 +7,16 @@
 script = ExtResource("1")
 id = "void_covenant"
 name = "Void Covenant"
-description = "Gain luck. Curse weapons hit harder, while portal weapons cycle faster."
+description = "Gain portal luck. Curse weapons hit harder, while portal weapons cycle faster."
 category = "utility"
 rarity = "common"
 tags = Array[String](["curse", "portal"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 1
 stat_modifiers = {
-"luck": 1.0
+"portal_luck": 0.1
 }
 weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.1,

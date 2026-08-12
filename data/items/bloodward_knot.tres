@@ -14,6 +14,7 @@ tags = Array[String](["blood", "close_range"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 1
 stat_modifiers = {
 "max_hp": 5.0
 }

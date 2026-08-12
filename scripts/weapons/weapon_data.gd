@@ -1,9 +1,22 @@
 class_name WeaponData
 extends Resource
 
+const ATTACK_MOTION_PROFILES: Array[String] = [
+	"auto",
+	"recoil",
+	"thrust",
+	"slash_arc",
+	"spin_throw",
+	"charge_release",
+	"pulse_cast",
+	"deploy"
+]
+
 @export var id: String = ""
 @export var display_name: String = ""
 @export_multiline var description: String = ""
+@export_multiline var signature_attack_summary: String = ""
+@export_enum("auto", "recoil", "thrust", "slash_arc", "spin_throw", "charge_release", "pulse_cast", "deploy") var attack_motion_profile: String = "auto"
 @export var icon: Texture2D
 @export var projectile_texture: Texture2D
 
@@ -21,6 +34,28 @@ extends Resource
 @export var projectile_lifetime: float = 2.0
 @export var pierce: int = 0
 @export var knockback: float = 0.0
+
+# Canonical attack-pattern contract. These fields turn weapon identity into
+# shared combat behavior instead of requiring one script per weapon.
+@export_enum("projectile", "spread", "melee_arc", "mine", "wave", "orbit", "returning") var attack_pattern: String = "projectile"
+@export_range(1, 7, 1) var projectiles_per_attack: int = 1
+@export_range(0.0, 90.0, 1.0) var spread_degrees: float = 0.0
+@export_range(0.05, 2.0, 0.05) var per_projectile_damage_multiplier: float = 1.0
+@export_range(2.0, 64.0, 1.0) var projectile_hit_radius: float = 5.0
+@export_range(32.0, 180.0, 1.0) var melee_reach: float = 72.0
+@export_range(20.0, 220.0, 1.0) var melee_arc_degrees: float = 100.0
+@export_range(0.08, 0.6, 0.01) var melee_duration: float = 0.22
+@export_range(0.0, 2.0, 0.05) var mine_arm_seconds: float = 0.4
+@export_range(16.0, 160.0, 1.0) var mine_trigger_radius: float = 52.0
+@export_range(16.0, 220.0, 1.0) var effect_radius: float = 96.0
+@export_range(24.0, 240.0, 1.0) var mine_placement_distance: float = 92.0
+@export_range(24.0, 180.0, 1.0) var orbit_radius: float = 72.0
+@export_range(0.5, 14.0, 0.1) var orbit_angular_speed: float = 5.0
+@export_range(0.05, 2.0, 0.05) var repeat_hit_interval: float = 0.45
+@export_range(1, 64, 1) var max_targets: int = 8
+@export_range(0.1, 2.0, 0.05) var return_after_seconds: float = 0.65
+@export_range(0.5, 3.0, 0.05) var return_speed_multiplier: float = 1.0
+@export_range(0.1, 2.0, 0.05) var return_damage_multiplier: float = 0.75
 
 @export var price: int = 0
 

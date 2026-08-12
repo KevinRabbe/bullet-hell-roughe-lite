@@ -3,6 +3,8 @@
   "title": "Necrotic Bloom",
   "description": "Accept a run-long mutation that empowers necromancy and curse weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "necrotic_bloom",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,

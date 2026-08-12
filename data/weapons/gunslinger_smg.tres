@@ -9,16 +9,21 @@ icon = ExtResource("2")
 id = "gunslinger_smg"
 display_name = "Demon SMG"
 description = "Rapid bullet spray with light but steady pressure."
+signature_attack_summary = "Tiny snapping recoil; tight three-round spray; fastest automatic cadence; light clustered impacts."
 cooldown = 0.12
 base_damage = 4.0
 projectile_speed = 860.0
 range = 0.9
 projectile_lifetime = 1.5
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+attack_pattern = "spread"
+projectiles_per_attack = 3
+spread_degrees = 14.0
+per_projectile_damage_multiplier = 0.4
 family = "gunslinger"
 price = 5
 shop_enabled = true
-tags = Array[String](["gun", "rapid", "ranged"])
+tags = Array[String](["gun", "rapid", "spread", "ranged"])
 stat_scaling = {
 "attack_speed": 1.5,
 "crit_chance": 0.5,

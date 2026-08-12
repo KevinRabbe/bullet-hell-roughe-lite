@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "pyre_archon"
+display_name = "Pyre Archon"
+description = "A late-run control boss that divides safe space with paired pyres and attacks through the remaining corridor."
+archetype = "boss_controller"
+tags = Array[String](["boss", "demon", "caster", "area_denial"])
+movement_profile = "ranged_hold"
+combat_profile = "standard"
+max_hp = 980.0
+move_speed = 105.0
+collision_radius = 42.0
+contact_damage = 16.0
+contact_range = 70.0
+damage_interval_seconds = 1.0
+ranged_damage = 7.0
+ranged_interval_seconds = 1.35
+ranged_attack_range = 350.0
+projectile_count = 3
+projectile_spread_degrees = 22.0
+projectile_speed = 340.0
+projectile_lifetime_seconds = 2.5
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/demon_archmage.png"
+visual_scale = 0.12
+projectile_texture_path = "res://assets/sprites/projectiles/enemies/hell_arcane_shot.png"
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = true
+threat_tier = 8
+reward_gold = 32
+reward_xp = 45

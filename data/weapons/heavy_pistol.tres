@@ -1,24 +1,20 @@
-[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3 uid="uid://gr8a8e8a346t"]
 
-[ext_resource type="Script" path="res://scripts/weapons/weapon_data.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/weapons/gunslinger/heavy_pistol.png" id="2"]
+[ext_resource type="Script" uid="uid://1bwrhgdsy8e1" path="res://scripts/weapons/weapon_data.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://bwcjs6vh1qbxp" path="res://assets/sprites/weapons/gunslinger/heavy_pistol.png" id="2"]
 
 [resource]
 script = ExtResource("1")
-icon = ExtResource("2")
 id = "heavy_pistol"
 display_name = "Heavy Pistol"
 description = "Reliable sidearm with crisp, hard-hitting shots."
-cooldown = 0.38
-base_damage = 10.0
-projectile_speed = 840.0
-range = 1.0
-projectile_lifetime = 2.0
-projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
+signature_attack_summary = "Medium sidearm recoil; single straight precision round; steady cadence; compact crisp impact."
+icon = ExtResource("2")
 family = "gunslinger"
-price = 5
-shop_enabled = true
 tags = Array[String](["gun", "precision", "ranged"])
+cooldown = 0.38
+projectile_speed = 840.0
+price = 5
 stat_scaling = {
 "attack_speed": 1.0,
 "crit_chance": 0.4,
@@ -31,3 +27,4 @@ stat_scaling = {
 "range": 0.5,
 "ranged_damage": 1.0
 }
+projectile_scene_path = "res://scenes/weapons/Projectile.tscn"

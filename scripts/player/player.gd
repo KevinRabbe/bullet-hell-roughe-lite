@@ -4,6 +4,8 @@ const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
 const PlayerPassiveRuntime = preload("res://scripts/player/player_passive_runtime.gd")
 const PlayerDamageRuntimeRef = preload("res://scripts/player/player_damage_runtime.gd")
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
+const ItemStatConversionRuntimeRef = preload("res://scripts/items/item_stat_conversion_runtime.gd")
 
 @export var debug_starting_hp: float = 100.0
 @export var debug_move_speed: float = 300.0
@@ -29,10 +31,15 @@ var _logged_resource_warnings: Dictionary = {}
 var _passive_rule_timers: Dictionary = {}
 var _weapon_resource_cache: Dictionary = {}
 var _passive_runtime: RefCounted = PlayerPassiveRuntime.new()
+var _item_passive_runtimes: Array[RefCounted] = []
 var _passive_weapon_tag_bonus_state: Dictionary = {}
 var _default_visual_texture: Texture2D
 var _default_visual_scale: Vector2 = Vector2.ONE
 var _regen_tick_accumulator: float = 0.0
+var _gold_gain_remainder: float = 0.0
+var _xp_gain_remainder: float = 0.0
+var _portal_combat_event_active: bool = false
+var _defense_rng: RandomNumberGenerator
 @onready var auto_weapon: Node = get_node_or_null("AutoWeapon")
 @onready var weapon_loadout: Node = get_node_or_null("WeaponLoadout")
 @onready var player_build: Node = get_node_or_null("PlayerBuild")
@@ -43,6 +50,7 @@ var _regen_tick_accumulator: float = 0.0
 
 func _ready() -> void:
 	add_to_group("players")
+	_defense_rng = _resolve_rng("player_defense")
 	_reset_character_stats()
 	_resolve_default_character_id()
 	_cache_default_visual_state()
@@ -100,14 +108,22 @@ func _unhandled_input(event: InputEvent) -> void:
 func take_damage(amount: float) -> void:
 	if is_dead:
 		return
-	var resolved_damage := PlayerDamageRuntimeRef.resolve_incoming_damage(amount, stats.armor)
+	if PlayerDamageRuntimeRef.should_dodge(_defense_rng, get_effective_stat_value("dodge", 0.0)):
+		if log_runtime_events:
+			print("PLAYER DODGED %.1f INCOMING DAMAGE" % amount)
+		return
+	var resolved_damage := PlayerDamageRuntimeRef.resolve_incoming_damage(
+		amount,
+		get_effective_stat_value("armor", 0.0)
+	)
 	current_hp = maxf(current_hp - resolved_damage, 0.0)
 	_update_hp_label()
 	_emit_ui_snapshot_changed()
 	if resolved_damage > 0.0 and current_hp > 0.0:
 		_apply_passive_runtime_trigger("on_damage_taken", {
 			"damage": resolved_damage,
-			"trigger_progress": resolved_damage
+			"trigger_progress": resolved_damage,
+			"health_fraction": current_hp / maxf(stats.max_hp, 1.0)
 		})
 	if log_runtime_events:
 		print("PLAYER TOOK %.1f DAMAGE | HP: %.1f / %.1f" % [resolved_damage, current_hp, stats.max_hp])
@@ -130,20 +146,51 @@ func die() -> void:
 	print("PLAYER DIED. Press R to restart.")
 	player_died.emit()
 
-func grant_item(item: ItemData) -> void:
+func get_owned_item_count(item_id: String) -> int:
+	if item_id == "":
+		return 0
+	var item_count := 0
+	for owned_item in owned_items:
+		if owned_item != null and owned_item.id == item_id:
+			item_count += 1
+	return item_count
+
+func can_grant_item(item: ItemData) -> bool:
+	if item == null or item.id == "":
+		return false
+	return get_owned_item_count(item.id) < maxi(item.stack_limit, 1)
+
+func get_item_grant_block_reason(item: ItemData) -> String:
 	if item == null:
-		return
+		return "Invalid item."
+	if item.id == "":
+		return "Item has no id."
+	var stack_limit := maxi(item.stack_limit, 1)
+	var current_count := get_owned_item_count(item.id)
+	if current_count >= stack_limit:
+		return "Already owned (%d/%d)." % [current_count, stack_limit]
+	return ""
+
+func grant_item(item: ItemData) -> bool:
+	if not can_grant_item(item):
+		if log_runtime_events:
+			print("Item grant rejected: %s" % get_item_grant_block_reason(item))
+		return false
 	owned_items.append(item)
+	_register_item_runtime(item)
 	_apply_item_effects(item)
 	_emit_ui_snapshot_changed()
 	print("Gained item: %s" % item.name)
 	_print_debug_stats()
+	return true
 
 func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
 	var trigger_context := {
 		"source_weapon_id": weapon_id,
-		"source_slot_index": slot_index
+		"source_slot_index": slot_index,
+		"trigger_progress": 1.0,
+		"portal_combat_event_active": _portal_combat_event_active
 	}
 	if weapon_resource != null:
 		trigger_context["source_weapon_tags"] = WeaponTagRuntimeRef.weapon_tags(weapon_resource)
@@ -177,6 +224,20 @@ func notify_enemy_killed(weapon_id: String, slot_index: int) -> void:
 	elif log_runtime_events:
 		print("%s milestone: %s %+0.2f (weapon only)" % [weapon_name, stat_id, amount])
 
+func notify_critical_hit(weapon_id: String, slot_index: int) -> void:
+	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
+	var trigger_context := {
+		"source_weapon_id": weapon_id,
+		"source_slot_index": slot_index,
+		"trigger_progress": 1.0
+	}
+	if weapon_resource != null:
+		trigger_context["source_weapon_tags"] = WeaponTagRuntimeRef.weapon_tags(weapon_resource)
+	_apply_passive_runtime_trigger("on_critical_hit", trigger_context)
+
+func set_portal_combat_event_active(active: bool) -> void:
+	_portal_combat_event_active = active
+
 func notify_weapon_fired(weapon_id: String, slot_index: int) -> void:
 	var weapon_resource: WeaponData = _load_weapon_resource(weapon_id) if weapon_id != "" else null
 	var trigger_context := {
@@ -203,6 +264,13 @@ func _apply_item_effects(item: ItemData) -> void:
 		current_hp += float(item.stat_modifiers["max_hp"])
 		current_hp = minf(current_hp, stats.max_hp)
 	_update_hp_label()
+
+func _register_item_runtime(item: ItemData) -> void:
+	if item == null or item.runtime_rules.is_empty():
+		return
+	var item_runtime: RefCounted = PlayerPassiveRuntime.new()
+	item_runtime.call("configure", {"passive_runtime_rules": item.runtime_rules})
+	_item_passive_runtimes.append(item_runtime)
 
 func _has_stat_property(stat_name: String) -> bool:
 	for property_info in stats.get_property_list():
@@ -251,12 +319,22 @@ func _get_stat_value(stat_name: String, fallback: float) -> float:
 		return float(stats.get(stat_name))
 	return fallback
 
-func _get_runtime_stat_value(stat_name: String, fallback: float) -> float:
+func _get_runtime_stat_value_without_item_conversions(stat_name: String, fallback: float = 0.0) -> float:
 	return (
 		_get_stat_value(stat_name, fallback)
 		+ _get_set_bonus_stat_bonus(stat_name)
 		+ _get_portal_mutation_stat_bonus(stat_name)
 		+ _get_ascension_stat_bonus(stat_name)
+	)
+
+func _get_runtime_stat_value(stat_name: String, fallback: float) -> float:
+	return (
+		_get_runtime_stat_value_without_item_conversions(stat_name, fallback)
+		+ ItemStatConversionRuntimeRef.build_global_stat_bonus(
+			owned_items,
+			stat_name,
+			Callable(self, "_get_runtime_stat_value_without_item_conversions")
+		)
 	)
 
 func get_effective_stat_value(stat_name: String, fallback: float = 0.0) -> float:
@@ -286,7 +364,8 @@ func _emit_ui_snapshot_changed() -> void:
 func _process_hp_regen(delta: float) -> void:
 	if delta <= 0.0 or is_dead:
 		return
-	if stats.hp_regen <= 0.0 or current_hp >= stats.max_hp:
+	var effective_hp_regen := get_effective_stat_value("hp_regen", 0.0)
+	if effective_hp_regen <= 0.0 or current_hp >= stats.max_hp:
 		_regen_tick_accumulator = 0.0
 		return
 	_regen_tick_accumulator += delta
@@ -295,7 +374,7 @@ func _process_hp_regen(delta: float) -> void:
 		return
 	var elapsed := _regen_tick_accumulator
 	_regen_tick_accumulator = 0.0
-	var heal_amount := stats.hp_regen * elapsed
+	var heal_amount := effective_hp_regen * elapsed
 	if heal_amount <= 0.0:
 		return
 	current_hp = minf(current_hp + heal_amount, stats.max_hp)
@@ -310,6 +389,40 @@ func add_gold(amount: int) -> void:
 	_emit_ui_snapshot_changed()
 	if log_runtime_events:
 		print("GOLD +%d | Total: %d" % [amount, current_gold])
+
+func grant_combat_rewards(base_gold: int, base_xp: int) -> Dictionary:
+	var gold_result := _resolve_scaled_reward(
+		base_gold,
+		maxf(get_effective_stat_value("coin_gain", 1.0), 0.0),
+		_gold_gain_remainder
+	)
+	_gold_gain_remainder = float(gold_result.get("remainder", 0.0))
+	var xp_result := _resolve_scaled_reward(
+		base_xp,
+		maxf(get_effective_stat_value("xp_gain", 1.0), 0.0),
+		_xp_gain_remainder
+	)
+	_xp_gain_remainder = float(xp_result.get("remainder", 0.0))
+	var granted_gold := int(gold_result.get("granted", 0))
+	var granted_xp := int(xp_result.get("granted", 0))
+	if granted_gold > 0:
+		add_gold(granted_gold)
+	if granted_xp > 0:
+		add_xp(granted_xp)
+	return {
+		"gold": granted_gold,
+		"xp": granted_xp
+	}
+
+func _resolve_scaled_reward(base_amount: int, multiplier: float, previous_remainder: float) -> Dictionary:
+	if base_amount <= 0 or multiplier <= 0.0:
+		return {"granted": 0, "remainder": maxf(previous_remainder, 0.0)}
+	var total := (float(base_amount) * multiplier) + maxf(previous_remainder, 0.0)
+	var granted := maxi(int(floor(total + 0.00001)), 0)
+	return {
+		"granted": granted,
+		"remainder": maxf(total - float(granted), 0.0)
+	}
 
 func spend_gold(amount: int) -> bool:
 	if amount <= 0:
@@ -396,6 +509,9 @@ func _reset_character_stats() -> void:
 	stats.portal_frequency = 1.0
 	stats.portal_luck = 0.0
 	stats.portal_instability = 0.0
+	_gold_gain_remainder = 0.0
+	_xp_gain_remainder = 0.0
+	_portal_combat_event_active = false
 
 func _apply_character_starting_weapon(character_data: Dictionary = {}, starting_weapon_override: String = "") -> void:
 	var starting_weapon_id := starting_weapon_override if _weapon_resource_exists(starting_weapon_override) else _resolve_starting_weapon_id(character_data)
@@ -447,7 +563,7 @@ func get_status_power_multiplier(status_id: String) -> float:
 	return maxf(float(status_multipliers.get(status_id, 1.0)), 0.0)
 
 func get_status_power_stat_multiplier(stat_name: String, fallback: float = 1.0) -> float:
-	return maxf(_get_stat_value(stat_name, fallback), 0.0)
+	return maxf(_get_runtime_stat_value(stat_name, fallback), 0.0)
 
 func get_status_propagation_rule(status_id: String) -> Dictionary:
 	var propagation_rules_variant: Variant = active_character_data.get("status_propagation_rules", {})
@@ -526,6 +642,27 @@ func get_attack_range_multiplier() -> float:
 
 func get_projectile_speed_multiplier() -> float:
 	return _get_runtime_stat_value("projectile_speed", 1.0)
+
+func get_critical_hit_chance() -> float:
+	return clampf(_get_runtime_stat_value("crit_chance", 0.0), 0.0, 1.0)
+
+func get_critical_damage_multiplier() -> float:
+	return maxf(_get_runtime_stat_value("crit_damage", 1.5), 1.0)
+
+func get_luck_value() -> float:
+	return _get_runtime_stat_value("luck", 0.0)
+
+func get_discounted_shop_price(base_price: int) -> int:
+	if base_price <= 0:
+		return 0
+	var discount := clampf(_get_runtime_stat_value("shop_discount", 0.0), -1.0, 0.8)
+	return maxi(int(ceil(float(base_price) * (1.0 - discount))), 1)
+
+func get_adjusted_reroll_cost(base_cost: int) -> int:
+	if base_cost <= 0:
+		return 0
+	var multiplier := clampf(_get_runtime_stat_value("reroll_cost", 1.0), 0.0, 5.0)
+	return maxi(int(ceil(float(base_cost) * multiplier)), 0)
 
 func get_movement_speed_value() -> float:
 	return _get_runtime_stat_value("movement_speed", debug_move_speed)
@@ -713,16 +850,27 @@ func notify_status_released(status_id: String, weapon_id: String, slot_index: in
 	_apply_passive_runtime_trigger("on_status_released", trigger_context)
 
 func _process_passive_runtime(delta: float) -> void:
-	if _passive_runtime == null or not _passive_runtime.has_method("tick"):
-		return
-	var adjustments_variant: Variant = _passive_runtime.call("tick", delta)
-	_apply_passive_runtime_adjustments(adjustments_variant)
+	if _passive_runtime != null and _passive_runtime.has_method("tick"):
+		_apply_passive_runtime_adjustments(_passive_runtime.call("tick", delta))
+	for item_runtime in _item_passive_runtimes:
+		if item_runtime != null and item_runtime.has_method("tick"):
+			_apply_passive_runtime_adjustments(item_runtime.call("tick", delta))
 
 func _apply_passive_runtime_trigger(trigger_id: String, context: Dictionary = {}) -> void:
-	if trigger_id == "" or _passive_runtime == null or not _passive_runtime.has_method("trigger"):
+	if trigger_id == "":
 		return
-	var adjustments_variant: Variant = _passive_runtime.call("trigger", trigger_id, context)
-	if _apply_passive_runtime_adjustments(adjustments_variant):
+	var activated := false
+	if _passive_runtime != null and _passive_runtime.has_method("trigger"):
+		activated = _apply_passive_runtime_adjustments(
+			_passive_runtime.call("trigger", trigger_id, context)
+		) or activated
+	for item_runtime in _item_passive_runtimes:
+		if item_runtime == null or not item_runtime.has_method("trigger"):
+			continue
+		activated = _apply_passive_runtime_adjustments(
+			item_runtime.call("trigger", trigger_id, context)
+		) or activated
+	if activated:
 		passive_activated.emit()
 
 func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> bool:
@@ -734,6 +882,11 @@ func _apply_passive_runtime_adjustments(adjustments_variant: Variant) -> bool:
 		if not (adjustment_variant is Dictionary):
 			continue
 		var adjustment: Dictionary = adjustment_variant
+		var reward_gold := maxi(int(adjustment.get("reward_gold", 0)), 0)
+		if reward_gold > 0:
+			grant_combat_rewards(reward_gold, 0)
+			applied_adjustment = true
+			continue
 		var stat_id := str(adjustment.get("stat_id", ""))
 		if stat_id == "":
 			continue
@@ -961,10 +1114,12 @@ func get_ui_snapshot() -> Dictionary:
 		"move_speed": get_movement_speed_value(),
 		"attack_range": get_attack_range_multiplier(),
 		"armor": _get_runtime_stat_value("armor", 0.0),
-		"crit": float(stats.crit_chance),
+		"crit": get_critical_hit_chance(),
 		"portal_luck": get_effective_stat_value("portal_luck", 0.0),
 		"portal_frequency": get_effective_stat_value("portal_frequency", 1.0),
 		"portal_instability": get_effective_stat_value("portal_instability", 0.0),
+		"portal_reward_multiplier": get_effective_stat_value("portal_reward_multiplier", 1.0),
+		"corruption": get_effective_stat_value("corruption", 0.0),
 		"items": owned_items.duplicate(),
 		"weapon_entries": get_weapon_ui_entries(),
 		"active_weapon_tags": get_active_weapon_tags(),
@@ -976,17 +1131,30 @@ func get_ui_snapshot() -> Dictionary:
 		"ascension": get_ascension_state()
 	}
 
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	return DeterministicRng.create_fallback_rng(stream_name, "Player")
+
 func get_passive_runtime_states() -> Array[Dictionary]:
-	if _passive_runtime == null or not _passive_runtime.has_method("get_state_snapshot"):
-		return []
-	var states_variant: Variant = _passive_runtime.call("get_state_snapshot")
-	if not (states_variant is Array):
-		return []
 	var states: Array[Dictionary] = []
+	_append_passive_runtime_states(states, _passive_runtime)
+	for item_runtime in _item_passive_runtimes:
+		_append_passive_runtime_states(states, item_runtime)
+	return states
+
+func _append_passive_runtime_states(states: Array[Dictionary], runtime: RefCounted) -> void:
+	if runtime == null or not runtime.has_method("get_state_snapshot"):
+		return
+	var states_variant: Variant = runtime.call("get_state_snapshot")
+	if not (states_variant is Array):
+		return
 	for state_variant in states_variant:
 		if state_variant is Dictionary:
 			states.append((state_variant as Dictionary).duplicate(true))
-	return states
 
 func get_weapon_tag_counts() -> Dictionary:
 	if weapon_loadout != null and weapon_loadout.has_method("get_weapon_tag_counts"):
@@ -1018,6 +1186,14 @@ func count_owned_items_with_tag(tag: String) -> int:
 
 func get_weapon_tag_bonus_overrides(weapon_data: WeaponData) -> Dictionary:
 	var overrides := WeaponTagRuntimeRef.build_weapon_tag_bonus_overrides(weapon_data, owned_items)
+	overrides = _merge_stat_overrides(
+		overrides,
+		ItemStatConversionRuntimeRef.build_weapon_bonus_overrides(
+			owned_items,
+			weapon_data,
+			Callable(self, "_get_runtime_stat_value_without_item_conversions")
+		)
+	)
 	if portal_mutation_runtime != null and portal_mutation_runtime.has_method("get_weapon_bonus_overrides"):
 		var mutation_overrides_variant: Variant = portal_mutation_runtime.call("get_weapon_bonus_overrides", weapon_data)
 		if mutation_overrides_variant is Dictionary:

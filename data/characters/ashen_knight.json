@@ -5,7 +5,7 @@
   "roster_order": 7,
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/ashen_knight/ashen_knight_neutral_body.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["pact_blade", "hell_claw", "infernal_sigil"],
   "family_weapon_ids": [
     "pact_blade",

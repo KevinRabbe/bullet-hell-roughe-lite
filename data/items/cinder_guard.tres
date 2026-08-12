@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/cinder_guard.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "cinder_guard"
+name = "Cinder Guard"
+description = "Incoming blows harden the guard into a brief stackable armor shell."
+category = "defense"
+rarity = "common"
+tags = Array[String](["defense", "armor"])
+icon = ExtResource("2")
+price = 4
+stack_limit = 1
+reward_tier = 1
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Cinder Guard Shell",
+"display_text": "Taking damage: +1 Armor for 3s, stacking up to 3 times.",
+"duration": 3.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "cinder_guard_shell",
+"max_stacks": 3,
+"modifiers": Array[Dictionary]([{
+"amount": 1.0,
+"stat_id": "armor"
+}]),
+"trigger": "on_damage_taken"
+}])
+

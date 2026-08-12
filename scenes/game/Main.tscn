@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="1"]
 [ext_resource type="Script" path="res://scripts/game/main_game.gd" id="2"]
@@ -14,15 +14,10 @@
 [ext_resource type="Script" path="res://scripts/ui/shop_tooltip_panel.gd" id="12"]
 [ext_resource type="Script" path="res://scripts/ui/orbit_weapon_hud.gd" id="13"]
 [ext_resource type="Script" path="res://scripts/ui/shop_phase_view.gd" id="14"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_ground_infernal_pixel_v1.png" id="15"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_decal_lava_fissures_pixel_v1.png" id="16"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_decal_ritual_circle_pixel_v1.png" id="17"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_hell_crystal_pixel_v1.png" id="18"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_dead_cactus_pixel_v1.png" id="19"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_broken_wagon_wheel_pixel_v1.png" id="20"]
-[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_prop_skeleton_pile_pixel_v1.png" id="21"]
+[ext_resource type="Texture2D" path="res://assets/sprites/arena/hellshot_frontier/arena_gate_plaza_pixel_v1.png" id="15"]
 [ext_resource type="Script" path="res://scripts/ui/level_up_panel_view.gd" id="22"]
 [ext_resource type="Script" path="res://scripts/game/arena_ambient_visual_runtime.gd" id="23"]
+[ext_resource type="Script" path="res://scripts/game/arena_bounds.gd" id="24"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wave_intermission"]
 bg_color = Color(0.055, 0.025, 0.032, 0.96)
@@ -105,107 +100,9 @@ script = ExtResource("23")
 z_index = -12
 
 [node name="GroundTexture" type="Sprite2D" parent="ArenaArt/Ground"]
+texture_filter = 1
 texture = ExtResource("15")
 z_index = -12
-
-[node name="GroundNorthWest" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(-1254, -1254)
-texture = ExtResource("15")
-flip_h = true
-flip_v = true
-z_index = -12
-
-[node name="GroundNorth" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(0, -1254)
-texture = ExtResource("15")
-flip_v = true
-z_index = -12
-
-[node name="GroundNorthEast" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(1254, -1254)
-texture = ExtResource("15")
-flip_h = true
-flip_v = true
-z_index = -12
-
-[node name="GroundWest" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(-1254, 0)
-texture = ExtResource("15")
-flip_h = true
-z_index = -12
-
-[node name="GroundEast" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(1254, 0)
-texture = ExtResource("15")
-flip_h = true
-z_index = -12
-
-[node name="GroundSouthWest" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(-1254, 1254)
-texture = ExtResource("15")
-flip_h = true
-flip_v = true
-z_index = -12
-
-[node name="GroundSouth" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(0, 1254)
-texture = ExtResource("15")
-flip_v = true
-z_index = -12
-
-[node name="GroundSouthEast" type="Sprite2D" parent="ArenaArt/Ground"]
-position = Vector2(1254, 1254)
-texture = ExtResource("15")
-flip_h = true
-flip_v = true
-z_index = -12
-
-[node name="Decals" type="Node2D" parent="ArenaArt"]
-z_index = -10
-
-[node name="LavaFissures" type="Sprite2D" parent="ArenaArt/Decals"]
-position = Vector2(220, -170)
-scale = Vector2(0.68, 0.68)
-modulate = Color(1, 1, 1, 0.62)
-texture = ExtResource("16")
-z_index = -10
-
-[node name="RitualCircle" type="Sprite2D" parent="ArenaArt/Decals"]
-position = Vector2(-260, 210)
-scale = Vector2(0.56, 0.56)
-modulate = Color(1, 1, 1, 0.58)
-texture = ExtResource("17")
-z_index = -10
-
-[node name="Props" type="Node2D" parent="ArenaArt"]
-z_index = -8
-
-[node name="CrystalNW" type="Sprite2D" parent="ArenaArt/Props"]
-position = Vector2(-520, -380)
-scale = Vector2(0.2, 0.2)
-texture = ExtResource("18")
-z_index = -8
-
-[node name="CactusNE" type="Sprite2D" parent="ArenaArt/Props"]
-position = Vector2(560, -330)
-scale = Vector2(0.22, 0.22)
-rotation = 0.42
-texture = ExtResource("19")
-z_index = -8
-
-[node name="WheelSW" type="Sprite2D" parent="ArenaArt/Props"]
-position = Vector2(-590, 360)
-scale = Vector2(0.24, 0.24)
-rotation = -0.56
-texture = ExtResource("20")
-z_index = -8
-
-[node name="SkeletonSE" type="Sprite2D" parent="ArenaArt/Props"]
-position = Vector2(560, 360)
-scale = Vector2(0.24, 0.24)
-rotation = 0.34
-texture = ExtResource("21")
-z_index = -8
 
 [node name="MarkerA" type="ColorRect" parent="."]
 visible = false
@@ -242,10 +139,15 @@ color = Color(0.5, 0.5, 0.1, 1.0)
 [node name="Player" parent="." instance=ExtResource("1")]
 position = Vector2(0, 0)
 
+[node name="ArenaBounds" type="Node2D" parent="."]
+script = ExtResource("24")
+draw_runtime_perimeter = false
+
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("4")
 enemy_scene = ExtResource("3")
 target_path = NodePath("../Player")
+arena_bounds_path = NodePath("../ArenaBounds")
 spawn_interval_seconds = 1.2
 spawn_radius = 520.0
 max_alive_enemies = 25
@@ -738,5 +640,3 @@ alignment = 1
 script = ExtResource("13")
 player_path = NodePath("../Player")
 weapon_loadout_path = NodePath("../Player/WeaponLoadout")
-orbit_radius = 86.0
-icon_scale = 0.118

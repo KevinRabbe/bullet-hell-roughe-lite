@@ -3,6 +3,8 @@
   "title": "Bloodbound Rite",
   "description": "Accept a run-long mutation that empowers blood and ritual weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "bloodbound_rite",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,

@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cinder_ram"
+display_name = "Cinder Ram"
+description = "A plated charger that marks one lane, commits to it, and stalls after the impact run."
+archetype = "committed_charger"
+tags = Array[String](["demon", "charger", "bruiser"])
+movement_profile = "chaser"
+combat_profile = "committed_charger"
+max_hp = 52.0
+move_speed = 145.0
+collision_radius = 26.0
+contact_damage = 13.0
+contact_range = 54.0
+damage_interval_seconds = 0.9
+ranged_damage = 0.0
+ranged_interval_seconds = 0.0
+ranged_attack_range = 0.0
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/demon_brute.png"
+visual_scale = 0.075
+projectile_texture_path = ""
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = false
+threat_tier = 4
+reward_gold = 2
+reward_xp = 3

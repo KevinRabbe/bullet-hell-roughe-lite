@@ -3,6 +3,8 @@
   "title": "Occult Convergence",
   "description": "Accept a run-long mutation that extends magic, wave, and orbit weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "occult_convergence",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,

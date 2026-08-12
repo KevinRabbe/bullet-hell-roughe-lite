@@ -141,10 +141,11 @@ Trigger a Portal Mutation and confirm:
 
 - standard modal shell is centered and readable;
 - title, tier, description, tags, duration, reward, and risk are visible;
-- Accept applies the mutation and closes the offer;
-- Decline closes without applying it;
-- Escape/ui_cancel behaves as Decline;
-- a replacement warning changes the primary action to `Replace Mutation` when applicable.
+- the mutation has already applied before the reveal accepts input;
+- Continue closes the reveal and completes the portal reward flow;
+- Escape/ui_cancel behaves as Continue and cannot undo the mutation;
+- a replaced major mutation is reported as a completed replacement, not offered
+  as a second choice.
 
 ## 11. Armory
 

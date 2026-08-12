@@ -14,6 +14,7 @@ tags = Array[String](["hellfire", "thrown"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 1
 stat_modifiers = {}
 weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.1,

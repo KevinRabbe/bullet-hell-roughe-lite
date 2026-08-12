@@ -2,6 +2,7 @@ class_name EnemyMotionVisualRuntime
 extends RefCounted
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
+const ActorLocomotionRuntimeRef = preload("res://scripts/visual/actor_locomotion_runtime.gd")
 const RELEASE_FLASH_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/weapon_release_flash_pixel_v1.png")
 const DEATH_BURST_TEXTURE: Texture2D = preload("res://assets/sprites/enemies/enemy_death_burst_pixel_v1.png")
 
@@ -28,6 +29,8 @@ const COLOR_STATUS_DEBT := Color(0.72, 0.05, 0.14, 0.78)
 const COLOR_STATUS_HIGH_CONTRAST := Color(1.0, 0.88, 0.52, 0.92)
 const COLOR_SPAWN_SIGIL := Color(0.92, 0.10, 0.20, 0.72)
 const COLOR_SPAWN_SIGIL_HIGH_CONTRAST := Color(1.0, 0.72, 0.28, 0.90)
+const COLOR_SUPPORT := Color(0.96, 0.48, 0.10, 0.82)
+const COLOR_SUPPORT_HIGH_CONTRAST := Color(1.0, 0.94, 0.46, 1.0)
 const RELEASE_FLASH_TEXTURE_SCALE := 0.22
 const DEATH_BURST_TEXTURE_SCALE := 0.28
 const ELITE_DEATH_WEIGHT := 1.35
@@ -44,7 +47,7 @@ static func resolve_target(current_target: Node2D, owner: Node) -> Node2D:
 static func compute_movement_velocity(
 	owner_position: Vector2,
 	target: Node2D,
-	enemy_variant: String,
+	movement_profile: String,
 	move_speed: float,
 	ranged_attack_range: float
 ) -> Vector2:
@@ -52,16 +55,18 @@ static func compute_movement_velocity(
 		return Vector2.ZERO
 	var direction := (target.global_position - owner_position).normalized()
 	var velocity := direction * move_speed
-	if enemy_variant == "spit_fiend" or enemy_variant == "rift_caller":
+	if movement_profile == "ranged_slow":
 		var distance_to_player := owner_position.distance_to(target.global_position)
 		if distance_to_player <= ranged_attack_range:
 			velocity *= 0.25
-	elif enemy_variant == "skeleton_rifleman":
+	elif movement_profile == "ranged_hold":
 		var skeleton_distance := owner_position.distance_to(target.global_position)
-		var keep_distance_min := ranged_attack_range * 0.58
+		var emergency_retreat_distance := ranged_attack_range * 0.28
 		var keep_distance_max := ranged_attack_range * 0.92
-		if skeleton_distance < keep_distance_min:
-			velocity = -direction * move_speed
+		if skeleton_distance < emergency_retreat_distance:
+			# Ranged threats should hold their firing position, not appear to flee.
+			# A restrained emergency step only prevents complete body overlap.
+			velocity = -direction * move_speed * 0.35
 		elif skeleton_distance <= keep_distance_max:
 			velocity = Vector2.ZERO
 	return velocity
@@ -96,9 +101,27 @@ static func apply_fallback_variant_visuals(
 		"horned_bruiser":
 			visual_sprite.texture = textures.get("horned_bruiser", null)
 			visual_sprite.scale = Vector2(0.105, 0.105)
+		"cinder_ram":
+			visual_sprite.texture = textures.get("cinder_ram", null)
+			visual_sprite.scale = Vector2(0.075, 0.075)
+		"ash_lantern":
+			visual_sprite.texture = textures.get("ash_lantern", null)
+			visual_sprite.scale = Vector2(0.08, 0.08)
+		"bone_captain":
+			visual_sprite.texture = textures.get("bone_captain", null)
+			visual_sprite.scale = Vector2(0.075, 0.075)
 		"gate_beast":
 			visual_sprite.texture = textures.get("gate_beast", null)
 			visual_sprite.scale = Vector2(0.14, 0.14)
+		"cinder_marshal":
+			visual_sprite.texture = textures.get("cinder_marshal", null)
+			visual_sprite.scale = Vector2(0.115, 0.115)
+		"pyre_archon":
+			visual_sprite.texture = textures.get("pyre_archon", null)
+			visual_sprite.scale = Vector2(0.12, 0.12)
+		"last_shade":
+			visual_sprite.texture = textures.get("last_shade", null)
+			visual_sprite.scale = Vector2(0.12, 0.12)
 	_play_spawn_intro(visual_sprite)
 	if elite_role != "":
 		_apply_elite_presence(visual_sprite)
@@ -108,15 +131,61 @@ static func apply_enemy_data_visual(data: EnemyData, visual_sprite: Sprite2D, lo
 		return
 	if data.visual_texture_path == "" or not ResourceLoader.exists(data.visual_texture_path):
 		return
-	var texture_variant: Variant = load_texture_callback.call(data.visual_texture_path)
+	var texture_path := data.visual_texture_path
+	var resolved_scale := data.visual_scale
+	var uses_directional_locomotion := (
+		data.directional_locomotion_texture_path != ""
+		and ResourceLoader.exists(data.directional_locomotion_texture_path)
+	)
+	if uses_directional_locomotion:
+		texture_path = data.directional_locomotion_texture_path
+		resolved_scale = data.directional_locomotion_scale
+	var texture_variant: Variant = load_texture_callback.call(texture_path)
 	if texture_variant is Texture2D:
-		visual_sprite.texture = texture_variant as Texture2D
-		visual_sprite.scale = Vector2.ONE * data.visual_scale
+		if uses_directional_locomotion:
+			ActorLocomotionRuntimeRef.configure_directional_atlas(
+				visual_sprite,
+				texture_variant as Texture2D,
+				data.directional_locomotion_columns,
+				data.directional_locomotion_rows,
+				data.directional_locomotion_fps,
+				resolved_scale,
+				data.directional_locomotion_frame_offsets
+			)
+		else:
+			ActorLocomotionRuntimeRef.clear_directional_atlas(visual_sprite)
+			visual_sprite.texture = texture_variant as Texture2D
+			visual_sprite.scale = Vector2.ONE * resolved_scale
 		_play_spawn_intro(visual_sprite)
 		if data.is_boss:
 			_apply_boss_presence(visual_sprite)
 		elif data.is_elite:
 			_apply_elite_presence(visual_sprite)
+
+static func update_support_presence(owner: Node2D, current_marker: Node2D, active: bool) -> Node2D:
+	if owner == null or not is_instance_valid(owner):
+		return current_marker
+	if not active:
+		if current_marker != null and is_instance_valid(current_marker):
+			current_marker.queue_free()
+		return null
+	if current_marker != null and is_instance_valid(current_marker):
+		return current_marker
+	var marker := Node2D.new()
+	marker.name = "CommandBuffPresence"
+	marker.z_index = -1
+	owner.add_child(marker)
+	var ring := Line2D.new()
+	ring.points = _build_status_ring_points(24.0)
+	ring.width = 2.2
+	ring.default_color = COLOR_SUPPORT_HIGH_CONTRAST if AccessibilitySettingsRuntimeRef.is_high_contrast_enabled() else COLOR_SUPPORT
+	marker.add_child(ring)
+	if not AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+		var tween := marker.create_tween().set_loops()
+		tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(marker, "scale", Vector2.ONE * 1.08, 0.44)
+		tween.tween_property(marker, "scale", Vector2.ONE, 0.44)
+	return marker
 
 static func spawn_hit_flash(visual: CanvasItem, owner: Node) -> void:
 	if visual == null or owner == null or not is_instance_valid(visual) or not is_instance_valid(owner):

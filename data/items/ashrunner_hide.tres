@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/ashrunner_hide.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "ashrunner_hide"
+name = "Ashrunner Hide"
+description = "Keep moving to charge a short evasive opening through enemy pressure."
+category = "defense"
+rarity = "rare"
+tags = Array[String](["defense", "movement"])
+icon = ExtResource("2")
+price = 6
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Ashrunner Evasion",
+"display_text": "Travel 600 distance: +12% Dodge for 3s.",
+"duration": 3.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "ashrunner_evasion",
+"max_stacks": 1,
+"modifiers": Array[Dictionary]([{
+"amount": 0.12,
+"stat_id": "dodge"
+}]),
+"trigger": "on_distance_moved",
+"trigger_progress_threshold": 600.0
+}])
+

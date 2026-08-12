@@ -1,6 +1,13 @@
 class_name DebugRunPresetRuntime
 extends RefCounted
 
+const MID_RUN_WEAPON_GRANTS: Array[Dictionary] = [
+	{"id": "gunslinger_smg", "rarity": "rare"},
+	{"id": "gunslinger_shotgun", "rarity": "rare"},
+	{"id": "gunslinger_revolver", "rarity": "rare"},
+	{"id": "gunslinger_assault_rifle", "rarity": "rare"}
+]
+
 const PRESET_ORDER: Array[String] = [
 	"normal",
 	"shop_test",
@@ -9,7 +16,12 @@ const PRESET_ORDER: Array[String] = [
 	"large_arena",
 	"v2_capture_portal",
 	"wave_5_gate_beast",
-	"wave_10_victory",
+	"wave_10_cinder_marshal",
+	"wave_11_cinder_ram",
+	"wave_13_ash_lantern",
+	"wave_15_pyre_archon",
+	"wave_16_bone_captain",
+	"wave_20_victory",
 	"v2_capture_late_run"
 ]
 
@@ -50,22 +62,51 @@ const SCENARIO_DEFINITIONS: Dictionary = {
 		"arena_size_class": "standard",
 		"boss_id": "gate_beast"
 	},
-	"wave_10_victory": {
+	"wave_10_cinder_marshal": {
 		"wave_index": 10,
 		"arena_size_class": "standard",
-		"boss_id": ""
+		"boss_id": "cinder_marshal",
+		"starting_gold": 80,
+		"weapon_grants": MID_RUN_WEAPON_GRANTS
+	},
+	"wave_11_cinder_ram": {
+		"wave_index": 11,
+		"arena_size_class": "standard",
+		"boss_id": "",
+		"enemy_id": "cinder_ram"
+	},
+	"wave_13_ash_lantern": {
+		"wave_index": 13,
+		"arena_size_class": "standard",
+		"boss_id": "",
+		"enemy_id": "ash_lantern"
+	},
+	"wave_15_pyre_archon": {
+		"wave_index": 15,
+		"arena_size_class": "standard",
+		"boss_id": "pyre_archon",
+		"starting_gold": 120,
+		"weapon_grants": MID_RUN_WEAPON_GRANTS
+	},
+	"wave_16_bone_captain": {
+		"wave_index": 16,
+		"arena_size_class": "standard",
+		"boss_id": "",
+		"enemy_id": "bone_captain"
+	},
+	"wave_20_victory": {
+		"wave_index": 20,
+		"arena_size_class": "standard",
+		"boss_id": "last_shade",
+		"starting_gold": 160,
+		"weapon_grants": MID_RUN_WEAPON_GRANTS
 	},
 	"v2_capture_late_run": {
 		"wave_index": 8,
 		"arena_size_class": "standard",
 		"boss_id": "",
 		"starting_gold": 80,
-		"weapon_grants": [
-			{"id": "gunslinger_smg", "rarity": "rare"},
-			{"id": "gunslinger_shotgun", "rarity": "rare"},
-			{"id": "gunslinger_revolver", "rarity": "rare"},
-			{"id": "gunslinger_assault_rifle", "rarity": "rare"}
-		]
+		"weapon_grants": MID_RUN_WEAPON_GRANTS
 	}
 }
 
@@ -94,6 +135,9 @@ static func boss_id_for_preset(preset: String) -> String:
 
 static func portal_event_id_for_preset(preset: String) -> String:
 	return str(scenario_definition(preset).get("portal_event_id", "")).strip_edges()
+
+static func enemy_id_for_preset(preset: String) -> String:
+	return str(scenario_definition(preset).get("enemy_id", "")).strip_edges()
 
 static func weapon_grants_for_preset(preset: String) -> Array[Dictionary]:
 	var grants: Array[Dictionary] = []

@@ -14,29 +14,27 @@ const PRIMARY_STATS: Array[Dictionary] = [
 	{"id": "attack_speed", "label": "Attack Speed", "format": "mult", "neutral": 1.0},
 	{"id": "attack_range", "label": "Range", "format": "mult", "neutral": 1.0},
 	{"id": "projectile_speed", "label": "Projectile Speed", "format": "mult", "neutral": 1.0},
-	{"id": "crit_chance", "label": "Crit Chance", "format": "one", "neutral": 0.0},
+	{"id": "crit_chance", "label": "Crit Chance", "format": "percent", "neutral": 0.0},
 	{"id": "crit_damage", "label": "Crit Damage", "format": "mult", "neutral": 1.5},
 	{"id": "armor", "label": "Armor", "format": "one", "neutral": 0.0},
-	{"id": "dodge", "label": "Dodge", "format": "one", "neutral": 0.0},
+	{"id": "dodge", "label": "Dodge", "format": "percent", "neutral": 0.0},
 	{"id": "movement_speed", "label": "Move Speed", "format": "whole", "neutral": 300.0},
-	{"id": "luck", "label": "Luck", "format": "one", "neutral": 0.0},
-	{"id": "pickup_range", "label": "Pickup Range", "format": "whole", "neutral": 48.0}
+	{"id": "luck", "label": "Luck", "format": "one", "neutral": 0.0}
 ]
 
 const SECONDARY_STATS: Array[Dictionary] = [
 	{"id": "xp_gain", "label": "XP Gain", "format": "mult", "neutral": 1.0},
 	{"id": "coin_gain", "label": "Gold Gain", "format": "mult", "neutral": 1.0},
-	{"id": "shop_discount", "label": "Shop Discount", "format": "one", "neutral": 0.0},
+	{"id": "shop_discount", "label": "Shop Discount", "format": "percent", "neutral": 0.0},
 	{"id": "reroll_cost", "label": "Reroll Cost", "format": "mult", "neutral": 1.0},
 	{"id": "portal_luck", "label": "Portal Luck", "format": "two", "neutral": 0.0},
 	{"id": "portal_frequency", "label": "Portal Frequency", "format": "mult", "neutral": 1.0},
 	{"id": "portal_instability", "label": "Portal Instability", "format": "two", "neutral": 0.0},
 	{"id": "portal_reward_multiplier", "label": "Portal Reward", "format": "mult", "neutral": 1.0},
-	{"id": "corruption", "label": "Corruption", "format": "one", "neutral": 0.0},
+	{"id": "corruption", "label": "Corruption", "format": "two", "neutral": 0.0},
 	{"id": "burn_damage", "label": "Burn Power", "format": "mult", "neutral": 1.0},
 	{"id": "poison_damage", "label": "Poison Power", "format": "mult", "neutral": 1.0},
 	{"id": "bleed_damage", "label": "Bleed Power", "format": "mult", "neutral": 1.0},
-	{"id": "fear_chance", "label": "Fear Chance", "format": "one", "neutral": 0.0},
 	{"id": "frost_power", "label": "Frost Power", "format": "mult", "neutral": 1.0}
 ]
 
@@ -169,5 +167,7 @@ func _format_value(value: float, format_id: String) -> String:
 			return "%.2f" % value
 		"mult":
 			return "x%.2f" % value
+		"percent":
+			return "%.0f%%" % (value * 100.0)
 		_:
 			return "%.1f" % value

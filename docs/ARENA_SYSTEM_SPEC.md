@@ -12,9 +12,9 @@ Arena size is a per-axis footprint scalar. `STANDARD` is the normal game case; `
 
 | Size class | Playable size | Scalar vs Standard | Reference-view relationship at 1152x648 / camera zoom 0.8 |
 | --- | ---: | ---: | --- |
-| COMPACT | 1440 x 810 | 0.67x per axis | one full reference view |
-| STANDARD | 2160 x 1215 | 1.00x | 1.5 reference views per axis |
-| LARGE | 2880 x 1620 | 1.33x per axis | two reference views per axis |
+| COMPACT | 1680 x 945 | 0.875x per axis | limited camera travel |
+| STANDARD | 1920 x 1080 | 1.00x | primary gate-plaza board |
+| LARGE | 2560 x 1440 | 1.33x per axis | expanded camera travel |
 
 The three sizes retain the 16:9 arena shape so camera behavior does not change simply because a size variant was selected.
 
@@ -109,19 +109,17 @@ Their existing encounter offsets remain the first choice. Arena clamping is a tr
 
 ## Environment composition
 
-The existing Hellshot Frontier kit is retained:
+The primary map is the infernal gate plaza established by the approved home-screen hero art:
 
-- burnt cracked ground;
-- lava/rift fissures;
-- ritual markings;
-- hell crystal;
-- dead cactus;
-- broken western debris;
-- skeleton/bone props.
+- dark basalt flagstones rather than generic dirt wasteland;
+- the monumental horned gate embedded at the north edge;
+- fortress masonry, chains, braziers, and ember-lit seams concentrated at the perimeter;
+- a restrained engraved ritual mark in the center;
+- a broad, low-contrast combat field without fake obstacles or baked gameplay actors.
 
-The arena authority fits the ground to the current footprint and positions decorative storytelling toward edges/corners. The central combat space stays comparatively clean for bullets, enemies, pickups, and player readability.
+`arena_gate_plaza_pixel_v1.png` is one continuous 16:9 backplate. The arena authority fits it to the selected size class. Its baked fortress perimeter communicates the boundary, so `Main.tscn` disables the optional runtime wall-strip overlay while preserving the same clamping, camera, and spawn geometry.
 
-This is a composition change, not a replacement art style.
+Future arena art may use the runtime perimeter fallback when it does not include a baked boundary. Environment art never becomes collision by implication.
 
 ## Invariants
 
@@ -145,6 +143,6 @@ At 1152 x 648:
 4. Fight near every edge and confirm normal enemies remain in-bounds and do not spawn on top of the player.
 5. Trigger a portal and confirm portal/event elites remain usable near legal space.
 6. Spawn Gate Beast near multiple player positions and confirm the boss starts in-bounds.
-7. Confirm ground, fissures, ritual mark, crystal, cactus, wheel, and skeleton composition remain coherent and the combat center stays readable.
+7. Confirm the basalt gate plaza, north landmark, baked perimeter, and ritual engraving stay coherent while the combat center remains readable.
 8. Confirm Wave 1-2 pressure feels compact rather than like an effectively endless world.
 9. Repeat the same boundary/camera/spawn checks with `compact_arena` and `large_arena`.

@@ -12,29 +12,30 @@ static func get_prototype_items() -> Array[ItemData]:
 			items.append(item_resource as ItemData)
 	return items
 
-static func get_random_item(rng: RandomNumberGenerator) -> ItemData:
+static func get_random_item(rng: RandomNumberGenerator, excluded_item_ids: Array[String] = []) -> ItemData:
 	var items := get_prototype_items()
-	if items.is_empty():
-		return ItemData.new()
-	return items[rng.randi_range(0, items.size() - 1)]
-
-static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator) -> ItemData:
-	var tier_ids: Array[String]
-	match tier:
-		3:
-			tier_ids = ["steel_heart", "trigger_core"]
-		2:
-			tier_ids = ["glass_scope", "lucky_charm"]
-		_:
-			tier_ids = ["swift_boots", "lucky_charm"]
-
 	var pool: Array[ItemData] = []
-	for item in get_prototype_items():
-		if tier_ids.has(item.id):
-			pool.append(item)
+	for item in items:
+		if item == null or excluded_item_ids.has(item.id):
+			continue
+		pool.append(item)
 	if pool.is_empty():
-		return get_random_item(rng)
+		return null
 	return pool[rng.randi_range(0, pool.size() - 1)]
+
+static func get_random_item_for_tier(tier: int, rng: RandomNumberGenerator, excluded_item_ids: Array[String] = []) -> ItemData:
+	var target_tier := clampi(tier, 1, 3)
+	var items := get_prototype_items()
+	for candidate_tier in range(target_tier, 0, -1):
+		var pool: Array[ItemData] = []
+		for item in items:
+			if item == null or excluded_item_ids.has(item.id):
+				continue
+			if clampi(item.reward_tier, 1, 3) == candidate_tier:
+				pool.append(item)
+		if not pool.is_empty():
+			return pool[rng.randi_range(0, pool.size() - 1)]
+	return get_random_item(rng, excluded_item_ids)
 
 static func get_item_by_id(item_id: String) -> ItemData:
 	if item_id == "":

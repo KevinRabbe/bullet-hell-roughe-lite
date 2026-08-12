@@ -7,6 +7,7 @@ const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 
 @export var activation_radius: float = 108.0
 @export var prompt_radius: float = 220.0
+@export_range(0.2, 2.0, 0.05) var activation_hold_seconds: float = 0.65
 
 const COLOR_AURA := Color(0.92, 0.18, 0.08, 0.72)
 const COLOR_AURA_HIGH_CONTRAST := Color(1.0, 0.78, 0.34, 0.94)
@@ -18,6 +19,9 @@ var _idle_tween: Tween
 var _aura_tween: Tween
 var _presence_aura: Line2D
 var _prompt_player: Node2D
+var _activation_hold_elapsed: float = 0.0
+var _hold_armed: bool = false
+var _interaction_was_pressed: bool = false
 
 @onready var visual: Sprite2D = $Visual
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -27,20 +31,37 @@ func _ready() -> void:
 	add_to_group("portals")
 	_visual_rest_position = visual.position
 	_visual_rest_scale = visual.scale
-	interaction_prompt.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
+	_reset_activation_hold()
 	_create_presence_aura()
 	_play_emerge_animation()
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	var interaction_pressed := Input.is_action_pressed("interact")
 	if not is_active:
 		interaction_prompt.visible = false
+		_interaction_was_pressed = interaction_pressed
 		return
 	if _prompt_player == null or not is_instance_valid(_prompt_player):
 		_prompt_player = get_tree().get_first_node_in_group("players") as Node2D
-	interaction_prompt.visible = (
+	var is_in_prompt_range := (
 		_prompt_player != null
 		and global_position.distance_to(_prompt_player.global_position) <= prompt_radius
 	)
+	interaction_prompt.visible = is_in_prompt_range
+	var is_in_activation_range := can_activate(_prompt_player)
+	if not is_in_activation_range:
+		_reset_activation_hold()
+	elif interaction_pressed:
+		if not _interaction_was_pressed:
+			_hold_armed = true
+		if _hold_armed:
+			_activation_hold_elapsed += delta
+			_update_activation_hold_feedback()
+			if _activation_hold_elapsed >= activation_hold_seconds:
+				try_activate(_prompt_player)
+	else:
+		_reset_activation_hold()
+	_interaction_was_pressed = interaction_pressed
 
 func can_activate(player: Node2D) -> bool:
 	if not is_active:
@@ -53,11 +74,27 @@ func try_activate(player: Node2D) -> bool:
 	if not can_activate(player):
 		return false
 	is_active = false
+	_reset_activation_hold()
 	interaction_prompt.visible = false
 	collision_shape.set_deferred("disabled", true)
 	activated.emit(global_position)
 	_play_close_animation()
 	return true
+
+func _reset_activation_hold() -> void:
+	_activation_hold_elapsed = 0.0
+	_hold_armed = false
+	if interaction_prompt != null:
+		interaction_prompt.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT
+
+func _update_activation_hold_feedback() -> void:
+	if interaction_prompt == null:
+		return
+	var progress := clampf(_activation_hold_elapsed / maxf(activation_hold_seconds, 0.01), 0.0, 1.0)
+	interaction_prompt.modulate = InfernalUiStyleRef.COLOR_BONE_HIGHLIGHT.lerp(
+		COLOR_AURA_HIGH_CONTRAST,
+		progress
+	)
 
 func _play_emerge_animation() -> void:
 	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():

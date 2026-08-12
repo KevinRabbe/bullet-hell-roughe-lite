@@ -5,7 +5,7 @@
   "roster_order": 15,
   "selectable": true,
   "visual_path": "res://assets/sprites/characters/relic_seeker/relic_seeker.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.085,
   "starting_weapon_ids": ["rift_artifact", "void_revolver", "rift_bow"],
   "family_weapon_ids": [
     "rift_artifact",

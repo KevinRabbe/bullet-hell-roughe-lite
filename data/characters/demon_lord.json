@@ -4,7 +4,7 @@
   "description": "Hellfire destruction archetype with stronger burn output and no sustain fallback.",
   "roster_order": 3,
   "visual_path": "res://assets/sprites/characters/demon_lord/demon_lord_neutral_body.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["cursed_lantern", "hellfire_orb", "demonic_crown"],
   "family_weapon_ids": [
     "cursed_lantern",

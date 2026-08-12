@@ -1,5 +1,11 @@
 # Shop and Rewards
 
+The current measured item inventory, diversity gaps, and staged weapon/item
+content targets are defined in
+[WEAPON_ITEM_CONTENT_PLAN.md](WEAPON_ITEM_CONTENT_PLAN.md). This document owns
+the broader reward philosophy and runtime rules; the diversity plan owns the
+actionable content quantities and slots.
+
 This document defines the first-demo shop and reward direction.
 
 The goal is not to build a complex economy yet. The goal is to create a simple, readable loop where players survive danger, receive choices, and shape their build.
@@ -182,6 +188,47 @@ Rules:
 ## 2. Items
 
 Items modify stats or build rules.
+
+Current runtime contract:
+
+- `ItemData.price` is authoritative for Shop offers;
+- `reward_tier` is an authored value from 1 to 3 used by portal item rewards;
+- item rarity and portal reward tier are separate concepts;
+- portal reward selection uses all eligible item data rather than hardcoded ids;
+- exact direct stats and weapon-tag bonuses use one shared formatter across Shop
+  cards, Shop tooltips, owned-item details, and the Armory;
+- bounded `stat_conversion_rules` derive live global or tagged-weapon bonuses
+  from non-chained source stats and expose exact player-facing copy;
+- behavioral items reuse the shared player passive trigger runtime through
+  authored `runtime_rules`; each such rule must provide exact display copy;
+- deterministic reward procs use that same runtime and may grant combat-earned
+  Gold without introducing a second item scripting system.
+
+Current behavioral proof items:
+
+- Trigger Core converts sustained firing into a temporary global overdrive;
+- Glass Scope converts Precision kills into a stacking Precision damage rhythm;
+- Soul Fuse converts Necromancy kills into a temporary Mine damage/attack-speed
+  window;
+- Scatter Mechanism converts repeated Spread attacks into a tagged firing
+  window;
+- Ritual Refrain converts Ritual status releases into Wave/Orbit damage stacks;
+- Debt Collector's Seal converts Debt releases into Blood/Melee/Thrown damage
+  stacks;
+- Cinder Guard converts incoming hits into temporary Armor stacks;
+- Grave Stitch converts Necromancy kills into temporary HP regeneration;
+- Ashrunner Hide converts distance traveled into a temporary Dodge window.
+- Black Primer converts confirmed critical impacts into a temporary Precision
+  execution window;
+- Last Ember converts a post-hit low-health state into brief Damage and Armor;
+- Rift Scar converts Portal Instability into capped Portal-weapon Damage;
+- Black Candle converts retained Corruption into capped Portal Reward;
+- Grave Tithe converts kills during active portal combat events into Gold.
+
+The live item pool currently contains 36 items: 18 Offense, 7 Defense, 7
+Utility, and 4 Economy. Its rarity mix is 20 Common, 10 Rare, 4 Epic, and 2
+Legendary; its independent portal reward tiers contain 20 Tier 1, 10 Tier 2,
+and 6 Tier 3 items.
 
 Good item examples:
 

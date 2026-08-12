@@ -113,12 +113,14 @@ func get_current_wave_index() -> int:
 func _roll_offers() -> void:
 	active_offers = ShopOfferRuntime.roll_offers(
 		_weapon_offer_pool,
-		_item_offer_pool,
+		_get_available_item_offer_pool(),
 		_current_wave_index,
 		rng,
 		_get_preferred_weapon_family(),
-		_get_preferred_weapon_family_bias()
+		_get_preferred_weapon_family_bias(),
+		_get_player_luck()
 	)
+	_apply_player_offer_prices()
 
 func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
@@ -184,6 +186,8 @@ func _on_offer_pressed(index: int) -> void:
 	call_deferred("_focus_shop_action_after_purchase", index)
 
 func _can_purchase_offer(offer_type: String, offer_id: String, offer: Dictionary) -> bool:
+	if offer_type == "item":
+		return _can_purchase_item(offer_id)
 	if offer_type != "weapon":
 		return true
 	var loadout: Node = player.get_node_or_null("WeaponLoadout")
@@ -200,6 +204,30 @@ func _can_purchase_offer(offer_type: String, offer_id: String, offer: Dictionary
 			print("Cannot buy weapon. Weapon loadout is full.")
 		return false
 	return true
+
+func _can_purchase_item(item_id: String) -> bool:
+	var item_data := _find_item_data(item_id)
+	if item_data == null:
+		if log_shop_events:
+			print("Cannot buy unknown item: %s" % item_id)
+		return false
+	if player.has_method("can_grant_item") and player.call("can_grant_item", item_data) != true:
+		if log_shop_events:
+			var reason := "Item stack limit reached."
+			if player.has_method("get_item_grant_block_reason"):
+				reason = str(player.call("get_item_grant_block_reason", item_data))
+			print("Cannot buy item %s: %s" % [item_id, reason])
+		return false
+	return true
+
+func _get_available_item_offer_pool() -> Array[Dictionary]:
+	var available_offers: Array[Dictionary] = []
+	for offer in _item_offer_pool:
+		var item_id := str(offer.get("id", ""))
+		if not _can_purchase_item(item_id):
+			continue
+		available_offers.append(offer.duplicate(true))
+	return available_offers
 
 func _grant_purchased_offer(offer_type: String, offer_id: String, offer: Dictionary, offer_price: int) -> bool:
 	if offer_type == "weapon":
@@ -223,8 +251,9 @@ func _grant_purchased_weapon(weapon_id: String, rolled_rarity: String, offer_pri
 func _grant_purchased_item(item_id: String, offer_price: int) -> bool:
 	var item_data := _find_item_data(item_id)
 	if item_data != null and player.has_method("grant_item"):
-		player.call("grant_item", item_data)
-		return true
+		var granted: Variant = player.call("grant_item", item_data)
+		if granted == true:
+			return true
 	if player.has_method("add_gold"):
 		player.call("add_gold", offer_price)
 	if log_shop_events:
@@ -251,7 +280,29 @@ func _current_reroll_cost() -> int:
 	var config := ShopOfferRuntime.get_shop_config()
 	var base_cost := int(config.get("base_reroll_cost", reroll_cost))
 	var reroll_step := int(config.get("reroll_cost_step", 1))
-	return base_cost + (reroll_count * reroll_step)
+	var raw_cost := base_cost + (reroll_count * reroll_step)
+	if player != null and is_instance_valid(player) and player.has_method("get_adjusted_reroll_cost"):
+		return int(player.call("get_adjusted_reroll_cost", raw_cost))
+	return raw_cost
+
+func _apply_player_offer_prices() -> void:
+	if player == null or not is_instance_valid(player) or not player.has_method("get_discounted_shop_price"):
+		return
+	for index in range(active_offers.size()):
+		var offer := active_offers[index]
+		if str(offer.get("type", "")) == "sold_out":
+			continue
+		var raw_price := int(offer.get("price", 0))
+		offer["undiscounted_price"] = raw_price
+		var discounted_price := int(player.call("get_discounted_shop_price", raw_price))
+		offer["price"] = discounted_price
+		offer["final_price"] = discounted_price
+		active_offers[index] = offer
+
+func _get_player_luck() -> float:
+	if player != null and is_instance_valid(player) and player.has_method("get_luck_value"):
+		return float(player.call("get_luck_value"))
+	return 0.0
 
 func _open_shop_for_wave() -> void:
 	_refresh_shop_offers()

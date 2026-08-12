@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/infernal_coupon.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "infernal_coupon"
+name = "Infernal Coupon"
+description = "Buy for less, but every attempt to force a better Shop becomes more expensive."
+category = "economy"
+rarity = "rare"
+tags = Array[String](["economy", "shop"])
+icon = ExtResource("2")
+price = 6
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {
+"reroll_cost": 0.2,
+"shop_discount": 0.12
+}
+

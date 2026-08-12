@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/debt_collectors_seal.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "debt_collectors_seal"
+name = "Debt Collector's Seal"
+description = "Collect released Devil's Debt as momentum for brutal close and returning attacks."
+category = "offense"
+rarity = "rare"
+tags = Array[String](["blood", "melee", "thrown"])
+icon = ExtResource("2")
+price = 6
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Debt Collector's Momentum",
+"display_text": "Release Devil's Debt with a Blood, Melee, or Thrown weapon: +10% Damage for those weapon tags for 4s, up to 2 stacks.",
+"duration": 4.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "debt_collectors_momentum",
+"max_stacks": 2,
+"modifiers": Array[Dictionary]([{
+"amount": 0.1,
+"effect_tags": Array[String](["blood", "melee", "thrown"]),
+"stat_id": "damage"
+}]),
+"required_source_weapon_tags": Array[String](["blood", "melee", "thrown"]),
+"required_status_ids": Array[String](["devils_debt"]),
+"trigger": "on_status_released"
+}])

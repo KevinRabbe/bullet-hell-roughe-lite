@@ -24,8 +24,7 @@ Every active or parked character in `data/characters/` should define:
 
 Optional but strongly recommended:
 
-- `visual_path`
-- `visual_scale`
+- `visual_path` and `visual_scale` (required together once gameplay art is assigned)
 - `selectable`
 - `presentation`
 - `passive_runtime_rules`
@@ -46,7 +45,8 @@ Optional but strongly recommended:
 ### 2. Visual wiring
 - Add the body art to `assets/sprites/characters/<character_id>/`.
 - Set `visual_path`.
-- Set `visual_scale` if needed.
+- Calibrate `visual_scale` so the non-transparent body bounds render `72-86 px` tall at the canonical `1152 x 648`, `0.8`-zoom combat reference.
+- Run strict content validation; do not compensate for one asset by changing the gameplay camera.
 - If art is not ready, keep the character parked with `selectable: false`.
 
 ### 3. Weapon family baseline
@@ -100,7 +100,7 @@ Use this as the starting point for new characters:
   "roster_order": 99,
   "selectable": false,
   "visual_path": "res://assets/sprites/characters/new_character/new_character.png",
-  "visual_scale": 1.0,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["new_character_starter"],
   "family_weapon_ids": [
     "new_character_starter",

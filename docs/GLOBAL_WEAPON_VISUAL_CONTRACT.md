@@ -24,6 +24,47 @@ shared defaults
 
 Do not start with a weapon-specific script.
 
+## Visible Attack Signature Lock
+
+Every weapon must have its own recognizable attack in live combat. Shared
+runtime foundations are encouraged, but the final attack may not read as a
+recolored copy with different numbers.
+
+A complete attack signature is the combination of:
+
+- equipped-weapon anticipation and release motion;
+- attack geometry and trajectory;
+- projectile, blade, wave, mine, orbit, beam, or field silhouette;
+- travel behavior, persistence, cadence, and rhythm;
+- impact shape and weight;
+- status or secondary-effect cue;
+- restrained audio identity.
+
+Not every weapon needs a unique value in every layer. It needs one dominant
+visual hook and enough supporting differences that a player can recognize the
+attack without reading its name or damage number.
+
+Examples:
+
+- the SMG reads through rapid, light muzzle pulses and a tight bullet stream;
+- the Sniper reads through anticipation, one narrow high-speed line, and a
+  heavy piercing impact;
+- the Blood Chakram reads through a broad spinning outbound-and-return path;
+- the Corpse Bloom reads through placement, arming, growth, and delayed area
+  rupture;
+- Hell Chain reads through visible links jumping between burning targets.
+
+Color alone is never a sufficient attack signature. Two weapons in the same
+family may share materials, damage flavor, and foundation code, but they may not
+share the complete release, trajectory, and impact read.
+
+The practical review test is:
+
+> With weapon names and damage numbers hidden, can a player identify which
+> weapon just attacked?
+
+If the answer is no, the attack presentation is not finished.
+
 ## Ownership
 
 ### Hunter Body
@@ -88,12 +129,19 @@ projectile motion profile
 trail profile
 impact profile
 area/telegraph profile
+audio profile
+signature attack summary
 exception behavior id
 ```
 
 These concepts may be represented by direct `WeaponData` fields, a referenced
 profile resource, or a combination. The implementation choice belongs to a
 separate scoped architecture task.
+
+Current implementation uses `signature_attack_summary` for the canonical
+one-line audit record and `attack_motion_profile` for bounded release-motion
+overrides. Gameplay trajectory remains owned by the canonical attack-pattern
+fields; `returning` adds the shared outbound-and-return path for Thrown weapons.
 
 ## Shared Defaults
 
@@ -200,6 +248,9 @@ scalable across many hunters and weapons.
 For every weapon presentation pass:
 
 - weapon remains readable in a six-slot loadout;
+- its attack is identifiable with names and damage numbers hidden;
+- its dominant release, trajectory, or impact hook is not duplicated wholesale
+  by another weapon in the same family;
 - projectile direction is visually correct;
 - motion does not change firing or damage timing;
 - orbit weapons do not overlap excessively;

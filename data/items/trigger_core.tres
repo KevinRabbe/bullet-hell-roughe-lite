@@ -7,13 +7,14 @@
 script = ExtResource("1")
 id = "trigger_core"
 name = "Trigger Core"
-description = "Fire faster and hit harder. Rapid weapons gain an extra firing boost, ranged weapons get a touch more reach, and magic weapons gain a little more force."
+description = "Fire faster and hit harder. Sustained weapon fire periodically pushes the whole arsenal into overdrive."
 category = "offense"
 rarity = "rare"
 tags = Array[String](["weapon"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 3
 stat_modifiers = {
 "attack_speed": 0.2,
 "damage": 0.2
@@ -30,4 +31,19 @@ weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.08,
 "stat_id": "damage",
 "tag": "magic"
+}])
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Trigger Core Overdrive",
+"display_text": "Every 12 weapon attacks: +18% Attack Speed for 3s.",
+"duration": 3.0,
+"effect": "temporary_stat_bonus",
+"hud_visible": true,
+"id": "trigger_core_overdrive",
+"max_stacks": 1,
+"modifiers": Array[Dictionary]([{
+"amount": 0.18,
+"stat_id": "attack_speed"
+}]),
+"trigger": "on_weapon_fired",
+"trigger_progress_threshold": 12.0
 }])

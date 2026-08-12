@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/grave_tithe.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "grave_tithe"
+name = "Grave Tithe"
+description = "Demand payment from enemies slain while a portal's combat bargain is still trying to kill you."
+category = "economy"
+rarity = "legendary"
+tags = Array[String](["economy", "portal"])
+icon = ExtResource("2")
+price = 14
+stack_limit = 1
+reward_tier = 3
+stat_modifiers = {}
+runtime_rules = Array[Dictionary]([{
+"debug_label": "Grave Tithe",
+"display_text": "Every 5 kills during an active portal combat event grants 2 Gold.",
+"effect": "reward_proc",
+"hud_visible": true,
+"id": "grave_tithe_portal_kills",
+"required_portal_combat_event": true,
+"resource_label": "TITHE",
+"reward_gold": 2,
+"trigger": "on_enemy_kill",
+"trigger_progress_threshold": 5.0
+}])

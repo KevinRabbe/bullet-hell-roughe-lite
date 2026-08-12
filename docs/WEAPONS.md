@@ -1,5 +1,11 @@
 # Demo Weapons
 
+> This document preserves the early demo-family direction. The current live
+> inventory, behavior gaps, and staged commercial expansion targets are
+> authoritative in [WEAPON_ITEM_CONTENT_PLAN.md](WEAPON_ITEM_CONTENT_PLAN.md).
+> Current repository data remains authoritative where old working names in this
+> document differ from implemented content.
+
 This document defines the accepted first-demo weapon direction.
 
 The first demo should focus on clear, readable weapon fantasies. More advanced and experimental weapon families can be added later after the core game loop is stable.

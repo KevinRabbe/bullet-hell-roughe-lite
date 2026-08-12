@@ -6,24 +6,31 @@ A 2D Godot bullet-hell roguelite built around one idea:
 
 Portals interrupt the run with risky events, cursed trades, mutation offers, elite pressure, and other situations that can become powerful if the player's build can exploit them.
 
-## Current vertical slice
+## Current commercial run foundation
 
-The project has a complete short-form run structure:
+The project now targets the complete 20-wave commercial run structure:
 
 ```text
 Main Menu
   -> Hunter Select
   -> Hunter Detail
   -> Starter Weapon
-  -> 10-wave run
+  -> 20-wave run
        -> combat
        -> level ups
        -> shop/intermissions
        -> portal events and mutations
        -> Wave 5 Gate Beast milestone
        -> Ascension choice
-       -> Wave 10 arena-clear victory
+       -> Wave 10 Cinder Marshal midpoint
+       -> Wave 15 Pyre Archon milestone
+       -> Wave 20 Last Shade boss-defeat victory
+       -> optional offline Endless later
 ```
+
+The runtime endpoint is Wave 20. Every wave has an explicit first-pass enemy
+composition, all four milestone bosses are active, and the run is ready for
+hands-on balance/readability qualification rather than release-complete claims.
 
 ## Hunters
 
@@ -35,7 +42,7 @@ Sand Lord is currently parked and non-selectable.
 
 ## Core systems
 
-The vertical slice currently includes:
+The current run foundation includes:
 
 - data-driven hunters, weapons, items, enemies, portal events, portal mutations, Ascensions, and set bonuses
 - deterministic named RNG streams for gameplay systems
@@ -45,9 +52,9 @@ The vertical slice currently includes:
 - level-up choices
 - portal risk/reward events
 - optional portal mutations
-- a Wave 5 boss milestone
+- Wave 5, 10, 15, and 20 boss milestones
 - deterministic Ascension choice generation
-- Wave 10 victory / run-results flow
+- data-driven Wave 20 boss-defeat victory / run-results flow
 - pause, options, credits, armory, and run HUD presentation
 - shared infernal/occult UI styling
 - shared-base hunter art direction for roster cohesion
@@ -135,6 +142,7 @@ Important project contracts live in:
 - `AGENTS.md`
 - `docs/PRODUCT_PROMISE.md`
 - `docs/PRODUCT_ROADMAP.md`
+- `docs/20_WAVE_RUN_CONTENT_MAP.md`
 - `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`
 - `docs/HUNTER_IDENTITY_MATRIX.md`
 - `docs/GLOBAL_WEAPON_VISUAL_CONTRACT.md`
@@ -152,7 +160,7 @@ The project is now in the **V3 external-playtest readiness phase**.
 
 Immediate work is:
 
-- qualify keyboard + controller traversal of the existing representative run
+- qualify keyboard + controller traversal of the representative 20-wave run
 - isolate developer shortcuts from public builds
 - add minimal first-run controls/objective onboarding
 - harden decision-screen focus and pause/result navigation

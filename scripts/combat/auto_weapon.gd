@@ -2,6 +2,8 @@ extends Node2D
 
 const ProjectileSpawnUtil = preload("res://scripts/combat/projectile_spawn_helper.gd")
 const WeaponRuntimeUtil = preload("res://scripts/weapons/weapon_runtime_resolver.gd")
+const WeaponAttackPatternRuntimeRef = preload("res://scripts/weapons/weapon_attack_pattern_runtime.gd")
+const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 
 @export var projectile_scene: PackedScene
 @export var weapon_data: WeaponData
@@ -17,6 +19,7 @@ var current_rarity: String = "common"
 var slot_cooldowns: Array[float] = []
 var _weapon_data_cache: Dictionary = {}
 var _projectile_scene_cache: Dictionary = {}
+var _critical_hit_rng: RandomNumberGenerator
 
 const RARITY_DAMAGE_MULTIPLIER: Dictionary = {
 	"common": 1.0,
@@ -32,6 +35,7 @@ const RARITY_SPEED_MULTIPLIER: Dictionary = {
 }
 
 func _ready() -> void:
+	_critical_hit_rng = _resolve_rng("critical_hits")
 	owner_player = get_parent() as Node2D
 	if owner_player != null:
 		weapon_loadout = owner_player.get_node_or_null("WeaponLoadout")
@@ -67,6 +71,8 @@ func _physics_process(delta: float) -> void:
 		)
 		var weapon_range := _get_weapon_range(entry_data)
 		weapon_range += float(weapon_bonus_overrides.get("attack_range", 0.0)) * 900.0
+		var pattern_range_scale := _get_pattern_range_scale(entry_data, weapon_range)
+		weapon_range = WeaponAttackPatternRuntimeRef.resolve_target_range(entry_data, weapon_range, pattern_range_scale)
 		var muzzle_position := _get_slot_muzzle_position(index)
 		var target := _find_nearest_enemy_for_origin(muzzle_position, weapon_range)
 		var aim_direction := _get_slot_aim_direction(index)
@@ -89,7 +95,7 @@ func _physics_process(delta: float) -> void:
 		var fire_direction := _get_slot_fire_direction(index, aim_direction)
 		var fire_spawn_position := _get_slot_muzzle_position(index)
 		var projectile_rotation_offset := _get_slot_projectile_rotation_offset(index)
-		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index, weapon_bonus_overrides)
+		_fire_at_with_data(target, execution_shot, entry_data, rarity, fire_spawn_position, fire_direction, projectile_rotation_offset, weapon_id, index, weapon_bonus_overrides, pattern_range_scale)
 		slot_cooldowns[index] = _get_effective_cooldown(entry_data, rarity, weapon_bonus_overrides)
 
 func _process_fallback_weapon(delta: float) -> void:
@@ -100,7 +106,9 @@ func _process_fallback_weapon(delta: float) -> void:
 		return
 	if weapon_data == null:
 		return
-	var target := _find_nearest_enemy(target_range)
+	var pattern_range_scale := _get_pattern_range_scale(weapon_data, target_range)
+	var resolved_target_range := WeaponAttackPatternRuntimeRef.resolve_target_range(weapon_data, target_range, pattern_range_scale)
+	var target := _find_nearest_enemy(resolved_target_range)
 	if target == null:
 		return
 	var execution_shot := _should_use_execution_shot()
@@ -109,7 +117,7 @@ func _process_fallback_weapon(delta: float) -> void:
 		if strongest_target != null:
 			target = strongest_target
 	var fallback_direction := (target.global_position - owner_player.global_position).normalized()
-	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1), weapon_data.id, -1)
+	_fire_at_with_data(target, execution_shot, weapon_data, current_rarity, owner_player.global_position, fallback_direction, _get_slot_projectile_rotation_offset(-1), weapon_data.id, -1, {}, pattern_range_scale)
 	cooldown_left = _get_effective_cooldown(weapon_data, current_rarity)
 
 func set_weapon_data(new_weapon_data: WeaponData) -> void:
@@ -151,36 +159,12 @@ func _find_nearest_enemy_for_origin(origin: Vector2, search_range: float) -> Nod
 				nearest_enemy = enemy_node
 	return nearest_enemy
 
-func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int, weapon_bonus_overrides: Dictionary = {}) -> void:
+func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: WeaponData, rarity: String, spawn_position: Vector2, aim_direction: Vector2, projectile_rotation_offset: float, weapon_id: String, slot_index: int, weapon_bonus_overrides: Dictionary = {}, pattern_range_scale: float = 1.0) -> void:
 	var resolved_projectile_scene := _resolve_projectile_scene(entry_data)
 	if resolved_projectile_scene == null:
 		return
 	var rarity_damage_multiplier := float(RARITY_DAMAGE_MULTIPLIER.get(rarity, 1.0))
 	var rarity_speed_multiplier := float(RARITY_SPEED_MULTIPLIER.get(rarity, 1.0))
-	var projectile := ProjectileSpawnUtil.spawn_projectile(
-		resolved_projectile_scene,
-		get_tree().current_scene,
-		spawn_position,
-		aim_direction,
-		_get_weapon_damage(entry_data, weapon_bonus_overrides) * rarity_damage_multiplier * _get_player_damage_multiplier(),
-		_get_weapon_projectile_speed(entry_data, weapon_bonus_overrides) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
-		_get_weapon_lifetime(entry_data),
-		projectile_rotation_offset
-	)
-	if projectile == null:
-		return
-	if entry_data.projectile_texture != null and projectile.has_method("set_visual_texture"):
-		projectile.call("set_visual_texture", entry_data.projectile_texture)
-	if projectile.has_method("set_source_weapon_data"):
-		projectile.call("set_source_weapon_data", entry_data)
-	if projectile.has_method("set_shooter"):
-		projectile.call("set_shooter", owner_player)
-	if projectile.has_method("set_source_context"):
-		projectile.call("set_source_context", weapon_id, slot_index)
-	if orbit_weapon_hud != null and orbit_weapon_hud.has_method("play_slot_attack_feedback"):
-		orbit_weapon_hud.call("play_slot_attack_feedback", slot_index, weapon_id)
-	if owner_player.has_method("notify_weapon_fired"):
-		owner_player.call("notify_weapon_fired", weapon_id, slot_index)
 	var total_damage_multiplier := 1.0
 	if set_bonus_manager != null and set_bonus_manager.has_method("get_damage_multiplier_bonus"):
 		total_damage_multiplier += float(set_bonus_manager.call("get_damage_multiplier_bonus"))
@@ -188,13 +172,54 @@ func _fire_at_with_data(_target: Node2D, execution_shot: bool, entry_data: Weapo
 		total_damage_multiplier *= float(set_bonus_manager.call("get_execution_damage_multiplier"))
 		if _should_log_set_bonus_events():
 			print("Set Bonus 6-piece: fired execution shot.")
-	if projectile.has_method("set"):
+	var can_pierce: bool = set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and set_bonus_manager.call("can_pierce_shot") == true
+	if can_pierce and _should_log_set_bonus_events():
+		print("Set Bonus 4-piece: pierce shot proc.")
+	var attack_directions := WeaponAttackPatternRuntimeRef.build_attack_directions(aim_direction, entry_data)
+	var resolved_spawn_position := WeaponAttackPatternRuntimeRef.resolve_spawn_position(
+		entry_data,
+		owner_player.global_position,
+		spawn_position,
+		aim_direction,
+		pattern_range_scale
+	)
+	var released_projectile := false
+	for attack_direction in attack_directions:
+		var critical_result := _roll_critical_hit(entry_data)
+		var critical_multiplier := float(critical_result.get("multiplier", 1.0))
+		var projectile := ProjectileSpawnUtil.spawn_projectile(
+			resolved_projectile_scene,
+			get_tree().current_scene,
+			resolved_spawn_position,
+			attack_direction,
+			_get_weapon_damage(entry_data, weapon_bonus_overrides) * rarity_damage_multiplier * _get_player_damage_multiplier() * entry_data.per_projectile_damage_multiplier * critical_multiplier,
+			_get_weapon_projectile_speed(entry_data, weapon_bonus_overrides) * rarity_speed_multiplier * _get_player_projectile_speed_multiplier(),
+			_get_weapon_lifetime(entry_data),
+			projectile_rotation_offset,
+			not released_projectile
+		)
+		if projectile == null:
+			continue
+		released_projectile = true
+		if entry_data.projectile_texture != null and projectile.has_method("set_visual_texture"):
+			projectile.call("set_visual_texture", entry_data.projectile_texture)
+		if projectile.has_method("set_source_weapon_data"):
+			projectile.call("set_source_weapon_data", entry_data)
+		if projectile.has_method("set_shooter"):
+			projectile.call("set_shooter", owner_player)
+		if projectile.has_method("set_source_context"):
+			projectile.call("set_source_context", weapon_id, slot_index)
+		if projectile.has_method("configure_attack_pattern"):
+			projectile.call("configure_attack_pattern", entry_data, attack_direction, pattern_range_scale)
 		projectile.set("damage_multiplier", total_damage_multiplier)
-		var can_pierce: bool = set_bonus_manager != null and set_bonus_manager.has_method("can_pierce_shot") and set_bonus_manager.call("can_pierce_shot") == true
-		projectile.set("pierce_count", 1 if can_pierce else 0)
-		if can_pierce:
-			if _should_log_set_bonus_events():
-				print("Set Bonus 4-piece: pierce shot proc.")
+		projectile.set("pierce_count", maxi(entry_data.pierce, 0) + (1 if can_pierce else 0))
+		projectile.set("is_critical_hit", critical_result.get("critical", false) == true)
+	if not released_projectile:
+		return
+	if orbit_weapon_hud != null and orbit_weapon_hud.has_method("play_slot_attack_feedback"):
+		orbit_weapon_hud.call("play_slot_attack_feedback", slot_index, weapon_id)
+	if owner_player.has_method("notify_weapon_fired"):
+		owner_player.call("notify_weapon_fired", weapon_id, slot_index)
 
 func _get_slot_muzzle_position(slot_index: int) -> Vector2:
 	var fire_direction := _get_slot_fire_direction(slot_index, _get_slot_aim_direction(slot_index))
@@ -268,6 +293,13 @@ func _get_weapon_range(entry_data: WeaponData) -> float:
 	if range_multiplier <= 0.0:
 		range_multiplier = 1.0
 	return 900.0 * range_multiplier * _get_player_attack_range_multiplier()
+
+func _get_pattern_range_scale(entry_data: WeaponData, resolved_range: float) -> float:
+	if entry_data == null:
+		return 1.0
+	var base_range_multiplier := entry_data.get_attack_range_value() if entry_data.has_method("get_attack_range_value") else 1.0
+	var base_range := 900.0 * maxf(base_range_multiplier, 0.01)
+	return maxf(resolved_range / base_range, 0.1)
 
 func _get_effective_cooldown(entry_data: WeaponData, rarity: String, weapon_bonus_overrides: Dictionary = {}) -> float:
 	var base_cooldown := entry_data.get_cooldown_value() if entry_data != null and entry_data.has_method("get_cooldown_value") else 0.6
@@ -396,3 +428,31 @@ func _get_player_projectile_speed_multiplier() -> float:
 	if owner_player != null and owner_player.has_method("get_projectile_speed_multiplier"):
 		return maxf(float(owner_player.call("get_projectile_speed_multiplier")), 0.01)
 	return 1.0
+
+func _roll_critical_hit(entry_data: WeaponData) -> Dictionary:
+	if owner_player == null or _critical_hit_rng == null:
+		return {"critical": false, "multiplier": 1.0}
+	var base_chance := 0.0
+	if owner_player.has_method("get_critical_hit_chance"):
+		base_chance = float(owner_player.call("get_critical_hit_chance"))
+	var chance_scaling := maxf(float(entry_data.stat_scaling.get("crit_chance", 1.0)), 0.0)
+	var resolved_chance := clampf(base_chance * chance_scaling, 0.0, 1.0)
+	if resolved_chance <= 0.0 or _critical_hit_rng.randf() >= resolved_chance:
+		return {"critical": false, "multiplier": 1.0}
+	var base_critical_damage := 1.5
+	if owner_player.has_method("get_critical_damage_multiplier"):
+		base_critical_damage = float(owner_player.call("get_critical_damage_multiplier"))
+	var damage_scaling := maxf(float(entry_data.stat_scaling.get("crit_damage", 1.0)), 0.0)
+	var resolved_multiplier := 1.0 + (maxf(base_critical_damage, 1.0) - 1.0) * damage_scaling
+	return {
+		"critical": true,
+		"multiplier": maxf(resolved_multiplier, 1.0)
+	}
+
+func _resolve_rng(stream_name: String) -> RandomNumberGenerator:
+	var run_rng := get_node_or_null("/root/RunRng")
+	if run_rng != null and run_rng.has_method("get_rng"):
+		var resolved: Variant = run_rng.call("get_rng", stream_name)
+		if resolved is RandomNumberGenerator:
+			return resolved
+	return DeterministicRng.create_fallback_rng(stream_name, "AutoWeapon")

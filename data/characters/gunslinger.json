@@ -4,7 +4,7 @@
   "description": "Elite-hunter marksman with weaker status power.",
   "roster_order": 1,
   "visual_path": "res://assets/sprites/characters/gunslinger/gunslinger_neutral_body.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.095,
   "starting_weapon_ids": ["heavy_pistol", "gunslinger_smg", "gunslinger_shotgun"],
   "family_weapon_ids": [
     "heavy_pistol",

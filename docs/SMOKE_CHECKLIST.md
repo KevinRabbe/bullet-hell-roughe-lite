@@ -28,7 +28,15 @@
 - Enemy ranged attacks still spawn and move correctly after the recent stability changes.
 
 ## Portal / rewards
-- Portal events still activate and complete.
+- An approaching Portal shows only the hold-to-enter action; it does not reveal
+  severity, the hidden event, or the mutation.
+- Tapping Interact, releasing early, or walking out of range does not consume
+  the Portal.
+- Completing the Interact hold consumes the Portal and rolls/reveals its exact
+  event.
+- A rolled Portal Mutation applies before its reveal appears; Continue or
+  Escape closes the reveal without providing an undo/decline path.
+- Portal events still complete after commitment.
 - Portal rewards still grant items after completion.
 - Portal event selection remains stable across repeated runs with the same seed/debug preset.
 

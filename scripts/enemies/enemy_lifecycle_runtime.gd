@@ -48,16 +48,25 @@ func _grant_kill_rewards(reward_gold: int, reward_xp: int) -> void:
 	if players.is_empty() and (_last_hit_player == null or not is_instance_valid(_last_hit_player)):
 		return
 	var player_node: Node = _resolve_reward_player(players)
+	var granted_gold := reward_gold
+	var granted_xp := reward_xp
+	if player_node != null and player_node.has_method("grant_combat_rewards"):
+		var result_variant: Variant = player_node.call("grant_combat_rewards", reward_gold, reward_xp)
+		if result_variant is Dictionary:
+			var result: Dictionary = result_variant
+			granted_gold = int(result.get("gold", 0))
+			granted_xp = int(result.get("xp", 0))
+	else:
+		if player_node != null and player_node.has_method("add_gold"):
+			player_node.call("add_gold", reward_gold)
+		if player_node != null and player_node.has_method("add_xp"):
+			player_node.call("add_xp", reward_xp)
 	if (
 		player_node != null
-		and (reward_gold > 0 or reward_xp > 0)
+		and (granted_gold > 0 or granted_xp > 0)
 		and _reward_vfx_callback.is_valid()
 	):
-		_reward_vfx_callback.call(player_node, reward_gold, reward_xp)
-	if player_node != null and player_node.has_method("add_gold"):
-		player_node.call("add_gold", reward_gold)
-	if player_node != null and player_node.has_method("add_xp"):
-		player_node.call("add_xp", reward_xp)
+		_reward_vfx_callback.call(player_node, granted_gold, granted_xp)
 	if player_node != null and player_node.has_method("notify_enemy_killed"):
 		player_node.call("notify_enemy_killed", _last_hit_weapon_id, _last_hit_slot_index)
 

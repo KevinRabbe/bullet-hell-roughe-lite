@@ -96,7 +96,7 @@ The batch smoke must cover at least:
 - Pause -> Options -> Back preserving the exact active run;
 - Run Results actions and stat cards;
 - Wave 5 Ascension;
-- Portal Mutation Accept/Decline;
+- Portal Mutation committed reveal/Continue;
 - all four Options tabs and Apply/Reset/Back;
 - all Armory sections and detail selection;
 - Credits Back/Escape;

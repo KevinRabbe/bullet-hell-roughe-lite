@@ -8,6 +8,55 @@ const META_REST_POSITION := "_actor_motion_rest_position"
 const META_REST_ROTATION := "_actor_motion_rest_rotation"
 const META_ELAPSED := "_actor_motion_elapsed"
 const META_WARMUP := "_actor_motion_warmup"
+const META_DIRECTIONAL_COLUMNS := "_actor_directional_columns"
+const META_DIRECTIONAL_ROWS := "_actor_directional_rows"
+const META_DIRECTIONAL_FPS := "_actor_directional_fps"
+const META_DIRECTIONAL_ROW := "_actor_directional_row"
+const META_DIRECTIONAL_FRAME_OFFSETS := "_actor_directional_frame_offsets"
+const META_DIRECTIONAL_BASE_OFFSET := "_actor_directional_base_offset"
+
+static func configure_directional_atlas(
+	sprite: Sprite2D,
+	texture: Texture2D,
+	columns: int,
+	rows: int,
+	fps: float,
+	visual_scale: float,
+	frame_offsets: Array[Vector2] = []
+) -> void:
+	if sprite == null or not is_instance_valid(sprite) or texture == null:
+		return
+	sprite.texture = texture
+	sprite.scale = Vector2.ONE * visual_scale
+	sprite.flip_h = false
+	sprite.region_enabled = true
+	sprite.region_filter_clip_enabled = true
+	sprite.set_meta(META_DIRECTIONAL_COLUMNS, maxi(columns, 1))
+	sprite.set_meta(META_DIRECTIONAL_ROWS, maxi(rows, 1))
+	sprite.set_meta(META_DIRECTIONAL_FPS, maxf(fps, 1.0))
+	sprite.set_meta(META_DIRECTIONAL_ROW, 0)
+	if not sprite.has_meta(META_DIRECTIONAL_BASE_OFFSET):
+		sprite.set_meta(META_DIRECTIONAL_BASE_OFFSET, sprite.offset)
+	sprite.set_meta(META_DIRECTIONAL_FRAME_OFFSETS, frame_offsets.duplicate())
+	_apply_directional_region(sprite, 0, 0)
+
+static func clear_directional_atlas(sprite: Sprite2D) -> void:
+	if sprite == null or not is_instance_valid(sprite):
+		return
+	sprite.region_enabled = false
+	sprite.flip_h = false
+	if sprite.has_meta(META_DIRECTIONAL_BASE_OFFSET):
+		sprite.offset = sprite.get_meta(META_DIRECTIONAL_BASE_OFFSET, sprite.offset)
+	for meta_name in [
+		META_DIRECTIONAL_COLUMNS,
+		META_DIRECTIONAL_ROWS,
+		META_DIRECTIONAL_FPS,
+		META_DIRECTIONAL_ROW,
+		META_DIRECTIONAL_FRAME_OFFSETS,
+		META_DIRECTIONAL_BASE_OFFSET
+	]:
+		if sprite.has_meta(meta_name):
+			sprite.remove_meta(meta_name)
 
 static func capture_rest_pose(sprite: Sprite2D, warmup_seconds: float = 0.0) -> void:
 	if sprite == null or not is_instance_valid(sprite):
@@ -30,22 +79,34 @@ static func update_visual(sprite: Sprite2D, velocity: Vector2, delta: float, pro
 	var rest_scale: Vector2 = sprite.get_meta(META_REST_SCALE, sprite.scale)
 	var rest_position: Vector2 = sprite.get_meta(META_REST_POSITION, sprite.position)
 	var rest_rotation := float(sprite.get_meta(META_REST_ROTATION, sprite.rotation))
-	_update_facing(sprite, velocity)
+	var elapsed := float(sprite.get_meta(META_ELAPSED, 0.0)) + delta
+	sprite.set_meta(META_ELAPSED, elapsed)
+	var profile := _profile(profile_id)
+	var moving := velocity.length() > 4.0
+	var uses_directional_atlas := _uses_directional_atlas(sprite)
+	var reduced_motion := AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled()
+	if uses_directional_atlas:
+		_update_directional_frame(sprite, velocity, elapsed, moving, moving and not reduced_motion)
+	else:
+		_update_facing(sprite, velocity)
 
-	if AccessibilitySettingsRuntimeRef.is_reduced_motion_enabled():
+	if reduced_motion:
 		sprite.position = rest_position
 		sprite.scale = rest_scale
 		sprite.rotation = rest_rotation
 		return
 
-	var elapsed := float(sprite.get_meta(META_ELAPSED, 0.0)) + delta
-	sprite.set_meta(META_ELAPSED, elapsed)
-	var profile := _profile(profile_id)
-	var speed := velocity.length()
-	var moving := speed > 4.0
-
 	if moving:
-		_apply_walk(sprite, rest_position, rest_scale, rest_rotation, velocity, elapsed, profile)
+		_apply_walk(
+			sprite,
+			rest_position,
+			rest_scale,
+			rest_rotation,
+			velocity,
+			elapsed,
+			profile,
+			0.45 if uses_directional_atlas else 1.0
+		)
 	else:
 		_apply_idle(sprite, rest_position, rest_scale, rest_rotation, elapsed, profile)
 
@@ -64,7 +125,8 @@ static func _apply_walk(
 	rest_rotation: float,
 	velocity: Vector2,
 	elapsed: float,
-	profile: Dictionary
+	profile: Dictionary,
+	motion_amount: float = 1.0
 ) -> void:
 	var reference_speed := maxf(float(profile.get("reference_speed", 200.0)), 1.0)
 	var speed_ratio := clampf(velocity.length() / reference_speed, 0.35, 1.4)
@@ -73,10 +135,10 @@ static func _apply_walk(
 	var stride := sin(phase)
 	var lift := absf(stride)
 	var compression := cos(phase * 2.0)
-	var bob_px := float(profile.get("bob_px", 2.0)) * clampf(speed_ratio, 0.6, 1.15)
-	var sway_px := float(profile.get("sway_px", 0.4))
-	var squash := float(profile.get("squash", 0.03))
-	var lean := float(profile.get("lean", 0.03))
+	var bob_px := float(profile.get("bob_px", 2.0)) * clampf(speed_ratio, 0.6, 1.15) * motion_amount
+	var sway_px := float(profile.get("sway_px", 0.4)) * motion_amount
+	var squash := float(profile.get("squash", 0.03)) * motion_amount
+	var lean := float(profile.get("lean", 0.03)) * motion_amount
 	var x_direction := clampf(velocity.x / reference_speed, -1.0, 1.0)
 
 	sprite.position = rest_position + Vector2(cos(phase) * sway_px, -lift * bob_px)
@@ -108,6 +170,54 @@ static func _update_facing(sprite: Sprite2D, velocity: Vector2) -> void:
 		sprite.flip_h = true
 	elif velocity.x > 2.0:
 		sprite.flip_h = false
+
+static func _uses_directional_atlas(sprite: Sprite2D) -> bool:
+	return sprite.region_enabled and sprite.has_meta(META_DIRECTIONAL_COLUMNS) and sprite.has_meta(META_DIRECTIONAL_ROWS)
+
+static func _update_directional_frame(
+	sprite: Sprite2D,
+	velocity: Vector2,
+	elapsed: float,
+	moving: bool,
+	animate: bool
+) -> void:
+	var columns := maxi(int(sprite.get_meta(META_DIRECTIONAL_COLUMNS, 1)), 1)
+	var rows := maxi(int(sprite.get_meta(META_DIRECTIONAL_ROWS, 1)), 1)
+	var fps := maxf(float(sprite.get_meta(META_DIRECTIONAL_FPS, 1.0)), 1.0)
+	var row := clampi(int(sprite.get_meta(META_DIRECTIONAL_ROW, 0)), 0, rows - 1)
+	if moving:
+		if absf(velocity.y) >= absf(velocity.x):
+			row = 0 if velocity.y >= 0.0 else mini(1, rows - 1)
+		else:
+			row = mini(2, rows - 1) if velocity.x >= 0.0 else mini(3, rows - 1)
+	sprite.set_meta(META_DIRECTIONAL_ROW, row)
+	var frame := int(floor(elapsed * fps)) % columns if animate else 0
+	_apply_directional_region(sprite, frame, row)
+
+static func _apply_directional_region(sprite: Sprite2D, frame: int, row: int) -> void:
+	if sprite.texture == null:
+		return
+	var columns := maxi(int(sprite.get_meta(META_DIRECTIONAL_COLUMNS, 1)), 1)
+	var rows := maxi(int(sprite.get_meta(META_DIRECTIONAL_ROWS, 1)), 1)
+	var texture_size := sprite.texture.get_size()
+	var texture_width := maxi(roundi(texture_size.x), 1)
+	var texture_height := maxi(roundi(texture_size.y), 1)
+	var safe_frame := clampi(frame, 0, columns - 1)
+	var safe_row := clampi(row, 0, rows - 1)
+	var x0 := roundi(float(safe_frame * texture_width) / float(columns))
+	var x1 := roundi(float((safe_frame + 1) * texture_width) / float(columns))
+	var y0 := roundi(float(safe_row * texture_height) / float(rows))
+	var y1 := roundi(float((safe_row + 1) * texture_height) / float(rows))
+	sprite.region_rect = Rect2(x0, y0, maxi(x1 - x0, 1), maxi(y1 - y0, 1))
+	var base_offset: Vector2 = sprite.get_meta(META_DIRECTIONAL_BASE_OFFSET, Vector2.ZERO)
+	var frame_offsets_variant: Variant = sprite.get_meta(META_DIRECTIONAL_FRAME_OFFSETS, [])
+	var frame_index := (safe_row * columns) + safe_frame
+	if frame_offsets_variant is Array and frame_index < frame_offsets_variant.size():
+		var frame_offset_variant: Variant = frame_offsets_variant[frame_index]
+		if frame_offset_variant is Vector2:
+			sprite.offset = base_offset + (frame_offset_variant as Vector2)
+			return
+	sprite.offset = base_offset
 
 static func _ensure_rest_pose(sprite: Sprite2D) -> void:
 	if not sprite.has_meta(META_REST_SCALE):

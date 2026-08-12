@@ -14,6 +14,7 @@ tags = Array[String](["burn", "hellfire"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 1
 stat_modifiers = {
 "damage": 0.05
 }

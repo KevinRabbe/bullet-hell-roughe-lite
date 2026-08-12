@@ -3,6 +3,8 @@
   "title": "Double Elite",
   "description": "Spawns two elite enemies when activated.",
   "category": "boss",
+  "risk_level": "high",
+  "reward_level": "high",
   "base_weight": 1.0,
   "instability_weight_scale": 1.2,
   "reward_count": 1,

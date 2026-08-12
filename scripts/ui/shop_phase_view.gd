@@ -500,7 +500,7 @@ func _build_card_body(card: Dictionary) -> String:
 		if line != "":
 			all_lines.append(line)
 	var body_lines: Array[String] = []
-	for prefix in ["Rarity:", "DMG ", "CD ", "Range ", "Matches loadout tags:", "Boosts current loadout:"]:
+	for prefix in ["Rarity:", "DMG ", "CD ", "Range ", "Pattern:", "Matches loadout tags:", "Boosts current loadout:"]:
 		for line in all_lines:
 			if line.begins_with(prefix) and line not in body_lines:
 				body_lines.append(line)

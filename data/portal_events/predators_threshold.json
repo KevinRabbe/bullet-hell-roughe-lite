@@ -3,6 +3,8 @@
   "title": "Predator's Threshold",
   "description": "Accept a run-long mutation that accelerates melee and close-range weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "predators_threshold",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,

@@ -3,6 +3,8 @@
   "title": "Triple Reward for Enemy Speed",
   "description": "Survive the next wave with faster enemies to claim three rewards.",
   "category": "greed",
+  "risk_level": "extreme",
+  "reward_level": "extreme",
   "base_weight": 0.7,
   "instability_weight_scale": 1.0,
   "reward_count": 3,

@@ -26,7 +26,20 @@ V2 — Steam Page / Public Reveal Candidate is complete. The approved V2 baselin
 
 V3 means:
 
-> A stranger can launch Hellshot Frontier, understand the essential rules, control it with keyboard or controller, complete or fail the representative 10-wave run cleanly, and give useful feedback without the developer standing beside them.
+> A stranger can launch Hellshot Frontier, understand the essential rules, control it with keyboard or controller, complete or fail the representative 20-wave run cleanly, and give useful feedback without the developer standing beside them.
+
+### Commercial run lock
+
+- Development targets the 20-wave commercial run immediately; Wave 10 is a
+  midpoint rather than a temporary ending.
+- The intended milestone cadence is Waves 5, 10, 15, and 20. Only implemented,
+  validated bosses belong in runtime progression data.
+- Wave 20 resolves as a complete victory.
+- A later optional Endless mode begins at Wave 21 and is fully functional
+  offline, including local records and scoring.
+- Steam leaderboards are optional late-release integration. They may mirror
+  qualified local results but must never become a gameplay, save, or account
+  dependency.
 
 The detailed V3 execution plan lives in `docs/V3_EXTERNAL_PLAYTEST_ROADMAP.md`.
 
@@ -46,7 +59,7 @@ The next product work should follow this order:
    slice;
 7. roll out weapon, projectile, impact, portal, enemy, and boss presentation in
    reviewed batches;
-8. qualify one complete 10-wave run for external playtest;
+8. qualify one complete 20-wave run for external playtest;
 9. capture real gameplay for store-page work only after the playable slice
    looks release-credible.
 
@@ -59,6 +72,7 @@ mechanical and presentation contracts pass the relevant gate.
 
 Keep current and actionable:
 
+- `20_WAVE_RUN_CONTENT_MAP.md`
 - `ARCHITECTURE.md`
 - `ARENA_SYSTEM_SPEC.md`
 - `ART_STYLE_RULES.md`
@@ -332,7 +346,7 @@ Qualify:
 - Shop and Level Up transitions
 - Gate Beast -> Ascension -> intermission
 - death -> results
-- Wave 10 victory -> results
+- Wave 20 victory -> results
 - retry/new hunter/main menu
 
 Normal actions must not produce soft locks, stuck pause state, lost focus, or invisible interactive overlays.

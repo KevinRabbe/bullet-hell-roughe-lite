@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/blood_price.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "blood_price"
+name = "Blood Price"
+description = "Sacrifice maximum health to build a brutally efficient Shop economy."
+category = "economy"
+rarity = "epic"
+tags = Array[String](["economy", "blood"])
+icon = ExtResource("2")
+price = 8
+stack_limit = 1
+reward_tier = 2
+stat_modifiers = {
+"coin_gain": 0.2,
+"max_hp": -15.0,
+"shop_discount": 0.1
+}
+

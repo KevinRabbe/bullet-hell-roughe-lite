@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "cinder_marshal"
+display_name = "Cinder Marshal"
+description = "Midpoint marksman boss that alternates aimed pressure with a telegraphed firing-line barrage and exposed recovery."
+archetype = "boss_marksman"
+tags = Array[String](["boss", "skeleton", "marksman", "ranged"])
+movement_profile = "ranged_hold"
+max_hp = 620.0
+move_speed = 120.0
+collision_radius = 36.0
+contact_damage = 14.0
+contact_range = 62.0
+damage_interval_seconds = 1.0
+ranged_damage = 6.0
+ranged_interval_seconds = 1.3
+ranged_attack_range = 330.0
+projectile_count = 1
+projectile_spread_degrees = 0.0
+projectile_speed = 480.0
+projectile_lifetime_seconds = 2.0
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/skeleton_marshal.png"
+visual_scale = 0.115
+projectile_texture_path = "res://assets/sprites/projectiles/enemies/hell_arcane_shot.png"
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = true
+threat_tier = 6
+reward_gold = 22
+reward_xp = 30

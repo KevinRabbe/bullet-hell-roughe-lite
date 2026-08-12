@@ -80,6 +80,9 @@ static func _apply_scene_scenario(requester: Node, preset: String) -> void:
 	var enemy_spawner := scene.get_node_or_null("EnemySpawner")
 	if enemy_spawner != null and enemy_spawner.has_method("configure_starting_wave"):
 		enemy_spawner.call("configure_starting_wave", DebugRunPresetRuntimeRef.wave_index_for_preset(preset))
+	var enemy_id := DebugRunPresetRuntimeRef.enemy_id_for_preset(preset)
+	if enemy_id != "" and enemy_spawner != null and enemy_spawner.has_method("spawn_debug_enemy"):
+		enemy_spawner.call("spawn_debug_enemy", enemy_id)
 
 	var portal_event_id := DebugRunPresetRuntimeRef.portal_event_id_for_preset(preset)
 	if portal_event_id != "":

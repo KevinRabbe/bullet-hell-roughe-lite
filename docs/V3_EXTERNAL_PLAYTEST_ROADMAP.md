@@ -4,7 +4,10 @@
 
 Move Hellshot Frontier from a presentation-ready V2 build to a **public demo / external playtest candidate** that a stranger can launch, understand, control, and complete without the developer standing beside them.
 
-V3 is not a content-expansion milestone. The existing 10-wave loop remains the product under test.
+V3 qualifies the 20-wave commercial run structure while its content is filled
+and polished in reviewed stages. Content should expand the representative run,
+not create unrelated breadth, and the project must not restore Wave 10 as a
+temporary ending.
 
 ## Product question
 
@@ -91,13 +94,13 @@ No normal player action should strand the run in an ambiguous or unrecoverable s
 - Level Up -> next pending choice / Shop
 - Gate Beast -> Ascension -> intermission
 - death -> results -> retry/new hunter/main menu
-- Wave 10 victory -> results
+- Wave 20 victory -> results
 - focus restoration after embedded Options closes
 - repeated pause/resume and scene transitions
 
 ### Acceptance
 
-The full 10-wave route and common abort/retry paths complete without soft locks, invisible interactive overlays, stuck pause state, or lost navigation focus.
+The full 20-wave route and common abort/retry paths complete without soft locks, invisible interactive overlays, stuck pause state, or lost navigation focus.
 
 ---
 
@@ -160,7 +163,7 @@ V3 is complete when a fresh player can, without developer guidance:
 6. encounter and understand a portal risk/reward moment
 7. pass or fail Gate Beast cleanly
 8. navigate Ascension
-9. reach a clean death or Wave 10 result state
+9. reach a clean death or Wave 20 result state
 10. retry, choose another hunter, or return to the main menu
 
 And:
@@ -185,7 +188,7 @@ M1 public input/debug isolation
 
 ## Development discipline
 
-- fix the existing 10-wave product before adding breadth
+- fill and polish the 20-wave commercial run before adding unrelated breadth
 - use production code paths, not demo-only mockups
 - keep PRs narrow by concern
 - avoid generic input/tutorial/telemetry frameworks unless repeated concrete use demands one

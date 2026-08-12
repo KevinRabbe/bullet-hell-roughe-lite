@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemies/enemy_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = "last_shade"
+display_name = "Last Shade"
+description = "The final frontier hunter, combining committed rushes, bounded arena control, and escalating projectile pressure."
+archetype = "boss_final_hunter"
+tags = Array[String](["boss", "demon", "assassin", "charger", "area_denial", "ranged"])
+movement_profile = "chaser"
+combat_profile = "standard"
+max_hp = 1550.0
+move_speed = 175.0
+collision_radius = 38.0
+contact_damage = 18.0
+contact_range = 66.0
+damage_interval_seconds = 0.8
+ranged_damage = 8.0
+ranged_interval_seconds = 1.4
+ranged_attack_range = 340.0
+projectile_count = 3
+projectile_spread_degrees = 20.0
+projectile_speed = 420.0
+projectile_lifetime_seconds = 2.2
+visual_texture_path = "res://assets/sprites/enemies/hellshot_frontier/final_boss_shadow_assassin.png"
+visual_scale = 0.12
+projectile_texture_path = "res://assets/sprites/projectiles/enemies/hell_arcane_shot.png"
+projectile_rotation_offset = 3.14159
+is_elite = false
+is_boss = true
+threat_tier = 10
+reward_gold = 50
+reward_xp = 70

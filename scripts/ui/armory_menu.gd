@@ -3,8 +3,10 @@ extends Control
 const CharacterSelectionRuntimeRef = preload("res://scripts/game/character_selection_runtime.gd")
 const DisplaySettingsRuntimeRef = preload("res://scripts/ui/display_settings_runtime.gd")
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const ItemEffectPresentationRuntimeRef = preload("res://scripts/ui/item_effect_presentation_runtime.gd")
 const MenuAnimationRuntimeRef = preload("res://scripts/ui/menu_animation_runtime.gd")
 const MenuPortraitRuntimeRef = preload("res://scripts/ui/menu_portrait_runtime.gd")
+const WeaponAttackPatternRuntimeRef = preload("res://scripts/weapons/weapon_attack_pattern_runtime.gd")
 const MAIN_MENU_SCENE_PATH := "res://scenes/ui/MainMenu.tscn"
 const ARMORY_BACKGROUND_ART_PATH := "res://assets/sprites/ui/menu/backgrounds/main_menu_background.png"
 
@@ -641,6 +643,8 @@ func _refresh_weapon_detail() -> void:
 	bullet_lines.append("Cooldown - %.2fs" % float(entry.get("cooldown", 0.0)))
 	bullet_lines.append("Range - %.2f" % float(entry.get("range", 0.0)))
 	bullet_lines.append("Projectile Speed - %.0f" % float(entry.get("projectile_speed", 0.0)))
+	for behavior_line in _string_array_from_variant(entry.get("behavior_lines", [])):
+		bullet_lines.append(behavior_line)
 	var special_effect_id := str(entry.get("special_effect_id", ""))
 	if special_effect_id != "":
 		bullet_lines.append("Special - %s" % special_effect_id)
@@ -679,6 +683,10 @@ func _refresh_item_detail() -> void:
 		bullet_lines.append("Stat - %s" % line)
 	for line in _string_array_from_variant(entry.get("tag_bonus_lines", [])):
 		bullet_lines.append("Tag Bonus - %s" % line)
+	for line in _string_array_from_variant(entry.get("conversion_rule_lines", [])):
+		bullet_lines.append("Live Conversion - %s" % line)
+	for line in _string_array_from_variant(entry.get("runtime_rule_lines", [])):
+		bullet_lines.append("Triggered Effect - %s" % line)
 	detail_bullets.text = "\n".join(bullet_lines)
 	var status_lines: Array[String] = []
 	status_lines.append("Price - %dG" % int(entry.get("price", 0)))
@@ -872,6 +880,7 @@ func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictiona
 			"cooldown": weapon.get_cooldown_value(),
 			"range": weapon.get_attack_range_value(),
 			"projectile_speed": weapon.projectile_speed,
+			"behavior_lines": WeaponAttackPatternRuntimeRef.build_behavior_lines(weapon),
 			"special_effect_id": weapon.special_effect_id,
 			"icon": weapon.icon
 		}
@@ -892,6 +901,7 @@ func _build_weapon_entry(weapon_id: String, weapon_variant: Variant) -> Dictiona
 			"cooldown": float(weapon_data.get("cooldown", weapon_data.get("cooldown_seconds", 0.0))),
 			"range": float(weapon_data.get("range", weapon_data.get("attack_range", 0.0))),
 			"projectile_speed": float(weapon_data.get("projectile_speed", 0.0)),
+			"behavior_lines": ["Pattern: %s" % str(weapon_data.get("attack_pattern", "projectile")).replace("_", " ").capitalize()],
 			"special_effect_id": str(weapon_data.get("special_effect_id", "")),
 			"icon": weapon_data.get("icon", null)
 		}
@@ -967,7 +977,9 @@ func _build_item_entry(item_id: String, item_variant: Variant) -> Dictionary:
 			"price": item.price,
 			"stack_limit": item.stack_limit,
 			"stat_lines": _build_item_stat_lines(item.stat_modifiers),
-			"tag_bonus_lines": _build_item_tag_bonus_lines(item.weapon_tag_stat_bonuses)
+			"tag_bonus_lines": _build_item_tag_bonus_lines(item.weapon_tag_stat_bonuses),
+			"conversion_rule_lines": ItemEffectPresentationRuntimeRef.build_conversion_rule_lines(item.stat_conversion_rules),
+			"runtime_rule_lines": ItemEffectPresentationRuntimeRef.build_runtime_rule_lines(item.runtime_rules)
 		}
 	if item_variant is Dictionary:
 		var item_data: Dictionary = item_variant
@@ -983,7 +995,9 @@ func _build_item_entry(item_id: String, item_variant: Variant) -> Dictionary:
 			"price": int(item_data.get("price", 0)),
 			"stack_limit": int(item_data.get("stack_limit", 1)),
 			"stat_lines": _build_item_stat_lines(item_data.get("stat_modifiers", {})),
-			"tag_bonus_lines": _build_item_tag_bonus_lines(item_data.get("weapon_tag_stat_bonuses", []))
+			"tag_bonus_lines": _build_item_tag_bonus_lines(item_data.get("weapon_tag_stat_bonuses", [])),
+			"conversion_rule_lines": ItemEffectPresentationRuntimeRef.build_conversion_rule_lines(item_data.get("stat_conversion_rules", [])),
+			"runtime_rule_lines": ItemEffectPresentationRuntimeRef.build_runtime_rule_lines(item_data.get("runtime_rules", []))
 		}
 	return {}
 
@@ -1114,34 +1128,10 @@ func _humanize_family_id(family_id: String) -> String:
 
 
 func _build_item_stat_lines(stat_modifiers_variant: Variant) -> Array[String]:
-	var lines: Array[String] = []
-	if not (stat_modifiers_variant is Dictionary):
-		return lines
-	var stat_modifiers: Dictionary = stat_modifiers_variant
-	for stat_id_variant in stat_modifiers.keys():
-		var stat_id := str(stat_id_variant)
-		var amount := float(stat_modifiers[stat_id_variant])
-		lines.append("%s %+0.2f" % [_humanize_family_id(stat_id), amount])
-	lines.sort()
-	return lines
+	return ItemEffectPresentationRuntimeRef.build_stat_lines(stat_modifiers_variant)
 
 func _build_item_tag_bonus_lines(bonus_rules_variant: Variant) -> Array[String]:
-	var lines: Array[String] = []
-	if not (bonus_rules_variant is Array):
-		return lines
-	var bonus_rules: Array = bonus_rules_variant
-	for rule_variant in bonus_rules:
-		if not (rule_variant is Dictionary):
-			continue
-		var rule: Dictionary = rule_variant
-		var tag := str(rule.get("tag", ""))
-		var stat_id := str(rule.get("stat_id", ""))
-		var amount := float(rule.get("amount", 0.0))
-		if tag == "" or stat_id == "":
-			continue
-		lines.append("%s weapons: %s %+0.2f" % [_humanize_family_id(tag), _humanize_family_id(stat_id), amount])
-	lines.sort()
-	return lines
+	return ItemEffectPresentationRuntimeRef.build_tag_bonus_lines(bonus_rules_variant)
 
 func _build_set_bonus_summary(thresholds_variant: Variant) -> String:
 	var threshold_labels := _build_set_bonus_threshold_labels(thresholds_variant)

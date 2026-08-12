@@ -25,11 +25,29 @@ The intended run feeling is:
 choose a clear hunter rule
 -> assemble a readable weapon engine
 -> discover cross-family tag synergies
--> accept or reject portal distortion
+-> enter or ignore a hidden portal bargain
 -> survive a milestone guardian
 -> add one Ascension multiplier
 -> finish with a build that looks and plays different from its starting state
 ```
+
+## Commercial Run Structure
+
+- The main commercial run contains 20 waves.
+- Waves 5, 10, 15, and 20 are the intended milestone cadence. Milestone
+  identities and bosses are added only when their gameplay and presentation
+  are ready.
+- Wave 20 produces a complete victory before offering any continuation.
+- A future optional Endless mode continues from Wave 21 and must remain fully
+  playable offline.
+- Endless records and scoring are local-first. Steam leaderboards may be added
+  late through Steamworks, but the game must not require a custom server,
+  account, connection, or successful upload.
+- Main-run and Endless progression should share the data-driven wave
+  foundation rather than hardcoding individual wave scripts.
+
+The earlier 10-wave route remains a historical vertical-slice milestone, not
+the commercial run endpoint.
 
 The game should create stories such as:
 
@@ -63,11 +81,20 @@ The equipped arsenal is a major visual and mechanical layer.
 ### Portals Mutate Runs
 
 - Portals are optional risk/reward decisions, not decorative events.
+- Before commitment, a portal reveals neither the kind nor strength of its
+  bargain. Authored downside and upside severity must match internally, but
+  both remain secret until entry.
+- Entry uses a short deliberate hold. Releasing early or walking away cancels
+  it without consuming the portal.
+- Completing the hold commits the rolled bargain immediately. The post-entry
+  screen reveals what changed; it does not offer a second chance to decline.
 - A major Portal Mutation can distort a build or arena rule for the run.
 - Portal effects should create new decisions rather than only granting larger
   numbers.
 - Ascension is a separate milestone multiplier and must not duplicate the
   portal layer.
+- Future co-op does not require a party vote: one player committing to the
+  portal commits the group, supporting memorable high-risk moments.
 
 ### Infernal World Cohesion
 

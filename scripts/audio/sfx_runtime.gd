@@ -99,6 +99,10 @@ func _cue_duration(cue: String) -> float:
 			return 0.68
 		"boss_windup":
 			return 0.28
+		"enemy_charge":
+			return 0.22
+		"enemy_hazard":
+			return 0.30
 		"boss_defeat":
 			return 0.58
 		_:
@@ -131,6 +135,12 @@ func _sample_cue(cue: String, t: float, duration: float, index: int) -> float:
 		"boss_windup":
 			var phase := (105.0 * t) + (520.0 * t * t)
 			return (sin(TAU * phase) * 0.52 + sin(TAU * phase * 2.0) * 0.14) * sin(PI * progress)
+		"enemy_charge":
+			var charge_phase := (135.0 * t) + (640.0 * t * t)
+			return (sin(TAU * charge_phase) * 0.42 + (_noise(index) * 0.12)) * sin(PI * progress)
+		"enemy_hazard":
+			var hazard_phase := (280.0 * t) - (120.0 * t * t)
+			return (sin(TAU * hazard_phase) * 0.34 + sin(TAU * hazard_phase * 0.5) * 0.18) * sin(PI * progress)
 		"boss_defeat":
 			var fall_phase := (105.0 * t) - (58.0 * t * t)
 			var fall := sin(TAU * fall_phase) * exp(-t * 3.4) * 0.50

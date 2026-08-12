@@ -53,13 +53,29 @@ func _grant_random_item(source: String, event_result: Dictionary = {}, reward_in
 	if not player.has_method("grant_item"):
 		return ""
 	var reward_tier: int = _roll_reward_tier(source, event_result)
-	var item: ItemData = ItemDatabase.get_random_item_for_tier(reward_tier, rng)
+	var unavailable_item_ids := _get_unavailable_item_ids()
+	var item: ItemData = ItemDatabase.get_random_item_for_tier(reward_tier, rng, unavailable_item_ids)
 	if item == null:
+		return ""
+	var granted: Variant = player.call("grant_item", item)
+	if granted != true:
+		if log_reward_events:
+			print("Reward rejected [%s #%d]: %s" % [source, reward_index + 1, item.name])
 		return ""
 	if log_reward_events:
 		print("Reward granted [%s #%d] tier %d: %s" % [source, reward_index + 1, reward_tier, item.name])
-	player.call("grant_item", item)
 	return item.name
+
+func _get_unavailable_item_ids() -> Array[String]:
+	var unavailable_item_ids: Array[String] = []
+	if player == null or not player.has_method("can_grant_item"):
+		return unavailable_item_ids
+	for item in ItemDatabase.get_prototype_items():
+		if item == null:
+			continue
+		if player.call("can_grant_item", item) != true:
+			unavailable_item_ids.append(item.id)
+	return unavailable_item_ids
 
 func _queue_portal_reward_feedback(granted_names: Array[String], event_result: Dictionary) -> void:
 	if granted_names.is_empty():

@@ -3,6 +3,8 @@
   "title": "Powder Covenant",
   "description": "Accept a run-long mutation that accelerates gun and precision weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "powder_covenant",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,

@@ -9,6 +9,7 @@ display_name = "Horned Bruiser"
 description = "Elite bruiser that advances relentlessly and punishes close mistakes."
 archetype = "elite_bruiser"
 tags = Array[String](["elite", "demon", "bruiser"])
+movement_profile = "chaser"
 max_hp = 88.0
 move_speed = 150.0
 contact_damage = 16.0

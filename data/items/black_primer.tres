@@ -1,0 +1,41 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/item_data.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/black_primer.png" id="2"]
+
+[resource]
+script = ExtResource("1")
+id = "black_primer"
+name = "Black Primer"
+description = "Critical impacts load a forbidden primer that opens a brief execution window for Precision weapons."
+category = "offense"
+rarity = "epic"
+tags = Array[String](["precision"])
+icon = ExtResource("2")
+price = 10
+stack_limit = 1
+reward_tier = 3
+stat_modifiers = {
+"crit_chance": 0.08
+}
+runtime_rules = Array[Dictionary]([{
+"active_label": "BLACK PRIMER",
+"debug_label": "Black Primer",
+"display_text": "Every 4 critical hits: Precision weapons gain +25% Damage and +15% Attack Speed for 5s.",
+"duration": 5.0,
+"effect": "threshold_stat_bonus",
+"hud_visible": true,
+"id": "black_primer_precision_window",
+"modifiers": Array[Dictionary]([{
+"amount": 0.25,
+"effect_tags": Array[String](["precision"]),
+"stat_id": "damage"
+}, {
+"amount": 0.15,
+"effect_tags": Array[String](["precision"]),
+"stat_id": "attack_speed"
+}]),
+"resource_label": "PRIMER",
+"threshold": 4,
+"trigger": "on_critical_hit"
+}])

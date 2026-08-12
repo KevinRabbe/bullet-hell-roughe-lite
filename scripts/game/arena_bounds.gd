@@ -6,10 +6,10 @@ const SIZE_STANDARD := "standard"
 const SIZE_LARGE := "large"
 
 # STANDARD is the complete primary combat arena at the 1152x648 reference viewport.
-# With the canonical 0.8 camera zoom the visible world is 1440x810, so STANDARD fits
-# exactly one reference view. COMPACT is calibrated to roughly 87.5% of that view,
-# matching the intentionally inset small-arena composition used by Brotato-like boards.
-const STANDARD_PLAYABLE_SIZE := Vector2(1440.0, 810.0)
+# With the canonical 0.8 camera zoom the visible world is 1440x810, leaving deliberate
+# camera travel inside the 1920x1080 board. COMPACT and LARGE preserve the same bounds,
+# camera, spawn, and safe-frame rules at their respective size multipliers.
+const STANDARD_PLAYABLE_SIZE := Vector2(1920.0, 1080.0)
 const COMPACT_SCALE := 0.875
 const LARGE_SCALE := 4.0 / 3.0
 
@@ -32,9 +32,11 @@ const WALL_TEXTURE := preload(
 )
 
 @export_enum("compact", "standard", "large") var size_class: String = SIZE_STANDARD
-@export var player_inset: float = 48.0
+@export var player_inset: float = 72.0
 @export var spawn_inset: float = 64.0
 @export var base_camera_zoom: float = 0.8
+@export_range(0.0, 240.0, 1.0) var top_hud_reserve_pixels: float = 80.0
+@export var draw_runtime_perimeter: bool = true
 @export var player_path: NodePath = NodePath("../Player")
 @export var camera_path: NodePath = NodePath("../Player/Camera2D")
 @export var backdrop_path: NodePath = NodePath("../Arena")
@@ -172,10 +174,6 @@ func _apply_camera_contract() -> void:
 	if camera == null:
 		return
 	var arena_rect := get_playable_rect()
-	camera.limit_left = floori(arena_rect.position.x)
-	camera.limit_top = floori(arena_rect.position.y)
-	camera.limit_right = ceili(arena_rect.end.x)
-	camera.limit_bottom = ceili(arena_rect.end.y)
 	var arena_size := arena_rect.size
 	var viewport_size := camera.get_viewport_rect().size
 	var minimum_fit_zoom := maxf(
@@ -184,6 +182,14 @@ func _apply_camera_contract() -> void:
 	)
 	var resolved_zoom := maxf(base_camera_zoom, minimum_fit_zoom)
 	camera.zoom = Vector2(resolved_zoom, resolved_zoom)
+	# The run HUD overlays the top of the viewport. Extend only the camera's top limit
+	# beyond the physical board so the wall and player safe inset begin below that HUD.
+	# Gameplay bounds remain unchanged; this only reserves visible presentation space.
+	var top_hud_reserve_world := top_hud_reserve_pixels / maxf(resolved_zoom, 0.001)
+	camera.limit_left = floori(arena_rect.position.x)
+	camera.limit_top = floori(arena_rect.position.y - top_hud_reserve_world)
+	camera.limit_right = ceili(arena_rect.end.x)
+	camera.limit_bottom = ceili(arena_rect.end.y)
 
 func _apply_presentation_contract() -> void:
 	if (backdrop == null or not is_instance_valid(backdrop)) and backdrop_path != NodePath():
@@ -235,6 +241,8 @@ func _apply_perimeter(playable_rect: Rect2) -> void:
 	for child in perimeter.get_children():
 		perimeter.remove_child(child)
 		child.queue_free()
+	if not draw_runtime_perimeter:
+		return
 
 	# A fixed arena needs a continuous physical wall first. The thinner broken ember lines
 	# are only surface character; they must never be the thing that explains the boundary.

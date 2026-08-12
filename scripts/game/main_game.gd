@@ -61,6 +61,7 @@ var final_wave_victory_pending: bool = false
 var ascension_milestone_pending: bool = false
 var pending_ascension_wave: int = 0
 var pending_ascension_choice_count: int = 0
+var pending_ascension_completion: String = RunProgressionRuntimeRef.MILESTONE_COMPLETION_INTERMISSION
 var selectable_characters: Array[String] = []
 var character_display_names: Dictionary = {}
 var selected_character_index: int = 0
@@ -338,18 +339,28 @@ func _on_wave_completed(wave_index: int) -> void:
 func _on_boss_defeated() -> void:
 	var wave_index := _get_current_wave_index()
 	var milestone := RunProgressionRuntimeRef.get_milestone_for_wave(run_progression, wave_index)
-	if str(milestone.get("reward", "")) == "ascension":
+	var completion := RunProgressionRuntimeRef.get_milestone_completion(run_progression, wave_index)
+	if str(milestone.get("reward", "none")) == "ascension":
 		ascension_milestone_pending = true
 		pending_ascension_wave = wave_index
 		pending_ascension_choice_count = maxi(int(milestone.get("choice_count", 3)), 1)
-		if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
-			enemy_spawner.call("stop_spawning_for_victory")
+		pending_ascension_completion = completion
+		_stop_spawning_after_boss_defeat()
 		_try_open_pending_ascension()
 		return
-	boss_victory_pending = true
+	_complete_boss_milestone(wave_index, completion)
+
+func _complete_boss_milestone(wave_index: int, completion: String) -> void:
+	_stop_spawning_after_boss_defeat()
+	if completion == RunProgressionRuntimeRef.MILESTONE_COMPLETION_VICTORY:
+		boss_victory_pending = true
+		_try_finish_pending_victory()
+		return
+	_enter_intermission_phase(wave_index)
+
+func _stop_spawning_after_boss_defeat() -> void:
 	if enemy_spawner != null and enemy_spawner.has_method("stop_spawning_for_victory"):
 		enemy_spawner.call("stop_spawning_for_victory")
-	_try_finish_pending_victory()
 
 func _on_wave_continue_pressed() -> void:
 	if not waiting_for_wave_continue:
@@ -512,7 +523,10 @@ func _on_level_up_reroll_pressed() -> void:
 	print("Level-up choices rerolled for %d gold." % reroll_cost)
 
 func _current_level_up_reroll_cost() -> int:
-	return level_up_base_reroll_cost + level_up_reroll_count
+	var raw_cost := level_up_base_reroll_cost + level_up_reroll_count
+	if player != null and is_instance_valid(player) and player.has_method("get_adjusted_reroll_cost"):
+		return int(player.call("get_adjusted_reroll_cost", raw_cost))
+	return raw_cost
 
 func _update_level_up_reroll_button() -> void:
 	LevelUpPanelRuntime.show_panel(
@@ -567,15 +581,17 @@ func _try_open_pending_ascension() -> void:
 	if not (choices_variant is Array) or (choices_variant as Array).is_empty():
 		push_warning("Ascension milestone produced no valid choices; continuing to intermission.")
 		var completed_wave := pending_ascension_wave
+		var completion := pending_ascension_completion
 		_clear_pending_ascension()
-		_enter_intermission_phase(completed_wave)
+		_complete_boss_milestone(completed_wave, completion)
 		return
 	var offer_variant: Variant = AscensionOfferScene.instantiate()
 	if not (offer_variant is CanvasLayer):
 		push_error("Ascension offer scene must instantiate as a CanvasLayer.")
 		var failed_wave := pending_ascension_wave
+		var completion := pending_ascension_completion
 		_clear_pending_ascension()
-		_enter_intermission_phase(failed_wave)
+		_complete_boss_milestone(failed_wave, completion)
 		return
 	active_ascension_offer = offer_variant as CanvasLayer
 	add_child(active_ascension_offer)
@@ -591,13 +607,15 @@ func _on_ascension_selected(definition: Dictionary) -> void:
 		push_warning("Ascension choice could not be applied: %s" % str(result.get("reason", "unknown")))
 		return
 	var completed_wave := pending_ascension_wave
+	var completion := pending_ascension_completion
 	_clear_pending_ascension()
-	_enter_intermission_phase(completed_wave)
+	_complete_boss_milestone(completed_wave, completion)
 
 func _clear_pending_ascension() -> void:
 	ascension_milestone_pending = false
 	pending_ascension_wave = 0
 	pending_ascension_choice_count = 0
+	pending_ascension_completion = RunProgressionRuntimeRef.MILESTONE_COMPLETION_INTERMISSION
 	if active_ascension_offer != null and is_instance_valid(active_ascension_offer):
 		active_ascension_offer.queue_free()
 	active_ascension_offer = null

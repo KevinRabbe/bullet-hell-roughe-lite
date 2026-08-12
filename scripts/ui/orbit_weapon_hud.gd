@@ -2,6 +2,7 @@ extends Node2D
 
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 const WeaponTagRuntimeRef = preload("res://scripts/weapons/weapon_tag_runtime.gd")
+const CombatScaleSpecRef = preload("res://scripts/visual/combat_scale_spec.gd")
 const RELEASE_FLASH_TEXTURE: Texture2D = preload("res://assets/sprites/projectiles/weapon_release_flash_pixel_v1.png")
 
 const RELEASE_FLASH_COLOR := Color(1.0, 0.46, 0.16, 0.92)
@@ -10,8 +11,8 @@ const RELEASE_FLASH_TEXTURE_SCALE := 0.24
 
 @export var player_path: NodePath
 @export var weapon_loadout_path: NodePath
-@export var orbit_radius: float = 86.0
-@export var icon_scale: float = 0.118
+@export var orbit_radius: float = CombatScaleSpecRef.EQUIPPED_WEAPON_ORBIT_RADIUS
+@export var icon_scale: float = CombatScaleSpecRef.EQUIPPED_WEAPON_ICON_SCALE
 @export var default_weapon_forward_sign: float = 1.0
 @export var default_projectile_rotation_offset: float = 0.0
 
@@ -175,7 +176,7 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 
 	var weapon_data := _load_weapon_data(weapon_id)
 	var tags := WeaponTagRuntimeRef.weapon_tags(weapon_data)
-	var attack_motion := _resolve_attack_motion(tags)
+	var attack_motion := _resolve_attack_motion(weapon_data, tags)
 	var recoil_distance := 6.0
 	var recovery_duration := 0.10
 	var scale_multiplier := 1.08
@@ -196,6 +197,10 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 	var aim_direction := get_slot_aim_direction(slot_index)
 	if not reduced_motion:
 		match attack_motion:
+			"thrust":
+				sprite.position = base_position + (aim_direction * 9.0)
+				sprite.scale = base_scale * maxf(scale_multiplier, 1.10)
+				recovery_duration = maxf(recovery_duration, 0.11)
 			"slash_arc":
 				sprite.position = base_position + (aim_direction * 5.0)
 				sprite.rotation = rest_rotation - 0.48
@@ -210,6 +215,14 @@ func play_slot_attack_feedback(slot_index: int, weapon_id: String) -> void:
 				sprite.position = base_position + (aim_direction * 3.0)
 				sprite.scale = base_scale * maxf(scale_multiplier, 1.15)
 				recovery_duration = maxf(recovery_duration, 0.12)
+			"charge_release":
+				sprite.position = base_position - (aim_direction * 5.0)
+				sprite.scale = base_scale * maxf(scale_multiplier, 1.20)
+				recovery_duration = maxf(recovery_duration, 0.16)
+			"deploy":
+				sprite.position = base_position + (aim_direction * 4.0)
+				sprite.scale = base_scale * 0.86
+				recovery_duration = maxf(recovery_duration, 0.14)
 			_:
 				sprite.position = base_position - (aim_direction * recoil_distance)
 				sprite.scale = base_scale * scale_multiplier
@@ -358,7 +371,9 @@ func _resolve_slot_rest_rotation(slot_index: int) -> float:
 			orientation_offset = PI
 	return aim_direction.angle() + orientation_offset
 
-func _resolve_attack_motion(tags: Array[String]) -> String:
+func _resolve_attack_motion(weapon_data: WeaponData, tags: Array[String]) -> String:
+	if weapon_data != null and weapon_data.attack_motion_profile != "auto":
+		return weapon_data.attack_motion_profile
 	if "melee" in tags:
 		return "slash_arc"
 	if "thrown" in tags:

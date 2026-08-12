@@ -7,13 +7,14 @@
 script = ExtResource("1")
 id = "soul_fuse"
 name = "Soul Fuse"
-description = "Necromancy weapons cycle faster, while mine weapons hit harder."
+description = "Necromancy feeds mines. Harvest enough marked kills to ignite a short demolition window."
 category = "offense"
-rarity = "common"
+rarity = "rare"
 tags = Array[String](["necromancy", "mine"])
 icon = ExtResource("2")
 price = 3
 stack_limit = 1
+reward_tier = 1
 stat_modifiers = {}
 weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.1,
@@ -23,4 +24,26 @@ weapon_tag_stat_bonuses = Array[Dictionary]([{
 "amount": 0.12,
 "stat_id": "damage",
 "tag": "mine"
+}])
+runtime_rules = Array[Dictionary]([{
+"active_label": "SOUL FUSE",
+"debug_label": "Soul Fuse Detonation",
+"display_text": "Every 6 Necromancy kills: +30% Mine Damage and +15% Mine Attack Speed for 5s.",
+"duration": 5.0,
+"effect": "threshold_stat_bonus",
+"hud_visible": true,
+"id": "soul_fuse_detonation",
+"modifiers": Array[Dictionary]([{
+"amount": 0.3,
+"effect_tags": Array[String](["mine"]),
+"stat_id": "damage"
+}, {
+"amount": 0.15,
+"effect_tags": Array[String](["mine"]),
+"stat_id": "attack_speed"
+}]),
+"required_source_weapon_tags": Array[String](["necromancy"]),
+"resource_label": "SOULS",
+"threshold": 6,
+"trigger": "on_enemy_kill"
 }])

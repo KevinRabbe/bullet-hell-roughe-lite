@@ -1,6 +1,7 @@
 extends Control
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
+const RunProgressionRuntimeRef = preload("res://scripts/game/run_progression_runtime.gd")
 const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const ONBOARDING_HINT_MIN_SECONDS := 4.0
 const ONBOARDING_HINT_MAX_SECONDS := 8.0
@@ -15,6 +16,7 @@ const ONBOARDING_HINT_MAX_SECONDS := 8.0
 @export var stats_label_path: NodePath
 @export var state_label_path: NodePath
 @export var wave_progress_bar_path: NodePath
+@export var run_progression_path: String = "res://data/waves/run_progression.json"
 
 var player: Node
 var enemy_spawner: Node
@@ -26,6 +28,7 @@ var character_select_layer: CanvasLayer
 var stats_label: Label
 var state_label: Label
 var wave_progress_bar: ProgressBar
+var final_wave: int = 0
 
 @onready var top_margin: MarginContainer = $TopMargin
 @onready var top_row: HBoxContainer = $TopMargin/TopRow
@@ -49,6 +52,9 @@ var onboarding_movement_seen := false
 var onboarding_hint_active := true
 
 func _ready() -> void:
+	final_wave = RunProgressionRuntimeRef.get_final_wave(
+		RunProgressionRuntimeRef.load_progression(run_progression_path)
+	)
 	if player_path != NodePath():
 		player = get_node_or_null(player_path)
 	if enemy_spawner_path != NodePath():
@@ -131,7 +137,7 @@ func _refresh_progress_panel() -> void:
 		wave_progress_bar.visible = true
 		return
 	var current_wave := int(enemy_spawner.get("current_wave_index"))
-	progress_caption.text = "FINAL FRONTIER" if current_wave >= 10 else "FRONTIER PRESSURE"
+	progress_caption.text = "FINAL FRONTIER" if final_wave > 0 and current_wave >= final_wave else "FRONTIER PRESSURE"
 	var elapsed := float(enemy_spawner.get("wave_elapsed_seconds"))
 	var duration := maxf(float(enemy_spawner.get("wave_duration_seconds")), 0.01)
 	var ratio := clampf(elapsed / duration, 0.0, 1.0)

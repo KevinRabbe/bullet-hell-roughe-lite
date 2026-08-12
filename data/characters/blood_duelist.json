@@ -5,7 +5,7 @@
   "roster_order": 10,
   "selectable": false,
   "visual_path": "res://assets/sprites/characters/blood_duelist/blood_duelist.png",
-  "visual_scale": 0.12,
+  "visual_scale": 0.09,
   "starting_weapon_ids": ["blood_needle", "devil_fang", "sin_shuriken"],
   "family_weapon_ids": [
     "blood_needle",

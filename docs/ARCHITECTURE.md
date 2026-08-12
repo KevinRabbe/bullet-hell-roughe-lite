@@ -294,7 +294,9 @@ display_name
 family
 tags
 rarity
-behavior_type
+attack_pattern
+signature_attack_summary
+attack_motion_profile
 base_damage
 base_cooldown
 range
@@ -308,6 +310,10 @@ Important:
 
 - family is used for set bonuses.
 - tags are used for synergies.
+- attack patterns own shared gameplay geometry; returning weapons author bounded
+  return timing, speed, damage, and per-phase target capacity.
+- signature summaries and motion profiles own the auditable visible release
+  contract without introducing weapon-specific scripts.
 
 Example:
 
@@ -330,10 +336,28 @@ display_name
 description
 rarity
 tags
+price
+stack_limit
+reward_tier
 stat_modifiers
-rule_modifiers
-conditions
+weapon_tag_stat_bonuses
+stat_conversion_rules
+runtime_rules
 ```
+
+Behavioral item `runtime_rules` reuse the shared player passive runtime rather
+than item-specific scripts. Rules may filter by canonical
+`required_source_weapon_tags` and, for status-release triggers, by
+`required_status_ids`. Strict validation rejects a required status id when no
+loaded weapon currently authors that status, preventing dead or mistyped item
+interactions.
+
+Behavioral item `stat_conversion_rules` are capped, non-chaining conversions
+from one canonical live stat into either a global stat or a canonical tagged
+weapon bonus. Critical-hit, post-damage health-threshold, and portal-combat kill
+conditions remain bounded extensions of the existing passive runtime. The
+reward-proc effect grants deterministic combat Gold through the player's normal
+reward path rather than through item-specific scripts.
 
 ## EnemyData
 

@@ -1,7 +1,6 @@
 extends CanvasLayer
 
-signal accepted
-signal declined
+signal continued
 
 const InfernalUiStyleRef = preload("res://scripts/ui/infernal_ui_style.gd")
 const InfernalRitualBackdropRef = preload("res://scripts/ui/components/infernal_ritual_backdrop.gd")
@@ -14,7 +13,6 @@ var duration_label: Label
 var reward_label: Label
 var risk_label: Label
 var accept_button: Button
-var decline_button: Button
 
 var _definition: Dictionary = {}
 var _resolved: bool = false
@@ -78,18 +76,11 @@ func _build_standard_content() -> void:
 	InfernalUiStyleRef.apply_text_role(risk_label, InfernalUiStyleRef.TEXT_WARNING)
 	content_container.add_child(risk_label)
 
-	decline_button = Button.new()
-	decline_button.text = "Decline"
-	decline_button.custom_minimum_size = Vector2(180, 48)
-	InfernalUiStyleRef.apply_button(decline_button, InfernalUiStyleRef.BUTTON_SECONDARY)
-	decline_button.pressed.connect(_on_decline_pressed)
-	actions_container.add_child(decline_button)
-
 	accept_button = Button.new()
-	accept_button.text = "Accept Mutation"
+	accept_button.text = "Continue"
 	accept_button.custom_minimum_size = Vector2(220, 48)
 	InfernalUiStyleRef.apply_button(accept_button, InfernalUiStyleRef.BUTTON_PRIMARY)
-	accept_button.pressed.connect(_on_accept_pressed)
+	accept_button.pressed.connect(_on_continue_pressed)
 	actions_container.add_child(accept_button)
 	actions_container.alignment = BoxContainer.ALIGNMENT_CENTER
 
@@ -99,8 +90,8 @@ func configure(definition: Dictionary) -> void:
 		_refresh()
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_cancel"):
-		_on_decline_pressed()
+	if event.is_action_pressed("ui_accept") or event.is_action_pressed("ui_cancel"):
+		_on_continue_pressed()
 		get_viewport().set_input_as_handled()
 
 func _refresh() -> void:
@@ -108,24 +99,24 @@ func _refresh() -> void:
 		return
 	var mutation_title := str(_definition.get("title", "Portal Mutation"))
 	var tier := str(_definition.get("mutation_tier", "")).strip_edges()
-	var shell_subtitle := "PORTAL MUTATION"
+	var shell_subtitle := "RIFT BARGAIN SEALED"
 	if tier != "":
-		shell_subtitle += " · %s" % tier.to_upper()
+		shell_subtitle += " / %s" % tier.to_upper()
 	modal_shell.call("configure", mutation_title, shell_subtitle)
 	if description_label == null:
 		return
 	var description := str(_definition.get("description", ""))
-	var replacement_warning := str(_definition.get("replacement_warning", ""))
+	var replacement_notice := str(_definition.get("replacement_notice", ""))
 	description_label.text = (
-		"%s\n%s" % [description, replacement_warning]
-		if replacement_warning != ""
+		"%s\n%s" % [description, replacement_notice]
+		if replacement_notice != ""
 		else description
 	)
 	tags_label.text = "Tags: %s" % _format_tags(_definition.get("effect_tags", []))
 	duration_label.text = "Duration: %s" % str(_definition.get("duration", "run")).replace("_", " ").capitalize()
 	reward_label.text = "Reward: %s" % str(_definition.get("reward", ""))
 	risk_label.text = "Risk: %s" % str(_definition.get("risk", ""))
-	accept_button.text = "Replace Mutation" if replacement_warning != "" else "Accept Mutation"
+	accept_button.text = "Continue"
 
 func _format_tags(tags_variant: Variant) -> String:
 	if not (tags_variant is Array):
@@ -137,14 +128,8 @@ func _format_tags(tags_variant: Variant) -> String:
 			tags.append(tag.replace("_", " ").capitalize())
 	return ", ".join(tags) if not tags.is_empty() else "-"
 
-func _on_accept_pressed() -> void:
+func _on_continue_pressed() -> void:
 	if _resolved:
 		return
 	_resolved = true
-	accepted.emit()
-
-func _on_decline_pressed() -> void:
-	if _resolved:
-		return
-	_resolved = true
-	declined.emit()
+	continued.emit()

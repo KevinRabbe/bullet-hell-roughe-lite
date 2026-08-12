@@ -8,6 +8,48 @@
     "contact_damage_multiplier": 1.35,
     "move_speed_multiplier": 0.88
   },
+  "pressure_bands": [
+    {
+      "id": "opening",
+      "min_wave": 1,
+      "max_wave": 5,
+      "spawn_interval_multiplier": 1.0,
+      "max_alive_enemies": 25,
+      "enemy_hp_multiplier": 1.0,
+      "enemy_damage_multiplier": 1.0,
+      "elite_chance_multiplier": 1.0
+    },
+    {
+      "id": "escalation",
+      "min_wave": 6,
+      "max_wave": 10,
+      "spawn_interval_multiplier": 0.92,
+      "max_alive_enemies": 28,
+      "enemy_hp_multiplier": 1.08,
+      "enemy_damage_multiplier": 1.05,
+      "elite_chance_multiplier": 1.15
+    },
+    {
+      "id": "distortion",
+      "min_wave": 11,
+      "max_wave": 15,
+      "spawn_interval_multiplier": 0.84,
+      "max_alive_enemies": 31,
+      "enemy_hp_multiplier": 1.16,
+      "enemy_damage_multiplier": 1.10,
+      "elite_chance_multiplier": 1.35
+    },
+    {
+      "id": "collapse",
+      "min_wave": 16,
+      "max_wave": 20,
+      "spawn_interval_multiplier": 0.76,
+      "max_alive_enemies": 34,
+      "enemy_hp_multiplier": 1.25,
+      "enemy_damage_multiplier": 1.16,
+      "elite_chance_multiplier": 1.55
+    }
+  ],
   "waves": [
     {
       "max_wave": 1,
@@ -41,6 +83,9 @@
     },
     {
       "max_wave": 5,
+      "spawn_interval_multiplier": 1.25,
+      "max_alive_enemies": 14,
+      "elite_chance_multiplier": 0.50,
       "variants": [
         {"id": "imp_runner", "weight": 0.34},
         {"id": "husk_brute", "weight": 0.27},
@@ -51,44 +96,194 @@
     {
       "max_wave": 6,
       "variants": [
-        {"id": "imp_runner", "weight": 0.28},
-        {"id": "husk_brute", "weight": 0.26},
+        {"id": "imp_runner", "weight": 0.30},
+        {"id": "husk_brute", "weight": 0.25},
+        {"id": "spit_fiend", "weight": 0.17},
+        {"id": "skeleton_rifleman", "weight": 0.13},
+        {"id": "horned_bruiser", "weight": 0.15}
+      ]
+    },
+    {
+      "max_wave": 7,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.27},
+        {"id": "husk_brute", "weight": 0.25},
         {"id": "spit_fiend", "weight": 0.20},
-        {"id": "skeleton_rifleman", "weight": 0.16},
+        {"id": "skeleton_rifleman", "weight": 0.18},
         {"id": "horned_bruiser", "weight": 0.10}
       ]
     },
     {
       "max_wave": 8,
       "variants": [
-        {"id": "imp_runner", "weight": 0.22},
-        {"id": "husk_brute", "weight": 0.22},
+        {"id": "imp_runner", "weight": 0.25},
+        {"id": "husk_brute", "weight": 0.23},
+        {"id": "spit_fiend", "weight": 0.19},
+        {"id": "skeleton_rifleman", "weight": 0.19},
+        {"id": "horned_bruiser", "weight": 0.08},
+        {"id": "rift_caller", "weight": 0.06}
+      ]
+    },
+    {
+      "max_wave": 9,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.23},
+        {"id": "husk_brute", "weight": 0.23},
         {"id": "spit_fiend", "weight": 0.18},
         {"id": "skeleton_rifleman", "weight": 0.18},
         {"id": "horned_bruiser", "weight": 0.10},
-        {"id": "rift_caller", "weight": 0.10}
+        {"id": "rift_caller", "weight": 0.08}
       ]
     },
     {
       "max_wave": 10,
+      "spawn_interval_multiplier": 1.30,
+      "max_alive_enemies": 15,
+      "elite_chance_multiplier": 0.60,
       "variants": [
-        {"id": "imp_runner", "weight": 0.18},
-        {"id": "husk_brute", "weight": 0.22},
+        {"id": "imp_runner", "weight": 0.29},
+        {"id": "husk_brute", "weight": 0.27},
         {"id": "spit_fiend", "weight": 0.16},
-        {"id": "skeleton_rifleman", "weight": 0.18},
-        {"id": "horned_bruiser", "weight": 0.13},
-        {"id": "rift_caller", "weight": 0.13}
+        {"id": "skeleton_rifleman", "weight": 0.16},
+        {"id": "horned_bruiser", "weight": 0.07},
+        {"id": "rift_caller", "weight": 0.05}
       ]
     },
     {
-      "max_wave": 999,
+      "max_wave": 11,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.21},
+        {"id": "husk_brute", "weight": 0.21},
+        {"id": "spit_fiend", "weight": 0.15},
+        {"id": "skeleton_rifleman", "weight": 0.13},
+        {"id": "horned_bruiser", "weight": 0.07},
+        {"id": "rift_caller", "weight": 0.05},
+        {"id": "cinder_ram", "weight": 0.18}
+      ]
+    },
+    {
+      "max_wave": 12,
       "variants": [
         {"id": "imp_runner", "weight": 0.18},
-        {"id": "husk_brute", "weight": 0.22},
-        {"id": "spit_fiend", "weight": 0.16},
-        {"id": "skeleton_rifleman", "weight": 0.18},
-        {"id": "horned_bruiser", "weight": 0.13},
-        {"id": "rift_caller", "weight": 0.13}
+        {"id": "husk_brute", "weight": 0.18},
+        {"id": "spit_fiend", "weight": 0.14},
+        {"id": "skeleton_rifleman", "weight": 0.20},
+        {"id": "horned_bruiser", "weight": 0.06},
+        {"id": "rift_caller", "weight": 0.06},
+        {"id": "cinder_ram", "weight": 0.18}
+      ]
+    },
+    {
+      "max_wave": 13,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.17},
+        {"id": "husk_brute", "weight": 0.18},
+        {"id": "spit_fiend", "weight": 0.13},
+        {"id": "skeleton_rifleman", "weight": 0.13},
+        {"id": "horned_bruiser", "weight": 0.06},
+        {"id": "rift_caller", "weight": 0.05},
+        {"id": "cinder_ram", "weight": 0.12},
+        {"id": "ash_lantern", "weight": 0.16}
+      ]
+    },
+    {
+      "max_wave": 14,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.20},
+        {"id": "husk_brute", "weight": 0.16},
+        {"id": "spit_fiend", "weight": 0.11},
+        {"id": "skeleton_rifleman", "weight": 0.11},
+        {"id": "horned_bruiser", "weight": 0.08},
+        {"id": "rift_caller", "weight": 0.05},
+        {"id": "cinder_ram", "weight": 0.14},
+        {"id": "ash_lantern", "weight": 0.15}
+      ]
+    },
+    {
+      "max_wave": 15,
+      "spawn_interval_multiplier": 1.35,
+      "max_alive_enemies": 16,
+      "elite_chance_multiplier": 0.70,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.25},
+        {"id": "husk_brute", "weight": 0.23},
+        {"id": "spit_fiend", "weight": 0.14},
+        {"id": "skeleton_rifleman", "weight": 0.15},
+        {"id": "horned_bruiser", "weight": 0.08},
+        {"id": "rift_caller", "weight": 0.06},
+        {"id": "cinder_ram", "weight": 0.09}
+      ]
+    },
+    {
+      "max_wave": 16,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.15},
+        {"id": "husk_brute", "weight": 0.16},
+        {"id": "spit_fiend", "weight": 0.11},
+        {"id": "skeleton_rifleman", "weight": 0.12},
+        {"id": "horned_bruiser", "weight": 0.07},
+        {"id": "rift_caller", "weight": 0.06},
+        {"id": "cinder_ram", "weight": 0.10},
+        {"id": "ash_lantern", "weight": 0.09},
+        {"id": "bone_captain", "weight": 0.14}
+      ]
+    },
+    {
+      "max_wave": 17,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.12},
+        {"id": "husk_brute", "weight": 0.20},
+        {"id": "spit_fiend", "weight": 0.10},
+        {"id": "skeleton_rifleman", "weight": 0.10},
+        {"id": "horned_bruiser", "weight": 0.10},
+        {"id": "rift_caller", "weight": 0.08},
+        {"id": "cinder_ram", "weight": 0.08},
+        {"id": "ash_lantern", "weight": 0.08},
+        {"id": "bone_captain", "weight": 0.14}
+      ]
+    },
+    {
+      "max_wave": 18,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.13},
+        {"id": "husk_brute", "weight": 0.15},
+        {"id": "spit_fiend", "weight": 0.10},
+        {"id": "skeleton_rifleman", "weight": 0.11},
+        {"id": "horned_bruiser", "weight": 0.09},
+        {"id": "rift_caller", "weight": 0.08},
+        {"id": "cinder_ram", "weight": 0.11},
+        {"id": "ash_lantern", "weight": 0.11},
+        {"id": "bone_captain", "weight": 0.12}
+      ]
+    },
+    {
+      "max_wave": 19,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.14},
+        {"id": "husk_brute", "weight": 0.14},
+        {"id": "spit_fiend", "weight": 0.09},
+        {"id": "skeleton_rifleman", "weight": 0.12},
+        {"id": "horned_bruiser", "weight": 0.10},
+        {"id": "rift_caller", "weight": 0.09},
+        {"id": "cinder_ram", "weight": 0.12},
+        {"id": "ash_lantern", "weight": 0.10},
+        {"id": "bone_captain", "weight": 0.10}
+      ]
+    },
+    {
+      "max_wave": 20,
+      "spawn_interval_multiplier": 1.45,
+      "max_alive_enemies": 14,
+      "elite_chance_multiplier": 0.60,
+      "variants": [
+        {"id": "imp_runner", "weight": 0.26},
+        {"id": "husk_brute", "weight": 0.24},
+        {"id": "spit_fiend", "weight": 0.12},
+        {"id": "skeleton_rifleman", "weight": 0.12},
+        {"id": "horned_bruiser", "weight": 0.08},
+        {"id": "rift_caller", "weight": 0.05},
+        {"id": "cinder_ram", "weight": 0.08},
+        {"id": "bone_captain", "weight": 0.05}
       ]
     }
   ]

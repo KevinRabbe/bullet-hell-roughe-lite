@@ -19,7 +19,7 @@
 # Product Milestone Direction
 - The current product north star is **V3 — Public Demo / External Playtest Candidate** as defined in `docs/PRODUCT_ROADMAP.md`.
 - The product promise and release-quality gates are defined in `docs/PRODUCT_PROMISE.md`.
-- Prioritize stranger-safe input, onboarding, flow robustness, accessibility qualification, deterministic playtest reporting, and one convincing representative 10-wave run.
+- Prioritize stranger-safe input, onboarding, flow robustness, accessibility qualification, deterministic playtest reporting, and one convincing representative 20-wave run.
 - Preserve the approved presentation baseline while improving combat readability, build differentiation, portal/boss/Ascension clarity, coherent UI/VFX, and removal of visible prototype presentation.
 - Defer work that neither closes a V3 gap, strengthens the product promise, fixes a verified blocker, nor establishes a shared system demanded by concrete duplication.
 - V4 Early Access requirements should not drive current architecture unless they also materially improve the representative run or approved product foundation.
@@ -31,6 +31,7 @@
 - Content validation should fail early on broken ids, references, required fields, resources, and invalid numeric ranges.
 - Development scenarios should make deep-run states directly testable without repeatedly playing from Wave 1.
 - Common effects, entity archetypes, feedback events, and input actions should be standardized progressively when concrete duplication appears.
+- Combat actor and equipped-weapon presentation scale is canonical at the `1152 x 648`, `0.8`-zoom reference in `docs/ART_STYLE_RULES.md` and must pass `CombatScaleSpec` validation.
 - Full rationale, priorities, and non-goals are defined in `docs/REUSABLE_GAME_FOUNDATIONS.md`.
 
 # Locked Roster Canon
@@ -59,7 +60,12 @@
 - Portal Mutation is an optional run-long risk/reward build distortion.
 - Gate Beast is the Wave 5 milestone guardian.
 - Clearing the Wave 5 milestone presents one deterministic Ascension choice.
-- The current vertical-slice run ends after the Wave 10 arena clear.
+- The commercial run targets 20 waves; Wave 10 is a midpoint milestone rather than an ending.
+- The implemented milestone cadence is Gate Beast at Wave 5, Cinder Marshal at Wave 10, Pyre Archon at Wave 15, and Last Shade at Wave 20.
+- Defeating Last Shade and clearing remaining combat entities produces the commercial-run victory and Run Results.
+- The actionable pacing, role, milestone, and incremental fill plan is defined in `docs/20_WAVE_RUN_CONTENT_MAP.md`.
+- After the Wave 20 victory, a future optional Endless mode continues from Wave 21 and remains fully playable offline.
+- Steam leaderboards are a late optional integration and must never be required for play, scoring, or saving.
 - Mutation Lab remains a future internal content-authoring tool, not current runtime scope.
 - Sand Lord remains parked for later.
 

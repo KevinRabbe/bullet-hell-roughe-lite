@@ -1,6 +1,17 @@
 class_name StatBlock
 extends RefCounted
 
+const STAT_IDS: Array[String] = [
+	"max_hp", "hp_regen", "damage", "attack_speed", "attack_range", "projectile_speed",
+	"crit_chance", "crit_damage", "armor", "dodge", "movement_speed", "luck", "pickup_range",
+	"xp_gain", "coin_gain", "shop_discount", "reroll_cost",
+	"portal_luck", "portal_frequency", "portal_instability", "portal_reward_multiplier", "corruption",
+	"burn_damage", "poison_damage", "bleed_damage", "fear_chance", "frost_power"
+]
+
+static func is_supported_stat(stat_id: String) -> bool:
+	return stat_id in STAT_IDS
+
 var max_hp: float = 100.0
 var hp_regen: float = 0.0
 var damage: float = 1.0

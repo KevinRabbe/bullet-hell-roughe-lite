@@ -11,7 +11,8 @@ static func spawn_projectile(
 	damage: float,
 	speed: float,
 	lifetime_seconds: float,
-	rotation_offset: float = 0.0
+	rotation_offset: float = 0.0,
+	play_launch_sfx: bool = true
 ) -> Node2D:
 	if projectile_scene == null or parent == null:
 		return null
@@ -31,6 +32,7 @@ static func spawn_projectile(
 	if visual is Node2D:
 		(visual as Node2D).rotation = rotation_offset
 	parent.add_child(projectile)
-	var launch_pitch := clampf(1.08 - (maxf(damage, 0.0) / 180.0), 0.78, 1.10)
-	SfxRuntimeRef.play(parent, "projectile_launch", -18.0, launch_pitch, 65)
+	if play_launch_sfx:
+		var launch_pitch := clampf(1.08 - (maxf(damage, 0.0) / 180.0), 0.78, 1.10)
+		SfxRuntimeRef.play(parent, "projectile_launch", -18.0, launch_pitch, 65)
 	return projectile

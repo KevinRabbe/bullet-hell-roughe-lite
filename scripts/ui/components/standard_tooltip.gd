@@ -6,6 +6,7 @@ const UiLayoutMetricsRef = preload("res://scripts/ui/ui_layout_metrics.gd")
 const AccessibilitySettingsRuntimeRef = preload("res://scripts/ui/accessibility_settings_runtime.gd")
 
 @export var minimum_width: float = 320.0
+@export var maximum_height: float = 260.0
 @export var title_text: String = ""
 @export_multiline var body_text: String = ""
 
@@ -59,6 +60,8 @@ func _apply_responsive_layout() -> void:
 	margin.add_theme_constant_override("margin_bottom", padding)
 	stack.add_theme_constant_override("separation", UiLayoutMetricsRef.dense_gap(layout_class) + 2)
 	custom_minimum_size.x = minf(minimum_width, maxf(get_viewport_rect().size.x - 36.0, 220.0))
+	custom_minimum_size.y = 0.0
+	clip_contents = true
 	title_label.add_theme_font_size_override(
 		"font_size",
 		AccessibilitySettingsRuntimeRef.scale_font(15 if layout_class == UiLayoutMetricsRef.LayoutClass.TIGHT else 16)
@@ -70,6 +73,9 @@ func _apply_responsive_layout() -> void:
 
 func _clamp_to_viewport() -> void:
 	var viewport_size := get_viewport_rect().size
+	var max_height := minf(maximum_height, viewport_size.y - 24.0)
+	if size.y > max_height:
+		size.y = max_height
 	var tooltip_size := size
 	var margin_size := 8.0
 	position.x = clampf(position.x, margin_size, maxf(viewport_size.x - tooltip_size.x - margin_size, margin_size))

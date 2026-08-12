@@ -95,7 +95,7 @@ Implementation rule:
 
 # Foundation 3 - Arena System
 
-Status: next major gameplay foundation.
+Status: first reusable implementation active; continue qualifying presentation and pressure.
 
 The current arena should move from a large loosely bounded scene composition to an explicit arena definition.
 
@@ -111,7 +111,7 @@ LARGE     ~= 1.33x standard playable area
 
 `STANDARD` should be the normal case. Compact and Large should be deliberate exceptions rather than constant random variation.
 
-A future arena definition should own or reference:
+The arena definition should own or reference:
 
 - arena id
 - size class
@@ -123,6 +123,11 @@ A future arena definition should own or reference:
 - ground/environment theme
 - decoration/prop set
 - optional hazard rules
+
+The active camera safe-frame contract reserves the top HUD height outside the
+physical board while preserving symmetrical player insets on the other edges.
+At the required `1152x648` smoke resolution, the player must remain fully visible
+at every arena limit and must never travel behind the run HUD.
 
 The arena background should not depend on menu key art containing baked characters or portals.
 
@@ -234,7 +239,7 @@ ascension_offer
 compact_arena
 large_arena
 weapon_merge
-wave_10_victory
+wave_20_victory
 run_results_game_over
 ```
 

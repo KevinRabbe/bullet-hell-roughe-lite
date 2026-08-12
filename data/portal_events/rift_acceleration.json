@@ -3,6 +3,8 @@
   "title": "Rift Acceleration",
   "description": "Accept a run-long mutation that accelerates portal and rapid weapons while raising instability.",
   "category": "mutation",
+  "risk_level": "moderate",
+  "reward_level": "moderate",
   "mutation_id": "rift_acceleration",
   "base_weight": 0.13,
   "instability_weight_scale": 0.25,
