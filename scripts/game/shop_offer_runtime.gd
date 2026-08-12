@@ -133,6 +133,29 @@ static func roll_offers(
 	preferred_family: String,
 	preferred_family_bias: float
 ) -> Array[Dictionary]:
+	var existing_offers: Array[Dictionary] = []
+	var locked_indices: Array[int] = []
+	return reroll_offers(
+		existing_offers,
+		locked_indices,
+		weapon_offer_pool,
+		item_offer_pool,
+		wave_index,
+		rng,
+		preferred_family,
+		preferred_family_bias
+	)
+
+static func reroll_offers(
+	existing_offers: Array[Dictionary],
+	locked_indices: Array[int],
+	weapon_offer_pool: Array[Dictionary],
+	item_offer_pool: Array[Dictionary],
+	wave_index: int,
+	rng: RandomNumberGenerator,
+	preferred_family: String,
+	preferred_family_bias: float
+) -> Array[Dictionary]:
 	var active_offers: Array[Dictionary] = []
 	var combined_pool: Array = weapon_offer_pool.duplicate(true)
 	var config := get_shop_config()
@@ -142,35 +165,32 @@ static func roll_offers(
 	var standard_offer_slots := maxi(int(config.get("standard_offer_slots", int(DEFAULT_CONFIG.get("standard_offer_slots", 4)))), 1)
 	for item_offer in item_offer_pool:
 		combined_pool.append(item_offer)
-	if wave_index <= early_wave_max:
-		for _slot in early_guaranteed_weapon_slots:
-			var guaranteed_weapon_offer := pick_random_offer(
-				weapon_offer_pool,
-				rng,
-				preferred_family,
-				preferred_family_bias,
-				wave_index
-			)
-			active_offers.append(guaranteed_weapon_offer if not guaranteed_weapon_offer.is_empty() else sold_out_offer())
-		for _slot in early_random_slots:
-			var early_random_offer := pick_random_offer(
-				combined_pool,
-				rng,
-				preferred_family,
-				preferred_family_bias,
-				wave_index
-			)
-			active_offers.append(early_random_offer if not early_random_offer.is_empty() else sold_out_offer())
-	else:
-		for _slot in standard_offer_slots:
-			var random_offer := pick_random_offer(
-				combined_pool,
-				rng,
-				preferred_family,
-				preferred_family_bias,
-				wave_index
-			)
-			active_offers.append(random_offer if not random_offer.is_empty() else sold_out_offer())
+
+	var early_wave := wave_index <= early_wave_max
+	var offer_slot_count := early_guaranteed_weapon_slots + early_random_slots if early_wave else standard_offer_slots
+	var locked_lookup: Dictionary = {}
+	for locked_index in locked_indices:
+		if locked_index >= 0:
+			locked_lookup[locked_index] = true
+
+	for slot_index in range(offer_slot_count):
+		if locked_lookup.get(slot_index, false) == true and slot_index < existing_offers.size():
+			var preserved_offer: Dictionary = existing_offers[slot_index]
+			if str(preserved_offer.get("type", "")) != "sold_out":
+				active_offers.append(preserved_offer.duplicate(true))
+				continue
+
+		var source_pool: Array = combined_pool
+		if early_wave and slot_index < early_guaranteed_weapon_slots:
+			source_pool = weapon_offer_pool
+		var rolled_offer := pick_random_offer(
+			source_pool,
+			rng,
+			preferred_family,
+			preferred_family_bias,
+			wave_index
+		)
+		active_offers.append(rolled_offer if not rolled_offer.is_empty() else sold_out_offer())
 	return active_offers
 
 static func pick_random_offer(
