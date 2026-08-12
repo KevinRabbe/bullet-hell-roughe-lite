@@ -6,6 +6,7 @@ signal shop_closed
 signal offers_changed
 signal reroll_cost_changed(new_cost: int)
 signal offer_purchased(index: int, offer: Dictionary)
+signal offer_lock_changed(index: int, locked: bool)
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
@@ -36,6 +37,7 @@ var _weapon_offer_pool: Array[Dictionary] = []
 var _item_offer_pool: Array[Dictionary] = []
 var active_offers: Array[Dictionary] = []
 var _weapon_data_cache: Dictionary = {}
+var _locked_offer_slots: Dictionary = {}
 
 func _ready() -> void:
 	rng = _resolve_rng("shop")
@@ -90,6 +92,7 @@ func open_for_wave(wave_index: int) -> void:
 		return
 	_current_wave_index = maxi(wave_index, 1)
 	reroll_count = 0
+	_locked_offer_slots.clear()
 	_open_shop_for_wave()
 	if log_shop_events:
 		print("Shop opened with %d offers." % active_offers.size())
@@ -110,7 +113,39 @@ func is_shop_open() -> bool:
 func get_current_wave_index() -> int:
 	return _current_wave_index
 
-func _roll_offers() -> void:
+func is_offer_locked(index: int) -> bool:
+	return index >= 0 and _locked_offer_slots.get(index, false) == true
+
+func toggle_offer_lock(index: int) -> bool:
+	if index < 0 or index >= active_offers.size():
+		return false
+	var offer: Dictionary = active_offers[index]
+	if str(offer.get("type", "")) == "sold_out":
+		return false
+	var locked := not is_offer_locked(index)
+	if locked:
+		_locked_offer_slots[index] = true
+	else:
+		_locked_offer_slots.erase(index)
+	if log_shop_events:
+		print("%s shop offer %d: %s" % ["Locked" if locked else "Unlocked", index + 1, str(offer.get("label", "Offer"))])
+	offer_lock_changed.emit(index, locked)
+	offers_changed.emit()
+	return locked
+
+func _roll_offers(preserve_locked: bool = false) -> void:
+	if preserve_locked:
+		active_offers = ShopOfferRuntime.reroll_offers(
+			active_offers,
+			_get_locked_offer_indices(),
+			_weapon_offer_pool,
+			_item_offer_pool,
+			_current_wave_index,
+			rng,
+			_get_preferred_weapon_family(),
+			_get_preferred_weapon_family_bias()
+		)
+		return
 	active_offers = ShopOfferRuntime.roll_offers(
 		_weapon_offer_pool,
 		_item_offer_pool,
@@ -119,6 +154,15 @@ func _roll_offers() -> void:
 		_get_preferred_weapon_family(),
 		_get_preferred_weapon_family_bias()
 	)
+
+func _get_locked_offer_indices() -> Array[int]:
+	var indices: Array[int] = []
+	for key_variant in _locked_offer_slots.keys():
+		var index := int(key_variant)
+		if index >= 0 and index < active_offers.size() and is_offer_locked(index):
+			indices.append(index)
+	indices.sort()
+	return indices
 
 func _refresh_offer_buttons() -> void:
 	for index in offer_buttons.size():
@@ -177,8 +221,12 @@ func _on_offer_pressed(index: int) -> void:
 
 	if log_shop_events:
 		print("Bought: %s for %dG" % [str(offer.get("label", "Offer")), offer_price])
+	var was_locked := is_offer_locked(index)
+	_locked_offer_slots.erase(index)
 	active_offers[index] = ShopOfferRuntime.sold_out_offer()
 	_refresh_offer_buttons()
+	if was_locked:
+		offer_lock_changed.emit(index, false)
 	offer_purchased.emit(index, offer.duplicate(true))
 	offers_changed.emit()
 	call_deferred("_focus_shop_action_after_purchase", index)
@@ -240,7 +288,7 @@ func _on_reroll_pressed() -> void:
 	reroll_count += 1
 	if log_shop_events:
 		print("Reroll shop. Cost: %d" % total_cost)
-	_refresh_shop_offers()
+	_refresh_shop_offers(true)
 
 func _update_reroll_button_text() -> void:
 	if reroll_button == null:
@@ -254,7 +302,7 @@ func _current_reroll_cost() -> int:
 	return base_cost + (reroll_count * reroll_step)
 
 func _open_shop_for_wave() -> void:
-	_refresh_shop_offers()
+	_refresh_shop_offers(false)
 	if title_label != null:
 		title_label.text = "Shop - Pick one"
 	if panel != null:
@@ -286,8 +334,8 @@ func _focus_shop_action_after_purchase(purchased_index: int) -> void:
 	if continue_button != null and continue_button.visible and not continue_button.disabled:
 		continue_button.grab_focus()
 
-func _refresh_shop_offers() -> void:
-	_roll_offers()
+func _refresh_shop_offers(preserve_locked: bool = false) -> void:
+	_roll_offers(preserve_locked)
 	_refresh_offer_buttons()
 	_update_reroll_button_text()
 	offers_changed.emit()
@@ -316,6 +364,7 @@ func _player_has_method(method_name: StringName) -> bool:
 	return player != null and player.has_method(method_name)
 
 func _on_continue_pressed() -> void:
+	_locked_offer_slots.clear()
 	if panel != null:
 		panel.visible = false
 	shop_closed.emit()
