@@ -251,7 +251,8 @@ func _build_weapons_panel() -> void:
 
 	for slot_index in range(6):
 		var icon_button := Button.new()
-		icon_button.custom_minimum_size = Vector2(52.0, 58.0)
+		icon_button.custom_minimum_size = Vector2(50.0, 58.0)
+		icon_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		icon_button.text = ""
 		icon_button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		icon_button.expand_icon = true
@@ -260,10 +261,7 @@ func _build_weapons_panel() -> void:
 		icon_button.mouse_filter = Control.MOUSE_FILTER_STOP
 		InfernalUiStyleRef.apply_card_button(icon_button)
 		icon_button.pressed.connect(_on_weapon_slot_pressed.bind(slot_index))
-		icon_button.mouse_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
-		icon_button.mouse_exited.connect(_hide_inventory_tooltip)
 		icon_button.focus_entered.connect(_show_weapon_detail.bind(slot_index, icon_button))
-		icon_button.focus_exited.connect(_hide_inventory_tooltip)
 		weapon_slots_container.add_child(icon_button)
 		weapon_slot_buttons.append(icon_button)
 
@@ -348,7 +346,8 @@ func _refresh_stats_panel() -> void:
 func _refresh_bottom_sections() -> void:
 	_refresh_owned_items()
 	if bottom_weapons_title != null:
-		bottom_weapons_title.text = "ARSENAL (%d/6)" % int(_snapshot.get("weapon_count", 0))
+		var merge_suffix := " · MERGE READY" if _has_merge_available() else ""
+		bottom_weapons_title.text = "ARSENAL (%d/6)%s" % [int(_snapshot.get("weapon_count", 0)), merge_suffix]
 	_refresh_weapon_slots()
 
 func _refresh_owned_items() -> void:
@@ -465,6 +464,8 @@ func _clear_offer_card(button: Button) -> void:
 	button.disabled = true
 	if button.has_method("configure"):
 		button.call("configure", "N/A", "No offer available.", "SHOP", "", "", null)
+	if button.has_method("set_rarity"):
+		button.call("set_rarity", "")
 
 func _apply_offer_card(card: Dictionary, button: Button) -> void:
 	if button == null:
@@ -489,6 +490,8 @@ func _apply_offer_card(card: Dictionary, button: Button) -> void:
 			hint,
 			card.get("icon", null)
 		)
+	if button.has_method("set_rarity"):
+		button.call("set_rarity", str(card.get("rarity", "")))
 	if button.has_method("set_selected"):
 		button.call("set_selected", false)
 
@@ -500,7 +503,7 @@ func _build_card_body(card: Dictionary) -> String:
 		if line != "":
 			all_lines.append(line)
 	var body_lines: Array[String] = []
-	for prefix in ["Rarity:", "DMG ", "CD ", "Range ", "Pattern:", "Matches loadout tags:", "Boosts current loadout:"]:
+	for prefix in ["DMG ", "CD ", "Range ", "Pattern:", "Matches loadout tags:", "Boosts current loadout:"]:
 		for line in all_lines:
 			if line.begins_with(prefix) and line not in body_lines:
 				body_lines.append(line)
@@ -538,6 +541,8 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
 	_mark_dirty()
 	_refresh_if_needed()
+	if slot_index >= 0 and slot_index < weapon_slot_buttons.size():
+		_show_weapon_detail(slot_index, weapon_slot_buttons[slot_index])
 
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
@@ -557,12 +562,21 @@ func _on_merge_selected_pressed() -> void:
 	if merge_succeeded and merged_slot_index < weapon_slot_buttons.size():
 		MenuAnimationRuntimeRef.pulse_focus(weapon_slot_buttons[merged_slot_index], 1.08)
 
+func _has_merge_available() -> bool:
+	if shop_view_model == null:
+		return false
+	for slot_index in range(6):
+		var state_variant: Variant = shop_view_model.get_merge_slot_state(slot_index)
+		if state_variant is Dictionary and (state_variant as Dictionary).get("can_merge", false) == true:
+			return true
+	return false
+
 func _update_merge_button_state() -> void:
 	if merge_selected_button == null:
 		return
 	if selected_weapon_slot < 0:
 		merge_selected_button.disabled = true
-		merge_selected_button.text = "SELECT WEAPON"
+		merge_selected_button.text = "MERGE READY" if _has_merge_available() else "SELECT WEAPON"
 		return
 	if shop_view_model != null:
 		var state_variant: Variant = shop_view_model.get_merge_slot_state(selected_weapon_slot)
