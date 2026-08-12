@@ -315,6 +315,8 @@ func _update_character_debug_label() -> void:
 	character_label.text = "Debug Quick Start: %s (C to cycle, Enter to start, M for full select)" % display_name
 
 func _open_character_select_scene() -> void:
+	get_tree().paused = false
+	_hide_pause_menu()
 	CharacterSelectionRuntimeRef.clear_pending_character_id()
 	get_tree().change_scene_to_file(CHARACTER_SELECT_SCENE_PATH)
 
@@ -405,7 +407,7 @@ func _spawn_configured_milestone_for_current_wave() -> void:
 		boss_manager.call("spawn_boss", boss_id)
 
 func _set_combat_active(active: bool) -> void:
-	var mode: Node.ProcessMode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
+	var mode: Node.ProcessMode = Node.PROCESS_MODE_PAUSABLE if active else Node.PROCESS_MODE_DISABLED
 	RunFlowRuntime.set_process_mode_for_paths(
 		self,
 		["Player", "EnemySpawner", "PortalEventManager", "RewardController", "BossManager"],
