@@ -24,6 +24,7 @@ var weapon_loadout: Node
 var panel: Panel
 var title_label: Label
 var offer_buttons: Array[Button] = []
+var offer_lock_buttons: Array[Button] = []
 var reroll_button: Button
 var continue_button: Button
 
@@ -150,6 +151,7 @@ func _build_layout_once() -> void:
 	_build_ritual_backdrop()
 	_build_top_labels()
 	_build_offer_card_layout()
+	_build_offer_lock_controls()
 	_build_stats_panel()
 	_build_items_panel()
 	_build_weapons_panel()
@@ -170,6 +172,8 @@ func _build_layout_once() -> void:
 
 	for button in offer_buttons:
 		panel.move_child(button, panel.get_child_count() - 1)
+	for lock_button in offer_lock_buttons:
+		panel.move_child(lock_button, panel.get_child_count() - 1)
 
 func _build_ritual_backdrop() -> void:
 	if panel.get_node_or_null("RitualBackdrop") != null:
@@ -182,7 +186,7 @@ func _build_ritual_backdrop() -> void:
 
 func _build_offer_card_layout() -> void:
 	var card_width := 229.0
-	var card_height := 350.0
+	var card_height := 320.0
 	var start_x := 20.0
 	var gap := 8.0
 	var start_y := 80.0
@@ -194,6 +198,35 @@ func _build_offer_card_layout() -> void:
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		if button.has_method("set_selected"):
 			button.call("set_selected", false)
+
+func _build_offer_lock_controls() -> void:
+	var card_width := 229.0
+	var start_x := 20.0
+	var gap := 8.0
+	var lock_y := 406.0
+	for index in range(offer_buttons.size()):
+		var lock_button := Button.new()
+		lock_button.name = "OfferLock%d" % (index + 1)
+		lock_button.position = Vector2(start_x + (card_width + gap) * index, lock_y)
+		lock_button.size = Vector2(card_width, 32.0)
+		lock_button.text = "LOCK OFFER"
+		lock_button.focus_mode = Control.FOCUS_ALL
+		InfernalUiStyleRef.apply_secondary_button(lock_button)
+		lock_button.pressed.connect(_on_offer_lock_pressed.bind(index))
+		panel.add_child(lock_button)
+		offer_lock_buttons.append(lock_button)
+	_wire_offer_lock_focus()
+
+func _wire_offer_lock_focus() -> void:
+	for index in range(mini(offer_buttons.size(), offer_lock_buttons.size())):
+		var offer_button := offer_buttons[index]
+		var lock_button := offer_lock_buttons[index]
+		offer_button.focus_neighbor_bottom = offer_button.get_path_to(lock_button)
+		lock_button.focus_neighbor_top = lock_button.get_path_to(offer_button)
+		if index > 0:
+			var previous_lock := offer_lock_buttons[index - 1]
+			lock_button.focus_neighbor_left = lock_button.get_path_to(previous_lock)
+			previous_lock.focus_neighbor_right = previous_lock.get_path_to(lock_button)
 
 func _build_stats_panel() -> void:
 	right_stats_panel = ShopStatSheetPanelRef.new()
@@ -340,6 +373,24 @@ func _refresh_offer_cards() -> void:
 			_clear_offer_card(button)
 			continue
 		_apply_offer_card(cards[index], button)
+	_refresh_offer_lock_controls(cards)
+
+func _refresh_offer_lock_controls(cards: Array[Dictionary]) -> void:
+	for index in range(offer_lock_buttons.size()):
+		var lock_button := offer_lock_buttons[index]
+		var lockable := index < cards.size() and str(cards[index].get("kind", "")) != "sold_out"
+		var locked := lockable and _is_offer_locked(index)
+		lock_button.disabled = not lockable
+		lock_button.text = "LOCKED · KEEP" if locked else "LOCK OFFER"
+		if locked:
+			InfernalUiStyleRef.apply_primary_button(lock_button)
+		else:
+			InfernalUiStyleRef.apply_secondary_button(lock_button)
+
+func _is_offer_locked(index: int) -> bool:
+	if shop_controller == null or not shop_controller.has_method("is_offer_locked"):
+		return false
+	return shop_controller.call("is_offer_locked", index) == true
 
 func _refresh_stats_panel() -> void:
 	if right_stats_panel == null:
@@ -539,6 +590,13 @@ func _get_snapshot_weapon_slots() -> Array[Dictionary]:
 			if slot_variant is Dictionary:
 				slots.append(slot_variant as Dictionary)
 	return slots
+
+func _on_offer_lock_pressed(index: int) -> void:
+	if shop_controller == null or not shop_controller.has_method("toggle_offer_lock"):
+		return
+	shop_controller.call("toggle_offer_lock", index)
+	if index >= 0 and index < offer_lock_buttons.size():
+		MenuAnimationRuntimeRef.pulse_focus(offer_lock_buttons[index], 1.035)
 
 func _on_weapon_slot_pressed(slot_index: int) -> void:
 	selected_weapon_slot = slot_index
