@@ -7,9 +7,8 @@
       "wave": 5,
       "type": "boss",
       "boss_id": "gate_beast",
-      "reward": "ascension",
-      "completion": "intermission",
-      "choice_count": 3
+      "reward": "none",
+      "completion": "intermission"
     },
     {
       "id": "midpoint_bounty",
