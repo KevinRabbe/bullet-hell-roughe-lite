@@ -13,7 +13,7 @@ var armor: float = 0.0
 var dodge: float = 0.0
 var movement_speed: float = 300.0
 var luck: float = 0.0
-var pickup_range: float = 48.0
+var pickup_range: float = 40.0
 
 var xp_gain: float = 1.0
 var coin_gain: float = 1.0
