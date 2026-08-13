@@ -25,6 +25,7 @@ melee_arc_degrees = 95.0
 melee_duration = 0.24
 max_targets = 10
 knockback = 100.0
+classes = Array[String](["blade"])
 family = "devil"
 price = 6
 tags = Array[String](["melee", "heavy", "close_range", "hellfire"])

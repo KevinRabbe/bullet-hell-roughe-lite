@@ -25,6 +25,7 @@ orbit_radius = 70.0
 orbit_angular_speed = 5.4
 repeat_hit_interval = 0.45
 max_targets = 12
+classes = Array[String](["relic"])
 family = "ritual"
 price = 6
 shop_enabled = true

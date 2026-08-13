@@ -23,6 +23,7 @@ projectiles_per_attack = 4
 spread_degrees = 42.0
 per_projectile_damage_multiplier = 0.4
 projectile_hit_radius = 8.0
+classes = Array[String](["launcher"])
 family = "portal"
 price = 6
 tags = Array[String](["portal", "heavy", "spread", "close_range"])

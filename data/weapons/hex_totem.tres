@@ -24,6 +24,7 @@ mine_trigger_radius = 54.0
 effect_radius = 112.0
 mine_placement_distance = 86.0
 max_targets = 12
+classes = Array[String](["relic"])
 family = "ritual"
 price = 7
 shop_enabled = true

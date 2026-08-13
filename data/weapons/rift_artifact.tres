@@ -24,6 +24,7 @@ mine_trigger_radius = 58.0
 effect_radius = 120.0
 mine_placement_distance = 100.0
 max_targets = 14
+classes = Array[String](["relic"])
 family = "portal"
 price = 7
 tags = Array[String](["portal", "mine", "heavy", "magic"])

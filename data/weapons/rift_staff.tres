@@ -21,6 +21,7 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "wave"
 projectile_hit_radius = 30.0
 max_targets = 12
+classes = Array[String](["focus"])
 family = "portal"
 price = 8
 tags = Array[String](["portal", "magic", "heavy", "wave"])
