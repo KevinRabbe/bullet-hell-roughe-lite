@@ -12,6 +12,17 @@ const ATTACK_MOTION_PROFILES: Array[String] = [
 	"deploy"
 ]
 
+const WEAPON_CLASSES: Array[String] = [
+	"firearm",
+	"blade",
+	"thrown",
+	"bow",
+	"launcher",
+	"focus",
+	"relic",
+	"claw"
+]
+
 @export var id: String = ""
 @export var display_name: String = ""
 @export_multiline var description: String = ""
@@ -20,9 +31,18 @@ const ATTACK_MOTION_PROFILES: Array[String] = [
 @export var icon: Texture2D
 @export var projectile_texture: Texture2D
 
-@export var family: String = ""
+# Neutral physical/functional categories. A weapon may belong to more than one
+# class (for example, a chakram can be both Blade and Thrown). Classes describe
+# what a weapon is; attack_pattern describes how it attacks; tags describe
+# mechanical/thematic synergy.
+@export var classes: Array[String] = []
 @export var tags: Array[String] = []
 @export_enum("common", "rare", "epic", "legendary") var rarity: String = "common"
+
+# Transitional only while existing resources/UI are migrated. Do not author new
+# content against family/family_id; both fields are removed after the resource
+# migration is complete.
+@export var family: String = ""
 
 @export var damage_type: String = ""
 @export var base_damage: float = 10.0
@@ -99,6 +119,18 @@ const ATTACK_MOTION_PROFILES: Array[String] = [
 @export var kill_milestone_stat_id: String = ""
 @export var kill_milestone_amount: float = 0.0
 @export_enum("player", "weapon") var kill_milestone_scope: String = "player"
+
+func get_class_values() -> Array[String]:
+	var resolved: Array[String] = []
+	for class_variant in classes:
+		var class_id := str(class_variant).strip_edges().to_lower()
+		if class_id == "" or resolved.has(class_id):
+			continue
+		resolved.append(class_id)
+	return resolved
+
+func has_class(class_id: String) -> bool:
+	return get_class_values().has(class_id.strip_edges().to_lower())
 
 func get_family_value() -> String:
 	if family != "":
