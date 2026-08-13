@@ -81,7 +81,7 @@ static func make_weapon_offer(weapon_id: String, weapon_loader: Callable) -> Dic
 	var resolved_id := weapon_id
 	var display_name: String = weapon_id.replace("_", " ").capitalize()
 	var price: int = 5
-	var family: String = ""
+	var classes: Array[String] = []
 	var tags: Array[String] = []
 	var rarity_name: String = "common"
 	if data.id != "":
@@ -90,7 +90,7 @@ static func make_weapon_offer(weapon_id: String, weapon_loader: Callable) -> Dic
 		display_name = data.display_name
 	if data.price > 0:
 		price = data.price
-	family = data.get_family_value() if data.has_method("get_family_value") else data.family
+	classes = data.get_class_values()
 	tags = WeaponTagRuntimeRef.weapon_tags(data)
 	rarity_name = data.rarity
 	return {
@@ -98,7 +98,7 @@ static func make_weapon_offer(weapon_id: String, weapon_loader: Callable) -> Dic
 		"id": resolved_id,
 		"label": display_name,
 		"price": price,
-		"family": family,
+		"classes": classes,
 		"tags": tags,
 		"rarity": rarity_name,
 		"base_price": price
