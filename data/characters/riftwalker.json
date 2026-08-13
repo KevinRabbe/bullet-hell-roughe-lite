@@ -6,16 +6,6 @@
   "visual_path": "res://assets/sprites/characters/riftwalker/riftwalker_neutral_body.png",
   "visual_scale": 0.09,
   "starting_weapon_ids": ["void_revolver", "rift_bow", "rift_cannon"],
-  "family_weapon_ids": [
-    "void_revolver",
-    "rift_bow",
-    "rift_cannon",
-    "void_rifle",
-    "rift_artifact",
-    "rift_staff"
-  ],
-  "preferred_weapon_family": "portal",
-  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "portal_frequency": 1.25,
     "portal_reward_multiplier": 1.2

@@ -7,16 +7,6 @@
   "visual_path": "res://assets/sprites/characters/ritualist/ritualist_neutral_body.png",
   "visual_scale": 0.09,
   "starting_weapon_ids": ["blood_needle", "ritual_candles", "cursed_bell"],
-  "family_weapon_ids": [
-    "blood_needle",
-    "ritual_candles",
-    "cursed_bell",
-    "ash_censer",
-    "hex_totem",
-    "grand_sigil"
-  ],
-  "preferred_weapon_family": "ritual",
-  "shop_weapon_family_bias": 0.2,
   "passive_runtime_rules": [
     {
       "id": "blood_rite",

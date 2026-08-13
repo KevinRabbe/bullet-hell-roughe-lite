@@ -6,16 +6,6 @@
   "visual_path": "res://assets/sprites/characters/devil/devil_neutral_body.png",
   "visual_scale": 0.095,
   "starting_weapon_ids": ["devil_fang", "sin_shuriken", "blood_chakram"],
-  "family_weapon_ids": [
-    "devil_fang",
-    "sin_shuriken",
-    "blood_chakram",
-    "hell_claw",
-    "chain_crescent",
-    "pact_blade"
-  ],
-  "preferred_weapon_family": "devil",
-  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "damage": 0.6
   },

@@ -6,21 +6,8 @@
   "visual_path": "res://assets/sprites/characters/harvester/harvester_neutral_body.png",
   "visual_scale": 0.1,
   "starting_weapon_ids": ["harvester_scythe", "harvester_lantern", "harvester_grimoire"],
-  "family_weapon_ids": [
-    "harvester_scythe",
-    "harvester_lantern",
-    "harvester_grimoire",
-    "harvester_bell",
-    "harvester_eye_scepter",
-    "harvester_occult_weapon"
-  ],
-  "preferred_weapon_family": "harvester",
-  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "damage": 0.85
-  },
-  "family_kill_requirement_multipliers": {
-    "harvester": 0.8
   },
   "passive_runtime_rules": [
     {

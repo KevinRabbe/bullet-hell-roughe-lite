@@ -6,16 +6,6 @@
   "visual_path": "res://assets/sprites/characters/demon_lord/demon_lord_neutral_body.png",
   "visual_scale": 0.09,
   "starting_weapon_ids": ["cursed_lantern", "hellfire_orb", "demonic_crown"],
-  "family_weapon_ids": [
-    "cursed_lantern",
-    "hellfire_orb",
-    "demonic_crown",
-    "hell_sphere",
-    "infernal_sigil",
-    "demonic_scepter"
-  ],
-  "preferred_weapon_family": "hellfire",
-  "shop_weapon_family_bias": 0.2,
   "stat_multipliers": {
     "burn_damage": 1.35,
     "hp_regen": 0.0
@@ -72,7 +62,7 @@
     "arsenal_label": "Infernal Arsenal",
     "arsenal_preview": ["Cursed Lantern", "Hellfire Orb", "Demonic Crown", "Hell Sphere", "Infernal Sigil", "Demonic Scepter"],
     "strengths": ["Heavy destructive projectiles", "Strong burn identity", "Kill spikes reward aggressive control"],
-    "tradeoffs": ["Less agile than fast weapon families", "Power comes with short defensive exposure"]
+    "tradeoffs": ["Less agile than fast weapon builds", "Power comes with short defensive exposure"]
   },
   "portal_event_biases": {
     "enemy_flood_20s": 1.35,
