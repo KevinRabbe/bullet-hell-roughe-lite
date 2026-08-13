@@ -56,7 +56,7 @@
 # Current Progression Direction
 - The active roster contains 10 selectable release-quality target hunters built from a shared visual foundation.
 - Six additional current hunters are preserved as deferred non-selectable candidates until they pass the identity gate.
-- Families preserve hunter identity; canonical weapon tags provide cross-family build synergy.
+- Weapon classes are neutral physical/functional categories and may be multi-valued; attack patterns stay separate, while canonical weapon tags provide cross-build synergy and character hooks. Classes do not grant automatic set bonuses or character ownership.
 - Portal Mutation is an optional run-long risk/reward build distortion.
 - Gate Beast is the Wave 5 milestone guardian.
 - Clearing the Wave 5 milestone presents one deterministic Ascension choice.
