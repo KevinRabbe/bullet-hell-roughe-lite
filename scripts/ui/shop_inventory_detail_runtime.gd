@@ -45,9 +45,12 @@ static func build_weapon_detail(weapon_id: String, rarity: String = "common") ->
 	if weapon_data == null:
 		return {"title": "WEAPON", "body": "No weapon data found."}
 	var display_name := weapon_data.display_name if weapon_data.display_name != "" else weapon_id.replace("_", " ").capitalize()
-	var family := weapon_data.get_family_value() if weapon_data.has_method("get_family_value") else weapon_data.family
+	var class_labels: Array[String] = []
+	for class_id in weapon_data.get_class_values():
+		class_labels.append(class_id.replace("_", " ").to_upper())
+	var taxonomy_label := " · ".join(class_labels) if not class_labels.is_empty() else "WEAPON"
 	var lines: Array[String] = [
-		"%s · %s" % [rarity.to_upper(), str(family).replace("_", " ").to_upper()],
+		"%s · %s" % [rarity.to_upper(), taxonomy_label],
 		"DMG %.1f" % weapon_data.get_damage_value(),
 		"CD %.2fs" % weapon_data.get_cooldown_value(),
 		_format_multiplier_delta("RANGE", weapon_data.get_attack_range_value())
