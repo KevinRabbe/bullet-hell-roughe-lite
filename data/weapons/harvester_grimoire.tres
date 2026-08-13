@@ -20,6 +20,7 @@ range = 0.9
 projectile_lifetime = 1.5
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "projectile"
+classes = Array[String](["focus"])
 family = "harvester"
 price = 5
 shop_enabled = true

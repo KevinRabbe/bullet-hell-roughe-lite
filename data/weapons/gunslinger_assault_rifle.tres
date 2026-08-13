@@ -17,6 +17,7 @@ range = 1.1
 projectile_lifetime = 1.9
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "projectile"
+classes = Array[String](["firearm"])
 family = "gunslinger"
 price = 6
 shop_enabled = true

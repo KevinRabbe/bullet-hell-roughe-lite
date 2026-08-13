@@ -21,6 +21,7 @@ projectiles_per_attack = 5
 spread_degrees = 38.0
 per_projectile_damage_multiplier = 0.32
 projectile_hit_radius = 6.0
+classes = Array[String](["firearm"])
 family = "gunslinger"
 price = 6
 shop_enabled = true

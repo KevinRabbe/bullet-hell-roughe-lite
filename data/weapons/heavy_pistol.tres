@@ -10,6 +10,7 @@ display_name = "Heavy Pistol"
 description = "Reliable sidearm with crisp, hard-hitting shots."
 signature_attack_summary = "Medium sidearm recoil; single straight precision round; steady cadence; compact crisp impact."
 icon = ExtResource("2")
+classes = Array[String](["firearm"])
 family = "gunslinger"
 tags = Array[String](["gun", "precision", "ranged"])
 cooldown = 0.38

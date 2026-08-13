@@ -21,6 +21,7 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "wave"
 projectile_hit_radius = 20.0
 max_targets = 10
+classes = Array[String](["relic"])
 family = "harvester"
 price = 6
 shop_enabled = true

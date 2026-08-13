@@ -19,6 +19,7 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "projectile"
 pierce = 1
 knockback = 100.0
+classes = Array[String](["firearm"])
 family = "gunslinger"
 price = 6
 shop_enabled = true

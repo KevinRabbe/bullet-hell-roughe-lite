@@ -20,6 +20,7 @@ attack_pattern = "projectile"
 projectile_hit_radius = 4.0
 pierce = 3
 knockback = 140.0
+classes = Array[String](["firearm"])
 family = "gunslinger"
 price = 7
 shop_enabled = true

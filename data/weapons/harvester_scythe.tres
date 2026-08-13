@@ -25,6 +25,7 @@ melee_arc_degrees = 110.0
 melee_duration = 0.22
 max_targets = 8
 knockback = 40.0
+classes = Array[String](["blade"])
 family = "harvester"
 price = 6
 shop_enabled = true
