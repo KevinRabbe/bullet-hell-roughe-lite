@@ -25,6 +25,7 @@ return_speed_multiplier = 0.85
 return_damage_multiplier = 1.0
 projectile_hit_radius = 8.0
 pierce = 1
+classes = Array[String](["blade", "thrown"])
 family = "devil"
 price = 5
 tags = Array[String](["thrown", "rapid", "ranged", "heavy"])

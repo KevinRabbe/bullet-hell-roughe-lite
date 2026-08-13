@@ -22,6 +22,7 @@ attack_pattern = "projectile"
 projectile_hit_radius = 10.0
 pierce = 2
 knockback = 70.0
+classes = Array[String](["relic"])
 family = "hellfire"
 price = 8
 shop_enabled = true

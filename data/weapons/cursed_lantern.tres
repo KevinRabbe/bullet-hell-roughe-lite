@@ -19,6 +19,7 @@ range = 1.2
 projectile_lifetime = 2.1
 projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "projectile"
+classes = Array[String](["relic"])
 family = "hellfire"
 price = 6
 shop_enabled = true

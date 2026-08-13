@@ -21,6 +21,7 @@ projectile_scene_path = "res://scenes/weapons/Projectile.tscn"
 attack_pattern = "projectile"
 projectile_hit_radius = 6.0
 pierce = 1
+classes = Array[String](["focus"])
 family = "hellfire"
 price = 6
 shop_enabled = true
