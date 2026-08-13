@@ -215,9 +215,11 @@ func _apply_weapon_offer_card(card: Dictionary, offer: Dictionary, weapon_data: 
 	card["rarity"] = _get_offer_weapon_rarity(offer, weapon_data)
 	if weapon_data != null:
 		card["icon"] = weapon_data.icon
-		var family := weapon_data.get_family_value() if weapon_data.has_method("get_family_value") else weapon_data.family
-		if family != "":
-			card["type_label"] = "%s · WEAPON" % family.replace("_", " ").to_upper()
+		var class_labels: Array[String] = []
+		for class_id in weapon_data.get_class_values():
+			class_labels.append(class_id.replace("_", " ").to_upper())
+		if not class_labels.is_empty():
+			card["type_label"] = " · ".join(class_labels)
 	card["description"] = _build_weapon_offer_description(offer, weapon_data, player_snapshot)
 	if _can_buy_weapon_offer(offer):
 		return
@@ -353,10 +355,6 @@ func _build_weapon_offer_synergy_lines(weapon_data: WeaponData, player_snapshot:
 	if not passive_bonus_lines.is_empty():
 		lines.append("[color=#ff9af1]Passive synergy:[/color]")
 		lines.append_array(passive_bonus_lines)
-	var set_bonus_lines := _build_set_bonus_weapon_synergy_lines(weapon_data, player_snapshot)
-	if not set_bonus_lines.is_empty():
-		lines.append("[color=#8fd1ff]Set bonus synergy:[/color]")
-		lines.append_array(set_bonus_lines)
 	var item_bonus_lines := _build_owned_item_weapon_bonus_lines(weapon_data, player_snapshot)
 	if not item_bonus_lines.is_empty():
 		lines.append("[color=#9affae]Boosted by owned items:[/color]")
@@ -442,33 +440,6 @@ func _build_passive_weapon_synergy_lines(weapon_data: WeaponData, player_snapsho
 			"- %s: %s via %s"
 			% [
 				str(passive_rule.get("label", "Passive")),
-				_format_tag_stat_bonus(stat_id, amount),
-				", ".join(effect_tags)
-			]
-		)
-	return lines
-
-func _build_set_bonus_weapon_synergy_lines(weapon_data: WeaponData, player_snapshot: Dictionary) -> Array[String]:
-	var lines: Array[String] = []
-	var set_bonus_rules_variant: Variant = player_snapshot.get("set_bonus_weapon_synergies", [])
-	if not (set_bonus_rules_variant is Array):
-		return lines
-	var set_bonus_rules: Array = set_bonus_rules_variant
-	for set_bonus_rule_variant in set_bonus_rules:
-		if not (set_bonus_rule_variant is Dictionary):
-			continue
-		var set_bonus_rule: Dictionary = set_bonus_rule_variant
-		if not WeaponTagRuntime.weapon_matches_effect_tags(weapon_data, set_bonus_rule):
-			continue
-		var effect_tags := WeaponTagRuntime.resolve_effect_tags(set_bonus_rule.get("effect_tags", []))
-		var stat_id := str(set_bonus_rule.get("stat_id", ""))
-		var amount := float(set_bonus_rule.get("amount", 0.0))
-		if effect_tags.is_empty() or stat_id == "" or is_zero_approx(amount):
-			continue
-		lines.append(
-			"- %s: %s via %s"
-			% [
-				str(set_bonus_rule.get("label", "Set bonus")),
 				_format_tag_stat_bonus(stat_id, amount),
 				", ".join(effect_tags)
 			]
