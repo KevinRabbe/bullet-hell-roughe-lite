@@ -129,13 +129,16 @@ static func build_item_offer_pool() -> Array[Dictionary]:
 		})
 	return item_offer_pool
 
+# The two family arguments remain in the signature only while callers migrate.
+# They intentionally have no effect: character ownership no longer steers the
+# weapon pool by thematic family.
 static func roll_offers(
 	weapon_offer_pool: Array[Dictionary],
 	item_offer_pool: Array[Dictionary],
 	wave_index: int,
 	rng: RandomNumberGenerator,
-	preferred_family: String,
-	preferred_family_bias: float,
+	_preferred_family: String,
+	_preferred_family_bias: float,
 	rarity_luck: float = 0.0
 ) -> Array[Dictionary]:
 	var active_offers: Array[Dictionary] = []
@@ -152,8 +155,8 @@ static func roll_offers(
 			var guaranteed_weapon_offer := pick_random_offer(
 				weapon_offer_pool,
 				rng,
-				preferred_family,
-				preferred_family_bias,
+				_preferred_family,
+				_preferred_family_bias,
 				wave_index,
 				rarity_luck
 			)
@@ -162,8 +165,8 @@ static func roll_offers(
 			var early_random_offer := pick_random_offer(
 				combined_pool,
 				rng,
-				preferred_family,
-				preferred_family_bias,
+				_preferred_family,
+				_preferred_family_bias,
 				wave_index,
 				rarity_luck
 			)
@@ -173,8 +176,8 @@ static func roll_offers(
 			var random_offer := pick_random_offer(
 				combined_pool,
 				rng,
-				preferred_family,
-				preferred_family_bias,
+				_preferred_family,
+				_preferred_family_bias,
 				wave_index,
 				rarity_luck
 			)
@@ -184,8 +187,8 @@ static func roll_offers(
 static func pick_random_offer(
 	pool: Array,
 	rng: RandomNumberGenerator,
-	preferred_family: String,
-	preferred_family_bias: float,
+	_preferred_family: String,
+	_preferred_family_bias: float,
 	wave_index: int,
 	rarity_luck: float = 0.0
 ) -> Dictionary:
@@ -198,10 +201,6 @@ static func pick_random_offer(
 			continue
 		var source_offer: Dictionary = selected_variant
 		var weight := 1.0
-		if str(source_offer.get("type", "")) == "weapon" and preferred_family != "":
-			var family_id := str(source_offer.get("family", ""))
-			if family_id == preferred_family:
-				weight += preferred_family_bias
 		if str(source_offer.get("type", "")) == "item":
 			weight *= _rarity_luck_weight(str(source_offer.get("rarity", "common")), rarity_luck)
 		weighted_offers.append(source_offer)
