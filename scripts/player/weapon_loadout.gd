@@ -64,6 +64,21 @@ func try_merge_slot(slot_index: int) -> Dictionary:
 	loadout_changed.emit()
 	return {"success": true, "message": "Merged to %s." % next_rarity.capitalize(), "new_rarity": next_rarity}
 
+func try_remove_slot(slot_index: int) -> Dictionary:
+	if slot_index < 0 or slot_index >= equipped_weapons.size():
+		return {"success": false, "message": "Invalid weapon slot.", "entry": {}}
+	var entry := _get_entry(slot_index)
+	if entry.is_empty() or str(entry.get("id", "")) == "":
+		return {"success": false, "message": "Empty weapon slot.", "entry": {}}
+	equipped_weapons.remove_at(slot_index)
+	_sync_legacy_ids()
+	loadout_changed.emit()
+	return {
+		"success": true,
+		"message": "Weapon removed.",
+		"entry": entry
+	}
+
 # Fallback alias for existing player code that might call can_equip_more
 func can_equip_more() -> bool:
 	return has_space()
