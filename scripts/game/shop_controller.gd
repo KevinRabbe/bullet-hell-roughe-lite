@@ -7,11 +7,14 @@ signal offers_changed
 signal reroll_cost_changed(new_cost: int)
 signal offer_purchased(index: int, offer: Dictionary)
 signal offer_lock_changed(index: int, locked: bool)
+signal weapon_sold(slot_index: int, weapon_id: String, rarity: String, gold_value: int)
 
 const ItemDatabase = preload("res://scripts/items/item_database.gd")
 const DeterministicRng = preload("res://scripts/core/deterministic_rng.gd")
 const ShopOfferRuntime = preload("res://scripts/game/shop_offer_runtime.gd")
 const ShopOfferLockRuntimeRef = preload("res://scripts/ui/shop_offer_lock_runtime.gd")
+
+const WEAPON_SELL_VALUE_RATIO: float = 0.5
 
 @export var enemy_spawner_path: NodePath
 @export var player_path: NodePath
@@ -121,6 +124,70 @@ func is_shop_open() -> bool:
 
 func get_current_wave_index() -> int:
 	return _current_wave_index
+
+func get_weapon_sell_state(slot_index: int) -> Dictionary:
+	if not is_shop_open():
+		return {"can_sell": false, "message": "Shop closed.", "gold_value": 0}
+	if player == null or not is_instance_valid(player) or not player.has_method("add_gold"):
+		return {"can_sell": false, "message": "Player unavailable.", "gold_value": 0}
+	var loadout: Node = player.get_node_or_null("WeaponLoadout")
+	if loadout == null or not loadout.has_method("get_weapon_entries") or not loadout.has_method("try_remove_slot"):
+		return {"can_sell": false, "message": "Arsenal unavailable.", "gold_value": 0}
+	var entries_variant: Variant = loadout.call("get_weapon_entries")
+	if not (entries_variant is Array):
+		return {"can_sell": false, "message": "Arsenal unavailable.", "gold_value": 0}
+	var entries: Array = entries_variant
+	if slot_index < 0 or slot_index >= entries.size():
+		return {"can_sell": false, "message": "Select weapon.", "gold_value": 0}
+	var entry_variant: Variant = entries[slot_index]
+	if not (entry_variant is Dictionary):
+		return {"can_sell": false, "message": "Invalid weapon.", "gold_value": 0}
+	var entry: Dictionary = entry_variant
+	var weapon_id := str(entry.get("id", ""))
+	var rarity := str(entry.get("rarity", "common"))
+	if weapon_id == "":
+		return {"can_sell": false, "message": "Empty weapon slot.", "gold_value": 0}
+	var weapon_data := _load_weapon_data_by_id(weapon_id)
+	if weapon_data == null:
+		return {"can_sell": false, "message": "Weapon data missing.", "gold_value": 0}
+	var base_price := weapon_data.price if weapon_data.price > 0 else 5
+	var rarity_value := ShopOfferRuntime.scaled_weapon_price(base_price, rarity)
+	var gold_value := maxi(int(floor(float(rarity_value) * WEAPON_SELL_VALUE_RATIO)), 1)
+	return {
+		"can_sell": true,
+		"message": "Sell for %dG." % gold_value,
+		"gold_value": gold_value,
+		"weapon_id": weapon_id,
+		"rarity": rarity
+	}
+
+func sell_weapon_slot(slot_index: int) -> Dictionary:
+	var state := get_weapon_sell_state(slot_index)
+	if state.get("can_sell", false) != true:
+		state["success"] = false
+		return state
+	var loadout: Node = player.get_node_or_null("WeaponLoadout")
+	var remove_variant: Variant = loadout.call("try_remove_slot", slot_index)
+	if not (remove_variant is Dictionary):
+		return {"success": false, "can_sell": false, "message": "Weapon sale failed.", "gold_value": 0}
+	var remove_result: Dictionary = remove_variant
+	if remove_result.get("success", false) != true:
+		return {
+			"success": false,
+			"can_sell": false,
+			"message": str(remove_result.get("message", "Weapon sale failed.")),
+			"gold_value": 0
+		}
+	var gold_value := int(state.get("gold_value", 0))
+	player.call("add_gold", gold_value)
+	var weapon_id := str(state.get("weapon_id", ""))
+	var rarity := str(state.get("rarity", "common"))
+	weapon_sold.emit(slot_index, weapon_id, rarity, gold_value)
+	if log_shop_events:
+		print("Sold %s (%s) for %dG" % [weapon_id, rarity, gold_value])
+	state["success"] = true
+	state["message"] = "Sold for %dG." % gold_value
+	return state
 
 func is_offer_locked(index: int) -> bool:
 	return index >= 0 and _locked_offer_snapshots.has(index)
