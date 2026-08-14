@@ -35,6 +35,7 @@ var bottom_weapons_title: Label
 var weapon_slots_container: HBoxContainer
 var weapon_slot_buttons: Array[Button] = []
 var selected_weapon_slot: int = -1
+var sell_selected_button: Button
 var merge_selected_button: Button
 var inventory_tooltip: Control
 var shop_view_model: RefCounted
@@ -266,6 +267,15 @@ func _build_weapons_panel() -> void:
 		weapon_slots_container.add_child(icon_button)
 		weapon_slot_buttons.append(icon_button)
 
+	sell_selected_button = Button.new()
+	sell_selected_button.position = Vector2(12.0, 116.0)
+	sell_selected_button.size = Vector2(154.0, 40.0)
+	sell_selected_button.text = "SELECT WEAPON"
+	sell_selected_button.disabled = true
+	InfernalUiStyleRef.apply_secondary_button(sell_selected_button)
+	sell_selected_button.pressed.connect(_on_sell_selected_pressed)
+	weapons_panel.add_child(sell_selected_button)
+
 	merge_selected_button = Button.new()
 	merge_selected_button.position = Vector2(174.0, 116.0)
 	merge_selected_button.size = Vector2(162.0, 40.0)
@@ -402,6 +412,7 @@ func _refresh_weapon_slots() -> void:
 			icon_button.modulate = Color(1.0, 0.95, 0.60, 1.0)
 	if selected_weapon_slot >= slots.size():
 		selected_weapon_slot = -1
+	_update_sell_button_state()
 	_update_merge_button_state()
 
 func _show_item_detail(item_id: String, source: Control) -> void:
@@ -545,6 +556,22 @@ func _on_weapon_slot_pressed(slot_index: int) -> void:
 	if slot_index >= 0 and slot_index < weapon_slot_buttons.size():
 		_show_weapon_detail(slot_index, weapon_slot_buttons[slot_index])
 
+func _on_sell_selected_pressed() -> void:
+	if selected_weapon_slot < 0:
+		return
+	if shop_controller == null or not shop_controller.has_method("sell_weapon_slot"):
+		return
+	var result_variant: Variant = shop_controller.call("sell_weapon_slot", selected_weapon_slot)
+	if not (result_variant is Dictionary):
+		return
+	var result: Dictionary = result_variant
+	print(str(result.get("message", "")))
+	if result.get("success", false) != true:
+		_update_sell_button_state()
+		return
+	selected_weapon_slot = -1
+	_refresh_all()
+
 func _on_merge_selected_pressed() -> void:
 	if selected_weapon_slot < 0:
 		return
@@ -571,6 +598,27 @@ func _has_merge_available() -> bool:
 		if state_variant is Dictionary and (state_variant as Dictionary).get("can_merge", false) == true:
 			return true
 	return false
+
+func _update_sell_button_state() -> void:
+	if sell_selected_button == null:
+		return
+	if selected_weapon_slot < 0:
+		sell_selected_button.disabled = true
+		sell_selected_button.text = "SELECT WEAPON"
+		return
+	if shop_controller != null and shop_controller.has_method("get_weapon_sell_state"):
+		var state_variant: Variant = shop_controller.call("get_weapon_sell_state", selected_weapon_slot)
+		if state_variant is Dictionary:
+			var sell_state: Dictionary = state_variant
+			var can_sell: bool = sell_state.get("can_sell", false) == true
+			sell_selected_button.disabled = not can_sell
+			if can_sell:
+				sell_selected_button.text = "SELL · %dG" % int(sell_state.get("gold_value", 0))
+			else:
+				sell_selected_button.text = "CANNOT SELL"
+			return
+	sell_selected_button.disabled = true
+	sell_selected_button.text = "CANNOT SELL"
 
 func _update_merge_button_state() -> void:
 	if merge_selected_button == null:
